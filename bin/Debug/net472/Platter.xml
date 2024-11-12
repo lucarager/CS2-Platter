@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Platter</name>
+    </assembly>
+    <members>
+        <member name="F:Platter.Mod.ModName">
+            <summary>
+            The mod's default name.
+            </summary>
+        </member>
+        <member name="P:Platter.Mod.Instance">
+            <summary>
+            Gets the active instance reference.
+            </summary>
+        </member>
+        <member name="P:Platter.Mod.ActiveSettings">
+            <summary>
+            Gets the mod's active settings configuration.
+            </summary>
+        </member>
+        <member name="P:Platter.Mod.Log">
+            <summary>
+            Gets the mod's active log.
+            </summary>
+        </member>
+        <member name="T:Platter.ModSettings">
+            <summary>
+            The mod's settings.
+            </summary>
+        </member>
+        <member name="M:Platter.ModSettings.#ctor(Game.Modding.IMod)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Platter.ModSettings"/> class.
+            </summary>
+            <param name="mod"><see cref="T:Game.Modding.IMod"/> instance.</param>
+        </member>
+        <member name="M:Platter.ModSettings.SetDefaults">
+            <summary>
+            Restores mod settings to default.
+            </summary>
+        </member>
+        <member name="M:Platter.ModSettings.IsNotInGame">
+            <summary>
+            Determines whether we're currently in-game (in a city) or not.
+            </summary>
+            <returns><c>false</c> if we're currently in-game, <c>true</c> otherwise (such as in the main menu or editor).</returns>
+        </member>
+        <member name="T:Platter.Patcher">
+            <summary>
+            A basic Harmony patching class.
+            </summary>
+        </member>
+        <member name="M:Platter.Patcher.#ctor(System.String,Colossal.Logging.ILog)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Platter.Patcher"/> class.
+            Doing so applies all annotated patches.
+            </summary>
+            <param name="harmonyID">Harmony ID to use.</param>
+            <param name="log">Log to use for performing patching.</param>
+        </member>
+        <member name="P:Platter.Patcher.Instance">
+            <summary>
+            Gets the active instance.
+            </summary>
+        </member>
+        <member name="P:Platter.Patcher.PatchesApplied">
+            <summary>
+            Gets a value indicating whether patches were successfully applied.
+            </summary>
+        </member>
+        <member name="P:Platter.Patcher.Log">
+            <summary>
+            Gets the logger to use when patching.
+            </summary>
+        </member>
+        <member name="M:Platter.Patcher.UnPatchAll">
+            <summary>
+            Reverts all applied patches.
+            </summary>
+        </member>
+        <member name="M:Platter.Patcher.PatchAnnotations">
+            <summary>
+            Constructor.
+            Applies Harmony patches.
+            </summary>
+        </member>
+    </members>
+</doc>

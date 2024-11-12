@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "algernon (K. Algernon A. Sheppard)",
+      "copyrightText": "Copyright (c) {companyName}. All rights reserved.\nLicensed under the {licenseName} (the \"License\"); you may not use this file except in compliance with the License.\nSee {licenseFile} file in the project root for full license information.",
+      "variables": {
+        "licenseName": "Apache Licence, Version 2.0",
+        "licenseFile": "LICENSE.txt"
+      }
+    }
+  }
+}
