@@ -1,4 +1,4 @@
-﻿namespace Platter
+﻿namespace Platter.Patches
 {
     using System;
     using Game.UI.InGame;

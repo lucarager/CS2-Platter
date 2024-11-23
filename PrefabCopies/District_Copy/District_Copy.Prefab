@@ -1,0 +1,101 @@
+{
+    "$id": 0,
+    "$type": "0|Game.Prefabs.DistrictPrefab, Game",
+    "name": "District Area (copy)",
+    "active": true,
+    "components": {
+        "$id": 1,
+        "$type": "1|System.Collections.Generic.List`1[[Game.Prefabs.ComponentBase, Game]], mscorlib",
+        "$rlength": 4,
+        "$rcontent": [
+            {
+                "$id": 2,
+                "$type": "2|Game.Prefabs.UIObject, Game",
+                "name": "UIObject",
+                "active": true,
+                "m_Group": $fstrref:"UnityGUID:777fb1515aa1b1549bb71920e69af99e",
+                "m_Priority": 10,
+                "m_Icon": "Media/Game/Icons/Districts.svg",
+                "m_IsDebugObject": false
+            },
+            {
+                "$id": 3,
+                "$type": "3|Game.Prefabs.RandomLocalization, Game",
+                "name": "RandomLocalization",
+                "active": true,
+                "m_LocalizationID": "Assets.DISTRICT_NAME"
+            },
+            {
+                "$id": 4,
+                "$type": "4|Game.Prefabs.Unlockable, Game",
+                "name": "Unlockable",
+                "active": true,
+                "m_RequireAll": {
+                    "$id": 5,
+                    "$type": "5|Game.Prefabs.PrefabBase[], Game",
+                    "$rlength": 1,
+                    "$rcontent": [
+                        $fstrref:"UnityGUID:b834c8046fee8464087d82f201542c4c"
+                    ]
+                },
+                "m_RequireAny": {
+                    "$id": 6,
+                    "$type": 5,
+                    "$rlength": 0,
+                    "$rcontent": [
+                    ]
+                },
+                "m_IgnoreDependencies": false
+            },
+            {
+                "$id": 7,
+                "$type": "6|Game.Prefabs.Effects.SelectedSound, Game",
+                "name": "SelectedSound",
+                "active": true,
+                "m_SelectedSound": $fstrref:"UnityGUID:1517c17e33646c64ebe65ae54f5f3481"
+            }
+        ]
+    },
+    "m_Color": {
+        "$type": "7|UnityEngine.Color, UnityEngine.CoreModule",
+        0.217010736,
+        0.59812057,
+        0.7264151,
+        0.854901969
+    },
+    "m_EdgeColor": {
+        "$type": 7,
+        0.138364673,
+        0.757548,
+        1,
+        0.992156863
+    },
+    "m_SelectionColor": {
+        "$type": 7,
+        0,
+        1,
+        0.0710594654,
+        0.8117647
+    },
+    "m_SelectionEdgeColor": {
+        "$type": 7,
+        0.7798742,
+        0.9574547,
+        1,
+        0.8980392
+    },
+    "m_NameColor": {
+        "$type": 7,
+        1,
+        1,
+        1,
+        0.7529412
+    },
+    "m_SelectedNameColor": {
+        "$type": 7,
+        0.5019608,
+        0.7387217,
+        1,
+        1
+    }
+}

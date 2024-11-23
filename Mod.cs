@@ -6,6 +6,7 @@
     using Game;
     using Game.Input;
     using Game.Modding;
+    using Platter.Patches;
 
     public class Mod : IMod
     {
@@ -13,6 +14,11 @@
         /// The mod's default name.
         /// </summary>
         public const string ModName = "Platter";
+
+        /// <summary>
+        /// An id used for bindings between UI and C#.
+        /// </summary>
+        public static readonly string Id = "Platter";
 
         /// <summary>
         /// Gets the active instance reference.
@@ -60,6 +66,9 @@
 
             // Load saved settings.
             AssetDatabase.global.LoadSettings("Platter", ActiveSettings, new ModSettings(this));
+
+            // Activate Systems
+            updateSystem.UpdateAfter<TestSystem>(SystemUpdatePhase.UIUpdate);
         }
 
         public void OnDispose()

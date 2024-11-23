@@ -4,11 +4,12 @@
 // See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-namespace Platter
+namespace Platter.Patches
 {
     using System;
     using Colossal.Logging;
     using HarmonyLib;
+    using UnityEngine;
 
     /// <summary>
     /// A basic Harmony patching class.
@@ -94,6 +95,10 @@ namespace Platter
             try
             {
                 harmonyInstance.PatchAll();
+                var patchedMethods = harmonyInstance.GetPatchedMethods();
+                foreach (var patchedMethod in patchedMethods) {
+                    Log.Info($"Patched method: {patchedMethod.Module.Name}:{patchedMethod.Name}");
+                }
                 Log.Info("patching complete");
 
                 // Set applied flag.

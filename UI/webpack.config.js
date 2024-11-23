@@ -1,6 +1,7 @@
 const path = require("path");
 const MOD = require("./mod.json");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const webpack = require("webpack");
 const { CSSPresencePlugin } = require("./tools/css-presence");
 const TerserPlugin = require("terser-webpack-plugin");
 const gray = (text) => `\x1b[90m${text}\x1b[0m`;
@@ -23,11 +24,12 @@ const banner = `
 `;
 
 module.exports = {
-  mode: "production",
-  stats: "none",
+    mode: "production",
+    stats: "none",
   entry: {
     [MOD.id]: "./src/index.tsx",
-  },
+    },
+    devtool: false,// "eval-cheap-module-source-map",
   externalsType: "window",
   externals: {
     react: "React",
@@ -42,12 +44,12 @@ module.exports = {
     "cohtml/cohtml": "cohtml/cohtml",
   },
   module: {
-    rules: [
+      rules: [
       {
-        test: /\.tsx?$/,
-        use: "ts-loader",
-        exclude: /node_modules/,
-      },
+              test: /\.tsx?$/,
+             use: "ts-loader",
+             exclude: /node_modules/,
+          },
       {
         test: /\.s?css$/,
         include: path.join(__dirname, "src"),
@@ -82,14 +84,14 @@ module.exports = {
     modules: ["node_modules", path.join(__dirname, "src")],
     alias: {
       "mod.json": path.resolve(__dirname, "mod.json"),
-    },
+      },
   },
   output: {
     path: path.resolve(__dirname, OUTPUT_DIR),
-    library: {
+      library: {
       type: "module",
     },
-    publicPath: `coui://ui-mods/`,
+      publicPath: `coui://ui-mods/`,
   },
   optimization: {
     minimize: true,
@@ -106,7 +108,9 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin(),
-    new CSSPresencePlugin(),
+      new CSSPresencePlugin(),
+      new webpack.EvalSourceMapDevToolPlugin({
+      }),
     {
       apply(compiler) {
         let runCount = 0;

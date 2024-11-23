@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Platter": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
