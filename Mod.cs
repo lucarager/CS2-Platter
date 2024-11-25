@@ -6,6 +6,7 @@
     using Game;
     using Game.Input;
     using Game.Modding;
+    using Game.Prefabs;
     using Platter.Patches;
 
     public class Mod : IMod
@@ -69,6 +70,7 @@
 
             // Activate Systems
             updateSystem.UpdateAfter<TestSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<ParcelSystem>(SystemUpdatePhase.Modification1);
         }
 
         public void OnDispose()

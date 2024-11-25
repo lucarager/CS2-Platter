@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Platter.Prefabs {
     [ComponentMenu("Zones/", new Type[] { })]
-    public class ParcelPrefab : LotPrefab {
+    public class ParcelPrefab : AreaPrefab {
         public override void GetDependencies(List<PrefabBase> prefabs) {
             base.GetDependencies(prefabs);
             prefabs.Add(this.m_ZoneBlock);

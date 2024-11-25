@@ -7,10 +7,12 @@ namespace Platter.Systems {
     using System.Collections.Generic;
     using System.Linq;
     using Colossal.Json;
+    using Game.Common;
     using Game.Prefabs;
     using Game.SceneFlow;
     using HarmonyLib;
     using Platter;
+    using Platter.Prefabs;
     using Unity.Entities;
     using UnityEngine;
 
@@ -18,6 +20,8 @@ namespace Platter.Systems {
     /// This class provides the utility methods to install the mod.
     /// </summary>
     internal static class PrefabManager {
+        private static readonly string prefabToCloneName = "Clear Area";
+        public static readonly string prefabName = "ZONETEST";
         /// <summary>
         ///     Base URI for all of our icons.
         /// </summary>
@@ -59,7 +63,7 @@ namespace Platter.Systems {
         ///     </para>
         ///     <para>
         ///         We now have what it takes to extract our <see cref="PrefabBase"/> object, and as reference we extract the one called
-        ///         <b>Landfill</b>.
+        ///         <b>Area</b>.
         ///         During this stage we only care for <see cref="ComponentBase"/> and not <see cref="IComponentData"/>.
         ///     </para>
         ///     <para>
@@ -115,23 +119,23 @@ namespace Platter.Systems {
             Mod.Instance.Log.Debug($"{logHeader} Retrieved Prefabs list.");
             Mod.Instance.Log.Debug($"{logHeader} {prefabs}");
 
-            // Getting the original Landfill Prefab
-            var lotPrefab = prefabs.FirstOrDefault(p => p.name == "Landfill Site Lot");
-            if (lotPrefab == null) {
-                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Landfill Prefab instance, exiting.");
+            // Getting the original Area Prefab
+            var areaPrefab = prefabs.FirstOrDefault(p => p.name == prefabToCloneName);
+            if (areaPrefab == null) {
+                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Area Prefab instance, exiting.");
                 return;
             }
 
-            Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Landfill Prefab instance.");
+            Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Area Prefab instance.");
 
-            // Getting the original Landfill Prefab's UIObject
-            var lotUIObject = lotPrefab.GetComponent<UIObject>();
-            if (lotUIObject == null) {
-                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Landfill Prefab's UIObject instance, exiting.");
-                return;
-            }
+            // Getting the original Area Prefab's UIObject
+            //var lotUIObject = areaPrefab.GetComponent<UIObject>();
+            //if (lotUIObject == null) {
+            //    Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Area Prefab's UIObject instance, exiting.");
+            //    return;
+            //}
 
-            Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Landfill Prefab's UIObject instance.");
+            //Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Area Prefab's UIObject instance.");
 
             // We now have all the needed original objects to build our clones
             //foreach (var upgradeMode in ExtendedRoadUpgrades.Modes) {
@@ -141,37 +145,40 @@ namespace Platter.Systems {
             //    }
 
             // Instantiate our clone copying all the properties over
-            var clonedLotPrefab = Object.Instantiate(lotPrefab);
+            var parcelPrefab = areaPrefab.Clone(prefabName);
 
-            // Replace the name our they will be called "Landfill (Clone)"
-            clonedLotPrefab.name = "ZONETEST";
-
-            Mod.Instance.Log.Debug($"{logHeader} Cloned the original Landfill Prefab instance.");
+            Mod.Instance.Log.Debug($"{logHeader} Cloned the original Area Prefab instance.");
 
             //    // Update the UI component.
-            //    // To avoid impacting the Landfill prefab we need to replace the UIObject with
+            //    // To avoid impacting the Area prefab we need to replace the UIObject with
             //    // a fresh instance. Every property besides name and icon can be copied over.
             //    // There is probably a better way of doing this, but I need to be sure that we're not
             //    // keeping any unintended reference to the source object so I'd rather manually copy
             //    // over only the thing I need instead of relying on automatic cloning.
-            //    clonedLandfillUpgradePrefab.Remove<UIObject>();
+            //    clonedAreaUpgradePrefab.Remove<UIObject>();
 
             //    Mod.Instance.Log.Debug($"{logHeader} [{upgradeMode.Id}] Removed the original UIObject instance from the cloned Prefab.");
 
             //    // Create and populate the new UIObject for our cloned Prefab
-            //    var clonedLandfillUpgradePrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
-            //    clonedLandfillUpgradePrefabUIObject.m_Icon = $"{COUIBaseLocation}{upgradeMode.ObsoleteId}.svg";
-            //    clonedLandfillUpgradePrefabUIObject.name = LandfillUpgradePrefabUIObject.name.Replace("Landfill", upgradeMode.Id);
-            //    clonedLandfillUpgradePrefabUIObject.m_IsDebugObject = LandfillUpgradePrefabUIObject.m_IsDebugObject;
-            //    clonedLandfillUpgradePrefabUIObject.m_Priority = LandfillUpgradePrefabUIObject.m_Priority;
-            //    clonedLandfillUpgradePrefabUIObject.m_Group = LandfillUpgradePrefabUIObject.m_Group;
-            //    clonedLandfillUpgradePrefabUIObject.active = LandfillUpgradePrefabUIObject.active;
+            //    var clonedAreaUpgradePrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
+            //    clonedAreaUpgradePrefabUIObject.m_Icon = $"{COUIBaseLocation}{upgradeMode.ObsoleteId}.svg";
+            //    clonedAreaUpgradePrefabUIObject.name = AreaUpgradePrefabUIObject.name.Replace("Area", upgradeMode.Id);
+            //    clonedAreaUpgradePrefabUIObject.m_IsDebugObject = AreaUpgradePrefabUIObject.m_IsDebugObject;
+            //    clonedAreaUpgradePrefabUIObject.m_Priority = AreaUpgradePrefabUIObject.m_Priority;
+            //    clonedAreaUpgradePrefabUIObject.m_Group = AreaUpgradePrefabUIObject.m_Group;
+            //    clonedAreaUpgradePrefabUIObject.active = AreaUpgradePrefabUIObject.active;
 
-            //    Mod.Instance.Log.Debug($"{logHeader} [{upgradeMode.Id}] Created a custom UIObject for our cloned Prefab with name {clonedLandfillUpgradePrefabUIObject.name} and icon {clonedLandfillUpgradePrefabUIObject.m_Icon}.");
+            //    Mod.Instance.Log.Debug($"{logHeader} [{upgradeMode.Id}] Created a custom UIObject for our cloned Prefab with name {clonedAreaUpgradePrefabUIObject.name} and icon {clonedAreaUpgradePrefabUIObject.m_Icon}.");
 
             // Add the newly created UIObject component and then add the cloned Prefab to our PrefabSystem
-            //clonedLotPrefab.AddComponentFrom(clonedLandfillUpgradePrefabUIObject);
-            if (!prefabSystem.AddPrefab(clonedLotPrefab)) {
+            //clonedLotPrefab.AddComponentFrom(clonedAreaUpgradePrefabUIObject);
+
+            // Modify this prefab so that it has some additional things. 
+            var parcelComponent = parcelPrefab.AddComponent<Parcel>();
+            //componentData.m_Archetype = EntityManager.CreateArchetype(PrefabUtils.ToArray<ComponentType>(hashSet));
+            //EntityManager.SetComponentData<AreaData>(parcelPrefab, componentData);
+
+            if (!prefabSystem.AddPrefab(parcelPrefab)) {
                 Mod.Instance.Log.Error($"{logHeader} Failed adding the cloned Prefab to PrefabSystem, exiting.");
                 return;
             }
@@ -246,61 +253,61 @@ namespace Platter.Systems {
 
             Mod.Instance.Log.Debug($"{logHeader} Retrieved Prefabs list.");
 
-            // Getting the original Landfill Prefab
-            var lotPrefab = prefabs.FirstOrDefault(p => p.name == "Landfill Site Lot");
-            if (lotPrefab == null) {
-                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Landfill Prefab instance, exiting.");
+            // Getting the original Area Prefab
+            var areaPrefab = prefabs.FirstOrDefault(p => p.name == prefabToCloneName);
+            if (areaPrefab == null) {
+                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Area Prefab instance, exiting.");
                 return;
             }
 
-            Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Landfill Prefab instance.");
+            //Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Area Prefab instance.");
 
-            // Getting the original Landfill Prefab's PlaceableNetData
-            var lotPrefabData = prefabSystem.GetComponentData<PlaceableNetData>(lotPrefab);
-            if (lotPrefabData.Equals(default(PlaceableNetData))) {
-                // This type is not nullabe so we check equality with the default empty data
-                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Landfill Prefab's PlaceableNetData instance, exiting.");
-                return;
-            }
-
-            Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Landfill Prefab's PlaceableNetData instance.");
-
-            // We now have all the needed original objects to patch our clones
-            //foreach (var upgradeMode in ExtendedRoadUpgrades.Modes) {
-            // Getting the cloned Landfill Prefab for the current upgrade mode
-            var clonedLotPrefab = prefabs.FirstOrDefault(p => p.name == "ZONETEST");
-            if (clonedLotPrefab == null) {
-                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the cloned Landfill Prefab instance, exiting.");
-                return;
-            }
-
-            Mod.Instance.Log.Debug($"{logHeader}  Retrieved the cloned Landfill Prefab instance.");
-
-            // // Getting the cloned Landfill Prefab's PlaceableNetData for the current upgrade mode
-            //var clonedLandfillUpgradePrefabData = prefabSystem.GetComponentData<PlaceableNetData>(clonedLandfillUpgradePrefab);
-            //if (clonedLandfillUpgradePrefabData.Equals(default(PlaceableNetData))) {
+            //// Getting the original Area Prefab's PlaceableNetData
+            //var lotPrefabData = prefabSystem.GetComponentData<PlaceableNetData>(areaPrefab);
+            //if (lotPrefabData.Equals(default(PlaceableNetData))) {
             //    // This type is not nullabe so we check equality with the default empty data
-            //    Mod.Instance.Log.Error($"{logHeader} Failed retrieving the cloned Landfill Prefab's PlaceableNetData instance, exiting.");
+            //    Mod.Instance.Log.Error($"{logHeader} Failed retrieving the original Area Prefab's PlaceableNetData instance, exiting.");
             //    return;
             //}
 
-            //    Mod.Instance.Log.Debug($"{logHeader} [{upgradeMode.Id}] Retrieved the cloned Landfill Prefab's PlaceableNetData instance.");
+            //Mod.Instance.Log.Debug($"{logHeader} Retrieved the original Area Prefab's PlaceableNetData instance.");
+
+            // We now have all the needed original objects to patch our clones
+            //foreach (var upgradeMode in ExtendedRoadUpgrades.Modes) {
+            // Getting the cloned Area Prefab for the current upgrade mode
+            var parcelPrefab = prefabs.FirstOrDefault(p => p.name == prefabName);
+            if (parcelPrefab == null) {
+                Mod.Instance.Log.Error($"{logHeader} Failed retrieving the cloned Area Prefab instance, exiting.");
+                return;
+            }
+
+            Mod.Instance.Log.Debug($"{logHeader}  Retrieved the cloned Area Prefab instance.");
+
+            // // Getting the cloned Area Prefab's PlaceableNetData for the current upgrade mode
+            //var clonedAreaUpgradePrefabData = prefabSystem.GetComponentData<PlaceableNetData>(clonedAreaUpgradePrefab);
+            //if (clonedAreaUpgradePrefabData.Equals(default(PlaceableNetData))) {
+            //    // This type is not nullabe so we check equality with the default empty data
+            //    Mod.Instance.Log.Error($"{logHeader} Failed retrieving the cloned Area Prefab's PlaceableNetData instance, exiting.");
+            //    return;
+            //}
+
+            //    Mod.Instance.Log.Debug($"{logHeader} [{upgradeMode.Id}] Retrieved the cloned Area Prefab's PlaceableNetData instance.");
 
             //    // Update the flags with the ones set in our upgrade mode
-            //    clonedLandfillUpgradePrefabData.m_SetUpgradeFlags = upgradeMode.m_SetUpgradeFlags;
+            //    clonedAreaUpgradePrefabData.m_SetUpgradeFlags = upgradeMode.m_SetUpgradeFlags;
 
             //    // TODO: this works even without the unset flags, keeping them there just in case
-            //    clonedLandfillUpgradePrefabData.m_UnsetUpgradeFlags = upgradeMode.m_UnsetUpgradeFlags;
+            //    clonedAreaUpgradePrefabData.m_UnsetUpgradeFlags = upgradeMode.m_UnsetUpgradeFlags;
 
             //    // This toggles underground mode for our custom upgrade modes
             //    if (upgradeMode.IsUnderground) {
-            //        clonedLandfillUpgradePrefabData.m_PlacementFlags |= Game.Net.PlacementFlags.UndergroundUpgrade;
+            //        clonedAreaUpgradePrefabData.m_PlacementFlags |= Game.Net.PlacementFlags.UndergroundUpgrade;
             //    }
 
             //    // Persist the updated flags by replacing the ComponentData with the one we just created
-            //    prefabSystem.AddComponentData(clonedLandfillUpgradePrefab, clonedLandfillUpgradePrefabData);
+            //    prefabSystem.AddComponentData(clonedAreaUpgradePrefab, clonedAreaUpgradePrefabData);
 
-            //    Mod.Instance.Log.Info($"{logHeader} [{upgradeMode.Id}] Successfully set flags for our cloned Prefab to {clonedLandfillUpgradePrefabData.m_SetUpgradeFlags.ToJSONString()} and {clonedLandfillUpgradePrefabData.m_UnsetUpgradeFlags.ToJSONString()}.");
+            //    Mod.Instance.Log.Info($"{logHeader} [{upgradeMode.Id}] Successfully set flags for our cloned Prefab to {clonedAreaUpgradePrefabData.m_SetUpgradeFlags.ToJSONString()} and {clonedAreaUpgradePrefabData.m_UnsetUpgradeFlags.ToJSONString()}.");
             //}
 
             // Mark the Prefix as already executed
