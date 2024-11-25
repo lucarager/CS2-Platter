@@ -1,175 +1,65 @@
 {
   "$id": 0,
-  "$type": "0|Platter.Prefabs.ParcelPrefab, Platter",
-  "name": "Parcel",
+  "$type": "0|Game.Prefabs.SpacePrefab, Game",
+  "name": "ZONETEST",
   "active": true,
   "components": {
     "$id": 1,
     "$type": "1|System.Collections.Generic.List`1[[Game.Prefabs.ComponentBase, Game]], mscorlib",
-    "$rlength": 9,
+    "$rlength": 3,
     "$rcontent": [
       {
         "$id": 2,
-        "$type": "2|Game.Prefabs.NavigationArea, Game",
-        "name": "NavigationArea",
-        "active": true,
-        "m_ConnectionType": 1,
-        "m_SecondaryType": 0,
-        "m_TrackTypes": 0,
-        "m_RoadTypes": 1
+        "$type": "2|Game.Prefabs.ClearArea, Game",
+        "name": "ClearArea",
+        "active": true
       },
       {
         "$id": 3,
-        "$type": "3|Game.Prefabs.EnclosedArea, Game",
-        "name": "EnclosedArea",
-        "active": true,
-        "m_BorderLaneType": $fstrref:"UnityGUID:54efb5d1770cda2448295a371b2124cc",
-        "m_CounterClockWise": false
-      },
-      {
-        "$id": 4,
-        "$type": "4|Game.Prefabs.StorageArea, Game",
-        "name": "StorageArea",
-        "active": true,
-        "m_StoredResources": {
-          "$id": 5,
-          "$type": "5|Game.Economy.ResourceInEditor[], Game",
-          "$rlength": 1,
-          "$rcontent": [
-            40
-          ]
-        },
-        "m_Capacity": 1000
-      },
-      {
-        "$id": 6,
-        "$type": "6|Game.Prefabs.TerrainArea, Game",
-        "name": "TerrainArea",
-        "active": true,
-        "m_HeightOffset": 20,
-        "m_SlopeWidth": 20,
-        "m_NoiseScale": 100,
-        "m_NoiseFactor": 1
-      },
-      {
-        "$id": 7,
-        "$type": "7|Game.Prefabs.AreaSubObjects, Game",
-        "name": "AreaSubObjects",
-        "active": true,
-        "m_SubObjects": {
-          "$id": 8,
-          "$type": "8|Game.Prefabs.AreaSubObjectInfo[], Game",
-          "$rlength": 1,
-          "$rcontent": [
-            {
-              "$id": 9,
-              "$type": "9|Game.Prefabs.AreaSubObjectInfo, Game",
-              "m_Object": $fstrref:"UnityGUID:ebe3622b9123c104783710893194cc55"
-            }
-          ]
-        }
-      },
-      {
-        "$id": 11,
-        "$type": "11|Game.Prefabs.ServiceObject, Game",
-        "name": "ServiceObject",
-        "active": true,
-        "m_Service": $fstrref:"UnityGUID:77a860fb09c19344582dc939afd2a4cf"
-      },
-      {
-        "$id": 12,
-        "$type": "12|Game.Prefabs.UIObject, Game",
+        "$type": "3|Game.Prefabs.UIObject, Game",
         "name": "UIObject",
         "active": true,
-        "m_Group": $fstrref:"UnityGUID:7b0073fc24f800945a32f20300b23eae",
-        "m_Priority": 1000,
-        "m_Icon": "coui://ail/Landfill Site Lot.svg",
+        "m_Group": null,
+        "$fstrref": "CID:0fc95fef3d044bcd787e2ee71c9ccd7c",
+        "m_Priority": 1,
+        "m_Icon": "coui://extranetworksandareas/Icons/SpacePrefab/Clear Area.svg",
         "m_IsDebugObject": false
       },
       {
-        "$id": 13,
-        "$type": "13|Game.Prefabs.Unlockable, Game",
-        "name": "Unlockable",
+        "$id": 4,
+        "$type": "4|Platter.Prefabs.Parcel, Platter",
+        "name": "Parcel",
         "active": true,
-        "m_RequireAll": {
-          "$id": 14,
-          "$type": "14|Game.Prefabs.PrefabBase[], Game",
-          "$rlength": 0,
-          "$rcontent": [
-          ]
-        },
-        "m_RequireAny": {
-          "$id": 15,
-          "$type": 14,
-          "$rlength": 0,
-          "$rcontent": [
-          ]
-        },
-        "m_IgnoreDependencies": false
-      },
-      {
-        "$id": 3,
-        "$type": "3|Game.Prefabs.RandomLocalization, Game",
-        "name": "RandomLocalization",
-        "active": true,
-        "m_LocalizationID": "Assets.DISTRICT_NAME"
-      },
-      {
-        "$id": 7,
-        "$type": "6|Game.Prefabs.Effects.SelectedSound, Game",
-        "name": "SelectedSound",
-        "active": true,
-        "m_SelectedSound": $fstrref:"UnityGUID:1517c17e33646c64ebe65ae54f5f3481"
+        "m_ZoneBlock": null,
+        "$fstrref": "UnityGUID:18382f0f8042c204ab112a5f54483b0b"
       }
     ]
   },
   "m_Color": {
-    "$type": "15|UnityEngine.Color, UnityEngine.CoreModule",
-    0.490566015,
-    0.250152349,
-    0.09487361,
+    "$type": "5|UnityEngine.Color, UnityEngine.CoreModule",
+    0.246724784,
+    0.7082429,
+    0.7830189,
     0.196078435
   },
   "m_EdgeColor": {
-    "$type": "15|UnityEngine.Color, UnityEngine.CoreModule",
-    0.490566015,
-    0.250152349,
-    0.09487361,
-    0.196078435
+    "$type": 5,
+    0.247058824,
+    0.709803939,
+    0.784313738,
+    0.392156869
   },
   "m_SelectionColor": {
-    "$type": "15|UnityEngine.Color, UnityEngine.CoreModule",
-    0.490566015,
-    0.250152349,
-    0.09487361,
-    0.196078435
-  },
-  "m_SelectionEdgeColor": {
-    "$type": "15|UnityEngine.Color, UnityEngine.CoreModule",
+    "$type": 5,
     1,
     1,
     1,
     1
   },
-  "m_MaxRadius": 300,
-  "m_RangeColor": {
-    "$type": "15|UnityEngine.Color, UnityEngine.CoreModule",
-    0.490196079,
-    0.2509804,
-    0.09411765,
-    0.5019608
-  },
-  "m_NameColor": {
-    "$type": "7|UnityEngine.Color, UnityEngine.CoreModule",
+  "m_SelectionEdgeColor": {
+    "$type": 5,
     1,
     1,
-    1,
-    0.7529412
-  },
-  "m_SelectedNameColor": {
-    "$type": "7|UnityEngine.Color, UnityEngine.CoreModule",
-    0.5019608,
-    0.7387217,
     1,
     1
   }
