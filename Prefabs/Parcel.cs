@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using Game.Prefabs;
 using Game.Zones;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Platter.Prefabs {
-    [ComponentMenu("Areas/", new Type[]
-    {
-        typeof(SpacePrefab),
-    })]
+    [ComponentMenu("Areas/", new Type[] { typeof(SpacePrefab) })]
     public class Parcel : ComponentBase {
         public override void GetDependencies(List<PrefabBase> prefabs) {
             base.GetDependencies(prefabs);
@@ -28,13 +26,12 @@ namespace Platter.Prefabs {
             }
         }
 
-        public override void LateInitialize(EntityManager entityManager, Entity entity) {
-            base.LateInitialize(entityManager, entity);
-        }
-
         public Parcel() {
         }
 
+        public float3 m_Position;
+        public float2 m_Direction;
+        public int2 m_Size;
         public ZoneBlockPrefab m_ZoneBlock;
     }
 }

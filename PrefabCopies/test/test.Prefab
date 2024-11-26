@@ -1,7 +1,7 @@
 {
     "$id": 0,
     "$type": "0|Game.Prefabs.SpacePrefab, Game",
-    "name": "ZONETEST",
+    "name": "Clear Area (copy)",
     "active": true,
     "components": {
         "$id": 1,
