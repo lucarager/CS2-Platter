@@ -12,3 +12,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "<Pending>")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "<Pending>")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "<Pending>")]
+[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1503:Braces should not be omitted", Justification = "<Pending>", Scope = "member", Target = "~M:Platter.Systems.ParcelInitializeSystem.OnUpdate")]
+[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1500:Braces for multi-line statements should not share line", Justification = "<Pending>", Scope = "member", Target = "~M:Platter.Systems.ParcelBlockSpawnSystem.OnCreate")]
+[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1503:Braces should not be omitted", Justification = "<Pending>", Scope = "member", Target = "~M:Platter.Systems.ParcelBlockSpawnSystem.OnUpdate")]

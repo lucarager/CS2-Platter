@@ -8,6 +8,7 @@
     using Game.Modding;
     using Game.Prefabs;
     using Platter.Patches;
+    using Platter.Systems;
 
     public class Mod : IMod
     {
@@ -45,6 +46,7 @@
         public const string kVectorActionName = "Vector2Binding";
 
 
+        /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
         {
             // Set instance reference.
@@ -70,9 +72,13 @@
 
             // Activate Systems
             updateSystem.UpdateAfter<TestSystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<ParcelSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAt<ParcelBlockSpawnSystem>(SystemUpdatePhase.Modification4);
+            updateSystem.UpdateAt<ParcelConnectionSystem>(SystemUpdatePhase.Modification4B);
+            updateSystem.UpdateAt<ParcelBlockReferenceSystem>(SystemUpdatePhase.Modification5);
         }
 
+        /// <inheritdoc/>
         public void OnDispose()
         {
             Log.Info("disposing");

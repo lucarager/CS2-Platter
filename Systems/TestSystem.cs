@@ -1,6 +1,4 @@
-﻿
-
-namespace Platter {
+﻿namespace Platter.Systems {
     using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
@@ -18,7 +16,6 @@ namespace Platter {
     using Unity.Mathematics;
     using UnityEngine.Scripting;
     using Block = Game.Zones.Block;
-    using Platter.Systems;
 
     public partial class TestSystem : UISystemBase {
         private ILog m_Log;
@@ -37,6 +34,7 @@ namespace Platter {
         private ModificationBarrier4 m_ModificationBarrier;
         private AreaBufferSystem m_AreaBufferSystem;
 
+        /// <inheritdoc/>
         [Preserve]
         protected override void OnCreate() {
             base.OnCreate();
@@ -105,6 +103,7 @@ namespace Platter {
             base.RequireForUpdate(this.m_UpdatedEdgesQuery);
         }
 
+        /// <inheritdoc/>
         [Preserve]
         protected override void OnUpdate() {
             this.m_CommandBuffer = m_Barrier.CreateCommandBuffer();
@@ -126,6 +125,7 @@ namespace Platter {
             }
         }
 
+        /// <inheritdoc/>
         [Preserve]
         protected override void OnDestroy() {
             base.OnDestroy();
@@ -145,9 +145,10 @@ namespace Platter {
                 this.SpawnBlock();
             }
         }
+        /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
-            //PrefabManager.Install();
+            PrefabManager.Install();
         }
         private void SpawnParcel() {
             // Duplicate a "zone" type prefab

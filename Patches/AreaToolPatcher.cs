@@ -2,9 +2,9 @@
     using System;
     using Game.Prefabs;
     using Game.Tools;
+    using Game.Tools;
     using Game.UI.InGame;
     using HarmonyLib;
-    using Game.Tools;
     using Unity.Entities;
     using static Game.Rendering.Debug.RenderPrefabRenderer;
 

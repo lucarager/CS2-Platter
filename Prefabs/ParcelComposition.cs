@@ -1,10 +1,9 @@
 ﻿namespace Platter.Prefabs {
     using System;
-    using Game.Objects;
+    using Colossal.Serialization.Entities;
     using Unity.Entities;
-    using Unity.Mathematics;
 
-    public struct ParcelData : IComponentData, IQueryTypeParameter {
+    public struct ParcelComposition : IComponentData, IQueryTypeParameter {
         public Entity m_ZoneBlockPrefab;
     }
 }
