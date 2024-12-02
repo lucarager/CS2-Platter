@@ -72,7 +72,7 @@
             Mod.Instance.Log.Debug($"{logHeader} Cloned the original Area Prefab instance.");
 
             // Modify this prefab so that it has some additional things. 
-            var parcel = ScriptableObject.CreateInstance<ParcelSpace>();
+            var parcel = ScriptableObject.CreateInstance<_areaBasedParcel>();
             parcel.m_ZoneBlock = roadPrefab.m_ZoneBlock;
             var parcelComponent = parcelPrefab.AddComponentFrom(parcel);
 

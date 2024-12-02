@@ -11,7 +11,7 @@
     using Unity.Mathematics;
 
     [ComponentMenu("Areas/", new Type[] { typeof(SpacePrefab) })]
-    public class ParcelSpace : ComponentBase {
+    public class _areaBasedParcel : ComponentBase {
         /// <inheritdoc/>
         public override void GetDependencies(List<PrefabBase> prefabs) {
             base.GetDependencies(prefabs);
@@ -42,7 +42,7 @@
             entityManager.SetComponentData<PlotData>(entity, plotData);
         }
 
-        public ParcelSpace() {
+        public _areaBasedParcel() {
         }
 
         public ZoneBlockPrefab m_ZoneBlock;

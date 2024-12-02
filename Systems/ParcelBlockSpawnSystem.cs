@@ -1,32 +1,36 @@
 ﻿namespace Platter.Systems {
     using Colossal.Entities;
+    using Colossal.IO.AssetDatabase;
+    using Colossal.Json;
     using Colossal.Logging;
     using Game;
     using Game.Areas;
     using Game.Common;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
     using Platter.Prefabs;
+    using System.Collections.Generic;
+    using System.Linq;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
+    using Platter.Utils;
 
     public partial class ParcelBlockSpawnSystem : GameSystemBase {
-        private ILog m_Log;
+        private PrefixedLogger m_Log;
         private RandomSeed m_Random;
         private EntityCommandBuffer m_CommandBuffer;
         private EntityQuery m_ParcelCreatedQuery;
         private ModificationBarrier4 m_ModificationBarrier;
         private PrefabSystem m_PrefabSystem;
-        private string m_LogHeader;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = Mod.Instance.Log;
-            m_LogHeader = $"[ParcelBlockSpawnSystem]";
+            m_Log = new PrefixedLogger(nameof(ParcelBlockSpawnSystem));
             m_Random = RandomSeed.Next();
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
@@ -34,7 +38,6 @@
             m_ParcelCreatedQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
-                        ComponentType.ReadOnly<Space>(),
                         ComponentType.ReadOnly<Parcel>()
                     },
                     Any = new ComponentType[] {
@@ -46,7 +49,7 @@
                     },
                 });
 
-            m_Log.Debug($"{m_LogHeader} Loaded system.");
+            m_Log.Debug($"Loaded system.");
 
             RequireForUpdate(m_ParcelCreatedQuery);
         }
@@ -54,19 +57,20 @@
         /// <inheritdoc/>
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
-            NativeArray<Entity> entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
-            NativeParallelHashMap<Block, Entity> oldBlockBuffer = new NativeParallelHashMap<Block, Entity>(32, Allocator.Temp);
+            var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
+            var oldBlocks = new Dictionary<Block, Entity>(32);
 
-            m_Log.Debug($"{m_LogHeader} Found {entities.Length}");
+            m_Log.Debug($"Found {entities.Length}");
 
             for (int i = 0; i < entities.Length; i++) {
                 var entity = entities[i];
+
                 if (!EntityManager.TryGetBuffer<SubBlock>(entity, false, out var subBlockBuffer))
                     return;
 
                 // DELETE state
                 if (EntityManager.HasComponent<Deleted>(entity)) {
-                    m_Log.Debug($"{m_LogHeader} [DELETE] Deleting this parcel");
+                    m_Log.Debug($"[DELETE] Deleting this parcelPrefab");
 
                     // Mark Blocks for deletion
                     for (int j = 0; j < subBlockBuffer.Length; j++) {
@@ -78,25 +82,19 @@
                 }
 
                 // UPDATE State
+                m_Log.Debug($"Running UPDATE logic");
 
                 // Retrieve components
                 if (!EntityManager.TryGetComponent<PrefabRef>(entity, out var prefabRef)
-                    || !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var spacePrefab)
+                    || !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var lotPrefabBase)
                     || !EntityManager.TryGetComponent<ParcelData>(prefabRef, out var parcelData)
-                    || !EntityManager.TryGetComponent<PlotData>(prefabRef, out var plotData)
                     || !EntityManager.TryGetComponent<ParcelComposition>(entity, out var parcelComposition)
-                    || !EntityManager.TryGetComponent<Geometry>(entity, out var geometry))
+                    || !EntityManager.TryGetComponent<Transform>(entity, out var transform))
                     return;
 
+                var parcelPrefab = lotPrefabBase.GetComponent<ParcelPrefab>();
 
-                // Retrieve old blocks
-                foreach (var subBlock in subBlockBuffer) {
-                    var subBlockEntity = subBlock.m_SubBlock;
-                    var oldBlock = EntityManager.GetComponentData<Block>(subBlockEntity);
-                    oldBlockBuffer.TryAdd(oldBlock, subBlockEntity);
-                }
-
-                m_Log.Debug($"{m_LogHeader} [UPDATE] Found all required components");
+                m_Log.Debug($"Found all required components");
 
                 // Store Zoneblock
                 parcelComposition.m_ZoneBlockPrefab = parcelData.m_ZoneBlockPrefab;
@@ -112,30 +110,32 @@
                 var block = default(Block);
                 var buildOder = default(BuildOrder);
                 curvePosition.m_CurvePosition = new float2(1f, 0f);
-                block.m_Position = geometry.m_CenterPosition;
-                block.m_Direction = plotData.m_ForwardDirection;
-                block.m_Size = plotData.m_PlotSize;
+                block.m_Position = transform.m_Position;
+                var forwardVector = math.mul(transform.m_Rotation, new float3(0, 0, -1)).xz;
+                block.m_Direction = forwardVector;
+                block.m_Size = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth);
                 buildOder.m_Order = 0;
 
                 // Set Data
-                m_Log.Debug($"{m_LogHeader} Creating Block of size {block.m_Size.x}*{block.m_Size.y} in position: {block.m_Position.ToString()}");
+                m_Log.Debug($"Creating Block of size {block.m_Size.x}*{block.m_Size.y} in position: {block.m_Position.ToString()}");
 
-                if (oldBlockBuffer.TryGetValue(block, out var foundOldBlock)) {
-                    m_Log.Debug($"{m_LogHeader} Updating the old block...");
-                    oldBlockBuffer.Remove(block);
-                    m_CommandBuffer.SetComponent<PrefabRef>(foundOldBlock, new PrefabRef(blockPrefab));
-                    m_CommandBuffer.SetComponent<CurvePosition>(foundOldBlock, curvePosition);
-                    m_CommandBuffer.SetComponent<BuildOrder>(foundOldBlock, buildOder);
-                    m_CommandBuffer.AddComponent<Updated>(foundOldBlock, default(Updated));
-
+                // For now, we know there's only going to be one block per component
+                if (subBlockBuffer.Length > 0) {
+                    m_Log.Debug($"Updating the old block...");
+                    var subBlockEntity = subBlockBuffer[0].m_SubBlock;
+                    m_CommandBuffer.SetComponent<PrefabRef>(subBlockEntity, new PrefabRef(blockPrefab));
+                    m_CommandBuffer.SetComponent<Block>(subBlockEntity, block);
+                    m_CommandBuffer.SetComponent<CurvePosition>(subBlockEntity, curvePosition);
+                    m_CommandBuffer.SetComponent<BuildOrder>(subBlockEntity, buildOder);
+                    m_CommandBuffer.AddComponent<Updated>(subBlockEntity, default(Updated));
                 } else {
-                    m_Log.Debug($"{m_LogHeader} Creating a new block...");
-
+                    m_Log.Debug($"Creating a new block...");
                     var blockEntity = m_CommandBuffer.CreateEntity(zoneBlockData.m_Archetype);
                     m_CommandBuffer.SetComponent<PrefabRef>(blockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(blockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
                     m_CommandBuffer.SetComponent<BuildOrder>(blockEntity, buildOder);
+                    m_CommandBuffer.AddComponent<ParcelOwner>(blockEntity, new ParcelOwner(entity));
                     DynamicBuffer<Cell> cellBuffer = m_CommandBuffer.SetBuffer<Cell>(blockEntity);
                     var cellCount = block.m_Size.x * block.m_Size.y;
                     for (int l = 0; l < cellCount; l++) {
@@ -143,7 +143,7 @@
                     }
                 }
 
-                m_Log.Debug($"{m_LogHeader} Done.");
+                m_Log.Debug($"Done.");
             }
         }
     }

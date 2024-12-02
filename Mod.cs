@@ -1,5 +1,4 @@
-﻿namespace Platter
-{
+﻿namespace Platter {
     using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
@@ -71,11 +70,11 @@
             AssetDatabase.global.LoadSettings("Platter", ActiveSettings, new ModSettings(this));
 
             // Activate Systems
-            updateSystem.UpdateAfter<TestSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAfter<PrefabLoadSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelBlockSpawnSystem>(SystemUpdatePhase.Modification4);
-            updateSystem.UpdateAt<ParcelConnectionSystem>(SystemUpdatePhase.Modification4B);
-            updateSystem.UpdateAt<ParcelBlockReferenceSystem>(SystemUpdatePhase.Modification5);
+            //updateSystem.UpdateAt<RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
+            //updateSystem.UpdateAt<ParcelBlockReferenceSystem>(SystemUpdatePhase.Modification5);
         }
 
         /// <inheritdoc/>
