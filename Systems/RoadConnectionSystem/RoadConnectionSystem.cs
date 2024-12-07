@@ -1,12 +1,9 @@
 ﻿namespace Platter.Systems {
-    using Colossal.Entities;
     using Colossal.Mathematics;
     using Game;
     using Game.Audio;
     using Game.Buildings;
     using Game.Common;
-    using Game.Effects;
-    using Game.Modding.Toolchain.Dependencies;
     using Game.Net;
     using Game.Notifications;
     using Game.Objects;
@@ -38,9 +35,11 @@
         // Queries
         private EntityQuery m_ModificationQuery;
         private EntityQuery m_UpdatedNetQuery;
+        private EntityQuery m_TrafficConfigQuery;
 
         // Typehandles        
         public EntityTypeHandle m_EntityTypeHandle;
+        public BufferTypeHandle<ConnectedBuilding> m_ConnectedBuildingBufferTypeHandle;
         public ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
         public ComponentTypeHandle<EdgeGeometry> m_EdgeGeometryTypeHandle;
         public ComponentTypeHandle<StartNodeGeometry> m_StartNodeGeometryTypeHandle;
@@ -55,7 +54,10 @@
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
+
+            // Logging
             m_Log = new PrefixedLogger(nameof(RoadConnectionSystem));
+            m_Log.Debug($"OnCreate()");
 
             // Reference Systems
             m_ObjectSearchSystem = World.GetOrCreateSystemManaged<Game.Objects.SearchSystem>();
@@ -75,7 +77,22 @@
                     {
                         ComponentType.ReadOnly<Updated>(),
                         ComponentType.ReadOnly<Deleted>()
+                    },
+                    None = new ComponentType[] {
+                        ComponentType.ReadOnly<Temp>()
                     }
+                },
+                new () {
+                    All = new ComponentType[] {
+                        ComponentType.ReadOnly<Game.Net.Edge>(),
+                        ComponentType.ReadOnly<ConnectedBuilding>()
+                    },
+                    Any = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Updated>(),
+                        ComponentType.ReadOnly<Deleted>()
+                    },
+                    None = new ComponentType[] { ComponentType.ReadOnly<Temp>() }
                 }
             });
             m_UpdatedNetQuery = GetEntityQuery(new ComponentType[] {
@@ -85,10 +102,14 @@
                 ComponentType.Exclude<Deleted>(),
                 ComponentType.Exclude<Temp>()
             });
+            this.m_TrafficConfigQuery = base.GetEntityQuery(new ComponentType[] {
+                ComponentType.ReadOnly<TrafficConfigurationData>()
+            });
 
             // Get TypeHandles
-            m_DeletedTypeHandle = GetComponentTypeHandle<Deleted>(false);
             m_EntityTypeHandle = GetEntityTypeHandle();
+            m_DeletedTypeHandle = GetComponentTypeHandle<Deleted>(false);
+            m_ConnectedBuildingBufferTypeHandle = GetBufferTypeHandle<ConnectedBuilding>(false);
             m_DeletedTypeHandle = GetComponentTypeHandle<Deleted>(false);
             m_EdgeGeometryTypeHandle = GetComponentTypeHandle<EdgeGeometry>(false);
             m_StartNodeGeometryTypeHandle = GetComponentTypeHandle<StartNodeGeometry>(false);
@@ -96,7 +117,6 @@
             m_SpawnLocationTypeHandle = GetComponentTypeHandle<Game.Objects.SpawnLocation>(false);
             m_ConnectedBuildingTypeHandle = GetBufferTypeHandle<ConnectedBuilding>(false);
 
-            m_Log.Debug($"Loaded System.");
             base.RequireForUpdate(this.m_ModificationQuery);
         }
 
@@ -104,19 +124,21 @@
         protected override void OnUpdate() {
             // Job to populate m_EntitiesToUpdateQueue with parcels to update
             var entitiesToUpdateQueue = new NativeQueue<Entity>(Allocator.TempJob);
-            var createEntitiesQueueJobData = default(RoadConnectionJobs.CreateEntitiesQueue);
+            var createEntitiesQueueJobData = default(CreateEntitiesQueue);
             m_EntityTypeHandle.Update(this);
             createEntitiesQueueJobData.m_EntityTypeHandle = m_EntityTypeHandle;
+            m_ConnectedBuildingBufferTypeHandle.Update(this);
+            createEntitiesQueueJobData.m_ConnectedBuildingBufferTypeHandle = m_ConnectedBuildingBufferTypeHandle;
             createEntitiesQueueJobData.m_EntitiesToUpdateQueue = entitiesToUpdateQueue.AsParallelWriter();
 
             // Job to create a deduped list of data to handle later
             var entitiesToUpdateList = new NativeList<ConnectionUpdateData>(Allocator.TempJob);
-            var createUniqueUpdatesListFromQueueJobData = default(RoadConnectionJobs.CreateUniqueEntitiesList);
+            var createUniqueUpdatesListFromQueueJobData = default(CreateUniqueEntitiesList);
             createUniqueUpdatesListFromQueueJobData.m_EntitiesToUpdateQueue = entitiesToUpdateQueue;
             createUniqueUpdatesListFromQueueJobData.m_ConnectionUpdateDataList = entitiesToUpdateList;
 
             // Job to find the "best eligible road" for a given entity in the list
-            var findRoadConnectionJobData = default(RoadConnectionJobs.FindRoadConnection);
+            var findRoadConnectionJobData = default(FindRoadConnection);
             findRoadConnectionJobData.m_DeletedDataComponentLookup = GetComponentLookup<Deleted>();
             findRoadConnectionJobData.m_PrefabRefComponentLookup = GetComponentLookup<PrefabRef>();
             findRoadConnectionJobData.m_ParcelDataComponentLookup = GetComponentLookup<ParcelData>();
@@ -136,11 +158,13 @@
             findRoadConnectionJobData.m_ConnectionUpdateDataList = entitiesToUpdateList.AsDeferredJobArray();
 
             // Job to set data
-            var updateRoadAndParcelDataJobData = default(RoadConnectionJobs.UpdateParcelData);
-            updateRoadAndParcelDataJobData.m_ParcelComponentLookup = GetComponentLookup<Parcel>();
-            updateRoadAndParcelDataJobData.m_CreatedComponentLookup = GetComponentLookup<Created>();
-            updateRoadAndParcelDataJobData.m_TempComponentLookup = GetComponentLookup<Temp>();
+            var updateRoadAndParcelDataJobData = default(UpdateParcelData);
+            updateRoadAndParcelDataJobData.m_ParcelComponentLookup = GetComponentLookup<Parcel>(false);
+            updateRoadAndParcelDataJobData.m_CreatedComponentLookup = GetComponentLookup<Created>(true);
+            updateRoadAndParcelDataJobData.m_TempComponentLookup = GetComponentLookup<Temp>(true);
             updateRoadAndParcelDataJobData.m_ConnectionUpdateDataList = entitiesToUpdateList;
+            updateRoadAndParcelDataJobData.m_IconCommandBuffer = m_IconCommandSystem.CreateCommandBuffer();
+            updateRoadAndParcelDataJobData.m_TrafficConfigurationData = m_TrafficConfigQuery.GetSingleton<TrafficConfigurationData>();
 
             // Job Scheduling
 

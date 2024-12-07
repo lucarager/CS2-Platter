@@ -1,16 +1,15 @@
 ﻿namespace Platter {
-    using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Game;
     using Game.Input;
     using Game.Modding;
-    using Game.Prefabs;
+    using Game.SceneFlow;
     using Platter.Patches;
     using Platter.Systems;
+    using System.Reflection;
 
-    public class Mod : IMod
-    {
+    public class PlatterMod : IMod {
         /// <summary>
         /// The mod's default name.
         /// </summary>
@@ -24,17 +23,23 @@
         /// <summary>
         /// Gets the active instance reference.
         /// </summary>
-        public static Mod Instance { get; private set; }
+        public static PlatterMod Instance {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the mod's active settings configuration.
         /// </summary>
-        internal ModSettings ActiveSettings { get; private set; }
+        internal PlatterModSettings ActiveSettings {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the mod's active log.
         /// </summary>
-        internal ILog Log { get; private set; }
+        internal ILog Log {
+            get; private set;
+        }
 
         // Demo stuff
         public static ProxyAction m_ButtonAction;
@@ -46,8 +51,7 @@
 
 
         /// <inheritdoc/>
-        public void OnLoad(UpdateSystem updateSystem)
-        {
+        public void OnLoad(UpdateSystem updateSystem) {
             // Set instance reference.
             Instance = this;
 
@@ -59,33 +63,37 @@
 #endif
             Log.Info($"loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
+            // Initialize Settings
+            ActiveSettings = new PlatterModSettings(this);
+
+            // Load i18n
+            GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(ActiveSettings));
+
             // Apply harmony patches.
             new Patcher("lucachoo-Platter", Log);
 
             // Register mod settings to game options UI.
-            ActiveSettings = new ModSettings(this);
             ActiveSettings.RegisterInOptionsUI();
 
             // Load saved settings.
-            AssetDatabase.global.LoadSettings("Platter", ActiveSettings, new ModSettings(this));
+            AssetDatabase.global.LoadSettings("Platter", ActiveSettings, new PlatterModSettings(this));
 
             // Activate Systems
             updateSystem.UpdateAfter<PrefabLoadSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
-            updateSystem.UpdateAt<ParcelBlockSpawnSystem>(SystemUpdatePhase.Modification4);
-            //updateSystem.UpdateAt<RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
-            //updateSystem.UpdateAt<ParcelBlockReferenceSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAt<ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
+            updateSystem.UpdateAt<RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
+            updateSystem.UpdateAt<ParcelBlockReferenceSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAt<ParcelBlockRoadReferenceSystem>(SystemUpdatePhase.Modification5);
         }
 
         /// <inheritdoc/>
-        public void OnDispose()
-        {
+        public void OnDispose() {
             Log.Info("disposing");
             Instance = null;
 
             // Clear settings menu entry.
-            if (ActiveSettings != null)
-            {
+            if (ActiveSettings != null) {
                 ActiveSettings.UnregisterInOptionsUI();
                 ActiveSettings = null;
             }

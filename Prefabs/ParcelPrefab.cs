@@ -1,21 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Colossal.Json;
-using Game.Areas;
-using Game.Buildings;
-using Game.Common;
-using Game.Effects;
-using Game.Net;
-using Game.Objects;
-using Game.Policies;
-using Game.Simulation;
-using Game.UI.Editor;
-using Game.UI.Widgets;
-using Game.Zones;
-using Platter;
+﻿using Game.Zones;
 using Platter.Prefabs;
+using System.Collections.Generic;
 using Unity.Entities;
-using Unity.Mathematics;
 
 namespace Game.Prefabs {
     public class ParcelPrefab : StaticObjectPrefab {
@@ -38,7 +24,7 @@ namespace Game.Prefabs {
             //components.Add(ComponentType.ReadWrite<BuildingData>());
             components.Add(ComponentType.ReadWrite<PlaceableObjectData>());
             components.Add(ComponentType.ReadWrite<ParcelData>());
-            //components.Add(ComponentType.ReadWrite<BuildingTerraformData>());
+            components.Add(ComponentType.ReadWrite<BuildingTerraformData>());
             //components.Add(ComponentType.ReadWrite<Effect>());
         }
 
@@ -47,22 +33,19 @@ namespace Game.Prefabs {
             components.Add(ComponentType.ReadWrite<Parcel>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<SubBlock>());
-            components.Add(ComponentType.ReadWrite<SubNet>());
+            components.Add(ComponentType.ReadWrite<SubLane>());
+            components.Add(ComponentType.ReadWrite<SubObject>());
         }
 
         public ParcelPrefab() {
         }
 
-        [CustomField(typeof(BuildingLotWidthField))]
-        public int m_LotWidth = 4;
+        public int m_LotWidth = 2;
 
-        [CustomField(typeof(BuildingLotDepthField))]
         public int m_LotDepth = 2;
 
         public ZoneBlockPrefab m_ZoneBlock;
 
         public Entity m_RoadEdge;
-
-        public static float m_CellSize = 8f;
     }
 }

@@ -4,18 +4,15 @@
 // See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-namespace Platter.Patches
-{
-    using System;
+namespace Platter.Patches {
     using Colossal.Logging;
     using HarmonyLib;
-    using UnityEngine;
+    using System;
 
     /// <summary>
     /// A basic Harmony patching class.
     /// </summary>
-    public class Patcher
-    {
+    public class Patcher {
         private readonly string _harmonyID;
 
         /// <summary>
@@ -24,14 +21,12 @@ namespace Platter.Patches
         /// </summary>
         /// <param name="harmonyID">Harmony ID to use.</param>
         /// <param name="log">Log to use for performing patching.</param>
-        public Patcher(string harmonyID, ILog log)
-        {
+        public Patcher(string harmonyID, ILog log) {
             // Set log reference.
             Log = log;
 
             // Dispose of any existing instance.
-            if (Instance != null)
-            {
+            if (Instance != null) {
                 log.Error("existing Patcher instance detected with ID " + Instance._harmonyID + "; reverting");
                 Instance.UnPatchAll();
             }
@@ -47,7 +42,9 @@ namespace Platter.Patches
         /// <summary>
         /// Gets the active instance.
         /// </summary>
-        public static Patcher Instance { get; private set; }
+        public static Patcher Instance {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a value indicating whether patches were successfully applied.
@@ -57,27 +54,24 @@ namespace Platter.Patches
         /// <summary>
         /// Gets the logger to use when patching.
         /// </summary>
-        public ILog Log { get; private set; }
+        public ILog Log {
+            get; private set;
+        }
 
         /// <summary>
         /// Reverts all applied patches.
         /// </summary>
-        public void UnPatchAll()
-        {
-            if (!string.IsNullOrEmpty(_harmonyID))
-            {
+        public void UnPatchAll() {
+            if (!string.IsNullOrEmpty(_harmonyID)) {
                 Log.Info("reverting all applied patches for " + _harmonyID);
-                Harmony harmonyInstance = new (_harmonyID);
+                Harmony harmonyInstance = new(_harmonyID);
 
-                try
-                {
+                try {
                     harmonyInstance.UnpatchAll("_harmonyID");
 
                     // Clear applied flag.
                     PatchesApplied = false;
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Log.Critical(e, "exception reverting all applied patches for " + _harmonyID);
                 }
             }
@@ -87,13 +81,11 @@ namespace Platter.Patches
         /// Constructor.
         /// Applies Harmony patches.
         /// </summary>
-        private void PatchAnnotations()
-        {
+        private void PatchAnnotations() {
             Log.Info("applying annotated Harmony patches for " + _harmonyID);
-            Harmony harmonyInstance = new (_harmonyID);
+            Harmony harmonyInstance = new(_harmonyID);
 
-            try
-            {
+            try {
                 harmonyInstance.PatchAll();
                 var patchedMethods = harmonyInstance.GetPatchedMethods();
                 foreach (var patchedMethod in patchedMethods) {
@@ -103,9 +95,7 @@ namespace Platter.Patches
 
                 // Set applied flag.
                 PatchesApplied = true;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Log.Critical(e, "exception applying annotated Harmony patches; reverting");
                 harmonyInstance.UnpatchAll(_harmonyID);
             }

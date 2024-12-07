@@ -1,12 +1,10 @@
 ﻿namespace Platter.Systems {
-    using Platter.Utils;
-    using System;
-    using Unity.Burst;
+    using Game;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
 
-    public static partial class RoadConnectionJobs {
+    public partial class RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Convert the queue of parcels to a list of ConnectionUpdateData structs.
         /// </summary>
@@ -44,8 +42,6 @@
                 if (writeIndex < m_ConnectionUpdateDataList.Length) {
                     m_ConnectionUpdateDataList.RemoveRange(writeIndex, this.m_ConnectionUpdateDataList.Length - writeIndex);
                 }
-
-                Mod.Instance.Log.Debug($"[RoadConnectionJobs->CreateUniqueEntitiesList] Created a list of size {m_ConnectionUpdateDataList.Length}");
             }
         }
     }

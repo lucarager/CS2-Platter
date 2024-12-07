@@ -1,13 +1,13 @@
 ﻿namespace Platter.Utils {
     using Colossal.Logging;
-    
+
     internal class PrefixedLogger {
         private readonly string m_Prefix;
         private ILog m_Log;
 
         public PrefixedLogger(string prefix) {
             m_Prefix = prefix;
-            m_Log = Mod.Instance.Log;
+            m_Log = PlatterMod.Instance.Log;
         }
 
         public void Info(string message) {

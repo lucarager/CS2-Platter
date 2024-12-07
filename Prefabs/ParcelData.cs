@@ -1,8 +1,7 @@
 ﻿namespace Platter.Prefabs {
-    using System;
+    using Colossal.Serialization.Entities;
     using Unity.Entities;
     using Unity.Mathematics;
-    using Colossal.Serialization.Entities;
 
     public struct ParcelData : IComponentData, IQueryTypeParameter, ISerializable {
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter {

@@ -1,10 +1,8 @@
 ﻿namespace Platter.Systems {
     using Colossal.Json;
-    using Colossal.Logging;
     using Game;
     using Game.Common;
     using Game.Prefabs;
-    using Game.Tools;
     using Platter.Prefabs;
     using Platter.Utils;
     using Unity.Collections;
@@ -19,9 +17,15 @@
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_Log = new PrefixedLogger(nameof(ParcelInitializeSystem));
 
+            // Logger
+            m_Log = new PrefixedLogger(nameof(ParcelInitializeSystem));
+            m_Log.Debug($"OnCreate()");
+
+            // Retrieve Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+
+            // Queries
             m_PrefabQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
@@ -31,59 +35,85 @@
                     }
                 });
 
-            m_Log.Debug($"Loaded system.");
-
+            // Update Cycle
             RequireForUpdate(m_PrefabQuery);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
             NativeArray<Entity> entities = m_PrefabQuery.ToEntityArray(Allocator.Temp);
-            m_Log.Debug($"Found {entities.Length}");
+            m_Log.Debug($"OnUpdate() -- Found {entities.Length} prefabs to initialize.");
 
             for (int i = 0; i < entities.Length; i++) {
                 Entity currentEntity = entities[i];
+
+                // @todo
+                // Looking at game code, I think its cleaner to get PrefabRef, which then can get prefab data directly
+                // with m_prefab
                 var prefabData = EntityManager.GetComponentData<PrefabData>(currentEntity);
-                m_Log.Debug($"Retrieved prefabData {prefabData.ToString()}");
 
                 // Get prefab data
                 if (!m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabData, out var prefabBase))
                     return;
 
-
-                m_Log.Debug($"Retrieved PrefabBase {prefabBase.ToString()}");
-
                 // Get Parcel ComponentBase
-                var parcel = prefabBase.GetComponent<ParcelPrefab>();
+                var parcelPrefabRef = prefabBase.GetComponent<ParcelPrefab>();
 
-                if (!m_PrefabSystem.TryGetEntity(parcel.m_ZoneBlock, out var zoneBlockPrefab))
+                if (!m_PrefabSystem.TryGetEntity(parcelPrefabRef.m_ZoneBlock, out var zoneBlockPrefab))
                     return;
-
-                m_Log.Debug($"parcel {parcel.m_LotDepth}");
 
                 // Parceldata
                 var parcelData = EntityManager.GetComponentData<ParcelData>(currentEntity);
-                parcelData.m_LotSize = new int2(parcel.m_LotWidth, parcel.m_LotDepth);
                 parcelData.m_ZoneBlockPrefab = zoneBlockPrefab;
+                parcelData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
                 EntityManager.SetComponentData<ParcelData>(currentEntity, parcelData);
+                m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s ParcelData");
+
+                //// Building data
+                //var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
+                //buildingData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
+                //buildingData.m_Flags |= BuildingFlags.RequireRoad;
+                //EntityManager.SetComponentData<BuildingData>(currentEntity, buildingData);
 
                 // Geometry data
                 var oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
-                var width = parcelData.m_LotSize.x * ParcelPrefab.m_CellSize;
-                var depth = parcelData.m_LotSize.y * ParcelPrefab.m_CellSize;
-                var height = ParcelPrefab.m_CellSize; 
+                var width = (parcelData.m_LotSize.x * PrefabLoadSystem.m_CellSize) + 1f;
+                var depth = (parcelData.m_LotSize.y * PrefabLoadSystem.m_CellSize) + 1f;
+                var height = PrefabLoadSystem.m_CellSize;
                 oGeoData.m_MinLod = 100;
                 oGeoData.m_Size = new float3(width, height, depth);
-                oGeoData.m_Pivot = new float3(0f, height, 0f);
+                oGeoData.m_Pivot = new float3(0f, height, depth / 2);
                 oGeoData.m_LegSize = new float3(0f, 0f, 0f);
                 oGeoData.m_Bounds = new Colossal.Mathematics.Bounds3(
                     new float3(-width / 2, -height / 2, -depth / 2),
                     new float3(width / 2, height / 2, depth / 2)
                 );
                 oGeoData.m_Layers = MeshLayer.First;
-                oGeoData.m_Flags |= Game.Objects.GeometryFlags.Standing;// | Game.Objects.GeometryFlags.Circular | Game.Objects.GeometryFlags.CircularLeg;
-                m_Log.Debug($"Setting ObjectGeometryData {oGeoData.m_Size.ToJSONString()}");
+                oGeoData.m_Flags &= ~Game.Objects.GeometryFlags.Overridable;
+                oGeoData.m_Flags |= Game.Objects.GeometryFlags.Standing; // | Game.Objects.GeometryFlags.Circular | Game.Objects.GeometryFlags.CircularLeg;
                 EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
+                m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s ObjectGeometryData {oGeoData.m_Size.ToJSONString()}");
+
+                // Placeable data
+                var placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
+                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide;
+                placeableData.m_PlacementOffset = new float3(0, 0, depth / 2);
+                EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
+
+                // Terraform Data
+                var terraformData = EntityManager.GetComponentData<BuildingTerraformData>(currentEntity);
+                terraformData.m_FlatX0 = new float3(0f);
+                terraformData.m_FlatZ0 = new float3(0f);
+                terraformData.m_FlatX1 = new float3(0f);
+                terraformData.m_FlatZ1 = new float3(0f);
+                terraformData.m_Smooth = new float4(-40f, -32f, 40f, 32f);
+                terraformData.m_HeightOffset = 0f;
+                terraformData.m_DontRaise = false;
+                terraformData.m_DontLower = false;
+                EntityManager.SetComponentData<BuildingTerraformData>(currentEntity, terraformData);
+                m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s BuildingTerraformData");
+
+                m_Log.Debug($"OnUpdate() -- Finished initializing {currentEntity}");
             }
         }
     }

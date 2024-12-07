@@ -1,5 +1,4 @@
-﻿using System;
-using Colossal.Serialization.Entities;
+﻿using Colossal.Serialization.Entities;
 using Unity.Entities;
 
 namespace Platter.Prefabs {

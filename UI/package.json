@@ -7,7 +7,7 @@
   "scripts": {
     "build": "webpack",
     "build-dev": "webpack --mode development",
-    "dev": "webpack --watch",
+    "dev": "webpack --mode development --watch",
     "tsc": "tsc",
     "update": "npx create-csii-ui-mod update",
     "clean": "npx create-csii-ui-mod clean"

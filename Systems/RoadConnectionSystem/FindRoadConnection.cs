@@ -1,6 +1,7 @@
 ﻿namespace Platter.Systems {
     using Colossal.Collections;
     using Colossal.Mathematics;
+    using Game;
     using Game.Buildings;
     using Game.Common;
     using Game.Net;
@@ -12,7 +13,7 @@
     using Unity.Jobs;
     using Unity.Mathematics;
 
-    public static partial class RoadConnectionJobs {
+    public partial class RoadConnectionSystem : GameSystemBase {
 
         /// <summary>
         /// Find the best and eligible road for a given parcel.
@@ -49,6 +50,8 @@
             public EntityTypeHandle m_EntityTypeHandle;
 
             public void Execute(int index) {
+                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnection(index: {index})");
+
                 // Retrieve the data
                 var currentEntityData = this.m_ConnectionUpdateDataList[index];
                 // If entity has DELETED component
@@ -60,11 +63,11 @@
                 }
 
                 var parcelPrefabRef = this.m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
-                var parcelPrefabData = this.m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
+                var parcelBuildingData = this.m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
                 var parcelTransform = this.m_TransformComponentLookup[currentEntityData.m_Parcel];
 
                 // The "front position" is the point where a parcel is expected to connect to a road.
-                var frontPosition = BuildingUtils.CalculateFrontPosition(parcelTransform, parcelPrefabData.m_LotSize.y);
+                var frontPosition = BuildingUtils.CalculateFrontPosition(parcelTransform, parcelBuildingData.m_LotSize.y);
 
                 // Initializes a FindRoadConnectionIterator, used to iterate through potential road connections.
                 var findRoadConnectionIterator = default(FindRoadConnectionIterator);
@@ -104,7 +107,7 @@
                 // Update the data in the list with what we found
                 this.m_ConnectionUpdateDataList[index] = currentEntityData;
 
-                Mod.Instance.Log.Debug($"[RoadConnectionJobs->FindRoadConnection] Updated list with eligible roads.");
+                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnection() -- Updated list with eligible roads.");
             }
 
             public struct FindRoadConnectionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>, IUnsafeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {

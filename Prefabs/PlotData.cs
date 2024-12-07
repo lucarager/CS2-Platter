@@ -1,5 +1,4 @@
 ﻿namespace Platter.Prefabs {
-    using System;
     using Game.Objects;
     using Unity.Entities;
     using Unity.Mathematics;

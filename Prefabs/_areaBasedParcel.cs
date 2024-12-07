@@ -1,12 +1,9 @@
 ﻿namespace Platter.Prefabs {
-    using System;
-    using System.Collections.Generic;
-    using Game.Areas;
-    using Game.Common;
-    using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Zones;
+    using System;
+    using System.Collections.Generic;
     using Unity.Entities;
     using Unity.Mathematics;
 

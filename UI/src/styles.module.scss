@@ -1,0 +1,13 @@
+:root {
+    --size: 46rem;
+}
+
+.Icon {
+    pointer-events: auto;
+    // order: 5;
+}
+
+.Icon img {
+    width: var(--size);
+    height: var(--size);
+}

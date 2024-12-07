@@ -1,31 +1,26 @@
-﻿namespace Platter
-{
+﻿namespace Platter.Settings {
     using Colossal.IO.AssetDatabase;
     using Game;
     using Game.Modding;
     using Game.SceneFlow;
-    using Game.Settings;
 
     /// <summary>
     /// The mod's settings.
     /// </summary>
-    [FileLocation(Mod.ModName)]
-    public class ModSettings : ModSetting
-    {
+    [FileLocation(PlatterMod.ModName)]
+    public class PlatterModSettings : ModSetting {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModSettings"/> class.
+        /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
         /// </summary>
         /// <param name="mod"><see cref="IMod"/> instance.</param>
-        public ModSettings(IMod mod)
-            : base(mod)
-        {
+        public PlatterModSettings(IMod mod)
+            : base(mod) {
         }
 
         /// <summary>
         /// Restores mod settings to default.
         /// </summary>
-        public override void SetDefaults()
-        {
+        public override void SetDefaults() {
         }
 
         /// <summary>

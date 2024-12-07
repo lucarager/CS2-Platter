@@ -18,6 +18,7 @@
             base.OnCreate();
 
             m_Log = new PrefixedLogger(nameof(ParcelBlockReferenceSystem));
+            m_Log.Debug($"OnCreate()");
 
             // TODO Only do this for blocks that should belong to a parcel, not edges!
             this.m_ParcelBlockQuery = base.GetEntityQuery(new EntityQueryDesc[]
@@ -37,29 +38,28 @@
                 }
             });
 
-            m_Log.Debug($"Loaded System.");
-
             base.RequireForUpdate(m_ParcelBlockQuery);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug($"Setting Block ownership references");
+            m_Log.Debug($"OnUpdate() -- Setting Block ownership references");
+
             var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
             var subBlockBufferLookup = GetBufferLookup<SubBlock>(true);
 
             for (int i = 0; i < blockEntities.Length; i++) {
                 var blockEntity = blockEntities[i];
 
-                m_Log.Debug($"Setting Block ownership references for entity {blockEntity.ToString()}");
+                m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity.ToString()}");
 
                 if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out var parcelOwner)) {
                     m_Log.Error($"{blockEntity} didn't have parcelOwner component");
                     return;
                 }
 
-                if (subBlockBufferLookup.HasBuffer(parcelOwner.m_Owner)) {
-                    m_Log.Error($"Couldn't find owner's {parcelOwner.m_Owner} subblock buffer");
+                if (!subBlockBufferLookup.HasBuffer(parcelOwner.m_Owner)) {
+                    m_Log.Error($"OnUpdate() -- Couldn't find owner's {parcelOwner.m_Owner} subblock buffer");
                     return;
                 }
 
@@ -67,15 +67,15 @@
 
                 if (EntityManager.HasComponent<Created>(blockEntity)) {
                     if (CollectionUtils.TryAddUniqueValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity))) {
-                        m_Log.Debug($"Succesfully added {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
+                        m_Log.Debug($"OnUpdate() -- Succesfully added {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
                     } else {
-                        m_Log.Error($"Unsuccesfully tried adding {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
+                        m_Log.Error($"OnUpdate() -- Unsuccesfully tried adding {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
                     }
                     return;
                 }
 
                 CollectionUtils.RemoveValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity));
-                m_Log.Debug($"Succesfully deleted {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
+                m_Log.Debug($"OnUpdate() -- Succesfully deleted {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
             }
         }
     }
