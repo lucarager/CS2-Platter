@@ -43,8 +43,6 @@ namespace Platter.Systems {
                 return;
             }
 
-            m_Log.Debug($"{logMethodPrefix} Retrieved World instance.");
-
             // Getting PrefabSystem instance from World
             m_PrefabSystem = m_World.GetOrCreateSystemManaged<PrefabSystem>();
             if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out PrefabBase zonePrefab)) {
@@ -84,8 +82,6 @@ namespace Platter.Systems {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;
                     }
-
-                    m_Log.Debug($"{logMethodPrefix} Successfully created and added ParcelPrefab {i}x{j} to PrefabSystem.");
                 }
             }
 

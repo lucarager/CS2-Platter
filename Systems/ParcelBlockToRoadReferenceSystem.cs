@@ -1,4 +1,4 @@
-﻿// <copyright file="ParcelBlockRoadReferenceSystem.cs" company="Luca Rager">
+﻿// <copyright file="ParcelBlockToRoadReferenceSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -9,7 +9,7 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Tools;
     using Game.Zones;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
@@ -17,7 +17,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ParcelBlockRoadReferenceSystem : GameSystemBase {
+    public partial class ParcelBlockToRoadReferenceSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -32,7 +32,7 @@ namespace Platter.Systems {
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = new PrefixedLogger(nameof(ParcelBlockRoadReferenceSystem));
+            m_Log = new PrefixedLogger(nameof(ParcelBlockToRoadReferenceSystem));
             m_Log.Debug($"OnCreate()");
 
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();
@@ -74,19 +74,33 @@ namespace Platter.Systems {
                     return;
                 }
 
+                m_Log.Debug($"OnUpdate() -- {parcelEntity} has {subBlockBuffer.Length} subBlocks.");
+
                 for (int j = 0; j < subBlockBuffer.Length; j++) {
                     SubBlock subBlock = subBlockBuffer[j];
                     Entity blockEntity = subBlock.m_SubBlock;
                     CurvePosition curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
+
+                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating CurvePosition to {parcelData.m_CurvePosition}.");
+
                     curvePosition.m_CurvePosition = parcelData.m_CurvePosition;
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
 
-                    if (EntityManager.TryGetComponent<Owner>(blockEntity, out Owner owner)) {
-                        // Update logic
-                        owner.m_Owner = parcelData.m_RoadEdge;
-                        m_CommandBuffer.SetComponent<Owner>(blockEntity, owner);
+                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating Edge Owner ({parcelData.m_RoadEdge})");
+
+                    if (parcelData.m_RoadEdge == Entity.Null) {
+                        // We need to make sure that the block actually NEVER has a null owner
+                        // Otherwise the game can crash when systems try to retrieve the Edge.
+                        // Tsk tsk paradox for not considering an edge case that is entirely a modders thing and doesn't happen in vanilla ;)
+                        m_CommandBuffer.RemoveComponent<Owner>(blockEntity);
                     } else {
-                        m_CommandBuffer.AddComponent<Owner>(blockEntity, new Owner(parcelData.m_RoadEdge));
+                        if (EntityManager.TryGetComponent<Owner>(blockEntity, out Owner owner)) {
+                            // Update logic
+                            owner.m_Owner = parcelData.m_RoadEdge;
+                            m_CommandBuffer.SetComponent<Owner>(blockEntity, owner);
+                        } else {
+                            m_CommandBuffer.AddComponent<Owner>(blockEntity, new Owner(parcelData.m_RoadEdge));
+                        }
                     }
                 }
             }

@@ -9,7 +9,7 @@ namespace Platter.Systems {
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -30,26 +30,22 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly]
-            public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ConnectionUpdateDataList;
+            [ReadOnly] public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ConnectionUpdateDataList;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Created> m_CreatedComponentLookup;
+            [ReadOnly] public ComponentLookup<Created> m_CreatedComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Temp> m_TempComponentLookup;
+            [ReadOnly] public ComponentLookup<Temp> m_TempComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly]
-            public TrafficConfigurationData m_TrafficConfigurationData;
+            [ReadOnly] public TrafficConfigurationData m_TrafficConfigurationData;
 
             /// <summary>
             /// todo.

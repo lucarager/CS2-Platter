@@ -6,7 +6,7 @@
 namespace Game.Prefabs {
     using System.Collections.Generic;
     using Game.Zones;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Unity.Entities;
 
     /// <summary>
@@ -27,11 +27,6 @@ namespace Game.Prefabs {
         /// Todo.
         /// </summary>
         public ZoneBlockPrefab m_ZoneBlock;
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        public Entity m_RoadEdge;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelPrefab"/> class.

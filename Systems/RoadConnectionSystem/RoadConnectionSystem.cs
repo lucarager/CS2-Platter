@@ -13,7 +13,7 @@ namespace Platter.Systems {
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;

@@ -11,7 +11,6 @@ namespace Platter.Systems {
     using Platter;
     using Platter.Utils;
     using Unity.Entities;
-    using Unity.Mathematics;
 
     /// <summary>
     /// todo.
@@ -33,10 +32,6 @@ namespace Platter.Systems {
         private ValueBinding<bool> m_ToolEnabledBinding;
         private ValueBinding<PrefabUIData> m_PrefabDataBinding;
 
-        // Data
-        private int2 m_SelectedBlockSize = new(2, 2);
-        private PrefabBase m_Prefab;
-
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -54,17 +49,18 @@ namespace Platter.Systems {
             AddBinding(m_PrefabDataBinding = new ValueBinding<PrefabUIData>(PlatterMod.Id, "BINDING:PREFAB_DATA", default));
             AddBinding(new TriggerBinding(PlatterMod.Id, "EVENT:TOGGLE_TOOL", ToggleTool));
             AddBinding(new TriggerBinding<string>(PlatterMod.Id, "EVENT:BUTTON_PRESS", HandleButtonPress));
-
-            UpdateSelectedPrefab();
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            if (m_ParcelToolSystem.Enabled) {
-                // _PanelState.Update();
-            }
-
             m_ToolEnabledBinding.Update(m_ParcelToolSystem.Enabled);
+
+            if (m_ParcelToolSystem.Enabled) {
+                var prefabBase = m_ParcelToolSystem.Prefab;
+                if (prefabBase != null) {
+                    m_PrefabDataBinding.Update(new PrefabUIData(prefabBase.name, ImageSystem.GetThumbnail(prefabBase)));
+                }
+            }
         }
 
         /// <summary>
@@ -75,87 +71,20 @@ namespace Platter.Systems {
 
             switch (action) {
                 case "BLOCK_WIDTH_INCREASE":
-                    IncreaseBlockWidth();
+                    m_ParcelToolSystem.IncreaseBlockWidth();
                     break;
                 case "BLOCK_WIDTH_DECREASE":
-                    DecreaseBlockWidth();
+                    m_ParcelToolSystem.DecreaseBlockWidth();
                     break;
                 case "BLOCK_DEPTH_INCREASE":
-                    IncreaseBlockDepth();
+                    m_ParcelToolSystem.IncreaseBlockDepth();
                     break;
                 case "BLOCK_DEPTH_DECREASE":
-                    DecreaseBlockDepth();
+                    m_ParcelToolSystem.DecreaseBlockDepth();
                     break;
                 default:
                     break;
             }
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        private void DecreaseBlockWidth() {
-            if (m_SelectedBlockSize.x > PrefabLoadSystem.BlockSizes.x) {
-                m_SelectedBlockSize.x -= 1;
-            }
-
-            m_Log.Debug("DecreaseBlockWidth()");
-            UpdateSelectedPrefab();
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        private void IncreaseBlockWidth() {
-            if (m_SelectedBlockSize.x < PrefabLoadSystem.BlockSizes.z) {
-                m_SelectedBlockSize.x += 1;
-            }
-
-            m_Log.Debug("IncreaseBlockWidth()");
-            UpdateSelectedPrefab();
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        private void DecreaseBlockDepth() {
-            if (m_SelectedBlockSize.x > PrefabLoadSystem.BlockSizes.y) {
-                m_SelectedBlockSize.x -= 1;
-            }
-
-            m_Log.Debug("DecreaseBlockDepth()");
-            UpdateSelectedPrefab();
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        private void IncreaseBlockDepth() {
-            if (m_SelectedBlockSize.x < PrefabLoadSystem.BlockSizes.w) {
-                m_SelectedBlockSize.x += 1;
-            }
-
-            m_Log.Debug("IncreaseBlockDepth()");
-            UpdateSelectedPrefab();
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        private void UpdateSelectedPrefab() {
-            m_Log.Debug($"UpdateSelectedPrefab() -- {m_SelectedBlockSize.x}x{m_SelectedBlockSize.y}");
-
-            // Todo abstract this
-            var id = new PrefabID("StaticObjectPrefab", $"Parcel {m_SelectedBlockSize.x}x{m_SelectedBlockSize.y}");
-            if (!m_PrefabSystem.TryGetPrefab(id, out var prefabBase)) {
-                m_Log.Debug($"UpdateSelectedPrefab() -- Couldn't find prefabBase!");
-                return;
-            }
-
-            m_Prefab = prefabBase;
-            m_PrefabDataBinding.Update(new PrefabUIData(prefabBase.name, ImageSystem.GetThumbnail(prefabBase)));
-
-            TryActivatePrefabTool(m_Prefab);
         }
 
         /// <summary>
@@ -165,11 +94,18 @@ namespace Platter.Systems {
             m_ParcelToolSystem.RequestToggle();
         }
 
-        internal void TryActivatePrefabTool(PrefabBase prefabBase) {
-            m_Log.Debug($"TryActivatePrefabTool(prefabBase {prefabBase}) -- {m_SelectedBlockSize.x}x{m_SelectedBlockSize.y}");
+        /// <summary>
+        /// Todo.
+        /// </summary>
+        /// <param name="prefabBase">Todo.</param>
+        // internal void TryActivatePrefabTool(PrefabBase prefabBase) {
+        //    m_Log.Debug($"TryActivatePrefabTool(prefabBase {prefabBase}) -- {m_SelectedBlockSize.x}x{m_SelectedBlockSize.y}");
 
-            // Activates a prefabBase using its index from PrefabIndexingSystem
-            m_ToolSystem.ActivatePrefabTool(prefabBase);
-        }
+        // if (m_ParcelToolSystem.TrySetPrefab(prefabBase)) {
+        //        m_ParcelToolSystem.RequestEnable();
+        //    } else {
+        //        m_ToolSystem.ActivatePrefabTool(prefabBase);
+        //    }
+        // }
     }
 }

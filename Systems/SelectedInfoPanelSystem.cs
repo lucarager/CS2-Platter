@@ -8,7 +8,7 @@ namespace Platter.Systems {
     using Colossal.UI.Binding;
     using Game.Tools;
     using Game.UI.InGame;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Platter.Utils;
     using Unity.Entities;
 

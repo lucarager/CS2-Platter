@@ -1,4 +1,4 @@
-﻿// <copyright file="ParcelBlockReferenceSystem.cs" company="Luca Rager">
+﻿// <copyright file="ParcelToBlockReferenceSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -9,7 +9,7 @@ namespace Platter.Systems {
     using Game;
     using Game.Common;
     using Game.Zones;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
@@ -17,7 +17,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ParcelBlockReferenceSystem : GameSystemBase {
+    public partial class ParcelToBlockReferenceSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -28,7 +28,7 @@ namespace Platter.Systems {
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = new PrefixedLogger(nameof(ParcelBlockReferenceSystem));
+            m_Log = new PrefixedLogger(nameof(ParcelToBlockReferenceSystem));
             m_Log.Debug($"OnCreate()");
 
             // TODO Only do this for blocks that should belong to a parcel, not edges!
@@ -55,11 +55,11 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_Log.Debug($"OnUpdate() -- Setting Block ownership references");
 
-            NativeArray<Entity> blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
-            BufferLookup<SubBlock> subBlockBufferLookup = GetBufferLookup<SubBlock>(true);
+            var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
+            var subBlockBufferLookup = GetBufferLookup<SubBlock>();
 
             for (int i = 0; i < blockEntities.Length; i++) {
-                Entity blockEntity = blockEntities[i];
+                var blockEntity = blockEntities[i];
 
                 m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity}");
 
@@ -68,14 +68,14 @@ namespace Platter.Systems {
                     return;
                 }
 
-                if (!subBlockBufferLookup.HasBuffer(parcelOwner.m_Owner)) {
+                if (!subBlockBufferLookup.TryGetBuffer(parcelOwner.m_Owner, out var subBlockBuffer)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find owner's {parcelOwner.m_Owner} subblock buffer");
                     return;
                 }
 
-                DynamicBuffer<SubBlock> subBlockBuffer = subBlockBufferLookup[parcelOwner.m_Owner];
-
                 if (EntityManager.HasComponent<Created>(blockEntity)) {
+                    m_Log.Debug($"OnUpdate() -- Block was CREATED. Adding block reference to parcel.");
+
                     if (CollectionUtils.TryAddUniqueValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity))) {
                         m_Log.Debug($"OnUpdate() -- Succesfully added {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
                     } else {
@@ -85,8 +85,11 @@ namespace Platter.Systems {
                     return;
                 }
 
+                // Todo is this needed? The parcel will be destroyed, too.
+                m_Log.Debug($"OnUpdate() -- Block was DELETED. Removing block from parcel buffer");
+
                 CollectionUtils.RemoveValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity));
-                m_Log.Debug($"OnUpdate() -- Succesfully deleted {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
+                m_Log.Debug($"OnUpdate() -- Succesfully deleted {blockEntity} from {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
             }
         }
     }

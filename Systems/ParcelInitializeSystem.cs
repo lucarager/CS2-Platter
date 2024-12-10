@@ -4,11 +4,10 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Json;
     using Game;
     using Game.Common;
     using Game.Prefabs;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
@@ -82,7 +81,6 @@ namespace Platter.Systems {
                 parcelData.m_ZoneBlockPrefab = zoneBlockPrefab;
                 parcelData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
                 EntityManager.SetComponentData<ParcelData>(currentEntity, parcelData);
-                m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s ParcelData");
 
                 // Building data
                 // var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
@@ -105,14 +103,13 @@ namespace Platter.Systems {
                 );
                 oGeoData.m_Layers = MeshLayer.First;
                 oGeoData.m_Flags &= ~Game.Objects.GeometryFlags.Overridable;
-                oGeoData.m_Flags |= Game.Objects.GeometryFlags.Standing | Game.Objects.GeometryFlags.Physical;
+                oGeoData.m_Flags |= Game.Objects.GeometryFlags.Physical;
                 EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
-                m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s ObjectGeometryData {oGeoData.m_Size.ToJSONString()}");
 
                 // Placeable data
                 PlaceableObjectData placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
-                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.OnGround;
-                placeableData.m_PlacementOffset = new float3(0, 0, 10f);
+                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadEdge | Game.Objects.PlacementFlags.OnGround;
+                placeableData.m_PlacementOffset = new float3(0, 0, 100f);
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
 
                 // Terraform Data
@@ -127,7 +124,7 @@ namespace Platter.Systems {
                 // terraformData.m_DontLower = false;
                 // EntityManager.SetComponentData<BuildingTerraformData>(currentEntity, terraformData);
                 // m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s BuildingTerraformData");
-                m_Log.Debug($"OnUpdate() -- Finished initializing {currentEntity}");
+                m_Log.Debug($"OnUpdate() -- Finished initializing {parcelPrefabRef} on entity {currentEntity.Index}");
             }
         }
     }

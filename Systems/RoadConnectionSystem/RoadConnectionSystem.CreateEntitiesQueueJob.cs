@@ -26,14 +26,12 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly]
-            public EntityTypeHandle m_EntityTypeHandle;
+            [ReadOnly] public EntityTypeHandle m_EntityTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly]
-            public BufferTypeHandle<ConnectedBuilding> m_ConnectedBuildingBufferTypeHandle;
+            [ReadOnly] public BufferTypeHandle<ConnectedBuilding> m_ConnectedBuildingBufferTypeHandle;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {

@@ -3,7 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Platter.Prefabs {
+namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Game.Zones;
     using Unity.Entities;
@@ -35,7 +35,7 @@ namespace Platter.Prefabs {
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter {
-            writer.Write<ZoneType>(m_ZoneType);
+            writer.Write(m_ZoneType);
             writer.Write(m_AllowSpawning);
             writer.Write(m_RoadEdge);
             writer.Write(m_CurvePosition);
@@ -44,7 +44,7 @@ namespace Platter.Prefabs {
         /// <inheritdoc/>
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader {
-            reader.Read<ZoneType>(out m_ZoneType);
+            reader.Read(out m_ZoneType);
             reader.Read(out m_AllowSpawning);
             reader.Read(out m_RoadEdge);
             reader.Read(out m_CurvePosition);

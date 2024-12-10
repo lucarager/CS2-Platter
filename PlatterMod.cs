@@ -59,10 +59,10 @@ namespace Platter {
             // Initialize logger.
             Log = LogManager.GetLogger(ModName);
 #if DEBUG
-            Log.Info("setting logging level to Debug");
+            Log.Info("[Platter] Setting logging level to Debug");
             Log.effectivenessLevel = Level.Debug;
 #endif
-            Log.Info($"loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
+            Log.Info($"[Platter] Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
             // Initialize Settings
             ActiveSettings = new PlatterModSettings(this);
@@ -85,10 +85,11 @@ namespace Platter {
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
-            updateSystem.UpdateAt<ParcelBlockReferenceSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateAt<ParcelBlockRoadReferenceSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAt<ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAt<ParcelBlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<ParcelToolUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<OverlaySystem>(SystemUpdatePhase.Rendering);
 
             // Add mod UI resource directory to UI resource handler.
             string assemblyName = Assembly.GetExecutingAssembly().FullName;
@@ -97,13 +98,13 @@ namespace Platter {
             );
 
             var assemblyPath = Path.GetDirectoryName(modAsset.GetMeta().path);
-            Log.Info($"Loading assets from {assemblyPath}");
+            Log.Info($"[Platter] Loading assets from {assemblyPath} to platter path.");
             UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Icons/");
         }
 
         /// <inheritdoc/>
         public void OnDispose() {
-            Log.Info("disposing");
+            Log.Info("[Platter] Disposing");
             Instance = null;
 
             // Clear settings menu entry.

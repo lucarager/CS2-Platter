@@ -12,7 +12,7 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
-    using Platter.Prefabs;
+    using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
@@ -76,20 +76,20 @@ namespace Platter.Systems {
             m_Log.Debug($"OnUpdate() -- Found {entities.Length}");
 
             for (int i = 0; i < entities.Length; i++) {
-                Entity entity = entities[i];
+                Entity parcelEntity = entities[i];
 
-                if (!EntityManager.TryGetBuffer<SubBlock>(entity, false, out DynamicBuffer<SubBlock> subBlockBuffer)) {
+                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out DynamicBuffer<SubBlock> subBlockBuffer)) {
                     return;
                 }
 
                 // DELETE state
-                if (EntityManager.HasComponent<Deleted>(entity)) {
-                    m_Log.Debug($"OnUpdate() -- [DELETE] Deleting this parcelPrefab");
+                if (EntityManager.HasComponent<Deleted>(parcelEntity)) {
+                    m_Log.Debug($"OnUpdate() -- [DELETE] Deleting parcel {parcelEntity}");
 
                     // Mark Blocks for deletion
                     for (int j = 0; j < subBlockBuffer.Length; j++) {
-                        Entity subBlock = subBlockBuffer[j].m_SubBlock;
-                        this.m_CommandBuffer.AddComponent<Deleted>(subBlock, default);
+                        Entity subBlockEntity = subBlockBuffer[j].m_SubBlock;
+                        this.m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);
                     }
 
                     return;
@@ -99,11 +99,11 @@ namespace Platter.Systems {
                 m_Log.Debug($"OnUpdate() -- Running UPDATE logic");
 
                 // Retrieve components
-                if (!EntityManager.TryGetComponent<PrefabRef>(entity, out PrefabRef prefabRef) ||
+                if (!EntityManager.TryGetComponent<PrefabRef>(parcelEntity, out PrefabRef prefabRef) ||
                     !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out PrefabBase lotPrefabBase) ||
                     !EntityManager.TryGetComponent<ParcelData>(prefabRef, out ParcelData parcelData) ||
-                    !EntityManager.TryGetComponent<ParcelComposition>(entity, out ParcelComposition parcelComposition) ||
-                    !EntityManager.TryGetComponent<Transform>(entity, out Transform transform)) {
+                    !EntityManager.TryGetComponent<ParcelComposition>(parcelEntity, out ParcelComposition parcelComposition) ||
+                    !EntityManager.TryGetComponent<Transform>(parcelEntity, out Transform transform)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find all required components");
                     return;
                 }
@@ -112,7 +112,7 @@ namespace Platter.Systems {
 
                 // Store Zoneblock
                 parcelComposition.m_ZoneBlockPrefab = parcelData.m_ZoneBlockPrefab;
-                m_CommandBuffer.SetComponent<ParcelComposition>(entity, parcelComposition);
+                m_CommandBuffer.SetComponent<ParcelComposition>(parcelEntity, parcelComposition);
 
                 // Retrive zone data
                 Entity blockPrefab = parcelComposition.m_ZoneBlockPrefab;
@@ -150,7 +150,7 @@ namespace Platter.Systems {
                     m_CommandBuffer.SetComponent<Block>(blockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
                     m_CommandBuffer.SetComponent<BuildOrder>(blockEntity, buildOder);
-                    m_CommandBuffer.AddComponent<ParcelOwner>(blockEntity, new ParcelOwner(entity));
+                    m_CommandBuffer.AddComponent<ParcelOwner>(blockEntity, new ParcelOwner(parcelEntity));
                     DynamicBuffer<Cell> cellBuffer = m_CommandBuffer.SetBuffer<Cell>(blockEntity);
                     int cellCount = block.m_Size.x * block.m_Size.y;
                     for (int l = 0; l < cellCount; l++) {

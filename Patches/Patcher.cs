@@ -4,9 +4,9 @@
 // </copyright>
 
 namespace Platter.Patches {
-    using System;
     using Colossal.Logging;
     using HarmonyLib;
+    using System;
 
     /// <summary>
     /// A basic Harmony patching class.
@@ -26,7 +26,7 @@ namespace Platter.Patches {
 
             // Dispose of any existing instance.
             if (Instance != null) {
-                log.Error("existing Patcher instance detected with ID " + Instance._harmonyID + "; reverting");
+                log.Error("[Patcher] Existing Patcher instance detected with ID " + Instance._harmonyID + "; reverting");
                 Instance.UnPatchAll();
             }
 
@@ -62,8 +62,8 @@ namespace Platter.Patches {
         /// </summary>
         public void UnPatchAll() {
             if (!string.IsNullOrEmpty(_harmonyID)) {
-                Log.Info("reverting all applied patches for " + _harmonyID);
-                Harmony harmonyInstance = new (_harmonyID);
+                Log.Info("[Patcher]  Reverting all applied patches for " + _harmonyID);
+                Harmony harmonyInstance = new(_harmonyID);
 
                 try {
                     harmonyInstance.UnpatchAll("_harmonyID");
@@ -71,7 +71,7 @@ namespace Platter.Patches {
                     // Clear applied flag.
                     PatchesApplied = false;
                 } catch (Exception e) {
-                    Log.Critical(e, "exception reverting all applied patches for " + _harmonyID);
+                    Log.Critical(e, "[Patcher] Exception reverting all applied patches for " + _harmonyID);
                 }
             }
         }
@@ -81,22 +81,22 @@ namespace Platter.Patches {
         /// Applies Harmony patches.
         /// </summary>
         private void PatchAnnotations() {
-            Log.Info("applying annotated Harmony patches for " + _harmonyID);
-            Harmony harmonyInstance = new (_harmonyID);
+            Log.Info("[Patcher] Applying annotated Harmony patches for " + _harmonyID);
+            Harmony harmonyInstance = new(_harmonyID);
 
             try {
                 harmonyInstance.PatchAll();
                 System.Collections.Generic.IEnumerable<System.Reflection.MethodBase> patchedMethods = harmonyInstance.GetPatchedMethods();
                 foreach (System.Reflection.MethodBase patchedMethod in patchedMethods) {
-                    Log.Info($"Patched method: {patchedMethod.Module.Name}:{patchedMethod.Name}");
+                    Log.Info($"[Patcher] Patched method: {patchedMethod.Module.Name}:{patchedMethod.Name}");
                 }
 
-                Log.Info("patching complete");
+                Log.Info("[Patcher] Patching complete");
 
                 // Set applied flag.
                 PatchesApplied = true;
             } catch (Exception e) {
-                Log.Critical(e, "exception applying annotated Harmony patches; reverting");
+                Log.Critical(e, "[Patcher] Exception applying annotated Harmony patches; reverting");
                 harmonyInstance.UnpatchAll(_harmonyID);
             }
         }
