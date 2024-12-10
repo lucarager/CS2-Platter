@@ -22,8 +22,9 @@ Platter mod long
 	<ModVersion Value="1.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.0.*" />
-	<!--Dependency for the mod, can be set multiple times-->
-	<Dependency Id="" />
+	<!--Dependency for the mod, can be set multiple-->
+	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.9" />
+	<Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.3" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog Value="" />
 	<!--ChangeLog>

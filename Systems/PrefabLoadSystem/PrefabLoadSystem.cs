@@ -1,7 +1,11 @@
-﻿namespace Platter.Systems {
+﻿// <copyright file="PrefabLoadSystem.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Systems {
     using Colossal.Serialization.Entities;
     using Game;
-    using Game.Common;
     using Game.Prefabs;
     using Game.SceneFlow;
     using Game.UI;
@@ -9,24 +13,10 @@
     using Platter.Utils;
     using Unity.Entities;
 
+    /// <summary>
+    /// Todo.
+    /// </summary>
     public partial class PrefabLoadSystem : UISystemBase {
-        private PrefixedLogger m_Log;
-        private RandomSeed m_Random;
-        private EntityArchetype m_DefinitionArchetype;
-        private EndFrameBarrier m_EndFrameBarrier;
-        private EntityQuery m_BuildingQuery;
-        private bool executed = false;
-        private EndFrameBarrier m_Barrier;
-        private EntityCommandBuffer m_CommandBuffer;
-        private EntityCommandBuffer m_BlockCommandBuffer;
-        private Entity m_CachedBuildingEntity;
-        private Entity m_CachedEdgeEntity;
-        private EntityQuery m_UpdatedEdgesQuery;
-        private static bool installed;
-        private static bool postInstalled;
-        private static World world;
-        private static PrefabSystem prefabSystem;
-
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -36,18 +26,19 @@
             m_Log.Debug($"OnCreate()");
         }
 
+        /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
-            var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
+            string logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
 
-            if (installed) {
-                m_Log.Debug($"{logMethodPrefix} Prefab is installed, skipping");
+            if (PrefabsAreInstalled) {
+                m_Log.Debug($"{logMethodPrefix} PrefabsAreInstalled = true, skipping");
                 return;
             }
 
             // Getting World instance
-            world = Traverse.Create(GameManager.instance).Field<World>("m_World").Value;
-            if (world == null) {
+            m_World = Traverse.Create(GameManager.instance).Field<World>("m_World").Value;
+            if (m_World == null) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving World instance, exiting.");
                 return;
             }
@@ -55,48 +46,51 @@
             m_Log.Debug($"{logMethodPrefix} Retrieved World instance.");
 
             // Getting PrefabSystem instance from World
-            prefabSystem = world.GetOrCreateSystemManaged<PrefabSystem>();
-            if (!prefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out PrefabBase zonePrefab)) {
+            m_PrefabSystem = m_World.GetOrCreateSystemManaged<PrefabSystem>();
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out PrefabBase zonePrefab)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefab not found");
             }
-            if (!prefabSystem.TryGetPrefab(new PrefabID("BuildingPrefab", "ParkingLot01"), out PrefabBase parkingLotPrefab)) {
+
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("BuildingPrefab", "ParkingLot01"), out _)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. parkingLotPrefab not found");
             }
-            if (!prefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out PrefabBase roadPrefabBase)) {
+
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out PrefabBase roadPrefabBase)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. roadPrefabBase not found");
             }
-            if (!prefabSystem.TryGetPrefab(new PrefabID("NetLaneGeometryPrefab", "EU Car Bay Line"), out var netLanePrefabBase)) {
+
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("NetLaneGeometryPrefab", "EU Car Bay Line"), out PrefabBase netLanePrefabBase)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. NetLaneGeometryPrefab not found");
             }
-            if (!prefabSystem.TryGetPrefab(new PrefabID("StaticObjectPrefab", "NA RoadArrow Forward"), out var roadArrowFwdbBase)) {
+
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("StaticObjectPrefab", "NA RoadArrow Forward"), out PrefabBase roadArrowFwdbBase)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. NetLaneGeometryPrefab not found");
             }
-            if (!zonePrefab.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
+
+            if (!zonePrefab.TryGetExactly<UIObject>(out UIObject zonePrefabUIObject)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabUIObject not found");
-            }
-            if (!parkingLotPrefab.TryGetExactly<ObjectSubLanes>(out var parkingFences)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. parkingFences not found");
             }
 
             m_Log.Debug($"{logMethodPrefix} Successfully found all required prefabs and components.");
 
             // Cast prefabs
-            var roadPrefab = (RoadPrefab)roadPrefabBase;
-            var netLaneGeoPrefab = (NetLaneGeometryPrefab)netLanePrefabBase;
-            var roadArrowFwd = (StaticObjectPrefab)roadArrowFwdbBase;
+            RoadPrefab roadPrefab = (RoadPrefab)roadPrefabBase;
+            NetLaneGeometryPrefab netLaneGeoPrefab = (NetLaneGeometryPrefab)netLanePrefabBase;
+            StaticObjectPrefab roadArrowFwd = (StaticObjectPrefab)roadArrowFwdbBase;
 
-            for (int i = blockSizes.x; i <= blockSizes.z; i++) {
-                for (int j = blockSizes.y; j <= blockSizes.w; j++) {
+            for (int i = BlockSizes.x; i <= BlockSizes.z; i++) {
+                for (int j = BlockSizes.y; j <= BlockSizes.w; j++) {
                     if (!CreatePrefab(i, j, roadPrefab, netLaneGeoPrefab, zonePrefabUIObject, roadArrowFwd)) {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;
                     }
+
                     m_Log.Debug($"{logMethodPrefix} Successfully created and added ParcelPrefab {i}x{j} to PrefabSystem.");
                 }
             }
 
-            // Mark the Install as already executed
-            installed = true;
+            // Mark the Install as already PrefabsAreInstalled
+            PrefabsAreInstalled = true;
 
             m_Log.Debug($"{logMethodPrefix} Completed.");
         }

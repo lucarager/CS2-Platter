@@ -3,14 +3,17 @@ import { Button } from "cs2/ui";
 import { bindValue, trigger, useValue } from "cs2/api";
 import { game, tool, Theme } from "cs2/bindings";
 import { getModule, ModuleRegistryExtend } from "cs2/modding";
-import mod from "../mod.json";
-import styles from "./styles.module.scss";
+import mod from "../../mod.json";
+import styles from "./button.module.scss";
+import { events, triggers } from "modBindings";
 
 // Getting the vanilla theme css for compatibility
 const ToolBarButtonTheme: Theme | any = getModule(
     "game-ui/game/components/toolbar/components/feature-button/toolbar-feature-button.module.scss",
     "classes"
 );
+
+export const buttonId = "platterToolButton";
 
 export const ToolButton: ModuleRegistryExtend = (Component) =>
     {
@@ -20,14 +23,14 @@ export const ToolButton: ModuleRegistryExtend = (Component) =>
 
             return (
                 <>
-                    <Button 
-                        id="platterButton"
-                        className ={ToolBarButtonTheme.button + " " + styles.Icon} 
-                        src={iconSrc} 
+                    <Button
+                        id={buttonId}
+                        className ={ToolBarButtonTheme.button + " " + styles.Icon}
+                        src={iconSrc}
                         variant="icon"
-                        onSelect={() => trigger(mod.id, 'TOGGLE_TOOL_EVENT')}>
+                        onSelect={() => triggers.toggleTool()}>
                     </Button>
-    
+
                     <Component {...otherProps}></Component>
                 </>
             );

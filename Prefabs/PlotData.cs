@@ -1,4 +1,9 @@
-﻿namespace Platter.Prefabs {
+﻿// <copyright file="PlotData.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Prefabs {
     using Game.Objects;
     using Unity.Entities;
     using Unity.Mathematics;

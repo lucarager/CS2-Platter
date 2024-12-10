@@ -1,13 +1,12 @@
-﻿// <copyright file="Patcher.cs" company="algernon (K. Algernon A. Sheppard)">
-// Copyright (c) algernon (K. Algernon A. Sheppard). All rights reserved.
-// Licensed under the Apache Licence, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
-// See LICENSE.txt file in the project root for full license information.
+﻿// <copyright file="Patcher.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Patches {
+    using System;
     using Colossal.Logging;
     using HarmonyLib;
-    using System;
 
     /// <summary>
     /// A basic Harmony patching class.
@@ -64,7 +63,7 @@ namespace Platter.Patches {
         public void UnPatchAll() {
             if (!string.IsNullOrEmpty(_harmonyID)) {
                 Log.Info("reverting all applied patches for " + _harmonyID);
-                Harmony harmonyInstance = new(_harmonyID);
+                Harmony harmonyInstance = new (_harmonyID);
 
                 try {
                     harmonyInstance.UnpatchAll("_harmonyID");
@@ -83,14 +82,15 @@ namespace Platter.Patches {
         /// </summary>
         private void PatchAnnotations() {
             Log.Info("applying annotated Harmony patches for " + _harmonyID);
-            Harmony harmonyInstance = new(_harmonyID);
+            Harmony harmonyInstance = new (_harmonyID);
 
             try {
                 harmonyInstance.PatchAll();
-                var patchedMethods = harmonyInstance.GetPatchedMethods();
-                foreach (var patchedMethod in patchedMethods) {
+                System.Collections.Generic.IEnumerable<System.Reflection.MethodBase> patchedMethods = harmonyInstance.GetPatchedMethods();
+                foreach (System.Reflection.MethodBase patchedMethod in patchedMethods) {
                     Log.Info($"Patched method: {patchedMethod.Module.Name}:{patchedMethod.Name}");
                 }
+
                 Log.Info("patching complete");
 
                 // Set applied flag.

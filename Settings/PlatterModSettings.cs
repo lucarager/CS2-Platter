@@ -1,4 +1,9 @@
-﻿namespace Platter.Settings {
+﻿// <copyright file="PlatterModSettings.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Settings {
     using Colossal.IO.AssetDatabase;
     using Game;
     using Game.Modding;
@@ -27,7 +32,8 @@
         /// Determines whether we're currently in-game (in a city) or not.
         /// </summary>
         /// <returns><c>false</c> if we're currently in-game, <c>true</c> otherwise (such as in the main menu or editor).</returns>
-        public bool IsNotInGame() => GameManager.instance.gameMode != GameMode.Game;
+        public bool IsNotInGame() {
+            return GameManager.instance.gameMode != GameMode.Game;
+        }
     }
-
 }

@@ -1,9 +1,14 @@
-﻿namespace Platter.Utils {
+﻿// <copyright file="PrefixedLogger.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Utils {
     using Colossal.Logging;
 
     internal class PrefixedLogger {
         private readonly string m_Prefix;
-        private ILog m_Log;
+        private readonly ILog m_Log;
 
         public PrefixedLogger(string prefix) {
             m_Prefix = prefix;
@@ -27,7 +32,7 @@
         }
 
         private void Log(string level, string message) {
-            var formattedMessage = $"[{m_Prefix}] {message}";
+            string formattedMessage = $"[{m_Prefix}] {message}";
 
             switch (level) {
                 case "ERROR":

@@ -1,4 +1,9 @@
-﻿namespace Platter.Prefabs {
+﻿// <copyright file="_areaBasedParcel.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Prefabs {
     using Game.Objects;
     using Game.Prefabs;
     using Game.Zones;
@@ -8,7 +13,7 @@
     using Unity.Mathematics;
 
     [ComponentMenu("Areas/", new Type[] { typeof(SpacePrefab) })]
-    public class _areaBasedParcel : ComponentBase {
+    public class AreaBasedParcel : ComponentBase {
         /// <inheritdoc/>
         public override void GetDependencies(List<PrefabBase> prefabs) {
             base.GetDependencies(prefabs);
@@ -29,17 +34,18 @@
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<SubBlock>());
         }
+
         /// <inheritdoc/>
         public override void LateInitialize(EntityManager entityManager, Entity entity) {
             base.LateInitialize(entityManager, entity);
             PlotData plotData;
             plotData.m_ForwardDirection = new float2(0.8085141f, 0.588477f);
             plotData.m_PlotSize = new int2(2, 2);
-            plotData.m_PlotTransform = default(Transform);
+            plotData.m_PlotTransform = default;
             entityManager.SetComponentData<PlotData>(entity, plotData);
         }
 
-        public _areaBasedParcel() {
+        public AreaBasedParcel() {
         }
 
         public ZoneBlockPrefab m_ZoneBlock;

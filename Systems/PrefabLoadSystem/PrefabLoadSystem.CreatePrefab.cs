@@ -1,27 +1,36 @@
-﻿using Game.Prefabs;
-using Game.UI;
-using Unity.Mathematics;
-using UnityEngine;
+﻿// <copyright file="PrefabLoadSystem.CreatePrefab.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace Platter.Systems {
-    public partial class PrefabLoadSystem : UISystemBase {
+    using Game.Prefabs;
+    using Game.UI;
+    using Unity.Mathematics;
+    using UnityEngine;
 
+    /// <summary>
+    /// todo.
+    /// </summary>
+    public partial class PrefabLoadSystem : UISystemBase {
+        /// <summary>
+        /// todo.
+        /// </summary>
         private bool CreatePrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, NetLaneGeometryPrefab netLaneGeoPrefab, UIObject zonePrefabUIObject, StaticObjectPrefab roadArrowFwd) {
-            var logMethodPrefix = $"CreatePrefab()";
-            var width = m_CellSize * lotWidth;
-            var depth = m_CellSize * lotDepth;
-            var widthStep = width / 4f;
-            var depthStep = depth / 4f;
+            var width = CellSize * lotWidth;
+            var depth = CellSize * lotDepth;
+            var name = $"{PrefabNamePrefix} {lotWidth}x{lotDepth}";
+            var icon = $"coui://platter/{PrefabNamePrefix}_{lotWidth}x{lotDepth}.svg";
             var baseHeight = 1f;
 
             // Create our new prefab
-            var placeableLotPrefab = ScriptableObject.CreateInstance<ParcelPrefab>();
-            placeableLotPrefab.name = $"{m_PrefabNamePrefix} {lotWidth}x{lotDepth}";
+            ParcelPrefab placeableLotPrefab = ScriptableObject.CreateInstance<ParcelPrefab>();
+            placeableLotPrefab.name = name;
             placeableLotPrefab.m_LotWidth = lotWidth;
             placeableLotPrefab.m_LotDepth = lotDepth;
 
             // Adding PlaceableObject Data.
-            var placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
+            PlaceableObject placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
             placeableObject.m_ConstructionCost = 0;
             placeableObject.m_XPReward = 0;
             placeableLotPrefab.AddComponentFrom(placeableObject);
@@ -30,7 +39,7 @@ namespace Platter.Systems {
             placeableLotPrefab.m_ZoneBlock = roadPrefab.m_ZoneBlock;
 
             // Adding SubObjects.
-            var subObjects = ScriptableObject.CreateInstance<ObjectSubObjects>();
+            ObjectSubObjects subObjects = ScriptableObject.CreateInstance<ObjectSubObjects>();
             subObjects.m_SubObjects = new ObjectSubObjectInfo[] {
                 new () {
                     m_Object = roadArrowFwd,
@@ -38,21 +47,26 @@ namespace Platter.Systems {
                     m_Rotation = new quaternion(0, 1, 0, 0),
                 }
             };
-            placeableLotPrefab.AddComponentFrom(subObjects);
+
+            // placeableLotPrefab.AddComponentFrom(subObjects);
 
             // Create and populate the new UIObject for our cloned Prefab
-            var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
-            placeableLotPrefabUIObject.m_Icon = zonePrefabUIObject.m_Icon;
-            placeableLotPrefabUIObject.name = m_PrefabNamePrefix;
+            UIObject placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
+            placeableLotPrefabUIObject.m_Icon = icon;
+            placeableLotPrefabUIObject.name = PrefabNamePrefix;
             placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
             placeableLotPrefabUIObject.m_Priority = zonePrefabUIObject.m_Priority;
             placeableLotPrefabUIObject.m_Group = zonePrefabUIObject.m_Group;
             placeableLotPrefabUIObject.active = zonePrefabUIObject.active;
             placeableLotPrefab.AddComponentFrom(placeableLotPrefabUIObject);
+            m_Log.Debug(zonePrefabUIObject.m_Icon);
+            m_Log.Debug(placeableLotPrefabUIObject.m_Icon);
 
             // Sublanes
-            //var subLanes = ScriptableObject.CreateInstance<ObjectSubLanes>();
-            //subLanes.m_SubLanes = new ObjectSubLaneInfo[] {
+            // var subLanes = ScriptableObject.CreateInstance<ObjectSubLanes>();
+            // var widthStep = width / 4f;
+            // var depthStep = depth / 4f;
+            // subLanes.m_SubLanes = new ObjectSubLaneInfo[] {
             //    new () {
             //        m_LanePrefab = netLaneGeoPrefab,
             //        m_BezierCurve = new Bezier4x3(
@@ -93,11 +107,11 @@ namespace Platter.Systems {
             //        ),
             //        m_NodeIndex = new int2(6, 7)
             //    },
-            //};
-            //placeableLotPrefab.AddComponentFrom(subLanes);
+            // };
+            // placeableLotPrefab.AddComponentFrom(subLanes);
 
             // Try to add it to the prefab System
-            return prefabSystem.AddPrefab(placeableLotPrefab);
+            return m_PrefabSystem.AddPrefab(placeableLotPrefab);
         }
     }
 }

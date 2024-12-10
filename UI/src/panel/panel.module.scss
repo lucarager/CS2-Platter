@@ -1,0 +1,70 @@
+.panel {
+    position: absolute;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    height: 40px;
+    text-transform: none;
+}
+
+.headerText
+{
+    margin-left: -5rem;
+}
+
+.prefabPreview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+
+    img {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #FFFFFF66;
+        border-radius: 100%;
+    }
+}
+
+.controlsRow {
+    align-items: center;
+    display: flex;
+    flex-direction: "row";
+    height: 40px;
+}
+
+.controlsRowTitle {
+    font-weight: 600;
+    flex: 2;
+}
+
+.controlsRowValue {
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+.buttonContainer {
+    background-color: #00000033;
+    border-radius: 3rem;
+    margin-left: 6px;
+}
+
+.buttonContainer:hover {
+    background-color: #00000088;
+}
+
+.button {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+}
+
+.button img
+{
+    width: 20px;
+    height: 20px;
+}

@@ -1,4 +1,9 @@
-﻿namespace Platter.Systems {
+﻿// <copyright file="ParcelBlockRoadReferenceSystem.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Systems {
     using Colossal.Entities;
     using Game;
     using Game.Common;
@@ -9,11 +14,19 @@
     using Unity.Collections;
     using Unity.Entities;
 
+    /// <summary>
+    /// todo.
+    /// </summary>
     public partial class ParcelBlockRoadReferenceSystem : GameSystemBase {
-        private EntityQuery m_ParcelUpdatedQuery;
+        // Logger
         private PrefixedLogger m_Log;
-        private EntityCommandBuffer m_CommandBuffer;
+
+        // Barriers & Buffers
         private ModificationBarrier5 m_ModificationBarrier;
+        private EntityCommandBuffer m_CommandBuffer;
+
+        // Queries
+        private EntityQuery m_ParcelUpdatedQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -46,28 +59,29 @@
 
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
 
-            var parcelEntities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
-            var subBlockBufferLookup = GetBufferLookup<SubBlock>(true);
+            NativeArray<Entity> parcelEntities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
+
+            GetBufferLookup<SubBlock>(true);
 
             for (int i = 0; i < parcelEntities.Length; i++) {
-                var parcelEntity = parcelEntities[i];
-                var parcelData = EntityManager.GetComponentData<Parcel>(parcelEntity);
+                Entity parcelEntity = parcelEntities[i];
+                Parcel parcelData = EntityManager.GetComponentData<Parcel>(parcelEntity);
 
                 m_Log.Debug($"OnUpdate() -- Updating references for parcel {parcelEntity}");
 
-                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
+                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out DynamicBuffer<SubBlock> subBlockBuffer)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find parcel's {parcelEntity} subblock buffer");
                     return;
                 }
 
                 for (int j = 0; j < subBlockBuffer.Length; j++) {
-                    var subBlock = subBlockBuffer[j];
-                    var blockEntity = subBlock.m_SubBlock;
-                    var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
+                    SubBlock subBlock = subBlockBuffer[j];
+                    Entity blockEntity = subBlock.m_SubBlock;
+                    CurvePosition curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
                     curvePosition.m_CurvePosition = parcelData.m_CurvePosition;
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
 
-                    if (EntityManager.TryGetComponent<Owner>(blockEntity, out var owner)) {
+                    if (EntityManager.TryGetComponent<Owner>(blockEntity, out Owner owner)) {
                         // Update logic
                         owner.m_Owner = parcelData.m_RoadEdge;
                         m_CommandBuffer.SetComponent<Owner>(blockEntity, owner);

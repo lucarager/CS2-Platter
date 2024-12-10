@@ -1,4 +1,9 @@
-﻿namespace Platter.Systems {
+﻿// <copyright file="ParcelBlockReferenceSystem.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Systems {
     using Colossal.Collections;
     using Colossal.Entities;
     using Game;
@@ -9,9 +14,15 @@
     using Unity.Collections;
     using Unity.Entities;
 
+    /// <summary>
+    /// todo.
+    /// </summary>
     public partial class ParcelBlockReferenceSystem : GameSystemBase {
-        private EntityQuery m_ParcelBlockQuery;
+        // Logger
         private PrefixedLogger m_Log;
+
+        // Queries
+        private EntityQuery m_ParcelBlockQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -23,8 +34,7 @@
             // TODO Only do this for blocks that should belong to a parcel, not edges!
             this.m_ParcelBlockQuery = base.GetEntityQuery(new EntityQueryDesc[]
             {
-                new EntityQueryDesc
-                {
+                new () {
                     All = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Block>(),
@@ -45,15 +55,15 @@
         protected override void OnUpdate() {
             m_Log.Debug($"OnUpdate() -- Setting Block ownership references");
 
-            var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
-            var subBlockBufferLookup = GetBufferLookup<SubBlock>(true);
+            NativeArray<Entity> blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
+            BufferLookup<SubBlock> subBlockBufferLookup = GetBufferLookup<SubBlock>(true);
 
             for (int i = 0; i < blockEntities.Length; i++) {
-                var blockEntity = blockEntities[i];
+                Entity blockEntity = blockEntities[i];
 
-                m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity.ToString()}");
+                m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity}");
 
-                if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out var parcelOwner)) {
+                if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out ParcelOwner parcelOwner)) {
                     m_Log.Error($"{blockEntity} didn't have parcelOwner component");
                     return;
                 }
@@ -63,7 +73,7 @@
                     return;
                 }
 
-                var subBlockBuffer = subBlockBufferLookup[parcelOwner.m_Owner];
+                DynamicBuffer<SubBlock> subBlockBuffer = subBlockBufferLookup[parcelOwner.m_Owner];
 
                 if (EntityManager.HasComponent<Created>(blockEntity)) {
                     if (CollectionUtils.TryAddUniqueValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity))) {
@@ -71,6 +81,7 @@
                     } else {
                         m_Log.Error($"OnUpdate() -- Unsuccesfully tried adding {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
                     }
+
                     return;
                 }
 
