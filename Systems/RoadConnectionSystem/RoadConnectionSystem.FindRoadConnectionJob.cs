@@ -13,6 +13,7 @@ namespace Platter.Systems {
     using Game.Objects;
     using Game.Prefabs;
     using Platter.Components;
+    using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -106,22 +107,23 @@ namespace Platter.Systems {
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob(index: {index})");
 
                 // Retrieve the data
-                ConnectionUpdateDataJob currentEntityData = this.m_ConnectionUpdateDataList[index];
+                ConnectionUpdateDataJob currentEntityData = m_ConnectionUpdateDataList[index];
 
                 // If entity has DELETED component
                 // mark its entry in the list as deleted and exit early
-                if (this.m_DeletedDataComponentLookup.HasComponent(currentEntityData.m_Parcel)) {
+                if (m_DeletedDataComponentLookup.HasComponent(currentEntityData.m_Parcel)) {
                     currentEntityData.m_Deleted = true;
-                    this.m_ConnectionUpdateDataList[index] = currentEntityData;
+                    m_ConnectionUpdateDataList[index] = currentEntityData;
                     return;
                 }
 
-                PrefabRef parcelPrefabRef = this.m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
-                ParcelData parcelBuildingData = this.m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
-                Transform parcelTransform = this.m_TransformComponentLookup[currentEntityData.m_Parcel];
+                PrefabRef parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
+                ParcelData parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
+                Transform parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
 
                 // The "front position" is the point where a parcel is expected to connect to a road.
-                float3 frontPosition = BuildingUtils.CalculateFrontPosition(parcelTransform, parcelBuildingData.m_LotSize.y);
+                var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
+                var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, parcelGeo.FrontNode);
 
                 // Initializes a FindRoadConnectionIterator, used to iterate through potential road connections.
                 FindRoadConnectionIterator findRoadConnectionIterator = default;
@@ -286,7 +288,7 @@ namespace Platter.Systems {
 
                     // If the distanceToFront is less than the max
                     if (distanceToFront < this.m_MinDistance) {
-                        // Retrieves the Curve data for the road edge, which represents the road's shape as a Bezier curve.
+                        // Retrieves the SelectedCurve data for the road edge, which represents the road's shape as a Bezier curve.
                         Curve curve = this.m_CurveDataComponentLookup[edgeEntity];
 
                         // Finds the nearest point on the curve to the entity's front position.

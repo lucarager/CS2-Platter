@@ -4,7 +4,6 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System.Collections.Generic;
     using Colossal.Entities;
     using Game;
     using Game.Common;
@@ -14,6 +13,7 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
+    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -31,9 +31,11 @@ namespace Platter.Systems {
 
         // Queries
         private EntityQuery m_ParcelCreatedQuery;
+        private EntityQuery m_ZoneQuery;
 
         // Systems & References
         private PrefabSystem m_PrefabSystem;
+        private ZoneSystem m_ZoneSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -46,9 +48,24 @@ namespace Platter.Systems {
             // Retriefve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
 
             // Queries
             m_ParcelCreatedQuery = GetEntityQuery(
+                new EntityQueryDesc {
+                    All = new ComponentType[] {
+                        ComponentType.ReadOnly<Parcel>()
+                    },
+                    Any = new ComponentType[] {
+                        ComponentType.ReadOnly<Updated>(),
+                        ComponentType.ReadOnly<Deleted>()
+                    },
+                    None = new ComponentType[] {
+                        ComponentType.ReadOnly<Temp>(), // todo handle temp entities
+                    },
+                });
+
+            m_ZoneQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Parcel>()
@@ -76,7 +93,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnUpdate() -- Found {entities.Length}");
 
             for (int i = 0; i < entities.Length; i++) {
-                Entity parcelEntity = entities[i];
+                var parcelEntity = entities[i];
 
                 if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out DynamicBuffer<SubBlock> subBlockBuffer)) {
                     return;
@@ -99,16 +116,18 @@ namespace Platter.Systems {
                 m_Log.Debug($"OnUpdate() -- Running UPDATE logic");
 
                 // Retrieve components
-                if (!EntityManager.TryGetComponent<PrefabRef>(parcelEntity, out PrefabRef prefabRef) ||
-                    !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out PrefabBase lotPrefabBase) ||
-                    !EntityManager.TryGetComponent<ParcelData>(prefabRef, out ParcelData parcelData) ||
-                    !EntityManager.TryGetComponent<ParcelComposition>(parcelEntity, out ParcelComposition parcelComposition) ||
-                    !EntityManager.TryGetComponent<Transform>(parcelEntity, out Transform transform)) {
+                if (!EntityManager.TryGetComponent<Parcel>(parcelEntity, out var parcel) ||
+                    !EntityManager.TryGetComponent<PrefabRef>(parcelEntity, out var prefabRef) ||
+                    !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var prefabBase) ||
+                    !EntityManager.TryGetComponent<ParcelData>(prefabRef, out var parcelData) ||
+                    !EntityManager.TryGetComponent<ParcelComposition>(parcelEntity, out var parcelComposition) ||
+                    !EntityManager.TryGetComponent<Transform>(parcelEntity, out var transform)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find all required components");
                     return;
                 }
 
-                ParcelPrefab parcelPrefab = lotPrefabBase.GetComponent<ParcelPrefab>();
+                var parcelPrefab = prefabBase.GetComponent<ParcelPrefab>();
+                var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
 
                 // Store Zoneblock
                 parcelComposition.m_ZoneBlockPrefab = parcelData.m_ZoneBlockPrefab;
@@ -120,19 +139,38 @@ namespace Platter.Systems {
                     return;
                 }
 
-                // Zone block position & Data
-                CurvePosition curvePosition = default;
-                Block block = default;
-                BuildOrder buildOder = default;
-                curvePosition.m_CurvePosition = new float2(1f, 0f);
-                block.m_Position = transform.m_Position;
-                float2 forwardVector = math.mul(transform.m_Rotation, new float3(0, 0, 1)).xz;
-                block.m_Direction = forwardVector;
-                block.m_Size = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth);
-                buildOder.m_Order = 0;
+                // Spawnable Data
+                // Todo this should come from the tool.
+                m_CommandBuffer.AddComponent<ParcelSpawnable>(parcelEntity, default);
 
-                // Set Data
-                m_Log.Debug($"OnUpdate() -- Creating Block of size {block.m_Size.x}*{block.m_Size.y} in position: {block.m_Position}");
+                // Todo this should come from the tool of course.
+                if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "Commercial High"), out var zonePrefab) ||
+                    !m_PrefabSystem.TryGetEntity(zonePrefab, out var zonePrefabEntity) ||
+                    !EntityManager.TryGetComponent<ZoneData>(zonePrefabEntity, out ZoneData zoneData)) {
+                    m_Log.Error("couldn't find zone");
+                    return;
+                }
+
+                // Update prezoned type
+                parcel.m_PreZoneType = zoneData.m_ZoneType;
+                m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
+
+                if (EntityManager.HasComponent<Temp>(parcelEntity)) {
+                    return;
+                }
+
+                // Zone Block Data
+                var curvePosition = new CurvePosition() {
+                    m_CurvePosition = new float2(1f, 0f),
+                };
+                var block = new Block() {
+                    m_Position = ParcelUtils.GetWorldPosition(transform, parcelGeo.Center),
+                    m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
+                    m_Size = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth),
+                };
+                var buildOder = new BuildOrder() {
+                    m_Order = 0,
+                };
 
                 // For now, we know there's only going to be one block per component
                 if (subBlockBuffer.Length > 0) {
@@ -151,10 +189,15 @@ namespace Platter.Systems {
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
                     m_CommandBuffer.SetComponent<BuildOrder>(blockEntity, buildOder);
                     m_CommandBuffer.AddComponent<ParcelOwner>(blockEntity, new ParcelOwner(parcelEntity));
+
                     DynamicBuffer<Cell> cellBuffer = m_CommandBuffer.SetBuffer<Cell>(blockEntity);
-                    int cellCount = block.m_Size.x * block.m_Size.y;
+
+                    var cellCount = block.m_Size.x * block.m_Size.y;
+
                     for (int l = 0; l < cellCount; l++) {
-                        cellBuffer.Add(default);
+                        cellBuffer.Add(new Cell() {
+                            m_Zone = zoneData.m_ZoneType
+                        });
                     }
                 }
             }

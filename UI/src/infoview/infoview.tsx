@@ -4,7 +4,8 @@ import { bindValue, trigger, useValue } from "cs2/api";
 import { useLocalization } from "cs2/l10n";
 import { VanillaComponentResolver } from "utils/VanillaComponentResolver";
 import mod from "mod.json";
-import { bindings, triggers } from '../modBindings';
+import { triggers } from '../modBindings';
+import { $bindings } from 'modBindings';
 
 interface InfoSectionComponent {
 	group: string;
@@ -60,7 +61,7 @@ function descriptionTooltip(tooltipTitle: string | null, tooltipDescription: str
 
 export const SelectedInfoPanelComponent = (componentList: any): any => {
     componentList["Platter.Systems.SelectedInfoPanelSystem"] = (e: InfoSectionComponent) => {
-        const allowSpawningToggle : boolean = useValue(bindings.infoSectionAllowSpawningToggle);
+        const allowSpawningToggle : boolean = $bindings.infoSectionAllowSpawningToggle.use();
 
         return 	<InfoSection focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} disableFocus={true} className={InfoSectionTheme.infoSection}>
                         <InfoRow
@@ -74,7 +75,7 @@ export const SelectedInfoPanelComponent = (componentList: any): any => {
                                     disabled = {false}
                                     tooltip = {"TOOLTIP"}
                                     className = {VanillaComponentResolver.instance.toolButtonTheme.button}
-                                    onSelect={() => triggers.allowSpawningToggle()}
+                                    // onSelect={() => triggers.allowSpawningToggle()}
                                 />
                             }
                             tooltip={"TOOLTIP"}

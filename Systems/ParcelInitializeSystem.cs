@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     using Game;
     using Game.Common;
+    using Game.Objects;
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
@@ -82,34 +83,25 @@ namespace Platter.Systems {
                 parcelData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
                 EntityManager.SetComponentData<ParcelData>(currentEntity, parcelData);
 
-                // Building data
-                // var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
-                // buildingData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
-                // buildingData.m_Flags |= BuildingFlags.RequireRoad;
-                // EntityManager.SetComponentData<BuildingData>(currentEntity, buildingData);
+                // Some dimensions.
+                var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
 
                 // Geometry data
                 ObjectGeometryData oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
-                float width = parcelData.m_LotSize.x * PrefabLoadSystem.CellSize;
-                float depth = parcelData.m_LotSize.y * PrefabLoadSystem.CellSize;
-                float height = 1f;
                 oGeoData.m_MinLod = 100;
-                oGeoData.m_Size = new float3(width, height, depth);
-                oGeoData.m_Pivot = new float3(0f, height, 0f);
+                oGeoData.m_Size = parcelGeo.Size;
+                oGeoData.m_Pivot = parcelGeo.Pivot;
                 oGeoData.m_LegSize = new float3(0f, 0f, 0f);
-                oGeoData.m_Bounds = new Colossal.Mathematics.Bounds3(
-                    new float3(-width / 2, -height / 2, -depth / 2),
-                    new float3(width / 2, height / 2, depth / 2)
-                );
+                oGeoData.m_Bounds = parcelGeo.Bounds;
                 oGeoData.m_Layers = MeshLayer.First;
-                oGeoData.m_Flags &= ~Game.Objects.GeometryFlags.Overridable;
-                oGeoData.m_Flags |= Game.Objects.GeometryFlags.Physical;
+                oGeoData.m_Flags &= ~GeometryFlags.Overridable;
+                oGeoData.m_Flags |= GeometryFlags.Physical | GeometryFlags.WalkThrough;
                 EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
 
                 // Placeable data
                 PlaceableObjectData placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
-                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadEdge | Game.Objects.PlacementFlags.OnGround;
-                placeableData.m_PlacementOffset = new float3(0, 0, 100f);
+                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadEdge | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround;
+                placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
 
                 // Terraform Data
@@ -123,7 +115,8 @@ namespace Platter.Systems {
                 // terraformData.m_DontRaise = false;
                 // terraformData.m_DontLower = false;
                 // EntityManager.SetComponentData<BuildingTerraformData>(currentEntity, terraformData);
-                // m_Log.Debug($"OnUpdate() -- Set {currentEntity}'s BuildingTerraformData");
+
+                // Finished
                 m_Log.Debug($"OnUpdate() -- Finished initializing {parcelPrefabRef} on entity {currentEntity.Index}");
             }
         }

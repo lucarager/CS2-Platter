@@ -1,27 +1,41 @@
-import { bindValue } from "cs2/api";
-import { trigger, useValue } from "cs2/api";
+import { trigger } from "cs2/api";
 import mod from "../mod.json";
+import { BidirectionalBinding as TwoWayBinding } from "utils/bidirectionalBinding";
 
-export const bindings = {
-    toolEnabled: bindValue<boolean>(mod.id, 'BINDING:TOOL_ENABLED', false),
-    infoSectionAllowSpawningToggle: bindValue<boolean>(mod.id, 'BINDING:ALLOW_SPAWNING_INFO_SECTION', false),
-    blockWidth: bindValue<number>(mod.id, 'BINDING:BLOCK_WIDTH', 2),
-    blockDepth: bindValue<number>(mod.id, 'BINDING:BLOCK_DEPTH', 2),
-    prefab: bindValue<string | null>(mod.id, 'BINDING:PREFAB', null),
+export type PrefabData = {
+    name: string | undefined;
+    thumbnail: string | undefined;
 };
 
-export const events = {
-    toggleToolEvent: "EVENT:TOGGLE_TOOL",
-}
+export type ZoneData = {
+    name: string;
+    thumbnail: string;
+    index: number;
+};
+
+export const $bindings = {
+    toolEnabled: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
+    EEtoolEnabled: new TwoWayBinding<boolean>("EE_TOOL_ENABLED", false),
+    toolMode: new TwoWayBinding<number>("TOOL_MODE", 0),
+    infoSectionAllowSpawningToggle: new TwoWayBinding<boolean>(
+        "ALLOW_SPAWNING_INFO_SECTION",
+        false,
+    ),
+    blockWidth: new TwoWayBinding<number>("BLOCK_WIDTH", 2),
+    blockDepth: new TwoWayBinding<number>("BLOCK_DEPTH", 2),
+    zone: new TwoWayBinding<number>("ZONE", 0),
+    spacing: new TwoWayBinding<number>("RE_SPACING", 0),
+    offset: new TwoWayBinding<number>("RE_OFFSET", 0),
+    sides: new TwoWayBinding<boolean[]>("RE_SIDES", [true, true, false, false]),
+    prefab: new TwoWayBinding<PrefabData>("PREFAB_DATA", {
+        name: undefined,
+        thumbnail: undefined,
+    }),
+    zoneData: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
+};
 
 export const triggers = {
-    buttonPress: (action: string) => {
-        trigger(mod.id, "EVENT:BUTTON_PRESS", action);
+    adjustBlockSize: (action: string) => {
+        trigger(mod.id, "TRIGGER:ADJUST_BLOCK_SIZE", action);
     },
-    allowSpawningToggle: () => {
-        trigger(mod.id, "EVENT:ALLOW_SPAWNING_TOGGLED");
-    },
-    toggleTool: () => {
-        trigger(mod.id, "EVENT:TOGGLE_TOOL");
-    }
-}
+};

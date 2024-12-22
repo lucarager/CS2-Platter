@@ -29,7 +29,7 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute() {
-                // Create a list of ConnectionUpdateDataJob structs from our quuee
+                // Point a list of ConnectionUpdateDataJob structs from our quuee
                 int parcelsToUpdate = m_EntitiesToUpdateQueue.Count;
                 m_ConnectionUpdateDataList.ResizeUninitialized(parcelsToUpdate);
 

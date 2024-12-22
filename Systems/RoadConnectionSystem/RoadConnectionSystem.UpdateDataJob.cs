@@ -148,7 +148,7 @@ namespace Platter.Systems {
                                 // this.m_NetUpdateCollectSystem.netsUpdated &&
                                 // this.m_AreaUpdateCollectSystem.lotsUpdated &&
                                 // this.m_AreaUpdateCollectSystem.mapTilesUpdated
-                                m_CommandBuffer.AddComponent<Updated>(updateData.m_NewRoad, default);
+                                // m_CommandBuffer.AddComponent<Updated>(updateData.m_NewRoad, default);
 
                                 // m_ConnectedBuildings[updateData.m_NewRoad].Add(new ConnectedBuilding(updateData.m_Building));
                             }

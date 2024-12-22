@@ -1,49 +1,41 @@
 import { ModRegistrar, ModuleRegistry } from "cs2/modding";
-import { trigger } from "cs2/api";
-import mod from "mod.json";
-import { ToolButton } from "button/button";
+import { ToolButton } from "toolButton/button";
 import { ToolPanel } from "panel/panel";
 import { SelectedInfoPanelComponent } from "infoview/infoview";
 import { VanillaComponentResolver } from "utils/VanillaComponentResolver";
+import { $bindings } from "modBindings";
+import mod from "mod.json";
+import { Test } from "test/test";
+import { EEToolButton } from "eeButton/button";
 
 const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     VanillaComponentResolver.setRegistry(moduleRegistry);
 
+    // Register bindings
+    $bindings.blockDepth;
+
     moduleRegistry.extend(
         "game-ui/game/components/toolbar/top/toolbar-button-strip/toolbar-button-strip.tsx",
         "ToolbarButtonStrip",
-        ToolButton
+        ToolButton,
+    );
+    moduleRegistry.extend(
+        "game-ui/game/components/toolbar/top/toolbar-button-strip/toolbar-button-strip.tsx",
+        "ToolbarButtonStrip",
+        EEToolButton,
     );
     moduleRegistry.extend(
         "game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx",
-        'selectedInfoSectionComponents',
-        SelectedInfoPanelComponent
+        "selectedInfoSectionComponents",
+        SelectedInfoPanelComponent,
     );
+
     moduleRegistry.append("Game", ToolPanel);
 
-    let results = [];
+    moduleRegistry.append("Game", Test);
 
-    for (let i = 2; i <= 6; i++) {
-        for (let j = 2; j <= 6; j++) {
-            const name = `{ "Assets.NAME[Parcel ${i}x${j}]", "Parcel ${i}x${j}" },`;
-            const description = `{ "Assets.DESCRIPTION[Parcel ${i}x${j}]", "Parcel ${i}x${j}" },`;
-            results.push(name);
-            results.push(description);
-        }
-    }
-
-    console.log(results.join('\n'));
-}
-
-declare global {
-    interface Window { Platter: any; }
-}
-
-
-window.Platter = {
-    dostuff: (args: any) => {
-        trigger(mod.id, "dostuff", args);
-    }
+    // This is just to verify using UI console that all the component registriations was completed.
+    console.log(mod.id + " UI module registrations completed.");
 };
 
 export default register;

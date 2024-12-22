@@ -25,7 +25,7 @@ namespace Platter.Components {
         /// <summary>
         /// todo.
         /// </summary>
-        public ZoneType m_ZoneType;
+        public ZoneType m_PreZoneType;
 
         /// <summary>
         /// todo.
@@ -35,7 +35,7 @@ namespace Platter.Components {
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter {
-            writer.Write(m_ZoneType);
+            writer.Write(m_PreZoneType);
             writer.Write(m_AllowSpawning);
             writer.Write(m_RoadEdge);
             writer.Write(m_CurvePosition);
@@ -44,7 +44,7 @@ namespace Platter.Components {
         /// <inheritdoc/>
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader {
-            reader.Read(out m_ZoneType);
+            reader.Read(out m_PreZoneType);
             reader.Read(out m_AllowSpawning);
             reader.Read(out m_RoadEdge);
             reader.Read(out m_CurvePosition);

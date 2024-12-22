@@ -1,4 +1,4 @@
-﻿// <copyright file="PrefabLoadSystem.Definitions.cs" company="Luca Rager">
+﻿// <copyright file="PlatterPrefabSystem.Definitions.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -15,7 +15,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Todo.
     /// </summary>
-    public partial class PrefabLoadSystem : UISystemBase {
+    public partial class PlatterPrefabSystem : UISystemBase {
         /// <summary>
         /// Range of block sizes we support.
         /// <para>x = min width.</para>
@@ -24,11 +24,6 @@ namespace Platter.Systems {
         /// <para>w = max width.</para>
         /// </summary>
         public static readonly int4 BlockSizes = new(2, 2, 6, 6);
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
-        public static readonly float CellSize = 8f;
 
         /// <summary>
         /// Todo.
@@ -48,6 +43,12 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         private static bool PrefabsAreInstalled;
+
+        /// <summary>
+        /// Cache for prefabs.
+        /// </summary>
+        private List<PrefabBase> m_PrefabBases;
+        private Dictionary<PrefabBase, Entity> m_PrefabEntities;
 
         // Systems & References
         private static PrefabSystem m_PrefabSystem;

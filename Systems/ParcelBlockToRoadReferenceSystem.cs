@@ -64,8 +64,9 @@ namespace Platter.Systems {
             GetBufferLookup<SubBlock>(true);
 
             for (int i = 0; i < parcelEntities.Length; i++) {
-                Entity parcelEntity = parcelEntities[i];
-                Parcel parcelData = EntityManager.GetComponentData<Parcel>(parcelEntity);
+                var parcelEntity = parcelEntities[i];
+                var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
+                var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
 
                 m_Log.Debug($"OnUpdate() -- Updating references for parcel {parcelEntity}");
 
@@ -77,29 +78,36 @@ namespace Platter.Systems {
                 m_Log.Debug($"OnUpdate() -- {parcelEntity} has {subBlockBuffer.Length} subBlocks.");
 
                 for (int j = 0; j < subBlockBuffer.Length; j++) {
-                    SubBlock subBlock = subBlockBuffer[j];
-                    Entity blockEntity = subBlock.m_SubBlock;
-                    CurvePosition curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
+                    var subBlock = subBlockBuffer[j];
+                    var blockEntity = subBlock.m_SubBlock;
+                    var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
 
-                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating CurvePosition to {parcelData.m_CurvePosition}.");
+                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating CurvePosition to {parcel.m_CurvePosition}.");
 
-                    curvePosition.m_CurvePosition = parcelData.m_CurvePosition;
+                    curvePosition.m_CurvePosition = parcel.m_CurvePosition;
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
 
-                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating Edge Owner ({parcelData.m_RoadEdge})");
+                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating Block's Owner ({parcel.m_RoadEdge})");
 
-                    if (parcelData.m_RoadEdge == Entity.Null) {
+                    // Todo this is a stopgap, we'll need to have a better solution to update roads and zones. Maybe blocking zones is the way to go after all
+                    if (parcel.m_RoadEdge != Entity.Null) {
+                        m_CommandBuffer.AddComponent<Updated>(parcel.m_RoadEdge, default);
+                    }
+
+                    if (parcel.m_RoadEdge == Entity.Null || !allowSpawning) {
                         // We need to make sure that the block actually NEVER has a null owner
                         // Otherwise the game can crash when systems try to retrieve the Edge.
                         // Tsk tsk paradox for not considering an edge case that is entirely a modders thing and doesn't happen in vanilla ;)
+
+                        // Also note that this is how we prevent a parcel from spawning buildings - as long as no Edge is set as owner,
+                        // the spawn system won't pick up this block.
                         m_CommandBuffer.RemoveComponent<Owner>(blockEntity);
                     } else {
                         if (EntityManager.TryGetComponent<Owner>(blockEntity, out Owner owner)) {
-                            // Update logic
-                            owner.m_Owner = parcelData.m_RoadEdge;
+                            owner.m_Owner = parcel.m_RoadEdge;
                             m_CommandBuffer.SetComponent<Owner>(blockEntity, owner);
                         } else {
-                            m_CommandBuffer.AddComponent<Owner>(blockEntity, new Owner(parcelData.m_RoadEdge));
+                            m_CommandBuffer.AddComponent<Owner>(blockEntity, new Owner(parcel.m_RoadEdge));
                         }
                     }
                 }

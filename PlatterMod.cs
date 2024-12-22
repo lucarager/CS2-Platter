@@ -4,6 +4,8 @@
 // </copyright>
 
 namespace Platter {
+    using System.IO;
+    using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.UI;
@@ -13,8 +15,6 @@ namespace Platter {
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
-    using System.IO;
-    using System.Reflection;
 
     /// <summary>
     /// Mod entry point.
@@ -65,7 +65,7 @@ namespace Platter {
             Log.Info($"[Platter] Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
             // Initialize Settings
-            ActiveSettings = new PlatterModSettings(this);
+            ActiveSettings = new(this);
 
             // Load i18n
             GameManager.instance.localizationManager.AddSource("en-US", new I18nDictionary(ActiveSettings));
@@ -79,17 +79,22 @@ namespace Platter {
             // Load saved settings.
             AssetDatabase.global.LoadSettings("Platter", ActiveSettings, new PlatterModSettings(this));
 
+            // Apply input bindings.
+            ActiveSettings.RegisterKeyBindings();
+
             // Activate Systems
-            updateSystem.UpdateAt<ParcelToolSystem>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAfter<PrefabLoadSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<PlatterToolSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<RoadCurveToolSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAfter<PlatterPrefabSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<ParcelBlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateAt<ParcelToolUISystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<PlatterUISystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<RoadCurveUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<OverlaySystem>(SystemUpdatePhase.Rendering);
+            updateSystem.UpdateAt<PlatterOverlaySystem>(SystemUpdatePhase.Rendering);
 
             // Add mod UI resource directory to UI resource handler.
             string assemblyName = Assembly.GetExecutingAssembly().FullName;

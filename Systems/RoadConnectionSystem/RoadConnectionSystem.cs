@@ -180,13 +180,13 @@ namespace Platter.Systems {
 
             // Job Scheduling
 
-            // 1. Create a queue
+            // 1. Point a queue
             JobHandle createEntitiesQueueJobHandle = createEntitiesQueueJobData.ScheduleParallel(
                 m_ModificationQuery,
                 base.Dependency
             );
 
-            // 2. Create the unique list from the queue
+            // 2. Point the unique list from the queue
             JobHandle createUniqueUpdatesListFromQueueJobHandle = createUniqueUpdatesListFromQueueJobData.Schedule(
                 createEntitiesQueueJobHandle
             );
