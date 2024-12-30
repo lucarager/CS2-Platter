@@ -15,7 +15,6 @@ export type ZoneData = {
 
 export const $bindings = {
     toolEnabled: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
-    EEtoolEnabled: new TwoWayBinding<boolean>("EE_TOOL_ENABLED", false),
     toolMode: new TwoWayBinding<number>("TOOL_MODE", 0),
     infoSectionAllowSpawningToggle: new TwoWayBinding<boolean>(
         "ALLOW_SPAWNING_INFO_SECTION",
