@@ -34,7 +34,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
-            string logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
+            var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
 
             if (PrefabsAreInstalled) {
                 m_Log.Debug($"{logMethodPrefix} PrefabsAreInstalled = true, skipping");
@@ -50,23 +50,23 @@ namespace Platter.Systems {
 
             // Getting PrefabSystem instance from World
             m_PrefabSystem = m_World.GetOrCreateSystemManaged<PrefabSystem>();
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out PrefabBase zonePrefab)) {
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out var zonePrefab)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefab not found");
             }
 
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out PrefabBase roadPrefabBase)) {
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out var roadPrefabBase)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. roadPrefabBase not found");
             }
 
-            if (!zonePrefab.TryGetExactly<UIObject>(out UIObject zonePrefabUIObject)) {
+            if (!zonePrefab.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabUIObject not found");
             }
 
             // Cast prefabs
-            RoadPrefab roadPrefab = (RoadPrefab)roadPrefabBase;
+            var roadPrefab = (RoadPrefab)roadPrefabBase;
 
-            for (int i = BlockSizes.x; i <= BlockSizes.z; i++) {
-                for (int j = BlockSizes.y; j <= BlockSizes.w; j++) {
+            for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
+                for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
                     if (!CreatePrefab(i, j, roadPrefab, zonePrefabUIObject)) {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;

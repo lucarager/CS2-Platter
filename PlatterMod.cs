@@ -4,8 +4,6 @@
 // </copyright>
 
 namespace Platter {
-    using System.IO;
-    using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.UI;
@@ -15,6 +13,8 @@ namespace Platter {
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
+    using System.IO;
+    using System.Reflection;
 
     /// <summary>
     /// Mod entry point.
@@ -84,7 +84,6 @@ namespace Platter {
 
             // Activate Systems
             updateSystem.UpdateAt<PlatterToolSystem>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<RoadCurveToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAfter<PlatterPrefabSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
@@ -92,13 +91,12 @@ namespace Platter {
             updateSystem.UpdateAt<ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<ParcelBlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<PlatterUISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<RoadCurveUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<PlatterOverlaySystem>(SystemUpdatePhase.Rendering);
 
             // Add mod UI resource directory to UI resource handler.
-            string assemblyName = Assembly.GetExecutingAssembly().FullName;
-            ExecutableAsset modAsset = AssetDatabase.global.GetAsset(SearchFilter<ExecutableAsset>.ByCondition(
+            var assemblyName = Assembly.GetExecutingAssembly().FullName;
+            var modAsset = AssetDatabase.global.GetAsset(SearchFilter<ExecutableAsset>.ByCondition(
                 x => x.definition?.FullName == assemblyName)
             );
 

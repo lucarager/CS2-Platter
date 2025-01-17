@@ -4,7 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Entities;
+    using Colossal.Json;
     using Game;
     using Game.Areas;
     using Game.Buildings;
@@ -15,7 +15,6 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Tools;
     using Platter.Constants;
-    using Platter.Utils;
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
@@ -26,11 +25,8 @@ namespace Platter.Systems {
         public override bool TrySetPrefab(Game.Prefabs.PrefabBase prefab) {
             m_Log.Debug($"TrySetPrefab(prefab {prefab})");
 
-            m_Log.Debug($"TrySetPrefab(prefab {prefab}) -- prefab is ObjectPrefab {prefab is ObjectPrefab}");
-            m_Log.Debug($"TrySetPrefab(prefab {prefab}) -- prefab is ParcelPrefab {prefab is ParcelPrefab}");
-
-            if (m_ToolSystem.activeTool == this && prefab is ObjectPrefab objectPrefab) {
-                SelectedPrefab = objectPrefab;
+            if (m_ToolSystem.activeTool == this && prefab is ParcelPrefab parcelPrefab) {
+                SelectedPrefab = parcelPrefab;
                 return true;
             }
 
@@ -53,7 +49,7 @@ namespace Platter.Systems {
             // GetAvailableSnapMask(out var onMask, out var offMask);
             // var actualSnap = ToolBaseSystem.GetActualSnap(this.selectedSnap, onMask, offMask);
             switch (currentMode) {
-                case PlatterToolMode.Point:
+                case PlatterToolMode.Plop:
                     // if (!TryGetRayOffset(out var rayOffset)) {
                     //    return;
                     // }
@@ -131,20 +127,57 @@ namespace Platter.Systems {
             var currentMode = CurrentMode;
 
             return currentMode switch {
-                PlatterToolMode.Point => HandleCreateUpdate(inputDeps),
+                PlatterToolMode.Plop => HandlePlopUpdate(inputDeps),
                 PlatterToolMode.Brush => HandleBrushUpdate(inputDeps),
                 PlatterToolMode.RoadEdge => HandleRoadEdgeUpdate(inputDeps),
                 _ => inputDeps,
             };
         }
 
-        public JobHandle HandleCreateUpdate(JobHandle inputDeps) {
-            // GetAvailableSnapMask(out this.m_SnapOnMask, out this.m_SnapOffMask);
+        public JobHandle HandlePlopUpdate(JobHandle inputDeps) {
+            if (m_Prefab == null || CurrentMode != PlatterToolMode.Plop) {
+                return inputDeps;
+            }
+
+            // if (GetRaycastResult(out ControlPoint currentControlPoint, out var raycastForceUpdate)) {
+            //    currentControlPoint.m_Rotation = m_Rotation.value.m_Rotation;
+            //    applyMode = ApplyMode.None;
+
+            // bool isNewRaycastPoint = !m_LastRaycastPoint.Equals(currentControlPoint) || raycastForceUpdate;
+            //    if (!isNewRaycastPoint) {
+            //        return inputDeps;
+            //    }
+
+            // m_LastRaycastPoint = currentControlPoint;
+
+            // ControlPoint lastControlPoint = default;
+            //    if (m_ControlPoints.Length > 0) {
+            //        lastControlPoint = m_ControlPoints[0];
+            //        m_ControlPoints.Clear();
+            //    }
+
+            // m_ControlPoints.Add(in currentControlPoint);
+            //    inputDeps = MakeSnapControlJob(inputDeps);
+            //    JobHandle.ScheduleBatchedJobs();
+
+            // if (!raycastForceUpdate) {
+            //        inputDeps.Complete();
+            //        var updatedControlPoint = m_ControlPoints[0];
+            //        raycastForceUpdate = !lastControlPoint.EqualsIgnoreHit(updatedControlPoint);
+            //    }
+
+            // if (raycastForceUpdate) {
+            //        applyMode = ApplyMode.Clear;
+            //        inputDeps = UpdateDefinitions(inputDeps);
+            //    }
+            // } else {
+            //    applyMode = ApplyMode.Clear;
+            //    m_LastRaycastPoint = default;
+            // }
             return inputDeps;
         }
 
         public JobHandle HandleBrushUpdate(JobHandle inputDeps) {
-            // GetAvailableSnapMask(out this.m_SnapOnMask, out this.m_SnapOffMask);
             return inputDeps;
         }
 
@@ -164,7 +197,29 @@ namespace Platter.Systems {
             var logPrefix = "HandleRoadEdgeUpdate()";
 
             // ###
-            // This first part of the code is about handling raycast hits and action presses.
+            // First, let's handle any "create" actions requested
+            // ###
+            if (m_CreateAction.WasPressedThisFrame()) {
+                // Validate
+                if (m_RoadEditorData.SelectedEdgeEntity == Entity.Null || EntityManager.Exists(m_RoadEditorData.SelectedEdgeEntity) || m_SelectedEntity == Entity.Null) {
+                    return inputDeps;
+                }
+
+                // All Good!
+                applyMode = ApplyMode.Apply;
+
+                // Reset the tool
+                ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
+                ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
+                m_RoadEditorData.Reset();
+                m_HoveredEntity = Entity.Null;
+                m_LastHitPosition = float3.zero;
+
+                return inputDeps;
+            }
+
+            // ###
+            // This part of the code is about handling raycast hits and action presses.
             // It will update entity references and tool states.
             // ###
             if (GetRaycastResult(out var entity, out RaycastHit raycastHit)) {
@@ -174,33 +229,16 @@ namespace Platter.Systems {
                 m_LastHitPosition = raycastHit.m_HitPosition;
 
                 // Check for apply action initiation.
-                var applyWasPressed = m_ApplyAction.WasPressedThisFrame() ||
-                                     (m_ToolSystem.actionMode.IsEditor() && applyAction.WasPressedThisFrame());
+                var applyWasPressed = m_ApplyAction.WasPressedThisFrame();
 
                 if (applyWasPressed) {
-                    if (entity != m_ModeData.SelectedEdgeEntity &&
-                        EntityManager.TryGetComponent<PrefabRef>(entity, out var prefabRef) &&
-                        EntityManager.TryGetComponent<Curve>(entity, out var curve) &&
-                        EntityManager.TryGetComponent<EdgeGeometry>(entity, out var edgeGeo) &&
-                        EntityManager.TryGetComponent<Composition>(entity, out var composition) &&
-                        EntityManager.TryGetComponent<NetCompositionData>(composition.m_Edge, out var edgeNetCompData) &&
-                        m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var prefabBase)) {
-                        // New Road..
+                    if (m_RoadEditorData.Start(entity)) {
                         m_Log.Debug($"{logPrefix} -- Selected entity: {entity}");
-
-                        // Highlighting
-                        SwapHighlitedEntities(m_ModeData.SelectedEdgeEntity, entity);
-
-                        // Store results
-                        m_ModeData.SelectedEdgeEntity = entity;
-                        m_ModeData.SelectedCurve = curve;
-                        m_ModeData.SelectedCurveGeo = edgeNetCompData;
-                        m_ModeData.SelectedCurveEdgeGeo = edgeGeo;
-                        m_ModeData.SelectedPrefabBase = prefabBase;
+                        SwapHighlitedEntities(m_RoadEditorData.SelectedEdgeEntity, entity);
                     }
                 } else if (previousHoveredEntity != m_HoveredEntity) {
                     // If we were previously hovering over an Edge that isn't the selected one, unhighlight it.
-                    if (previousHoveredEntity != m_ModeData.SelectedEdgeEntity) {
+                    if (previousHoveredEntity != m_RoadEditorData.SelectedEdgeEntity) {
                         ChangeHighlighting(previousHoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
                     }
 
@@ -208,16 +246,16 @@ namespace Platter.Systems {
                     ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.AddHighlight);
                 }
             } else if (m_CancelAction.WasPressedThisFrame() ||
-                (m_ModeData.SelectedEdgeEntity != Entity.Null && !EntityManager.Exists(m_ModeData.SelectedEdgeEntity))) {
+                (m_RoadEditorData.SelectedEdgeEntity != Entity.Null && !EntityManager.Exists(m_RoadEditorData.SelectedEdgeEntity))) {
                 // Right click & we had something selected -> deselect and reset the tool.
-                ChangeHighlighting(m_ModeData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
+                ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
                 ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
-                m_ModeData.SelectedEdgeEntity = Entity.Null;
+                m_RoadEditorData.SelectedEdgeEntity = Entity.Null;
                 m_HoveredEntity = Entity.Null;
                 m_LastHitPosition = float3.zero;
             } else if (m_HoveredEntity != Entity.Null) {
                 // No raycast hit, no action pressed, remove hover from any entity that was being hovered before.
-                if (m_HoveredEntity != m_ModeData.SelectedEdgeEntity) {
+                if (m_HoveredEntity != m_RoadEditorData.SelectedEdgeEntity) {
                     ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
                 }
 
@@ -226,9 +264,9 @@ namespace Platter.Systems {
             }
 
             // ###
-            // This second part of the code handles the creation of preview entities.
+            // This part of the code handles the creation of preview entities.
             // ###
-            if (m_ModeData.SelectedEdgeEntity != Entity.Null) {
+            if (m_RoadEditorData.SelectedEdgeEntity != Entity.Null) {
                 var terrainHeightData = m_TerrainSystem.GetHeightData();
                 m_Points.Clear();
 
@@ -236,7 +274,12 @@ namespace Platter.Systems {
                 var rotation = 1;
                 var width = m_SelectedParcelSize.x * DimensionConstants.CellSize;
 
-                m_ModeData.CalculatePoints(
+                m_Log.Debug($"Calculating parcel points.");
+                m_Log.Debug($"RoadEditorSpacing ${RoadEditorSpacing.ToJSONString()}");
+                m_Log.Debug($"RoadEditorOffset ${RoadEditorOffset.ToJSONString()}");
+                m_Log.Debug($"RoadEditorSides ${RoadEditorSides.ToJSONString()}");
+
+                m_RoadEditorData.CalculatePoints(
                     RoadEditorSpacing,
                     rotation,
                     RoadEditorOffset,
@@ -244,36 +287,42 @@ namespace Platter.Systems {
                     m_Points,
                     ref terrainHeightData,
                     RoadEditorSides,
-                    m_OverlayBuffer
+                    m_OverlayBuffer,
+                    true
                 );
 
                 m_Log.Debug($"Rendering {m_Points.Count} parcels");
 
                 // Step along length and place preview objects.
-                foreach (Transform transformData in m_Points) {
+                foreach (var transformData in m_Points) {
                     // m_OverlayBuffer.DrawCircle(UnityEngine.Color.white, transformData.m_Position, 3f);
-                    var trs = ParcelUtils.GetTransformMatrix(transformData);
-                    var pColor = UnityEngine.Color.red;
+                    // var trs = ParcelUtils.GetTransformMatrix(transformData);
+                    // var pColor = UnityEngine.Color.red;
 
-                    if (m_PlatterOverlaySystem.TryGetZoneColor(PreZoneType, out var color)) {
-                        pColor = color;
-                    }
+                    // if (m_PlatterOverlaySystem.TryGetZoneColor(PreZoneType, out var color)) {
+                    //    pColor = color;
+                    // }
 
-                    m_Log.Debug($"Rendering parcel with {PreZoneType.m_Index} zone type");
+                    // m_Log.Debug($"Rendering parcel with {PreZoneType.m_Index} zone type");
 
-                    DrawingUtils.DrawParcel(m_OverlayBuffer, pColor, SelectedParcelSize, trs);
+                    // DrawingUtils.DrawParcel(m_OverlayBuffer, pColor, SelectedParcelSize, trs);
 
-                    //// Create entity.
-                    // m_Log.Debug($"Creating temp parcel from enitity {SelectedEntity} transform {transformData.ToJSONString()}");
-                    // CreateDefinitions(
-                    //    _selectedEntity,
-                    //    thisPoint.Position,
-                    //    CurrentRotationMode == RotationMode.Random ? GetEffectiveRotation(thisPoint.Position) : thisPoint.Rotation,
-                    //    CurrentSpacingMode == SpacingMode.FenceMode ? randomSeed : RandomizationEnabled ? GetRandomSeed(seedIndex++) : GetRandomSeed(0));
+                    // Create entity.
+                    m_Log.Debug($"Creating temp parcel from enitity {m_SelectedEntity} transform {transformData.ToJSONString()}");
+                    MakeCreateDefinitionsJob(
+                        m_SelectedEntity,
+                        transformData.m_Position,
+                        transformData.m_Rotation,
+                        RandomSeed.Next()
+                    );
                 }
             }
 
             return inputDeps;
+        }
+
+        public void RequestApply() {
+            applyMode = ApplyMode.Apply;
         }
 
         internal void SwapHighlitedEntities(Entity oldEntity, Entity newEntity) {
@@ -286,7 +335,7 @@ namespace Platter.Systems {
                 return;
             }
 
-            bool wasChanged = false;
+            var wasChanged = false;
 
             if (mode == ChangeObjectHighlightMode.AddHighlight && !EntityManager.HasComponent<Highlighted>(entity)) {
                 m_Log.Debug($"Highlighted {entity}");
@@ -305,6 +354,36 @@ namespace Platter.Systems {
             }
         }
 
+        private JobHandle UpdateDefinitions(JobHandle inputDeps) {
+            var jobHandle = DestroyDefinitions(m_DefinitionQuery, m_ToolOutputBarrier, inputDeps);
+
+            if (m_Prefab == null) {
+                return jobHandle;
+            }
+
+            var entity = m_PrefabSystem.GetEntity(m_Prefab);
+            var laneContainer = Entity.Null;
+            var transformPrefab = Entity.Null;
+            var brushPrefab = Entity.Null;
+            var deltaTime = global::UnityEngine.Time.deltaTime;
+            var controlPoint = m_ControlPoints[0];
+            var randomSeed = RandomSeed.Next();
+
+            // jobHandle = JobHandle.CombineDependencies(
+            //    jobHandle,
+            //    MakeCreateDefinitionsJob(entity, controlPoint.m_Position, controlPoint.m_Rotation,
+            //        randomSeed));
+
+            // MakeCreateDefinitionsJob(entity, transformPrefab, brushPrefab, m_UpgradingObject,
+            //       m_MovingObject, laneContainer, m_CityConfigurationSystem.defaultTheme,
+            //       m_ControlPoints, attachmentPrefab, m_ToolSystem.actionMode.IsEditor(),
+            //       m_CityConfigurationSystem.leftHandTraffic, m_State == State.Removing,
+            //       actualMode == Mode.Stamp, brushSize, math.radians(brushAngle),
+            //       brushStrength, deltaTime, m_RandomSeed, GetActualSnap(), actualAgeMask,
+            //       inputDeps));
+            return jobHandle;
+        }
+
         /// <summary>
         /// Creates temporary object definitions for previewing.
         /// </summary>
@@ -312,70 +391,81 @@ namespace Platter.Systems {
         /// <param name="position">Entity position.</param>
         /// <param name="rotation">Entity rotation.</param>
         /// <param name="randomSeed">Random seed to use.</param>
-        private void CreateDefinitions(Entity objectPrefab, float3 position, quaternion rotation, RandomSeed randomSeed) {
-            CreateDefinitions definitions = default;
-            definitions.m_EditorMode = m_ToolSystem.actionMode.IsEditor();
-            definitions.m_LefthandTraffic = m_CityConfigurationSystem.leftHandTraffic;
-            definitions.m_ObjectPrefab = objectPrefab;
-            definitions.m_Theme = m_CityConfigurationSystem.defaultTheme;
-            definitions.m_RandomSeed = randomSeed;
-            definitions.m_ControlPoint = new() {
-                m_Position = position,
-                m_Rotation = rotation
+        private void MakeCreateDefinitionsJob(Entity objectPrefab, float3 position, quaternion rotation, RandomSeed randomSeed) {
+            var createDefJob = new CreateDefinitions() {
+                m_EditorMode = m_ToolSystem.actionMode.IsEditor(),
+                m_LefthandTraffic = m_CityConfigurationSystem.leftHandTraffic,
+                m_ObjectPrefab = objectPrefab,
+                m_Theme = m_CityConfigurationSystem.defaultTheme,
+                m_RandomSeed = randomSeed,
+                m_ControlPoint = new() {
+                    m_Position = position,
+                    m_Rotation = rotation
+                },
+                m_AttachmentPrefab = default,
+                m_OwnerData = GetComponentLookup<Owner>(true),
+                m_TransformData = GetComponentLookup<Transform>(true),
+                m_AttachedData = GetComponentLookup<Attached>(true),
+                m_LocalTransformCacheData = GetComponentLookup<LocalTransformCache>(true),
+                m_ElevationData = GetComponentLookup<Game.Objects.Elevation>(true),
+                m_BuildingData = GetComponentLookup<Building>(true),
+                m_LotData = GetComponentLookup<Game.Buildings.Lot>(true),
+                m_EdgeData = GetComponentLookup<Edge>(true),
+                m_NodeData = GetComponentLookup<Game.Net.Node>(true),
+                m_CurveData = GetComponentLookup<Curve>(true),
+                m_NetElevationData = GetComponentLookup<Game.Net.Elevation>(true),
+                m_OrphanData = GetComponentLookup<Orphan>(true),
+                m_UpgradedData = GetComponentLookup<Upgraded>(true),
+                m_CompositionData = GetComponentLookup<Composition>(true),
+                m_AreaClearData = GetComponentLookup<Clear>(true),
+                m_AreaSpaceData = GetComponentLookup<Space>(true),
+                m_AreaLotData = GetComponentLookup<Game.Areas.Lot>(true),
+                m_EditorContainerData =
+                    GetComponentLookup<Game.Tools.EditorContainer>(true),
+                m_PrefabRefData = GetComponentLookup<PrefabRef>(true),
+                m_PrefabNetObjectData = GetComponentLookup<NetObjectData>(true),
+                m_PrefabBuildingData = GetComponentLookup<BuildingData>(true),
+                m_PrefabAssetStampData = GetComponentLookup<AssetStampData>(true),
+                m_PrefabBuildingExtensionData =
+                    GetComponentLookup<BuildingExtensionData>(true),
+                m_PrefabSpawnableObjectData =
+                    GetComponentLookup<SpawnableObjectData>(true),
+                m_PrefabObjectGeometryData = GetComponentLookup<ObjectGeometryData>(true),
+                m_PrefabPlaceableObjectData =
+                    GetComponentLookup<PlaceableObjectData>(true),
+                m_PrefabAreaGeometryData = GetComponentLookup<AreaGeometryData>(true),
+                m_PrefabBuildingTerraformData =
+                    GetComponentLookup<BuildingTerraformData>(true),
+                m_PrefabCreatureSpawnData = GetComponentLookup<CreatureSpawnData>(true),
+                m_PlaceholderBuildingData =
+                    GetComponentLookup<PlaceholderBuildingData>(true),
+                m_PrefabNetGeometryData = GetComponentLookup<NetGeometryData>(true),
+                m_PrefabCompositionData = GetComponentLookup<NetCompositionData>(true),
+                m_SubObjects = GetBufferLookup<Game.Objects.SubObject>(true),
+                m_CachedNodes = GetBufferLookup<LocalNodeCache>(true),
+                m_InstalledUpgrades = GetBufferLookup<InstalledUpgrade>(true),
+                m_SubNets = GetBufferLookup<Game.Net.SubNet>(true),
+                m_ConnectedEdges = GetBufferLookup<ConnectedEdge>(true),
+                m_SubAreas = GetBufferLookup<Game.Areas.SubArea>(true),
+                m_AreaNodes = GetBufferLookup<Game.Areas.Node>(true),
+                m_AreaTriangles = GetBufferLookup<Triangle>(true),
+                m_PrefabSubObjects = GetBufferLookup<Game.Prefabs.SubObject>(true),
+                m_PrefabSubNets = GetBufferLookup<Game.Prefabs.SubNet>(true),
+                m_PrefabSubLanes = GetBufferLookup<Game.Prefabs.SubLane>(true),
+                m_PrefabSubAreas = GetBufferLookup<Game.Prefabs.SubArea>(true),
+                m_PrefabSubAreaNodes = GetBufferLookup<SubAreaNode>(true),
+                m_PrefabPlaceholderElements =
+                    GetBufferLookup<PlaceholderObjectElement>(true),
+                m_PrefabRequirementElements =
+                    GetBufferLookup<ObjectRequirementElement>(true),
+                m_PrefabServiceUpgradeBuilding =
+                    GetBufferLookup<ServiceUpgradeBuilding>(true),
+                m_WaterSurfaceData = m_WaterSystem.GetSurfaceData(out var _),
+                m_TerrainHeightData = m_TerrainSystem.GetHeightData(),
+                m_CommandBuffer = m_ToolOutputBarrier.CreateCommandBuffer(),
             };
-            definitions.m_AttachmentPrefab = default;
-            definitions.m_OwnerData = SystemAPI.GetComponentLookup<Owner>(true);
-            definitions.m_TransformData = SystemAPI.GetComponentLookup<Transform>(true);
-            definitions.m_AttachedData = SystemAPI.GetComponentLookup<Attached>(true);
-            definitions.m_LocalTransformCacheData = SystemAPI.GetComponentLookup<LocalTransformCache>(true);
-            definitions.m_ElevationData = SystemAPI.GetComponentLookup<Game.Objects.Elevation>(true);
-            definitions.m_BuildingData = SystemAPI.GetComponentLookup<Building>(true);
-            definitions.m_LotData = SystemAPI.GetComponentLookup<Game.Buildings.Lot>(true);
-            definitions.m_EdgeData = SystemAPI.GetComponentLookup<Edge>(true);
-            definitions.m_NodeData = SystemAPI.GetComponentLookup<Game.Net.Node>(true);
-            definitions.m_CurveData = SystemAPI.GetComponentLookup<Curve>(true);
-            definitions.m_NetElevationData = SystemAPI.GetComponentLookup<Game.Net.Elevation>(true);
-            definitions.m_OrphanData = SystemAPI.GetComponentLookup<Orphan>(true);
-            definitions.m_UpgradedData = SystemAPI.GetComponentLookup<Upgraded>(true);
-            definitions.m_CompositionData = SystemAPI.GetComponentLookup<Composition>(true);
-            definitions.m_AreaClearData = SystemAPI.GetComponentLookup<Clear>(true);
-            definitions.m_AreaSpaceData = SystemAPI.GetComponentLookup<Space>(true);
-            definitions.m_AreaLotData = SystemAPI.GetComponentLookup<Game.Areas.Lot>(true);
-            definitions.m_EditorContainerData = SystemAPI.GetComponentLookup<Game.Tools.EditorContainer>(true);
-            definitions.m_PrefabRefData = SystemAPI.GetComponentLookup<PrefabRef>(true);
-            definitions.m_PrefabNetObjectData = SystemAPI.GetComponentLookup<NetObjectData>(true);
-            definitions.m_PrefabBuildingData = SystemAPI.GetComponentLookup<BuildingData>(true);
-            definitions.m_PrefabAssetStampData = SystemAPI.GetComponentLookup<AssetStampData>(true);
-            definitions.m_PrefabBuildingExtensionData = SystemAPI.GetComponentLookup<BuildingExtensionData>(true);
-            definitions.m_PrefabSpawnableObjectData = SystemAPI.GetComponentLookup<SpawnableObjectData>(true);
-            definitions.m_PrefabObjectGeometryData = SystemAPI.GetComponentLookup<ObjectGeometryData>(true);
-            definitions.m_PrefabPlaceableObjectData = SystemAPI.GetComponentLookup<PlaceableObjectData>(true);
-            definitions.m_PrefabAreaGeometryData = SystemAPI.GetComponentLookup<AreaGeometryData>(true);
-            definitions.m_PrefabBuildingTerraformData = SystemAPI.GetComponentLookup<BuildingTerraformData>(true);
-            definitions.m_PrefabCreatureSpawnData = SystemAPI.GetComponentLookup<CreatureSpawnData>(true);
-            definitions.m_PlaceholderBuildingData = SystemAPI.GetComponentLookup<PlaceholderBuildingData>(true);
-            definitions.m_PrefabNetGeometryData = SystemAPI.GetComponentLookup<NetGeometryData>(true);
-            definitions.m_PrefabCompositionData = SystemAPI.GetComponentLookup<NetCompositionData>(true);
-            definitions.m_SubObjects = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(true);
-            definitions.m_CachedNodes = SystemAPI.GetBufferLookup<LocalNodeCache>(true);
-            definitions.m_InstalledUpgrades = SystemAPI.GetBufferLookup<InstalledUpgrade>(true);
-            definitions.m_SubNets = SystemAPI.GetBufferLookup<Game.Net.SubNet>(true);
-            definitions.m_ConnectedEdges = SystemAPI.GetBufferLookup<ConnectedEdge>(true);
-            definitions.m_SubAreas = SystemAPI.GetBufferLookup<Game.Areas.SubArea>(true);
-            definitions.m_AreaNodes = SystemAPI.GetBufferLookup<Game.Areas.Node>(true);
-            definitions.m_AreaTriangles = SystemAPI.GetBufferLookup<Triangle>(true);
-            definitions.m_PrefabSubObjects = SystemAPI.GetBufferLookup<Game.Prefabs.SubObject>(true);
-            definitions.m_PrefabSubNets = SystemAPI.GetBufferLookup<Game.Prefabs.SubNet>(true);
-            definitions.m_PrefabSubLanes = SystemAPI.GetBufferLookup<Game.Prefabs.SubLane>(true);
-            definitions.m_PrefabSubAreas = SystemAPI.GetBufferLookup<Game.Prefabs.SubArea>(true);
-            definitions.m_PrefabSubAreaNodes = SystemAPI.GetBufferLookup<SubAreaNode>(true);
-            definitions.m_PrefabPlaceholderElements = SystemAPI.GetBufferLookup<PlaceholderObjectElement>(true);
-            definitions.m_PrefabRequirementElements = SystemAPI.GetBufferLookup<ObjectRequirementElement>(true);
-            definitions.m_PrefabServiceUpgradeBuilding = SystemAPI.GetBufferLookup<ServiceUpgradeBuilding>(true);
-            definitions.m_WaterSurfaceData = m_WaterSystem.GetSurfaceData(out var _);
-            definitions.m_TerrainHeightData = m_TerrainSystem.GetHeightData();
-            definitions.m_CommandBuffer = m_ToolOutputBarrier.CreateCommandBuffer();
-            definitions.Execute();
+
+            createDefJob.Execute();
         }
     }
 }

@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System.Collections.Generic;
     using Game.Common;
     using Game.Prefabs;
     using Game.Tools;
@@ -11,7 +12,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Extensions;
     using Platter.Utils;
-    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -40,6 +40,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<bool> m_ToolEnabledBinding;
         private ValueBindingHelper<int> m_ToolModeBinding;
         private ValueBindingHelper<int> m_ZoneBinding;
+        private ValueBindingHelper<int> m_PointsCountBinding;
         private ValueBindingHelper<PrefabUIData> m_PrefabDataBinding;
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
         private ValueBindingHelper<int> m_BlockWidthBinding;
@@ -75,6 +76,7 @@ namespace Platter.Systems {
             m_ToolEnabledBinding = CreateBinding<bool>("TOOL_ENABLED", false, SetTool);
             m_ToolModeBinding = CreateBinding<int>("TOOL_MODE", 0, SetToolMode);
             m_ZoneBinding = CreateBinding<int>("ZONE", 0, SetPreZone);
+            m_PointsCountBinding = CreateBinding<int>("POINTS_COUNT", 0);
             m_BlockWidthBinding = CreateBinding<int>("BLOCK_WIDTH", 2);
             m_BlockDepthBinding = CreateBinding<int>("BLOCK_DEPTH", 2);
             PrefabUIData defaultParcel = new("Parcel 2x2", "coui://platter/Parcel_2x2.svg");
@@ -83,8 +85,8 @@ namespace Platter.Systems {
 
             // Road Editor
             m_RoadEditorSideBinding = CreateBinding<bool[]>("RE_SIDES", new bool[4] { true, true, false, false }, SetSides);
-            m_RoadEditorSpacingBinding = CreateBinding<float>("RE_SPACING", 0f, SetSpacing);
-            m_RoadEditorOffsetBinding = CreateBinding<float>("RE_OFFSET", 0f, SetOffset);
+            m_RoadEditorSpacingBinding = CreateBinding<float>("RE_SPACING", 1f, SetSpacing);
+            m_RoadEditorOffsetBinding = CreateBinding<float>("RE_OFFSET", 2f, SetOffset);
 
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
         }
@@ -97,7 +99,7 @@ namespace Platter.Systems {
             loadZones = false;
             var entities = m_ZoneQuery.ToEntityArray(Allocator.TempJob);
 
-            for (int i = 0; i < entities.Length; i++) {
+            for (var i = 0; i < entities.Length; i++) {
                 var zonePrefabEntity = entities[i];
                 var prefabData = EntityManager.GetComponentData<PrefabData>(zonePrefabEntity);
                 var zoneData = EntityManager.GetComponentData<ZoneData>(zonePrefabEntity);
@@ -132,6 +134,7 @@ namespace Platter.Systems {
                     m_PlatterToolSystem.RoadEditorSides.w
                 };
 
+                m_PointsCountBinding.Value = m_PlatterToolSystem.m_Points.Count;
                 if (m_ZoneDataBinding.Value.Length == 0) {
                     m_ZoneDataBinding.Value = m_ZoneData.ToArray();
                 }

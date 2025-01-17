@@ -232,7 +232,7 @@ namespace Platter.Systems {
                 return;
             }
 
-            bool wasChanged = false;
+            var wasChanged = false;
 
             if (mode == ChangeObjectHighlightMode.AddHighlight && !EntityManager.HasComponent<Highlighted>(entity)) {
                 m_Log.Debug($"Highlighted {entity}");

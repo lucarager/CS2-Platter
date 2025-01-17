@@ -1,6 +1,6 @@
 declare module "cs2/bindings" {
   import { ChartDataset } from 'chart.js';
-  
+
   export interface ServiceBudget {
   	id: string;
   	value: number;
@@ -3127,7 +3127,7 @@ declare module "cs2/bindings" {
   	reverse(): void;
   	playFromTo(playTime: number, pauseTime: number, callback?: () => void): void;
   }
-  
+
   export namespace budget {
   	export { ServiceBudget, ServiceBuildingBudgetData, ServiceBuildingBudgetInfo, ServiceFee };
   }
@@ -3239,7 +3239,7 @@ declare module "cs2/bindings" {
   export namespace upgrade {
   	export { clearUpgradeSelection, selectUpgrade, selectedUpgrade$, upgradeDetails$, upgrades$, upgrading$ };
   }
-  
+
   export {
   	budget,
   	camera,
@@ -3279,7 +3279,7 @@ declare module "cs2/bindings" {
   	tutorial,
   	upgrade,
   };
-  
+
   export {};
-  
+
 }

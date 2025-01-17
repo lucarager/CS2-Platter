@@ -58,12 +58,12 @@ namespace Platter.Systems {
             var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
             var subBlockBufferLookup = GetBufferLookup<SubBlock>();
 
-            for (int i = 0; i < blockEntities.Length; i++) {
+            for (var i = 0; i < blockEntities.Length; i++) {
                 var blockEntity = blockEntities[i];
 
                 m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity}");
 
-                if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out ParcelOwner parcelOwner)) {
+                if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out var parcelOwner)) {
                     m_Log.Error($"{blockEntity} didn't have parcelOwner component");
                     return;
                 }

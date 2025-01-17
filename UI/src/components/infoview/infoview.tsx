@@ -4,7 +4,7 @@ import { bindValue, trigger, useValue } from "cs2/api";
 import { useLocalization } from "cs2/l10n";
 import { VanillaComponentResolver } from "utils/VanillaComponentResolver";
 import mod from "mod.json";
-import { triggers } from '../modBindings';
+import { triggers } from '../../modBindings';
 import { $bindings } from 'modBindings';
 
 interface InfoSectionComponent {

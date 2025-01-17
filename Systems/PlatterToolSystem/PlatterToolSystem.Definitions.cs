@@ -4,11 +4,12 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
     using System.Collections.Generic;
     using Colossal.Annotations;
+    using Colossal.Collections;
     using Game;
     using Game.City;
+    using Game.Common;
     using Game.Input;
     using Game.Objects;
     using Game.Prefabs;
@@ -40,17 +41,20 @@ namespace Platter.Systems {
         private PlatterOverlaySystem m_PlatterOverlaySystem;
         private CityConfigurationSystem m_CityConfigurationSystem;
         private OverlayRenderSystem.Buffer m_OverlayBuffer;
+        private Game.Net.SearchSystem m_NetSearchSystem;
+        private Game.Zones.SearchSystem m_ZoneSearchSystem;
 
         // Jobs
         private JobHandle m_InputDeps;
 
         // Actions
         private ProxyAction m_ApplyAction;
-        private ProxyAction m_SecondaryApplyAction;
+        private ProxyAction m_CreateAction;
         private ProxyAction m_CancelAction;
 
         // Queries
         private EntityQuery m_HighlightedQuery;
+        private EntityQuery m_DefinitionQuery;
 
         // Prefab selection
         private ToolBaseSystem m_PreviousTool = null;
@@ -59,10 +63,10 @@ namespace Platter.Systems {
 
         // Data
         private int2 m_SelectedParcelSize = new(2, 2);
-        private float m_RoadEditorSpacing = 0f;
         private ObjectPrefab m_Prefab;
-        private TransformPrefab m_Transform;
+        private TransformPrefab m_TransformPrefab;
         private ControlPoint m_LastRaycastPoint;
+        private NativeValue<Rotation> m_Rotation;
         private NativeList<ControlPoint> m_ControlPoints;
         private bool m_ForceCancel;
         private CameraController m_CameraController;
@@ -71,11 +75,16 @@ namespace Platter.Systems {
         public Entity m_HoveredEntity;
         public float3 m_LastHitPosition;
         private TerrainHeightData m_TerrainHeightData;
-        private List<Transform> m_Points;
+        public List<Transform> m_Points;
+        private RandomSeed m_RandomSeed;
+        private float m_RoadEditorSpacing = 1f;
+        private float m_RoadEditorOffset = 2f;
+        private bool4 m_RoadEditorSides = new bool4(true, true, false, false);
 
-        // Mode.
-        private PlatterToolModeData m_ModeData;
-        private PlatterToolMode m_CurrentMode = PlatterToolMode.Point;
+        // Mode Data
+        private ToolData_Plop m_PlopData;
+        private ToolData_RoadEditor m_RoadEditorData;
+        private PlatterToolMode m_CurrentMode = PlatterToolMode.Plop;
 
         public int2 SelectedParcelSize {
             get => this.m_SelectedParcelSize;
@@ -83,19 +92,30 @@ namespace Platter.Systems {
         }
 
         public float RoadEditorSpacing {
-            get; set;
+            get => m_RoadEditorSpacing;
+            set => m_RoadEditorSpacing = value;
         }
 
         public float RoadEditorOffset {
-            get; set;
+            get => m_RoadEditorOffset;
+            set => m_RoadEditorOffset = value;
         }
 
         public bool4 RoadEditorSides {
-            get; set;
+            get => m_RoadEditorSides;
+            set => m_RoadEditorSides = value;
         }
 
         public ZoneType PreZoneType {
             get; set;
+        }
+
+        private struct Rotation {
+            public quaternion m_Rotation;
+
+            public quaternion m_ParentRotation;
+
+            public bool m_IsAligned;
         }
 
         [CanBeNull]
@@ -107,20 +127,15 @@ namespace Platter.Systems {
             }
         }
 
-        /// <summary>
-        /// Gets the currently selected entity.
-        /// </summary>
-        internal Entity SelectedEntity => m_SelectedEntity;
-
         public TransformPrefab Transform {
-            get => m_Transform;
+            get => m_TransformPrefab;
             set {
-                if (value != m_Transform) {
-                    m_Transform = value;
+                if (value != m_TransformPrefab) {
+                    m_TransformPrefab = value;
                     m_ForceUpdate = true;
                     if (value != null) {
                         m_SelectedPrefab = null;
-                        Action<PrefabBase> eventPrefabChanged = m_ToolSystem.EventPrefabChanged;
+                        var eventPrefabChanged = m_ToolSystem.EventPrefabChanged;
                         if (eventPrefabChanged == null) {
                             return;
                         }
@@ -132,7 +147,7 @@ namespace Platter.Systems {
         }
 
         public enum PlatterToolMode {
-            Point = 0,
+            Plop = 0,
             Brush = 1,
             RoadEdge = 2,
         }
@@ -150,14 +165,11 @@ namespace Platter.Systems {
 
                 // Apply updated tool mode.
                 switch (value) {
-                    case PlatterToolMode.Point:
-                        m_ModeData = new RoadEdgeData();
-                        break;
-                    case PlatterToolMode.Brush:
-                        m_ModeData = new RoadEdgeData();
+                    case PlatterToolMode.Plop:
+                        m_PlopData = new ToolData_Plop(EntityManager, m_PrefabSystem);
                         break;
                     case PlatterToolMode.RoadEdge:
-                        m_ModeData = new RoadEdgeData();
+                        m_RoadEditorData = new ToolData_RoadEditor(EntityManager, m_PrefabSystem);
                         break;
                 }
 

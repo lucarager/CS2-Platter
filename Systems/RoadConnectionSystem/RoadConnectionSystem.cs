@@ -161,11 +161,11 @@ namespace Platter.Systems {
             findRoadConnectionJobData.m_StartNodeGeometryDataComponentLookup = GetComponentLookup<StartNodeGeometry>();
             findRoadConnectionJobData.m_EndNodeGeometryDataComponentLookup = GetComponentLookup<EndNodeGeometry>();
             findRoadConnectionJobData.m_PrefabNetCompositionDataComponentLookup = GetComponentLookup<NetCompositionData>();
-            NativeList<ArchetypeChunk> updatedNetChunks = this.m_UpdatedNetQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out JobHandle netQueryChunkListJob);
+            var updatedNetChunks = this.m_UpdatedNetQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var netQueryChunkListJob);
             findRoadConnectionJobData.m_UpdatedNetChunks = updatedNetChunks;
             m_EntityTypeHandle.Update(this);
             createEntitiesQueueJobData.m_EntityTypeHandle = m_EntityTypeHandle;
-            findRoadConnectionJobData.m_NetSearchTree = this.m_NetSearchSystem.GetNetSearchTree(true, out JobHandle netSearchSystemJob);
+            findRoadConnectionJobData.m_NetSearchTree = this.m_NetSearchSystem.GetNetSearchTree(true, out var netSearchSystemJob);
             findRoadConnectionJobData.m_ConnectionUpdateDataList = entitiesToUpdateList.AsDeferredJobArray();
 
             // Job to set data
@@ -181,18 +181,18 @@ namespace Platter.Systems {
             // Job Scheduling
 
             // 1. Point a queue
-            JobHandle createEntitiesQueueJobHandle = createEntitiesQueueJobData.ScheduleParallel(
+            var createEntitiesQueueJobHandle = createEntitiesQueueJobData.ScheduleParallel(
                 m_ModificationQuery,
                 base.Dependency
             );
 
             // 2. Point the unique list from the queue
-            JobHandle createUniqueUpdatesListFromQueueJobHandle = createUniqueUpdatesListFromQueueJobData.Schedule(
+            var createUniqueUpdatesListFromQueueJobHandle = createUniqueUpdatesListFromQueueJobData.Schedule(
                 createEntitiesQueueJobHandle
             );
 
             // 3. Find road connections for each parcel in the list
-            JobHandle findRoadConnectionJobHandle = findRoadConnectionJobData.Schedule(
+            var findRoadConnectionJobHandle = findRoadConnectionJobData.Schedule(
                 entitiesToUpdateList,
                 1,
                 JobHandle.CombineDependencies(
@@ -203,7 +203,7 @@ namespace Platter.Systems {
             );
 
             // 4. Update road data for each parcel
-            JobHandle replaceRoadConnectionJobHandle = updateRoadAndParcelDataJobData.Schedule(findRoadConnectionJobHandle);
+            var replaceRoadConnectionJobHandle = updateRoadAndParcelDataJobData.Schedule(findRoadConnectionJobHandle);
 
             // 5? @todo secondary lanes
 
@@ -281,16 +281,16 @@ namespace Platter.Systems {
 
         private static void CheckDistance(Bezier4x3 curve1, Bezier4x3 curve2, float3 position, ref float maxDistance) {
             if (MathUtils.DistanceSquared(MathUtils.Bounds(curve1.xz) | MathUtils.Bounds(curve2.xz), position.xz) < maxDistance * maxDistance) {
-                _ = MathUtils.Distance(MathUtils.Lerp(curve1.xz, curve2.xz, 0.5f), position.xz, out float t);
+                _ = MathUtils.Distance(MathUtils.Lerp(curve1.xz, curve2.xz, 0.5f), position.xz, out var t);
 
-                float x = MathUtils.Distance(new Line2.Segment(MathUtils.Position(curve1.xz, t), MathUtils.Position(curve2.xz, t)), position.xz, out _);
+                var x = MathUtils.Distance(new Line2.Segment(MathUtils.Position(curve1.xz, t), MathUtils.Position(curve2.xz, t)), position.xz, out _);
                 maxDistance = math.min(x, maxDistance);
             }
         }
 
         private static void CheckDistance(Bezier4x3 curve, float3 position, ref float maxDistance) {
             if (MathUtils.DistanceSquared(MathUtils.Bounds(curve.xz), position.xz) < maxDistance * maxDistance) {
-                float x = MathUtils.Distance(curve.xz, position.xz, out _);
+                var x = MathUtils.Distance(curve.xz, position.xz, out _);
                 maxDistance = math.min(x, maxDistance);
             }
         }

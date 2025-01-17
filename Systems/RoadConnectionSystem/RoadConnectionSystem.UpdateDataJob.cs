@@ -65,18 +65,18 @@ namespace Platter.Systems {
 
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Processing {m_ConnectionUpdateDataList.Length} entries.");
 
-                for (int i = 0; i < m_ConnectionUpdateDataList.Length; i++) {
-                    ConnectionUpdateDataJob updateData = m_ConnectionUpdateDataList[i];
-                    Parcel parcel = m_ParcelComponentLookup[updateData.m_Parcel];
+                for (var i = 0; i < m_ConnectionUpdateDataList.Length; i++) {
+                    var updateData = m_ConnectionUpdateDataList[i];
+                    var parcel = m_ParcelComponentLookup[updateData.m_Parcel];
 
                     // A few utility bools
-                    bool parcelHasCreatedComponent = m_CreatedComponentLookup.HasComponent(updateData.m_Parcel);
-                    bool parcelHasTempComponent = m_TempComponentLookup.HasComponent(updateData.m_Parcel);
-                    bool parcelHadRoad = parcel.m_RoadEdge != Entity.Null;
-                    bool parcelHasNewRoad = updateData.m_NewRoad != Entity.Null;
-                    bool noRoad = parcel.m_RoadEdge == Entity.Null && updateData.m_NewRoad == Entity.Null;
-                    bool roadChanged = updateData.m_NewRoad != parcel.m_RoadEdge;
-                    bool parcelHasNewCurvePosition = updateData.m_CurvePos != parcel.m_CurvePosition;
+                    var parcelHasCreatedComponent = m_CreatedComponentLookup.HasComponent(updateData.m_Parcel);
+                    var parcelHasTempComponent = m_TempComponentLookup.HasComponent(updateData.m_Parcel);
+                    var parcelHadRoad = parcel.m_RoadEdge != Entity.Null;
+                    var parcelHasNewRoad = updateData.m_NewRoad != Entity.Null;
+                    var noRoad = parcel.m_RoadEdge == Entity.Null && updateData.m_NewRoad == Entity.Null;
+                    var roadChanged = updateData.m_NewRoad != parcel.m_RoadEdge;
+                    var parcelHasNewCurvePosition = updateData.m_CurvePos != parcel.m_CurvePosition;
 
                     // Determine if we should perform an update
                     // Either the "new best road" we found is not the one the building has stored

@@ -44,7 +44,7 @@ namespace Platter.Systems {
         private bool m_UpdateColors;
 
         public bool TryGetZoneColor(ZoneType zoneType, out Color value) {
-            var valid = m_EdgeColors.TryGetValue(zoneType, out Color color);
+            var valid = m_EdgeColors.TryGetValue(zoneType, out var color);
             value = color;
             return valid;
         }
@@ -85,7 +85,7 @@ namespace Platter.Systems {
             m_UpdateColors = false;
             var entities = m_ZoneQuery.ToEntityArray(Allocator.TempJob);
 
-            for (int i = 0; i < entities.Length; i++) {
+            for (var i = 0; i < entities.Length; i++) {
                 var zonePrefabEntity = entities[i];
                 var prefabData = EntityManager.GetComponentData<PrefabData>(zonePrefabEntity);
                 var zoneData = EntityManager.GetComponentData<ZoneData>(zonePrefabEntity);
@@ -115,7 +115,7 @@ namespace Platter.Systems {
                     throw new NullReferenceException("Camera.main is null");
                 }
 
-                OverlayRenderSystem.Buffer buffer = m_OverlayRenderSystem.GetBuffer(out JobHandle overlayRenderBufferHandle);
+                var buffer = m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferHandle);
                 var colorsMap = new NativeHashMap<ZoneType, Color>(m_EdgeColors.Count, Allocator.TempJob);
 
                 foreach (var entry in m_EdgeColors) {
@@ -135,7 +135,7 @@ namespace Platter.Systems {
                     m_ObjectGeometryComponentLookup = GetComponentLookup<ObjectGeometryData>(),
                     m_ParcelSpawnableComponentLookup = GetComponentLookup<ParcelSpawnable>(),
                 };
-                JobHandle drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, overlayRenderBufferHandle);
+                var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, overlayRenderBufferHandle);
 
                 m_OverlayRenderSystem.AddBufferWriter(drawOverlaysJob);
                 drawOverlaysJob.Complete();

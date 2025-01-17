@@ -1,16 +1,16 @@
 import { ModRegistrar, ModuleRegistry } from "cs2/modding";
-import { ToolButton } from "toolButton/button";
-import { ToolPanel } from "panel/panel";
-import { SelectedInfoPanelComponent } from "infoview/infoview";
+import { ToolButton } from "components/toolButton/toolButton";
+import { ToolPanel } from "components/toolPanel/toolPanel";
+import { SelectedInfoPanelComponent } from "components/infoview/infoview";
 import { VanillaComponentResolver } from "utils/VanillaComponentResolver";
 import { $bindings } from "modBindings";
 import mod from "mod.json";
 
+// Register bindings
+$bindings.blockDepth;
+
 const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     VanillaComponentResolver.setRegistry(moduleRegistry);
-
-    // Register bindings
-    $bindings.blockDepth;
 
     moduleRegistry.extend(
         "game-ui/game/components/toolbar/top/toolbar-button-strip/toolbar-button-strip.tsx",
@@ -25,7 +25,6 @@ const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
 
     moduleRegistry.append("Game", ToolPanel);
 
-    // This is just to verify using UI console that all the component registriations was completed.
     console.log(mod.id + " UI module registrations completed.");
 };
 

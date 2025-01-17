@@ -15,6 +15,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using Unity.Mathematics;
 
     public partial class PlatterToolSystem : ObjectToolBaseSystem {
         /// <summary>
@@ -31,6 +32,7 @@ namespace Platter.Systems {
                 // SelectedPrefab = objectToolSystem.prefab;
                 m_ToolSystem.selected = Entity.Null;
                 m_ToolSystem.activeTool = this;
+                UpdateSelectedPrefab();
             }
         }
 
@@ -70,6 +72,7 @@ namespace Platter.Systems {
 
             // Queries
             m_HighlightedQuery = GetEntityQuery(ComponentType.ReadOnly<Highlighted>());
+            m_DefinitionQuery = GetDefinitionQuery();
 
             // Get Systems
             m_RaycastSystem = World.GetOrCreateSystemManaged<Game.Common.RaycastSystem>();
@@ -77,6 +80,9 @@ namespace Platter.Systems {
             m_OverlayBuffer = World.GetOrCreateSystemManaged<OverlayRenderSystem>().GetBuffer(out var _);
             m_CityConfigurationSystem = World.GetOrCreateSystemManaged<CityConfigurationSystem>();
             m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<PlatterOverlaySystem>();
+            m_ObjectSearchSystem = World.GetOrCreateSystemManaged<Game.Objects.SearchSystem>();
+            m_NetSearchSystem = World.GetOrCreateSystemManaged<Game.Net.SearchSystem>();
+            m_ZoneSearchSystem = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
 
             // Buffers
             m_ControlPoints = new NativeList<ControlPoint>(1, Allocator.Persistent);
@@ -88,7 +94,7 @@ namespace Platter.Systems {
             ToolBaseSystem thisSystem = null;
             var objectToolIndex = 0;
 
-            for (int i = 0; i < toolList.Count; i++) {
+            for (var i = 0; i < toolList.Count; i++) {
                 var tool = toolList[i];
                 m_Log.Debug($"Got tool {tool.toolID} ({tool.GetType().FullName})");
                 if (tool == this) {
@@ -108,11 +114,9 @@ namespace Platter.Systems {
 
             toolList.Insert(objectToolIndex - 1, this);
 
-            // Set default mode.
-            m_ModeData = new RoadEdgeData();
-
             // Set apply and cancel actions from game settings.
             m_ApplyAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.ApplyActionName);
+            m_CreateAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.CreateActionName);
             m_CancelAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.CancelActionName);
 
             //// Enable fixed preview control.
@@ -140,7 +144,7 @@ namespace Platter.Systems {
             m_LastHitPosition = default;
 
             // Reset any previously-stored starting position.
-            m_ModeData.Reset();
+            // m_ModeData.Reset();
 
             // Clear any applications.
             applyMode = ApplyMode.Clear;
@@ -157,7 +161,15 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnStopRunning() {
+            base.OnStopRunning();
             m_Log.Debug($"OnStopRunning()");
+
+            // Cleanup
+            m_RoadEditorData.Reset();
+            ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
+            ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
+            m_HoveredEntity = Entity.Null;
+            m_LastHitPosition = float3.zero;
         }
 
         /// <inheritdoc/>
@@ -183,6 +195,8 @@ namespace Platter.Systems {
                 return;
             }
 
+            m_Log.Debug($"UpdateSelectedPrefab() -- Found ${prefabBase}!");
+
             var result = TrySetPrefab(prefabBase);
 
             m_Log.Debug($"UpdateSelectedPrefab() -- Result {result}");
@@ -199,6 +213,18 @@ namespace Platter.Systems {
 
         private ObjectPrefab GetObjectPrefab() {
             return this.m_SelectedPrefab;
+        }
+
+        /// <summary>
+        /// Restores the previously-used tool.
+        /// </summary>
+        internal void RestorePreviousTool() {
+            if (m_PreviousTool is not null) {
+                m_ToolSystem.activeTool = m_PreviousTool;
+                CurrentMode = PlatterToolMode.Plop;
+            } else {
+                m_Log.Error("null tool set when restoring previous tool");
+            }
         }
     }
 }

@@ -107,7 +107,7 @@ namespace Platter.Systems {
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob(index: {index})");
 
                 // Retrieve the data
-                ConnectionUpdateDataJob currentEntityData = m_ConnectionUpdateDataList[index];
+                var currentEntityData = m_ConnectionUpdateDataList[index];
 
                 // If entity has DELETED component
                 // mark its entry in the list as deleted and exit early
@@ -117,9 +117,9 @@ namespace Platter.Systems {
                     return;
                 }
 
-                PrefabRef parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
-                ParcelData parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
-                Transform parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
+                var parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
+                var parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
+                var parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
 
                 // The "front position" is the point where a parcel is expected to connect to a road.
                 var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
@@ -148,9 +148,9 @@ namespace Platter.Systems {
                 // Find suitable roads, iterate over roads and check which is best
                 m_NetSearchTree.Iterate<FindRoadConnectionIterator>(ref findRoadConnectionIterator, 0);
 
-                for (int k = 0; k < m_UpdatedNetChunks.Length; k++) {
-                    NativeArray<Entity> netArray = m_UpdatedNetChunks[k].GetNativeArray(m_EntityTypeHandle);
-                    for (int l = 0; l < netArray.Length; l++) {
+                for (var k = 0; k < m_UpdatedNetChunks.Length; k++) {
+                    var netArray = m_UpdatedNetChunks[k].GetNativeArray(m_EntityTypeHandle);
+                    for (var l = 0; l < netArray.Length; l++) {
                         findRoadConnectionIterator.CheckEdge(netArray[l]);
                     }
                 }
@@ -272,7 +272,7 @@ namespace Platter.Systems {
                     // Exit early if the road is elevated or a tunnel.
                     NetCompositionData netCompositionData = default;
                     if (
-                        this.m_CompositionDataComponentLookup.TryGetComponent(edgeEntity, out Composition composition) &&
+                        this.m_CompositionDataComponentLookup.TryGetComponent(edgeEntity, out var composition) &&
                         this.m_PrefabNetCompositionDataComponentLookup.TryGetComponent(composition.m_Edge, out netCompositionData) &&
                         (netCompositionData.m_Flags.m_General & (CompositionFlags.General.Elevated | CompositionFlags.General.Tunnel)) != 0U) {
                         return;
@@ -280,31 +280,31 @@ namespace Platter.Systems {
 
                     // Check whether the entity can be connected to the road based on a maximum distance
                     // Calls RoadConnectionSystem.CheckDistance, which likely checks the distance from the entity to a road and updates the distanceToRoad if necessary.
-                    EdgeGeometry edgeGeo = this.m_EdgeGeometryDataComponentLookup[edgeEntity];
-                    EdgeNodeGeometry startNodeGeo = this.m_StartNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
-                    EdgeNodeGeometry endNodeGeo = this.m_EndNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
-                    float distanceToFront = this.m_MinDistance;
+                    var edgeGeo = this.m_EdgeGeometryDataComponentLookup[edgeEntity];
+                    var startNodeGeo = this.m_StartNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
+                    var endNodeGeo = this.m_EndNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
+                    var distanceToFront = this.m_MinDistance;
                     RoadConnectionSystem.CheckDistance(edgeGeo, startNodeGeo, endNodeGeo, this.m_FrontPosition, this.m_CanBeOnRoad, ref distanceToFront);
 
                     // If the distanceToFront is less than the max
                     if (distanceToFront < this.m_MinDistance) {
                         // Retrieves the SelectedCurve data for the road edge, which represents the road's shape as a Bezier curve.
-                        Curve curve = this.m_CurveDataComponentLookup[edgeEntity];
+                        var curve = this.m_CurveDataComponentLookup[edgeEntity];
 
                         // Finds the nearest point on the curve to the entity's front position.
-                        _ = MathUtils.Distance(curve.m_Bezier.xz, this.m_FrontPosition.xz, out float nearestPointToFront);
-                        float3 positionOfNearestPointToBuildingFront = MathUtils.Position(curve.m_Bezier, nearestPointToFront);
+                        _ = MathUtils.Distance(curve.m_Bezier.xz, this.m_FrontPosition.xz, out var nearestPointToFront);
+                        var positionOfNearestPointToBuildingFront = MathUtils.Position(curve.m_Bezier, nearestPointToFront);
 
                         // Compute the tangent vector and determine the side of the curve (right or left)
-                        float2 tangent = MathUtils.Tangent(curve.m_Bezier, nearestPointToFront).xz;
-                        float2 toFront = this.m_FrontPosition.xz - positionOfNearestPointToBuildingFront.xz;
-                        bool isRightSide = math.dot(MathUtils.Right(tangent), toFront) >= 0f;
+                        var tangent = MathUtils.Tangent(curve.m_Bezier, nearestPointToFront).xz;
+                        var toFront = this.m_FrontPosition.xz - positionOfNearestPointToBuildingFront.xz;
+                        var isRightSide = math.dot(MathUtils.Right(tangent), toFront) >= 0f;
 
                         // Determine the relevant flags based on the side
-                        CompositionFlags.Side relevantFlags = isRightSide ? netCompositionData.m_Flags.m_Right : netCompositionData.m_Flags.m_Left;
+                        var relevantFlags = isRightSide ? netCompositionData.m_Flags.m_Right : netCompositionData.m_Flags.m_Left;
 
                         // Check if the edge is raised or lowered
-                        bool isRaisedOrLowered = (relevantFlags & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) != 0U;
+                        var isRaisedOrLowered = (relevantFlags & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) != 0U;
 
                         if (isRaisedOrLowered) {
                             return;

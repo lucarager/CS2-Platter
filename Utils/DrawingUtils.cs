@@ -71,7 +71,7 @@ namespace Platter.Utils {
             // Calculate inner lines
             var frontNode = new float3(parcelCorners.c1);
             var backNode = new float3(parcelCorners.c2);
-            for (int i = 1; i < lotSize.x; i++) {
+            for (var i = 1; i < lotSize.x; i++) {
                 frontNode.x += DimensionConstants.CellSize;
                 backNode.x += DimensionConstants.CellSize;
                 linesToDraw.Add(new LineDef(frontNode, backNode, innerColor, DimensionConstants.ParcelCellOutlineWidth));
@@ -79,7 +79,7 @@ namespace Platter.Utils {
 
             var rightNode = new float3(parcelCorners.c0);
             var leftNode = new float3(parcelCorners.c1);
-            for (int i = 1; i < lotSize.y; i++) {
+            for (var i = 1; i < lotSize.y; i++) {
                 leftNode.z += DimensionConstants.CellSize;
                 rightNode.z += DimensionConstants.CellSize;
                 linesToDraw.Add(new LineDef(leftNode, rightNode, innerColor, DimensionConstants.ParcelCellOutlineWidth));

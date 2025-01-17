@@ -13,9 +13,9 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Simulation;
     using Game.Tools;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs;
     using Unity.Mathematics;
     using static Game.Tools.ObjectToolBaseSystem;
     using EditorContainer = Game.Tools.EditorContainer;
@@ -24,8 +24,7 @@ namespace Platter.Systems {
     /// Struct to mirror game code's temporary entity definitions creation.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Decompiled game code.")]
-    [BurstCompile]
-    internal struct CreateDefinitions {
+    internal struct CreateDefinitions : IJob {
         [ReadOnly]
         public bool m_EditorMode;
         [ReadOnly]
@@ -143,18 +142,18 @@ namespace Platter.Systems {
         public EntityCommandBuffer m_CommandBuffer;
 
         public void Execute() {
-            ControlPoint startPoint = m_ControlPoint;
-            Entity entity = Entity.Null;
-            Entity entity2 = Entity.Null;
-            Entity updatedTopLevel = Entity.Null;
-            Entity lotEntity = Entity.Null;
+            var startPoint = m_ControlPoint;
+            var entity = Entity.Null;
+            var entity2 = Entity.Null;
+            var updatedTopLevel = Entity.Null;
+            var lotEntity = Entity.Null;
             OwnerDefinition ownerDefinition = default;
-            bool upgrade = false;
-            bool flag = entity2 != Entity.Null;
-            bool topLevel = true;
-            int parentMesh = !(entity != Entity.Null) ? -1 : 0;
+            var upgrade = false;
+            var flag = entity2 != Entity.Null;
+            var topLevel = true;
+            var parentMesh = !(entity != Entity.Null) ? -1 : 0;
             if (!flag && m_PrefabNetObjectData.HasComponent(m_ObjectPrefab) && m_AttachedData.HasComponent(startPoint.m_OriginalEntity) && (m_EditorMode || !m_OwnerData.HasComponent(startPoint.m_OriginalEntity))) {
-                Attached attached = m_AttachedData[startPoint.m_OriginalEntity];
+                var attached = m_AttachedData[startPoint.m_OriginalEntity];
                 if (m_NodeData.HasComponent(attached.m_Parent) || m_EdgeData.HasComponent(attached.m_Parent)) {
                     entity2 = startPoint.m_OriginalEntity;
                     startPoint.m_OriginalEntity = attached.m_Parent;
@@ -163,8 +162,8 @@ namespace Platter.Systems {
             }
 
             if (m_EditorMode) {
-                Entity entity3 = startPoint.m_OriginalEntity;
-                int num = startPoint.m_ElementIndex.x;
+                var entity3 = startPoint.m_OriginalEntity;
+                var num = startPoint.m_ElementIndex.x;
                 while (m_OwnerData.HasComponent(entity3) && !m_BuildingData.HasComponent(entity3)) {
                     if (m_LocalTransformCacheData.HasComponent(entity3)) {
                         num = m_LocalTransformCacheData[entity3].m_ParentMesh;
@@ -178,11 +177,11 @@ namespace Platter.Systems {
                     entity3 = bufferData[0].m_Upgrade;
                 }
 
-                bool flag2 = false;
+                var flag2 = false;
                 if (m_PrefabRefData.TryGetComponent(entity3, out var componentData) && m_PrefabServiceUpgradeBuilding.TryGetBuffer(m_ObjectPrefab, out var bufferData2)) {
-                    Entity entity4 = Entity.Null;
+                    var entity4 = Entity.Null;
                     if (m_TransformData.TryGetComponent(entity3, out var componentData2) && m_PrefabBuildingExtensionData.TryGetComponent(m_ObjectPrefab, out var componentData3)) {
-                        for (int i = 0; i < bufferData2.Length; i++) {
+                        for (var i = 0; i < bufferData2.Length; i++) {
                             if (bufferData2[i].m_Building == componentData.m_Prefab) {
                                 entity4 = entity3;
                                 startPoint.m_Position = ObjectUtils.LocalToWorld(componentData2, componentData3.m_Position);
@@ -203,7 +202,7 @@ namespace Platter.Systems {
                 }
 
                 if (m_OwnerData.HasComponent(entity2)) {
-                    Owner owner = m_OwnerData[entity2];
+                    var owner = m_OwnerData[entity2];
                     if (owner.m_Owner != entity) {
                         entity = owner.m_Owner;
                         topLevel = flag2;
@@ -218,9 +217,9 @@ namespace Platter.Systems {
 
             NativeList<ClearAreaData> clearAreas = default;
             if (m_TransformData.HasComponent(entity)) {
-                Transform transform = m_TransformData[entity];
+                var transform = m_TransformData[entity];
                 m_ElevationData.TryGetComponent(entity, out var componentData5);
-                Entity owner2 = Entity.Null;
+                var owner2 = Entity.Null;
                 if (m_OwnerData.HasComponent(entity)) {
                     owner2 = m_OwnerData[entity].m_Owner;
                 }
@@ -238,15 +237,15 @@ namespace Platter.Systems {
                         }
                     }
 
-                    bool flag3 = m_ObjectPrefab == Entity.Null;
-                    Entity parent = Entity.Null;
+                    var flag3 = m_ObjectPrefab == Entity.Null;
+                    var parent = Entity.Null;
                     if (flag3 && m_InstalledUpgrades.TryGetBuffer(entity, out var bufferData3)) {
                         ClearAreaHelpers.FillClearAreas(bufferData3, Entity.Null, m_TransformData, m_AreaClearData, m_PrefabRefData, m_PrefabObjectGeometryData, m_SubAreas, m_AreaNodes, m_AreaTriangles, ref clearAreas);
                         ClearAreaHelpers.InitClearAreas(clearAreas, transform);
                     }
 
                     if (flag3 && m_AttachedData.TryGetComponent(entity, out var componentData6) && m_BuildingData.HasComponent(componentData6.m_Parent)) {
-                        Transform transform2 = m_TransformData[componentData6.m_Parent];
+                        var transform2 = m_TransformData[componentData6.m_Parent];
                         parent = m_PrefabRefData[componentData6.m_Parent].m_Prefab;
                         UpdateObject(Entity.Null, Entity.Null, componentData6.m_Parent, Entity.Null, componentData6.m_Parent, Entity.Null, transform2, 0f, default, clearAreas, upgrade: false, relocate: false, rebuild: false, topLevel: true, optional: false, -1, -1);
                     }
@@ -267,11 +266,11 @@ namespace Platter.Systems {
             }
 
             if (m_ObjectPrefab != Entity.Null) {
-                Entity entity5 = m_ObjectPrefab;
+                var entity5 = m_ObjectPrefab;
                 if (entity2 == Entity.Null && ownerDefinition.m_Prefab == Entity.Null && m_PrefabPlaceholderElements.TryGetBuffer(m_ObjectPrefab, out var bufferData5) && !m_PrefabCreatureSpawnData.HasComponent(m_ObjectPrefab)) {
-                    Random random = m_RandomSeed.GetRandom(1000000);
-                    int num2 = 0;
-                    for (int j = 0; j < bufferData5.Length; j++) {
+                    var random = m_RandomSeed.GetRandom(1000000);
+                    var num2 = 0;
+                    for (var j = 0; j < bufferData5.Length; j++) {
                         if (GetVariationData(bufferData5[j], out var variation)) {
                             num2 += variation.m_Probability;
                             if (random.NextInt(num2) < variation.m_Probability) {
@@ -283,7 +282,7 @@ namespace Platter.Systems {
 
                 UpdateObject(entity5, Entity.Null, entity2, startPoint.m_OriginalEntity, updatedTopLevel, lotEntity, new Transform(startPoint.m_Position, startPoint.m_Rotation), startPoint.m_Elevation, ownerDefinition, clearAreas, upgrade, flag, rebuild: false, topLevel, optional: false, parentMesh, 0);
                 if (m_AttachmentPrefab.IsCreated && m_AttachmentPrefab.Value.m_Entity != Entity.Null) {
-                    Transform transform3 = new Transform(startPoint.m_Position, startPoint.m_Rotation);
+                    var transform3 = new Transform(startPoint.m_Position, startPoint.m_Rotation);
                     transform3.m_Position += math.rotate(transform3.m_Rotation, m_AttachmentPrefab.Value.m_Offset);
                     UpdateObject(m_AttachmentPrefab.Value.m_Entity, Entity.Null, Entity.Null, entity5, updatedTopLevel, Entity.Null, transform3, startPoint.m_Elevation, ownerDefinition, clearAreas, upgrade: false, relocate: false, rebuild: false, topLevel, optional: false, parentMesh, 0);
                 }
@@ -300,10 +299,10 @@ namespace Platter.Systems {
                 m_Probability = 100,
             };
             if (m_PrefabRequirementElements.TryGetBuffer(variation.m_Prefab, out var bufferData)) {
-                int num = -1;
-                bool flag = true;
-                for (int i = 0; i < bufferData.Length; i++) {
-                    ObjectRequirementElement objectRequirementElement = bufferData[i];
+                var num = -1;
+                var flag = true;
+                for (var i = 0; i < bufferData.Length; i++) {
+                    var objectRequirementElement = bufferData[i];
                     if (objectRequirementElement.m_Group != num) {
                         if (!flag) {
                             break;
@@ -334,8 +333,8 @@ namespace Platter.Systems {
             }
 
             if (m_PrefabSubObjects.HasBuffer(objectPrefab)) {
-                DynamicBuffer<Game.Prefabs.SubObject> dynamicBuffer = m_PrefabSubObjects[objectPrefab];
-                for (int i = 0; i < dynamicBuffer.Length; i++) {
+                var dynamicBuffer = m_PrefabSubObjects[objectPrefab];
+                for (var i = 0; i < dynamicBuffer.Length; i++) {
                     if (!CheckParentPrefab(parentPrefab, dynamicBuffer[i].m_Prefab)) {
                         return false;
                     }
@@ -346,28 +345,28 @@ namespace Platter.Systems {
         }
 
         private void UpdateObject(
-            Entity objectPrefab, 
-            Entity owner, 
-            Entity original, 
-            Entity parent, 
-            Entity updatedTopLevel, 
-            Entity lotEntity, 
-            Transform transform, 
+            Entity objectPrefab,
+            Entity owner,
+            Entity original,
+            Entity parent,
+            Entity updatedTopLevel,
+            Entity lotEntity,
+            Transform transform,
             float elevation,
-            OwnerDefinition ownerDefinition, 
-            NativeList<ClearAreaData> clearAreas, 
-            bool upgrade, 
-            bool relocate, 
-            bool rebuild, 
-            bool topLevel, 
+            OwnerDefinition ownerDefinition,
+            NativeList<ClearAreaData> clearAreas,
+            bool upgrade,
+            bool relocate,
+            bool rebuild,
+            bool topLevel,
             bool optional,
-            int parentMesh, 
+            int parentMesh,
             int randomIndex
         ) {
-            OwnerDefinition ownerDefinition2 = ownerDefinition;
-            Random random = m_RandomSeed.GetRandom(randomIndex);
+            var ownerDefinition2 = ownerDefinition;
+            var random = m_RandomSeed.GetRandom(randomIndex);
             if (!m_PrefabAssetStampData.HasComponent(objectPrefab) || ownerDefinition.m_Prefab == Entity.Null) {
-                Entity e = m_CommandBuffer.CreateEntity();
+                var e = m_CommandBuffer.CreateEntity();
                 CreationDefinition component = default;
                 component.m_Prefab = objectPrefab;
                 component.m_SubPrefab = Entity.Null;
@@ -399,14 +398,14 @@ namespace Platter.Systems {
                 component2.m_Intensity = 1f;
 
                 if (m_PrefabPlaceableObjectData.HasComponent(objectPrefab)) {
-                    PlaceableObjectData placeableObjectData = m_PrefabPlaceableObjectData[objectPrefab];
+                    var placeableObjectData = m_PrefabPlaceableObjectData[objectPrefab];
                     if ((placeableObjectData.m_Flags & Game.Objects.PlacementFlags.HasProbability) != 0) {
                         component2.m_Probability = placeableObjectData.m_DefaultProbability;
                     }
                 }
 
                 if (m_EditorContainerData.HasComponent(original)) {
-                    EditorContainer editorContainer = m_EditorContainerData[original];
+                    var editorContainer = m_EditorContainerData[original];
                     component.m_SubPrefab = editorContainer.m_Prefab;
                     component2.m_Scale = editorContainer.m_Scale;
                     component2.m_Intensity = editorContainer.m_Intensity;
@@ -414,7 +413,7 @@ namespace Platter.Systems {
                 }
 
                 if (m_LocalTransformCacheData.HasComponent(original)) {
-                    LocalTransformCache localTransformCache = m_LocalTransformCacheData[original];
+                    var localTransformCache = m_LocalTransformCacheData[original];
                     component2.m_Probability = localTransformCache.m_Probability;
                     component2.m_PrefabSubIndex = localTransformCache.m_PrefabSubIndex;
                 }
@@ -423,11 +422,11 @@ namespace Platter.Systems {
 
                 if (ownerDefinition.m_Prefab != Entity.Null) {
                     m_CommandBuffer.AddComponent(e, ownerDefinition);
-                    Transform transform2 = ObjectUtils.WorldToLocal(ObjectUtils.InverseTransform(new Transform(ownerDefinition.m_Position, ownerDefinition.m_Rotation)), transform);
+                    var transform2 = ObjectUtils.WorldToLocal(ObjectUtils.InverseTransform(new Transform(ownerDefinition.m_Position, ownerDefinition.m_Rotation)), transform);
                     component2.m_LocalPosition = transform2.m_Position;
                     component2.m_LocalRotation = transform2.m_Rotation;
                 } else if (m_TransformData.HasComponent(owner)) {
-                    Transform transform3 = ObjectUtils.WorldToLocal(ObjectUtils.InverseTransform(m_TransformData[owner]), transform);
+                    var transform3 = ObjectUtils.WorldToLocal(ObjectUtils.InverseTransform(m_TransformData[owner]), transform);
                     component2.m_LocalPosition = transform3.m_Position;
                     component2.m_LocalRotation = transform3.m_Rotation;
                 } else {
@@ -435,7 +434,7 @@ namespace Platter.Systems {
                     component2.m_LocalRotation = transform.m_Rotation;
                 }
 
-                Entity entity = Entity.Null;
+                var entity = Entity.Null;
                 if (m_SubObjects.HasBuffer(parent)) {
                     component.m_Flags |= CreationFlags.Attach;
                     if (parentMesh == -1 && m_NetElevationData.HasComponent(parent)) {
@@ -458,7 +457,7 @@ namespace Platter.Systems {
                 }
 
                 if (m_AttachedData.HasComponent(original)) {
-                    Attached attached = m_AttachedData[original];
+                    var attached = m_AttachedData[original];
                     if (attached.m_Parent != entity) {
                         UpdateAttachedParent(attached.m_Parent, updatedTopLevel);
                     }
@@ -480,10 +479,10 @@ namespace Platter.Systems {
                 m_CommandBuffer.AddComponent(e, default(Updated));
             } else {
                 if (m_PrefabSubObjects.HasBuffer(objectPrefab)) {
-                    DynamicBuffer<Game.Prefabs.SubObject> dynamicBuffer = m_PrefabSubObjects[objectPrefab];
-                    for (int i = 0; i < dynamicBuffer.Length; i++) {
-                        Game.Prefabs.SubObject subObject = dynamicBuffer[i];
-                        Transform transform4 = ObjectUtils.LocalToWorld(transform, subObject.m_Position, subObject.m_Rotation);
+                    var dynamicBuffer = m_PrefabSubObjects[objectPrefab];
+                    for (var i = 0; i < dynamicBuffer.Length; i++) {
+                        var subObject = dynamicBuffer[i];
+                        var transform4 = ObjectUtils.LocalToWorld(transform, subObject.m_Position, subObject.m_Rotation);
                         UpdateObject(subObject.m_Prefab, owner, Entity.Null, parent, updatedTopLevel, lotEntity, transform4, elevation, ownerDefinition, default, upgrade: false, relocate: false, rebuild: false, topLevel: false, optional: false, parentMesh, i);
                     }
                 }
@@ -493,7 +492,7 @@ namespace Platter.Systems {
             }
 
             NativeParallelHashMap<Entity, int> selectedSpawnables = default;
-            Transform mainInverseTransform = transform;
+            var mainInverseTransform = transform;
             if (original != Entity.Null) {
                 mainInverseTransform = ObjectUtils.InverseTransform(m_TransformData[original]);
             }
@@ -508,7 +507,7 @@ namespace Platter.Systems {
 
         private void UpdateAttachedParent(Entity parent, Entity updatedTopLevel) {
             if (updatedTopLevel != Entity.Null) {
-                Entity entity = parent;
+                var entity = parent;
                 if (entity == updatedTopLevel) {
                     return;
                 }
@@ -522,8 +521,8 @@ namespace Platter.Systems {
             }
 
             if (m_EdgeData.HasComponent(parent)) {
-                Edge edge = m_EdgeData[parent];
-                Entity e = m_CommandBuffer.CreateEntity();
+                var edge = m_EdgeData[parent];
+                var e = m_CommandBuffer.CreateEntity();
                 CreationDefinition component = default;
                 component.m_Original = parent;
                 component.m_Flags |= CreationFlags.Align;
@@ -543,8 +542,8 @@ namespace Platter.Systems {
                 component2.m_EndPosition.m_CourseDelta = 1f;
                 m_CommandBuffer.AddComponent(e, component2);
             } else if (m_NodeData.HasComponent(parent)) {
-                Game.Net.Node node = m_NodeData[parent];
-                Entity e2 = m_CommandBuffer.CreateEntity();
+                var node = m_NodeData[parent];
+                var e2 = m_CommandBuffer.CreateEntity();
                 CreationDefinition component3 = default;
                 component3.m_Original = parent;
                 m_CommandBuffer.AddComponent(e2, component3);
@@ -575,9 +574,9 @@ namespace Platter.Systems {
             }
 
             if (m_ConnectedEdges.TryGetBuffer(entity, out var bufferData)) {
-                for (int i = 0; i < bufferData.Length; i++) {
-                    ConnectedEdge connectedEdge = bufferData[i];
-                    Edge edge = m_EdgeData[connectedEdge.m_Edge];
+                for (var i = 0; i < bufferData.Length; i++) {
+                    var connectedEdge = bufferData[i];
+                    var edge = m_EdgeData[connectedEdge.m_Edge];
                     if (edge.m_Start == entity) {
                         if (m_CompositionData.TryGetComponent(connectedEdge.m_Edge, out componentData) && m_PrefabCompositionData.TryGetComponent(componentData.m_StartNode, out componentData2) && ((componentData2.m_Flags.m_Left | componentData2.m_Flags.m_Right) & CompositionFlags.Side.Lowered) != 0) {
                             return true;
@@ -596,16 +595,16 @@ namespace Platter.Systems {
                 return;
             }
 
-            Transform inverseParentTransform = ObjectUtils.InverseTransform(m_TransformData[original]);
-            DynamicBuffer<InstalledUpgrade> dynamicBuffer = m_InstalledUpgrades[original];
+            var inverseParentTransform = ObjectUtils.InverseTransform(m_TransformData[original]);
+            var dynamicBuffer = m_InstalledUpgrades[original];
             Transform transform2 = default;
-            for (int i = 0; i < dynamicBuffer.Length; i++) {
-                Entity upgrade = dynamicBuffer[i].m_Upgrade;
+            for (var i = 0; i < dynamicBuffer.Length; i++) {
+                var upgrade = dynamicBuffer[i].m_Upgrade;
                 if (!m_TransformData.HasComponent(upgrade)) {
                     continue;
                 }
 
-                Entity e = m_CommandBuffer.CreateEntity();
+                var e = m_CommandBuffer.CreateEntity();
                 CreationDefinition component = default;
                 component.m_Original = upgrade;
                 if (relocate) {
@@ -629,7 +628,7 @@ namespace Platter.Systems {
                 component2.m_Probability = 100;
                 component2.m_PrefabSubIndex = -1;
                 if (m_LocalTransformCacheData.HasComponent(upgrade)) {
-                    LocalTransformCache localTransformCache = m_LocalTransformCacheData[upgrade];
+                    var localTransformCache = m_LocalTransformCacheData[upgrade];
                     component2.m_ParentMesh = localTransformCache.m_ParentMesh;
                     component2.m_GroupIndex = localTransformCache.m_GroupIndex;
                     component2.m_Probability = localTransformCache.m_Probability;
@@ -645,19 +644,19 @@ namespace Platter.Systems {
                     component2.m_Elevation = componentData.m_Elevation;
                 }
 
-                Transform transform3 = ObjectUtils.LocalToWorld(transform, transform2);
+                var transform3 = ObjectUtils.LocalToWorld(transform, transform2);
                 transform3.m_Rotation = math.normalize(transform3.m_Rotation);
                 if (relocate && m_BuildingData.HasComponent(upgrade) && m_PrefabRefData.TryGetComponent(upgrade, out var componentData2) && m_PrefabPlaceableObjectData.TryGetComponent(componentData2.m_Prefab, out var componentData3)) {
-                    float num = TerrainUtils.SampleHeight(ref m_TerrainHeightData, transform3.m_Position);
+                    var num = TerrainUtils.SampleHeight(ref m_TerrainHeightData, transform3.m_Position);
                     if ((componentData3.m_Flags & Game.Objects.PlacementFlags.Hovering) != 0) {
-                        float num2 = WaterUtils.SampleHeight(ref m_WaterSurfaceData, ref m_TerrainHeightData, transform3.m_Position);
+                        var num2 = WaterUtils.SampleHeight(ref m_WaterSurfaceData, ref m_TerrainHeightData, transform3.m_Position);
                         num2 += componentData3.m_PlacementOffset.y;
                         component2.m_Elevation = math.max(0f, num2 - num);
                         num = math.max(num, num2);
                     } else if ((componentData3.m_Flags & (Game.Objects.PlacementFlags.Shoreline | Game.Objects.PlacementFlags.Floating)) == 0) {
                         num += componentData3.m_PlacementOffset.y;
                     } else {
-                        float num3 = WaterUtils.SampleHeight(ref m_WaterSurfaceData, ref m_TerrainHeightData, transform3.m_Position, out var waterDepth);
+                        var num3 = WaterUtils.SampleHeight(ref m_WaterSurfaceData, ref m_TerrainHeightData, transform3.m_Position, out var waterDepth);
                         if (waterDepth >= 0.2f) {
                             num3 += componentData3.m_PlacementOffset.y;
                             if ((componentData3.m_Flags & Game.Objects.PlacementFlags.Floating) != 0) {
@@ -680,7 +679,7 @@ namespace Platter.Systems {
                 ownerDefinition2.m_Prefab = m_PrefabRefData[upgrade].m_Prefab;
                 ownerDefinition2.m_Position = transform3.m_Position;
                 ownerDefinition2.m_Rotation = transform3.m_Rotation;
-                OwnerDefinition ownerDefinition3 = ownerDefinition2;
+                var ownerDefinition3 = ownerDefinition2;
                 UpdateSubNets(transform3, mainTransform, mainInverseTransform, ownerDefinition3.m_Prefab, upgrade, Entity.Null, relocate, topLevel: true, ownerDefinition3, default, ref random);
                 UpdateSubAreas(transform3, ownerDefinition3.m_Prefab, upgrade, relocate, rebuild, topLevel: true, ownerDefinition3, default, ref random, ref selectedSpawnables);
             }
@@ -692,20 +691,20 @@ namespace Platter.Systems {
             component.m_Prefab = netPrefab;
             component.m_SubPrefab = lanePrefab;
             component.m_RandomSeed = random.NextInt();
-            bool flag = parentMesh.x >= 0 && parentMesh.y >= 0;
+            var flag = parentMesh.x >= 0 && parentMesh.y >= 0;
             NetCourse component2 = default;
             if ((componentData.m_Flags & Game.Net.GeometryFlags.OnWater) != 0) {
                 curve.y = default;
                 Curve curve2 = default;
                 curve2.m_Bezier = ObjectUtils.LocalToWorld(parentTransform.m_Position, parentTransform.m_Rotation, curve);
-                Curve curve3 = curve2;
+                var curve3 = curve2;
                 component2.m_Curve = NetUtils.AdjustPosition(curve3, fixedStart: false, linearMiddle: false, fixedEnd: false, ref m_TerrainHeightData, ref m_WaterSurfaceData).m_Bezier;
             } else if (!flag) {
                 Curve curve2 = default;
                 curve2.m_Bezier = ObjectUtils.LocalToWorld(parentTransform.m_Position, parentTransform.m_Rotation, curve);
-                Curve curve4 = curve2;
-                bool flag2 = parentMesh.x >= 0;
-                bool flag3 = parentMesh.y >= 0;
+                var curve4 = curve2;
+                var flag2 = parentMesh.x >= 0;
+                var flag3 = parentMesh.y >= 0;
                 flag = flag2 || flag3;
                 if ((componentData.m_Flags & Game.Net.GeometryFlags.FlattenTerrain) != 0) {
                     if (hasLot) {
@@ -728,12 +727,12 @@ namespace Platter.Systems {
                 component2.m_Curve = ObjectUtils.LocalToWorld(parentTransform.m_Position, parentTransform.m_Rotation, curve);
             }
 
-            bool onGround = !flag || math.cmin(math.abs(curve.y.abcd)) < 2f;
+            var onGround = !flag || math.cmin(math.abs(curve.y.abcd)) < 2f;
             if (ClearAreaHelpers.ShouldClear(clearAreas, component2.m_Curve, onGround)) {
                 return;
             }
 
-            Entity e = m_CommandBuffer.CreateEntity();
+            var e = m_CommandBuffer.CreateEntity();
             m_CommandBuffer.AddComponent(e, component);
             m_CommandBuffer.AddComponent(e, default(Updated));
             if (ownerDefinition.m_Prefab != Entity.Null) {
@@ -784,7 +783,7 @@ namespace Platter.Systems {
             if (upgrades != default) {
                 Upgraded upgraded = default;
                 upgraded.m_Flags = upgrades;
-                Upgraded component3 = upgraded;
+                var component3 = upgraded;
                 m_CommandBuffer.AddComponent(e, component3);
             }
 
@@ -797,7 +796,7 @@ namespace Platter.Systems {
 
         private bool GetOwnerLot(Entity lotOwner, out BuildingUtils.LotInfo lotInfo) {
             if (m_LotData.TryGetComponent(lotOwner, out var componentData) && m_TransformData.TryGetComponent(lotOwner, out var componentData2) && m_PrefabRefData.TryGetComponent(lotOwner, out var componentData3) && m_PrefabBuildingData.TryGetComponent(componentData3.m_Prefab, out var componentData4)) {
-                float2 extents = new float2(componentData4.m_LotSize) * 4f;
+                var extents = new float2(componentData4.m_LotSize) * 4f;
                 m_ElevationData.TryGetComponent(lotOwner, out var componentData5);
                 m_InstalledUpgrades.TryGetBuffer(lotOwner, out var bufferData);
                 lotInfo = BuildingUtils.CalculateLotInfo(extents, componentData2, componentData5, componentData, componentData3, bufferData, m_TransformData, m_PrefabRefData, m_PrefabObjectGeometryData, m_PrefabBuildingTerraformData, m_PrefabBuildingExtensionData, defaultNoSmooth: false, out var _);
@@ -809,13 +808,13 @@ namespace Platter.Systems {
         }
 
         private void UpdateSubNets(Transform transform, Transform mainTransform, Transform mainInverseTransform, Entity prefab, Entity original, Entity lotEntity, bool relocate, bool topLevel, OwnerDefinition ownerDefinition, NativeList<ClearAreaData> clearAreas, ref Random random) {
-            bool flag = original == Entity.Null || relocate && m_EditorMode;
+            var flag = original == Entity.Null || (relocate && m_EditorMode);
             if (flag && topLevel && m_PrefabSubNets.HasBuffer(prefab)) {
-                DynamicBuffer<Game.Prefabs.SubNet> subNets = m_PrefabSubNets[prefab];
-                NativeList<float4> nodePositions = new NativeList<float4>(subNets.Length * 2, Allocator.Temp);
-                bool ownerLot = GetOwnerLot(lotEntity, out BuildingUtils.LotInfo lotInfo);
-                for (int i = 0; i < subNets.Length; i++) {
-                    Game.Prefabs.SubNet subNet = subNets[i];
+                var subNets = m_PrefabSubNets[prefab];
+                var nodePositions = new NativeList<float4>(subNets.Length * 2, Allocator.Temp);
+                var ownerLot = GetOwnerLot(lotEntity, out var lotInfo);
+                for (var i = 0; i < subNets.Length; i++) {
+                    var subNet = subNets[i];
                     if (subNet.m_NodeIndex.x >= 0) {
                         while (nodePositions.Length <= subNet.m_NodeIndex.x) {
                             float4 value = default;
@@ -835,12 +834,12 @@ namespace Platter.Systems {
                     }
                 }
 
-                for (int j = 0; j < nodePositions.Length; j++) {
+                for (var j = 0; j < nodePositions.Length; j++) {
                     nodePositions[j] /= math.max(1f, nodePositions[j].w);
                 }
 
-                for (int k = 0; k < subNets.Length; k++) {
-                    Game.Prefabs.SubNet subNet2 = NetUtils.GetSubNet(subNets, k, m_LefthandTraffic, ref m_PrefabNetGeometryData);
+                for (var k = 0; k < subNets.Length; k++) {
+                    var subNet2 = NetUtils.GetSubNet(subNets, k, m_LefthandTraffic, ref m_PrefabNetGeometryData);
                     CreateSubNet(subNet2.m_Prefab, Entity.Null, subNet2.m_Curve, subNet2.m_NodeIndex, subNet2.m_ParentMesh, subNet2.m_Upgrades, nodePositions, transform, ownerDefinition, clearAreas, lotInfo, ownerLot, ref random);
                 }
 
@@ -848,10 +847,10 @@ namespace Platter.Systems {
             }
 
             if (flag && topLevel && m_EditorMode && m_PrefabSubLanes.HasBuffer(prefab)) {
-                DynamicBuffer<Game.Prefabs.SubLane> dynamicBuffer = m_PrefabSubLanes[prefab];
-                NativeList<float4> nodePositions2 = new NativeList<float4>(dynamicBuffer.Length * 2, Allocator.Temp);
-                for (int l = 0; l < dynamicBuffer.Length; l++) {
-                    Game.Prefabs.SubLane subLane = dynamicBuffer[l];
+                var dynamicBuffer = m_PrefabSubLanes[prefab];
+                var nodePositions2 = new NativeList<float4>(dynamicBuffer.Length * 2, Allocator.Temp);
+                for (var l = 0; l < dynamicBuffer.Length; l++) {
+                    var subLane = dynamicBuffer[l];
                     if (subLane.m_NodeIndex.x >= 0) {
                         while (nodePositions2.Length <= subLane.m_NodeIndex.x) {
                             float4 value = default;
@@ -871,12 +870,12 @@ namespace Platter.Systems {
                     }
                 }
 
-                for (int m = 0; m < nodePositions2.Length; m++) {
+                for (var m = 0; m < nodePositions2.Length; m++) {
                     nodePositions2[m] /= math.max(1f, nodePositions2[m].w);
                 }
 
-                for (int n = 0; n < dynamicBuffer.Length; n++) {
-                    Game.Prefabs.SubLane subLane2 = dynamicBuffer[n];
+                for (var n = 0; n < dynamicBuffer.Length; n++) {
+                    var subLane2 = dynamicBuffer[n];
                     CreateSubNet(Entity.Null, subLane2.m_Prefab, subLane2.m_Curve, subLane2.m_NodeIndex, subLane2.m_ParentMesh, default, nodePositions2, transform, ownerDefinition, clearAreas, default, hasLot: false, ref random);
                 }
 
@@ -887,51 +886,51 @@ namespace Platter.Systems {
                 return;
             }
 
-            DynamicBuffer<Game.Net.SubNet> dynamicBuffer2 = m_SubNets[original];
+            var dynamicBuffer2 = m_SubNets[original];
             NativeHashMap<Entity, int> nativeHashMap = default;
             NativeList<float4> nodePositions3 = default;
             BuildingUtils.LotInfo lotInfo2 = default;
-            bool hasLot = false;
+            var hasLot = false;
             if (!flag && relocate) {
                 nativeHashMap = new NativeHashMap<Entity, int>(dynamicBuffer2.Length, Allocator.Temp);
                 nodePositions3 = new NativeList<float4>(dynamicBuffer2.Length, Allocator.Temp);
                 hasLot = GetOwnerLot(lotEntity, out lotInfo2);
-                for (int num = 0; num < dynamicBuffer2.Length; num++) {
-                    Entity subNet3 = dynamicBuffer2[num].m_SubNet;
+                for (var num = 0; num < dynamicBuffer2.Length; num++) {
+                    var subNet3 = dynamicBuffer2[num].m_SubNet;
                     if (m_NodeData.TryGetComponent(subNet3, out var componentData)) {
                         if (nativeHashMap.TryAdd(subNet3, nodePositions3.Length)) {
                             componentData.m_Position = ObjectUtils.WorldToLocal(mainInverseTransform, componentData.m_Position);
-                            float4 value = new float4(componentData.m_Position, 1f);
+                            var value = new float4(componentData.m_Position, 1f);
                             nodePositions3.Add(in value);
                         }
-                    } else if (m_EdgeData.TryGetComponent(subNet3, out Edge componentData2)) {
+                    } else if (m_EdgeData.TryGetComponent(subNet3, out var componentData2)) {
                         if (nativeHashMap.TryAdd(componentData2.m_Start, nodePositions3.Length)) {
                             componentData.m_Position = ObjectUtils.WorldToLocal(mainInverseTransform, m_NodeData[componentData2.m_Start].m_Position);
-                            float4 value = new float4(componentData.m_Position, 1f);
+                            var value = new float4(componentData.m_Position, 1f);
                             nodePositions3.Add(in value);
                         }
 
                         if (nativeHashMap.TryAdd(componentData2.m_End, nodePositions3.Length)) {
                             componentData.m_Position = ObjectUtils.WorldToLocal(mainInverseTransform, m_NodeData[componentData2.m_End].m_Position);
-                            float4 value = new float4(componentData.m_Position, 1f);
+                            var value = new float4(componentData.m_Position, 1f);
                             nodePositions3.Add(in value);
                         }
                     }
                 }
             }
 
-            for (int num2 = 0; num2 < dynamicBuffer2.Length; num2++) {
-                Entity subNet4 = dynamicBuffer2[num2].m_SubNet;
+            for (var num2 = 0; num2 < dynamicBuffer2.Length; num2++) {
+                var subNet4 = dynamicBuffer2[num2].m_SubNet;
                 if (m_NodeData.TryGetComponent(subNet4, out var componentData3)) {
                     if (HasEdgeStartOrEnd(subNet4, original)) {
                         continue;
                     }
 
-                    Entity e = m_CommandBuffer.CreateEntity();
+                    var e = m_CommandBuffer.CreateEntity();
                     CreationDefinition component = default;
                     component.m_Original = subNet4;
-                    bool flag2 = m_NetElevationData.TryGetComponent(subNet4, out Game.Net.Elevation componentData4);
-                    bool onGround = !flag2 || math.cmin(math.abs(componentData4.m_Elevation)) < 2f;
+                    var flag2 = m_NetElevationData.TryGetComponent(subNet4, out var componentData4);
+                    var onGround = !flag2 || math.cmin(math.abs(componentData4.m_Elevation)) < 2f;
                     if (flag || relocate || ClearAreaHelpers.ShouldClear(clearAreas, componentData3.m_Position, onGround)) {
                         component.m_Flags |= CreationFlags.Delete | CreationFlags.Hidden;
                     } else if (ownerDefinition.m_Prefab != Entity.Null) {
@@ -967,8 +966,8 @@ namespace Platter.Systems {
                             component2.m_Curve.y = default;
                         }
 
-                        int num3 = nativeHashMap[subNet4];
-                        int num4 = !flag2 ? -1 : 0;
+                        var num3 = nativeHashMap[subNet4];
+                        var num4 = !flag2 ? -1 : 0;
                         m_UpgradedData.TryGetComponent(subNet4, out var componentData5);
                         CreateSubNet(netPrefab, component.m_SubPrefab, component2.m_Curve, num3, num4, componentData5.m_Flags, nodePositions3, mainTransform, ownerDefinition, clearAreas, lotInfo2, hasLot, ref random);
                     }
@@ -977,12 +976,12 @@ namespace Platter.Systems {
                         continue;
                     }
 
-                    Entity e2 = m_CommandBuffer.CreateEntity();
+                    var e2 = m_CommandBuffer.CreateEntity();
                     CreationDefinition component3 = default;
                     component3.m_Original = subNet4;
-                    Curve curve = m_CurveData[subNet4];
-                    bool flag3 = m_NetElevationData.TryGetComponent(subNet4, out Game.Net.Elevation componentData7);
-                    bool onGround2 = !flag3 || math.cmin(math.abs(componentData7.m_Elevation)) < 2f;
+                    var curve = m_CurveData[subNet4];
+                    var flag3 = m_NetElevationData.TryGetComponent(subNet4, out var componentData7);
+                    var onGround2 = !flag3 || math.cmin(math.abs(componentData7.m_Elevation)) < 2f;
                     if (flag || relocate || ClearAreaHelpers.ShouldClear(clearAreas, curve.m_Bezier, onGround2)) {
                         component3.m_Flags |= CreationFlags.Delete | CreationFlags.Hidden;
                     } else if (ownerDefinition.m_Prefab != Entity.Null) {
@@ -1020,8 +1019,8 @@ namespace Platter.Systems {
                             component4.m_Curve.y = default;
                         }
 
-                        int2 nodeIndex = new int2(nativeHashMap[componentData6.m_Start], nativeHashMap[componentData6.m_End]);
-                        int2 parentMesh = new int2(!m_NetElevationData.HasComponent(componentData6.m_Start) ? -1 : 0, !m_NetElevationData.HasComponent(componentData6.m_End) ? -1 : 0);
+                        var nodeIndex = new int2(nativeHashMap[componentData6.m_Start], nativeHashMap[componentData6.m_End]);
+                        var parentMesh = new int2(!m_NetElevationData.HasComponent(componentData6.m_Start) ? -1 : 0, !m_NetElevationData.HasComponent(componentData6.m_End) ? -1 : 0);
                         m_UpgradedData.TryGetComponent(subNet4, out var componentData8);
                         CreateSubNet(netPrefab2, component3.m_SubPrefab, component4.m_Curve, nodeIndex, parentMesh, componentData8.m_Flags, nodePositions3, mainTransform, ownerDefinition, clearAreas, lotInfo2, hasLot, ref random);
                     }
@@ -1038,15 +1037,15 @@ namespace Platter.Systems {
         }
 
         private void UpdateSubAreas(Transform transform, Entity prefab, Entity original, bool relocate, bool rebuild, bool topLevel, OwnerDefinition ownerDefinition, NativeList<ClearAreaData> clearAreas, ref Random random, ref NativeParallelHashMap<Entity, int> selectedSpawnables) {
-            bool flag = original == Entity.Null || relocate || rebuild;
+            var flag = original == Entity.Null || relocate || rebuild;
             if (flag && topLevel && m_PrefabSubAreas.HasBuffer(prefab)) {
-                DynamicBuffer<Game.Prefabs.SubArea> dynamicBuffer = m_PrefabSubAreas[prefab];
-                DynamicBuffer<SubAreaNode> dynamicBuffer2 = m_PrefabSubAreaNodes[prefab];
-                for (int i = 0; i < dynamicBuffer.Length; i++) {
-                    Game.Prefabs.SubArea subArea = dynamicBuffer[i];
+                var dynamicBuffer = m_PrefabSubAreas[prefab];
+                var dynamicBuffer2 = m_PrefabSubAreaNodes[prefab];
+                for (var i = 0; i < dynamicBuffer.Length; i++) {
+                    var subArea = dynamicBuffer[i];
                     int seed;
                     if (!m_EditorMode && m_PrefabPlaceholderElements.HasBuffer(subArea.m_Prefab)) {
-                        DynamicBuffer<PlaceholderObjectElement> placeholderElements = m_PrefabPlaceholderElements[subArea.m_Prefab];
+                        var placeholderElements = m_PrefabPlaceholderElements[subArea.m_Prefab];
                         if (!selectedSpawnables.IsCreated) {
                             selectedSpawnables = new NativeParallelHashMap<Entity, int>(10, Allocator.Temp);
                         }
@@ -1058,7 +1057,7 @@ namespace Platter.Systems {
                         seed = random.NextInt();
                     }
 
-                    AreaGeometryData areaGeometryData = m_PrefabAreaGeometryData[subArea.m_Prefab];
+                    var areaGeometryData = m_PrefabAreaGeometryData[subArea.m_Prefab];
                     if (areaGeometryData.m_Type == AreaType.Space) {
                         if (ClearAreaHelpers.ShouldClear(clearAreas, dynamicBuffer2, subArea.m_NodeRange, transform)) {
                             continue;
@@ -1067,7 +1066,7 @@ namespace Platter.Systems {
                         continue;
                     }
 
-                    Entity e = m_CommandBuffer.CreateEntity();
+                    var e = m_CommandBuffer.CreateEntity();
                     CreationDefinition component = default;
                     component.m_Prefab = subArea.m_Prefab;
                     component.m_RandomSeed = seed;
@@ -1081,7 +1080,7 @@ namespace Platter.Systems {
                         m_CommandBuffer.AddComponent(e, ownerDefinition);
                     }
 
-                    DynamicBuffer<Game.Areas.Node> dynamicBuffer3 = m_CommandBuffer.AddBuffer<Game.Areas.Node>(e);
+                    var dynamicBuffer3 = m_CommandBuffer.AddBuffer<Game.Areas.Node>(e);
                     dynamicBuffer3.ResizeUninitialized(subArea.m_NodeRange.y - subArea.m_NodeRange.x + 1);
                     DynamicBuffer<LocalNodeCache> dynamicBuffer4 = default;
                     if (m_EditorMode) {
@@ -1089,13 +1088,13 @@ namespace Platter.Systems {
                         dynamicBuffer4.ResizeUninitialized(dynamicBuffer3.Length);
                     }
 
-                    int num = GetFirstNodeIndex(dynamicBuffer2, subArea.m_NodeRange);
-                    int num2 = 0;
-                    for (int j = subArea.m_NodeRange.x; j <= subArea.m_NodeRange.y; j++) {
-                        float3 position = dynamicBuffer2[num].m_Position;
-                        float3 position2 = ObjectUtils.LocalToWorld(transform, position);
-                        int parentMesh = dynamicBuffer2[num].m_ParentMesh;
-                        float elevation = math.select(float.MinValue, position.y, parentMesh >= 0);
+                    var num = GetFirstNodeIndex(dynamicBuffer2, subArea.m_NodeRange);
+                    var num2 = 0;
+                    for (var j = subArea.m_NodeRange.x; j <= subArea.m_NodeRange.y; j++) {
+                        var position = dynamicBuffer2[num].m_Position;
+                        var position2 = ObjectUtils.LocalToWorld(transform, position);
+                        var parentMesh = dynamicBuffer2[num].m_ParentMesh;
+                        var elevation = math.select(float.MinValue, position.y, parentMesh >= 0);
                         dynamicBuffer3[num2] = new Game.Areas.Node(position2, elevation);
                         if (m_EditorMode) {
                             dynamicBuffer4[num2] = new LocalNodeCache {
@@ -1116,13 +1115,13 @@ namespace Platter.Systems {
                 return;
             }
 
-            DynamicBuffer<Game.Areas.SubArea> dynamicBuffer5 = m_SubAreas[original];
-            for (int k = 0; k < dynamicBuffer5.Length; k++) {
-                Entity area = dynamicBuffer5[k].m_Area;
-                DynamicBuffer<Game.Areas.Node> nodes = m_AreaNodes[area];
-                bool flag2 = flag;
+            var dynamicBuffer5 = m_SubAreas[original];
+            for (var k = 0; k < dynamicBuffer5.Length; k++) {
+                var area = dynamicBuffer5[k].m_Area;
+                var nodes = m_AreaNodes[area];
+                var flag2 = flag;
                 if (!flag2 && m_AreaSpaceData.HasComponent(area)) {
-                    DynamicBuffer<Triangle> triangles = m_AreaTriangles[area];
+                    var triangles = m_AreaTriangles[area];
                     flag2 = ClearAreaHelpers.ShouldClear(clearAreas, nodes, triangles, transform);
                 }
 
@@ -1134,7 +1133,7 @@ namespace Platter.Systems {
                     flag2 = !rebuild;
                 }
 
-                Entity e2 = m_CommandBuffer.CreateEntity();
+                var e2 = m_CommandBuffer.CreateEntity();
                 CreationDefinition component2 = default;
                 component2.m_Original = area;
                 if (flag2) {
@@ -1147,17 +1146,17 @@ namespace Platter.Systems {
                 m_CommandBuffer.AddComponent(e2, default(Updated));
                 m_CommandBuffer.AddBuffer<Game.Areas.Node>(e2).CopyFrom(nodes.AsNativeArray());
                 if (m_CachedNodes.HasBuffer(area)) {
-                    DynamicBuffer<LocalNodeCache> dynamicBuffer6 = m_CachedNodes[area];
+                    var dynamicBuffer6 = m_CachedNodes[area];
                     m_CommandBuffer.AddBuffer<LocalNodeCache>(e2).CopyFrom(dynamicBuffer6.AsNativeArray());
                 }
             }
         }
 
         private bool HasEdgeStartOrEnd(Entity node, Entity owner) {
-            DynamicBuffer<ConnectedEdge> dynamicBuffer = m_ConnectedEdges[node];
-            for (int i = 0; i < dynamicBuffer.Length; i++) {
-                Entity edge = dynamicBuffer[i].m_Edge;
-                Edge edge2 = m_EdgeData[edge];
+            var dynamicBuffer = m_ConnectedEdges[node];
+            for (var i = 0; i < dynamicBuffer.Length; i++) {
+                var edge = dynamicBuffer[i].m_Edge;
+                var edge2 = m_EdgeData[edge];
                 if ((edge2.m_Start == node || edge2.m_End == node) && m_OwnerData.HasComponent(edge) && m_OwnerData[edge].m_Owner == owner) {
                     return true;
                 }

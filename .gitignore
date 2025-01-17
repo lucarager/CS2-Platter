@@ -75,3 +75,4 @@ crashlytics-build.properties
 
 node_modules
 UI/debug
+UI/build

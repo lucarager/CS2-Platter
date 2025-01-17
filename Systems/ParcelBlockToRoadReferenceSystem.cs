@@ -59,25 +59,25 @@ namespace Platter.Systems {
 
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
 
-            NativeArray<Entity> parcelEntities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
+            var parcelEntities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
 
             GetBufferLookup<SubBlock>(true);
 
-            for (int i = 0; i < parcelEntities.Length; i++) {
+            for (var i = 0; i < parcelEntities.Length; i++) {
                 var parcelEntity = parcelEntities[i];
                 var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
                 var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
 
                 m_Log.Debug($"OnUpdate() -- Updating references for parcel {parcelEntity}");
 
-                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out DynamicBuffer<SubBlock> subBlockBuffer)) {
+                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find parcel's {parcelEntity} subblock buffer");
                     return;
                 }
 
                 m_Log.Debug($"OnUpdate() -- {parcelEntity} has {subBlockBuffer.Length} subBlocks.");
 
-                for (int j = 0; j < subBlockBuffer.Length; j++) {
+                for (var j = 0; j < subBlockBuffer.Length; j++) {
                     var subBlock = subBlockBuffer[j];
                     var blockEntity = subBlock.m_SubBlock;
                     var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
@@ -103,7 +103,7 @@ namespace Platter.Systems {
                         // the spawn system won't pick up this block.
                         m_CommandBuffer.RemoveComponent<Owner>(blockEntity);
                     } else {
-                        if (EntityManager.TryGetComponent<Owner>(blockEntity, out Owner owner)) {
+                        if (EntityManager.TryGetComponent<Owner>(blockEntity, out var owner)) {
                             owner.m_Owner = parcel.m_RoadEdge;
                             m_CommandBuffer.SetComponent<Owner>(blockEntity, owner);
                         } else {

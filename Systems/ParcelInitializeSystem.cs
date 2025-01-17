@@ -54,11 +54,11 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            NativeArray<Entity> entities = m_PrefabQuery.ToEntityArray(Allocator.Temp);
+            var entities = m_PrefabQuery.ToEntityArray(Allocator.Temp);
             m_Log.Debug($"OnUpdate() -- Found {entities.Length} prefabs to initialize.");
 
-            for (int i = 0; i < entities.Length; i++) {
-                Entity currentEntity = entities[i];
+            for (var i = 0; i < entities.Length; i++) {
+                var currentEntity = entities[i];
 
                 // @todo
                 // Looking at game code, I think its cleaner to get PrefabRef, which then can get prefab data directly
@@ -66,19 +66,19 @@ namespace Platter.Systems {
                 var prefabData = EntityManager.GetComponentData<PrefabData>(currentEntity);
 
                 // Get prefab data
-                if (!m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabData, out PrefabBase prefabBase)) {
+                if (!m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabData, out var prefabBase)) {
                     return;
                 }
 
                 // Get Parcel ComponentBase
-                ParcelPrefab parcelPrefabRef = prefabBase.GetComponent<ParcelPrefab>();
+                var parcelPrefabRef = prefabBase.GetComponent<ParcelPrefab>();
 
-                if (!m_PrefabSystem.TryGetEntity(parcelPrefabRef.m_ZoneBlock, out Entity zoneBlockPrefab)) {
+                if (!m_PrefabSystem.TryGetEntity(parcelPrefabRef.m_ZoneBlock, out var zoneBlockPrefab)) {
                     return;
                 }
 
                 // Parceldata
-                ParcelData parcelData = EntityManager.GetComponentData<ParcelData>(currentEntity);
+                var parcelData = EntityManager.GetComponentData<ParcelData>(currentEntity);
                 parcelData.m_ZoneBlockPrefab = zoneBlockPrefab;
                 parcelData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
                 EntityManager.SetComponentData<ParcelData>(currentEntity, parcelData);
@@ -87,7 +87,7 @@ namespace Platter.Systems {
                 var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
 
                 // Geometry data
-                ObjectGeometryData oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
+                var oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
                 oGeoData.m_MinLod = 100;
                 oGeoData.m_Size = parcelGeo.Size;
                 oGeoData.m_Pivot = parcelGeo.Pivot;
@@ -99,13 +99,18 @@ namespace Platter.Systems {
                 EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
 
                 // Placeable data
-                PlaceableObjectData placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
+                var placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
                 placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadEdge | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround;
                 placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
 
-                // Terraform Data
-                // BuildingTerraformData terraformData = EntityManager.GetComponentData<BuildingTerraformData>(currentEntity);
+                //// Building Data
+                // var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
+                // buildingData.m_LotSize = parcelData.m_LotSize;
+                // buildingData.m_Flags = BuildingFlags.RequireRoad;
+
+                //// Terraform Data
+                // var terraformData = EntityManager.GetComponentData<BuildingTerraformData>(currentEntity);
                 // terraformData.m_FlatX0 = new float3(0f);
                 // terraformData.m_FlatZ0 = new float3(0f);
                 // terraformData.m_FlatX1 = new float3(0f);

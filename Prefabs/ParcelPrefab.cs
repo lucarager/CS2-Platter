@@ -56,7 +56,6 @@ namespace Game.Prefabs {
 
             // components.Add(ComponentType.ReadWrite<BuildingData>());
             // components.Add(ComponentType.ReadWrite<BuildingTerraformData>());
-            // components.Add(ComponentType.ReadWrite<Effect>());
         }
 
         /// <inheritdoc/>

@@ -16,12 +16,18 @@ namespace Platter.Settings {
     /// </summary>
     [FileLocation(PlatterMod.ModName)]
     [SettingsUIMouseAction(ApplyActionName, ActionType.Button, false, false, new string[] { "PlatterTool" })]
+    [SettingsUIKeyboardAction(CreateActionName, ActionType.Button, false, false, usages: new string[] { "PlatterTool" })]
     [SettingsUIMouseAction(CancelActionName, ActionType.Button, false, false, usages: new string[] { "PlatterTool" })]
     public class PlatterModSettings : ModSetting {
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
         internal const string ApplyActionName = "PlatterToolApply";
+
+        /// <summary>
+        /// Tool's apply action name.
+        /// </summary>
+        internal const string CreateActionName = "PlatterToolCreate";
 
         /// <summary>
         /// Tool's apply action name.
@@ -41,8 +47,15 @@ namespace Platter.Settings {
         /// </summary>
         [SettingsUIMouseBinding(ApplyActionName)]
         [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
         public ProxyBinding PlatterToolApply {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets the Platter Tool apply action (copied from game action).
+        /// </summary>
+        [SettingsUIKeyboardBinding(CreateActionName)]
+        public ProxyBinding PlatterToolCreate {
             get; set;
         }
 
@@ -51,7 +64,6 @@ namespace Platter.Settings {
         /// </summary>
         [SettingsUIMouseBinding(CancelActionName)]
         [SettingsUIBindingMimic(InputManager.kToolMap, "Cancel")]
-        [SettingsUIHidden]
         public ProxyBinding PlatterToolCancel {
             get; set;
         }

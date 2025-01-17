@@ -35,13 +35,13 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
-                BufferAccessor<ConnectedBuilding> connectedBuildingsBufferAccessor = chunk.GetBufferAccessor<ConnectedBuilding>(ref m_ConnectedBuildingBufferTypeHandle);
+                var connectedBuildingsBufferAccessor = chunk.GetBufferAccessor<ConnectedBuilding>(ref m_ConnectedBuildingBufferTypeHandle);
 
                 if (connectedBuildingsBufferAccessor.Length != 0) {
                     // todo do stuff with edges...
                 } else {
-                    NativeArray<Entity> parcelEntityArray = chunk.GetNativeArray(m_EntityTypeHandle);
-                    for (int m = 0; m < parcelEntityArray.Length; m++) {
+                    var parcelEntityArray = chunk.GetNativeArray(m_EntityTypeHandle);
+                    for (var m = 0; m < parcelEntityArray.Length; m++) {
                         m_EntitiesToUpdateQueue.Enqueue(parcelEntityArray[m]);
                     }
                 }

@@ -2,6 +2,13 @@
     position: absolute;
 }
 
+.section {
+    padding-top: 10rem;
+    padding-bottom: 30rem;
+    padding-left: 20rem;
+    padding-right: 20rem;
+}
+
 .header {
     display: flex;
     flex-direction: column;
@@ -29,12 +36,16 @@
     align-items: center;
     display: flex;
     flex-direction: "row";
-    height: 40px;
-    margin-bottom: 8px;
+    margin-top: 4rem;
+    margin-bottom: 4rem;
 }
 
 .controlsRowTitle {
     font-weight: 600;
+    max-width: 130px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: var(--fontSizeS) ;
+    line-height: 1.25em;
 }
 
 .controlsRowContent {
@@ -66,6 +77,10 @@
     font-weight: 600;
     width: 75rem;
     height: 28rem;
+}
+
+.sidesToggleButton {
+    margin-left: 2px;
 }
 
 .buttonContainer {
@@ -125,6 +140,28 @@
             }
         }
     }
+}
+
+.validatorSection {
+    margin-top: 20rem;
+    height: 60px;
+}
+
+.buildButton {
+    border-width: 1;
+    border-top-color: rgba(255, 255, 255, 0.3);
+    border-left-color: rgba(255, 255, 255, 0.3);
+    border-right-color: rgba(255, 255, 255, 0.3);
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+    background-color: #00000033;
+    color: rgba(217, 217, 217, 1);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    width: 100%;
+    border-radius: 6px;
+    text-align: center;
+    height: 100%;
 }
 
 .elevationStepSliderField {

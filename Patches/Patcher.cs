@@ -86,8 +86,8 @@ namespace Platter.Patches {
 
             try {
                 harmonyInstance.PatchAll();
-                System.Collections.Generic.IEnumerable<System.Reflection.MethodBase> patchedMethods = harmonyInstance.GetPatchedMethods();
-                foreach (System.Reflection.MethodBase patchedMethod in patchedMethods) {
+                var patchedMethods = harmonyInstance.GetPatchedMethods();
+                foreach (var patchedMethod in patchedMethods) {
                     Log.Info($"[Patcher] Patched method: {patchedMethod.Module.Name}:{patchedMethod.Name}");
                 }
 

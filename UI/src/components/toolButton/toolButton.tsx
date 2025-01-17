@@ -2,8 +2,8 @@ import React from "react";
 import { Button } from "cs2/ui";
 import { Theme } from "cs2/bindings";
 import { getModule, ModuleRegistryExtend } from "cs2/modding";
-import styles from "./button.module.scss";
 import { $bindings } from "modBindings";
+import styles from "./toolButton.module.scss";
 
 // Getting the vanilla theme css for compatibility
 const ToolBarButtonTheme: Theme | any = getModule(

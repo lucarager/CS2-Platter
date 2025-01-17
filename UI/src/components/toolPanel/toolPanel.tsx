@@ -11,15 +11,13 @@ import {
     Icon,
 } from "cs2/ui";
 import { $bindings, triggers } from "modBindings";
-// import { PanelState } from "mit-mainpanel/panelState";
-
-// import icon from "../img/MoveIt_Active.svg";
-import styles from "./panel.module.scss";
-import { buttonId } from "toolButton/button";
-import { VanillaComponentResolver } from "../utils/VanillaComponentResolver";
+import { buttonId } from "components/toolButton/toolButton";
+import { VanillaComponentResolver } from "utils/VanillaComponentResolver";
 import { Theme } from "cs2/bindings";
 import { getModule } from "cs2/modding";
 import { c } from "utils/classes";
+import styles from "./toolPanel.module.scss";
+import { FloatSliderField } from "test";
 
 const AssetCategoryTabTheme: Theme | any = getModule(
     "game-ui/game/components/asset-menu/asset-category-tab-bar/asset-category-tab-bar.module.scss",
@@ -31,13 +29,13 @@ const DropdownTheme: Theme | any = getModule(
     "classes",
 );
 
-const SliderField: any = getModule(
+const SliderField: FloatSliderField = getModule(
     "game-ui/editor/widgets/fields/number-slider-field.tsx",
     "FloatSliderField",
 );
 
 const panelYPosition = 0.875;
-const panelWidth = 500;
+const panelWidth = 400;
 const defaultPanelBottomMargin = 15;
 const defaultPanelXPosition = 1030;
 const defaultPanelYPosition = 175;
@@ -83,13 +81,36 @@ export const ToolModes = [
     },
 ];
 
+export const Sides = [
+    {
+        title: "Start",
+        icon: "coui://platter/start.svg",
+        id: 2,
+    },
+    {
+        title: "Left",
+        icon: "coui://platter/left.svg",
+        id: 0,
+    },
+    {
+        title: "Right",
+        icon: "coui://platter/right.svg",
+        id: 1,
+    },
+    {
+        title: "End",
+        icon: "coui://platter/end.svg",
+        id: 3,
+    },
+]
+
 export const ToolPanel = () => {
     // C# Bindings
     const toolEnabledBinding = $bindings.toolEnabled.use();
     const blockWidthBinding = $bindings.blockWidth.use();
     const blockDepthBinding = $bindings.blockDepth.use();
     const toolModeBinding = $bindings.toolMode.use();
-    const prefabBinding = $bindings.prefab.use();
+    const pointsCountBinding = $bindings.pointsCount.use();
     const spacingBinding = $bindings.spacing.use();
     const offsetBinding = $bindings.offset.use();
     const sidesBinding = $bindings.sides.use();
@@ -113,6 +134,7 @@ export const ToolPanel = () => {
         <div>
             {zoneDataBinding.map((zoneData, idx) => (
                 <DropdownItem<number>
+                    key={idx}
                     theme={{ dropdownItem: DropdownTheme.dropdownItem }}
                     focusKey={FOCUS_AUTO}
                     value={zoneData.index}
@@ -229,27 +251,28 @@ export const ToolPanel = () => {
                             <div className={styles.controlsRow}>
                                 <div className={styles.controlsRowTitle}>Sides</div>
                                 <div className={styles.controlsRowContent}>
-                                    {[...Array(4).keys()].map((_, index) => (
-                                        <div key={index}>
+                                    {Sides.map((side) => (
+                                        <div key={side.id}>
                                             <VanillaComponentResolver.instance.ToolButton
                                                 onSelect={() => {
                                                     console.log("Setting sides:", sidesBinding);
 
                                                     const newArray = [...sidesBinding];
-                                                    newArray[index] = !newArray[index];
+                                                    newArray[side.id] = !newArray[side.id];
                                                     console.log("Setting sides:", newArray);
                                                     $bindings.sides.set(newArray);
                                                 }}
-                                                selected={sidesBinding[index]}
-                                                src="Media/Glyphs/ThickStrokeArrowUp.svg"
+                                                selected={sidesBinding[side.id]}
+                                                src={side.icon}
                                                 focusKey={
                                                     VanillaComponentResolver.instance.FOCUS_DISABLED
                                                 }
-                                                tooltip="Tooltip"
-                                                className={[
+                                                tooltip={`Toggle Parcels on ${side.title}`}
+                                                className={c(
                                                     VanillaComponentResolver.instance
                                                         .toolButtonTheme.button,
-                                                ].join(" ")}
+                                                    styles.sidesToggleButton
+                                                )}
                                             />
                                         </div>
                                     ))}
@@ -342,30 +365,39 @@ export const ToolPanel = () => {
                                 </div>
                             </div>
                             <div className={styles.controlsRow}>
-                                <div className={styles.controlsRowTitle}>Spacing</div>
                                 <div className={styles.controlsRowContent}>
                                     <div className={styles.elevationStepSliderField}>
                                         <SliderField
+                                            label="Spacing"
                                             value={spacingBinding}
                                             min={-10}
                                             max={10}
+                                            step={0.1}
                                             fractionDigits={digits}
                                             onChange={handleSpacingChange}></SliderField>
                                     </div>
                                 </div>
                             </div>
                             <div className={styles.controlsRow}>
-                                <div className={styles.controlsRowTitle}>Offset</div>
                                 <div className={styles.controlsRowContent}>
                                     <div className={styles.elevationStepSliderField}>
                                         <SliderField
+                                            label="Offset"
                                             value={offsetBinding}
                                             min={0}
                                             max={10}
+                                            step={0.1}
                                             fractionDigits={digits}
                                             onChange={handleOffsetChange}></SliderField>
                                     </div>
                                 </div>
+                            </div>
+                            <div className={c(styles.controlsRow, styles.validatorSection)}>
+                                <Button
+                                    className={styles.buildButton}
+                                    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}>
+                                    {`Build ${pointsCountBinding} Parcels`}
+                                </Button>
                             </div>
                         </div>
                     </PanelSection>

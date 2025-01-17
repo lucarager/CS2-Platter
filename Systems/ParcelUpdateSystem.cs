@@ -86,16 +86,16 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
-            NativeArray<Entity> entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
+            var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
 
             new Dictionary<Block, Entity>(32);
 
             m_Log.Debug($"OnUpdate() -- Found {entities.Length}");
 
-            for (int i = 0; i < entities.Length; i++) {
+            for (var i = 0; i < entities.Length; i++) {
                 var parcelEntity = entities[i];
 
-                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out DynamicBuffer<SubBlock> subBlockBuffer)) {
+                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     return;
                 }
 
@@ -104,8 +104,8 @@ namespace Platter.Systems {
                     m_Log.Debug($"OnUpdate() -- [DELETE] Deleting parcel {parcelEntity}");
 
                     // Mark Blocks for deletion
-                    for (int j = 0; j < subBlockBuffer.Length; j++) {
-                        Entity subBlockEntity = subBlockBuffer[j].m_SubBlock;
+                    for (var j = 0; j < subBlockBuffer.Length; j++) {
+                        var subBlockEntity = subBlockBuffer[j].m_SubBlock;
                         this.m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);
                     }
 
@@ -134,8 +134,8 @@ namespace Platter.Systems {
                 m_CommandBuffer.SetComponent<ParcelComposition>(parcelEntity, parcelComposition);
 
                 // Retrive zone data
-                Entity blockPrefab = parcelComposition.m_ZoneBlockPrefab;
-                if (!EntityManager.TryGetComponent<ZoneBlockData>(blockPrefab, out ZoneBlockData zoneBlockData)) {
+                var blockPrefab = parcelComposition.m_ZoneBlockPrefab;
+                if (!EntityManager.TryGetComponent<ZoneBlockData>(blockPrefab, out var zoneBlockData)) {
                     return;
                 }
 
@@ -146,7 +146,7 @@ namespace Platter.Systems {
                 // Todo this should come from the tool of course.
                 if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "Commercial High"), out var zonePrefab) ||
                     !m_PrefabSystem.TryGetEntity(zonePrefab, out var zonePrefabEntity) ||
-                    !EntityManager.TryGetComponent<ZoneData>(zonePrefabEntity, out ZoneData zoneData)) {
+                    !EntityManager.TryGetComponent<ZoneData>(zonePrefabEntity, out var zoneData)) {
                     m_Log.Error("couldn't find zone");
                     return;
                 }
@@ -175,7 +175,7 @@ namespace Platter.Systems {
                 // For now, we know there's only going to be one block per component
                 if (subBlockBuffer.Length > 0) {
                     m_Log.Debug($"OnUpdate() -- Updating the old block...");
-                    Entity subBlockEntity = subBlockBuffer[0].m_SubBlock;
+                    var subBlockEntity = subBlockBuffer[0].m_SubBlock;
                     m_CommandBuffer.SetComponent<PrefabRef>(subBlockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(subBlockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(subBlockEntity, curvePosition);
@@ -183,18 +183,18 @@ namespace Platter.Systems {
                     m_CommandBuffer.AddComponent<Updated>(subBlockEntity, default);
                 } else {
                     m_Log.Debug($"OnUpdate() -- Creating a new block...");
-                    Entity blockEntity = m_CommandBuffer.CreateEntity(zoneBlockData.m_Archetype);
+                    var blockEntity = m_CommandBuffer.CreateEntity(zoneBlockData.m_Archetype);
                     m_CommandBuffer.SetComponent<PrefabRef>(blockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(blockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
                     m_CommandBuffer.SetComponent<BuildOrder>(blockEntity, buildOder);
                     m_CommandBuffer.AddComponent<ParcelOwner>(blockEntity, new ParcelOwner(parcelEntity));
 
-                    DynamicBuffer<Cell> cellBuffer = m_CommandBuffer.SetBuffer<Cell>(blockEntity);
+                    var cellBuffer = m_CommandBuffer.SetBuffer<Cell>(blockEntity);
 
                     var cellCount = block.m_Size.x * block.m_Size.y;
 
-                    for (int l = 0; l < cellCount; l++) {
+                    for (var l = 0; l < cellCount; l++) {
                         cellBuffer.Add(new Cell() {
                             m_Zone = zoneData.m_ZoneType
                         });

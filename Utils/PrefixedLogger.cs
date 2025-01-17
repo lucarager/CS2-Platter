@@ -32,7 +32,7 @@ namespace Platter.Utils {
         }
 
         private void Log(string level, string message) {
-            string formattedMessage = $"[{m_Prefix}] {message}";
+            var formattedMessage = $"[{m_Prefix}] {message}";
 
             switch (level) {
                 case "ERROR":

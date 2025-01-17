@@ -32,7 +32,7 @@ module.exports = {
     entry: {
         [MOD.id]: "./src/index.tsx",
     },
-    devtool: false, // "eval-cheap-module-source-map",
+    devtool: false,
     externalsType: "window",
     externals: {
         react: "React",

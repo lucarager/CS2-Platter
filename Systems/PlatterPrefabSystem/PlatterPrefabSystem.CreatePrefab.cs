@@ -20,13 +20,13 @@ namespace Platter.Systems {
             var icon = $"coui://platter/{PrefabNamePrefix}_{lotWidth}x{lotDepth}.svg";
 
             // Point our new prefab
-            ParcelPrefab parcelPrefabBase = ScriptableObject.CreateInstance<ParcelPrefab>();
+            var parcelPrefabBase = ScriptableObject.CreateInstance<ParcelPrefab>();
             parcelPrefabBase.name = name;
             parcelPrefabBase.m_LotWidth = lotWidth;
             parcelPrefabBase.m_LotDepth = lotDepth;
 
             // Adding PlaceableObject Data.
-            PlaceableObject placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
+            var placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
             placeableObject.m_ConstructionCost = 0;
             placeableObject.m_XPReward = 0;
             parcelPrefabBase.AddComponentFrom(placeableObject);
@@ -35,12 +35,13 @@ namespace Platter.Systems {
             parcelPrefabBase.m_ZoneBlock = roadPrefab.m_ZoneBlock;
 
             // Point and populate the new UIObject for our cloned Prefab
-            UIObject placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
+            var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
             placeableLotPrefabUIObject.m_Icon = icon;
             placeableLotPrefabUIObject.name = PrefabNamePrefix;
             placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
             placeableLotPrefabUIObject.m_Priority = zonePrefabUIObject.m_Priority;
-            placeableLotPrefabUIObject.m_Group = zonePrefabUIObject.m_Group;
+
+            // placeableLotPrefabUIObject.m_Group = zonePrefabUIObject.m_Group;
             placeableLotPrefabUIObject.active = zonePrefabUIObject.active;
             parcelPrefabBase.AddComponentFrom(placeableLotPrefabUIObject);
 

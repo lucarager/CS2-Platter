@@ -30,10 +30,10 @@ namespace Platter.Systems {
             /// <inheritdoc/>
             public void Execute() {
                 // Point a list of ConnectionUpdateDataJob structs from our quuee
-                int parcelsToUpdate = m_EntitiesToUpdateQueue.Count;
+                var parcelsToUpdate = m_EntitiesToUpdateQueue.Count;
                 m_ConnectionUpdateDataList.ResizeUninitialized(parcelsToUpdate);
 
-                for (int i = 0; i < parcelsToUpdate; i++) {
+                for (var i = 0; i < parcelsToUpdate; i++) {
                     m_ConnectionUpdateDataList[i] = new RoadConnectionSystem.ConnectionUpdateDataJob(m_EntitiesToUpdateQueue.Dequeue());
                 }
 
@@ -41,11 +41,11 @@ namespace Platter.Systems {
                 m_ConnectionUpdateDataList.Sort<RoadConnectionSystem.ConnectionUpdateDataJob>();
 
                 // Deduplicate the list
-                Entity currentBuildingEntity = Entity.Null;
-                int readIndex = 0;
-                int writeIndex = 0;
+                var currentBuildingEntity = Entity.Null;
+                var readIndex = 0;
+                var writeIndex = 0;
                 while (readIndex < m_ConnectionUpdateDataList.Length) {
-                    RoadConnectionSystem.ConnectionUpdateDataJob currentBuildingData = m_ConnectionUpdateDataList[readIndex++];
+                    var currentBuildingData = m_ConnectionUpdateDataList[readIndex++];
 
                     // If the current data's parcel entity is not what we have stored previously,
                     // we can store it back into the list at the current valid write index
