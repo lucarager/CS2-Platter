@@ -14,6 +14,8 @@ namespace Platter.Constants {
 
         // Parcel ColorConstants
         public static readonly Color ParcelOutline = Color.white;
+        public static readonly Color ParcelInline = new(255f / 255f, 255f / 255f, 255f / 255f, OpacityMedium);
+        public static readonly Color ParcelBackground = new(255f / 255f, 255f / 255f, 255f / 255f, OpacityLow);
         public static readonly Color ParcelFrontIndicator = Color.white;
         public static readonly Color ParcelCellOutline = Color.grey;
 

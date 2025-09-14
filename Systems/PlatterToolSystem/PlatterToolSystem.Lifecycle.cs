@@ -15,7 +15,6 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using Unity.Mathematics;
 
     public partial class PlatterToolSystem : ObjectToolBaseSystem {
         /// <summary>
@@ -165,11 +164,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnStopRunning()");
 
             // Cleanup
-            m_RoadEditorData.Reset();
-            ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
-            ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
-            m_HoveredEntity = Entity.Null;
-            m_LastHitPosition = float3.zero;
+            Reset();
         }
 
         /// <inheritdoc/>

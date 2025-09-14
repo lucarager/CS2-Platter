@@ -41,22 +41,23 @@ namespace Platter.Utils {
 
         public static void DrawParcel(
             OverlayRenderSystem.Buffer buffer,
-            Color zoneColor,
+
+            // Color zoneColor,
             int2 lotSize,
             float4x4 trs,
             bool spawnable = false
         ) {
             // Final container of lines to draw
             var linesToDraw = new List<LineDef>();
-            var innerColor = zoneColor;
 
-            if (innerColor == null) {
-                innerColor = ColorConstants.ParcelCellOutline;
-            }
+            // var innerColor = zoneColor;
+
+            // if (innerColor == null) {
+            //    innerColor = ColorConstants.ParcelCellOutline;
+            // }
 
             // Calculate data
             var parcelGeo = new ParcelGeometry(lotSize);
-
             var parcelCenter = parcelGeo.Center;
             var parcelCorners = parcelGeo.CornerNodes;
             var parcelFront = parcelGeo.FrontNode;
@@ -68,24 +69,28 @@ namespace Platter.Utils {
             linesToDraw.Add(new LineDef(parcelCorners.c2, parcelCorners.c3, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
             linesToDraw.Add(new LineDef(parcelCorners.c3, parcelCorners.c0, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
 
+            // Add "background"
+            linesToDraw.Add(new LineDef(parcelFront, parcelBack, ColorConstants.ParcelBackground, parcelGeo.Size.x));
+
             // Calculate inner lines
             var frontNode = new float3(parcelCorners.c1);
             var backNode = new float3(parcelCorners.c2);
             for (var i = 1; i < lotSize.x; i++) {
                 frontNode.x += DimensionConstants.CellSize;
                 backNode.x += DimensionConstants.CellSize;
-                linesToDraw.Add(new LineDef(frontNode, backNode, innerColor, DimensionConstants.ParcelCellOutlineWidth));
+                linesToDraw.Add(new LineDef(frontNode, backNode, ColorConstants.ParcelInline, DimensionConstants.ParcelCellOutlineWidth));
             }
 
+            // Calculate perpendicular inner lines
             var rightNode = new float3(parcelCorners.c0);
             var leftNode = new float3(parcelCorners.c1);
             for (var i = 1; i < lotSize.y; i++) {
                 leftNode.z += DimensionConstants.CellSize;
                 rightNode.z += DimensionConstants.CellSize;
-                linesToDraw.Add(new LineDef(leftNode, rightNode, innerColor, DimensionConstants.ParcelCellOutlineWidth));
+                linesToDraw.Add(new LineDef(leftNode, rightNode, ColorConstants.ParcelInline, DimensionConstants.ParcelCellOutlineWidth));
             }
 
-            // Draw lines
+            // Draw all lines
             foreach (var lineDef in linesToDraw) {
                 buffer.DrawLine(
                     lineDef.color,
@@ -97,16 +102,17 @@ namespace Platter.Utils {
                 );
             }
 
-            // Draw background
-            buffer.DrawLine(
-                new Color(zoneColor.r, zoneColor.g, zoneColor.b, 0.5f),
-                new Line3.Segment(
-                    ParcelUtils.GetWorldPosition(trs, parcelCenter, ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront)),
-                    ParcelUtils.GetWorldPosition(trs, parcelCenter, ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelBack))
-                ),
-                parcelGeo.Size.x
-            );
+            //// Draw background
+            // buffer.DrawLine(
+            //    new Color(0f, 0f, 0f, 1f),
+            //    new Line3.Segment(
+            //        ParcelUtils.GetWorldPosition(trs, parcelCenter, ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront)),
+            //        ParcelUtils.GetWorldPosition(trs, parcelCenter, ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelBack))
+            //    ),
+            //    parcelGeo.Size.x
+            // );
 
+            // Draw "Front Circle"
             buffer.DrawCircle(
                 ColorConstants.ParcelFrontIndicator,
                 spawnable ? ColorConstants.ParcelFrontIndicator : new Color(1f, 1f, 1f, 0),
@@ -116,13 +122,6 @@ namespace Platter.Utils {
                 ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
                 DimensionConstants.ParcelFrontIndicatorDiameter
             );
-
-            //// Draw front node
-            // buffer.DrawCircle(
-            //    ColorConstants.ParcelFrontIndicator,
-            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
-            //    DimensionConstants.ParcelFrontIndicatorHollowLineWidth
-            // );
         }
     }
 }

@@ -4,8 +4,6 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
-    using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -14,6 +12,8 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
+    using System;
+    using System.Collections.Generic;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -26,6 +26,11 @@ namespace Platter.Systems {
     /// <todo>Add culling and burst</todo>
     /// </summary>
     public partial class PlatterOverlaySystem : GameSystemBase {
+        /// <summary>
+        /// Instance.
+        /// </summary>
+        public static PlatterOverlaySystem Instance;
+
         // Systems & References
         private OverlayRenderSystem m_OverlayRenderSystem;
         private PrefabSystem m_PrefabSystem;
@@ -35,13 +40,20 @@ namespace Platter.Systems {
 
         // Queries
         private EntityQuery m_ParcelQuery;
-        private EntityQuery m_ZoneQuery;
+        private EntityQuery m_ZoneQuery;        
 
         // Data
         private Dictionary<ZoneType, Color> m_FillColors;
         private Dictionary<ZoneType, Color> m_EdgeColors;
-
+        private bool m_ShouldRenderParcels = false;
         private bool m_UpdateColors;
+
+        public bool RenderParcels {
+            get => m_ShouldRenderParcels;
+            set {
+                m_ShouldRenderParcels = value;
+            }
+        }
 
         public bool TryGetZoneColor(ZoneType zoneType, out Color value) {
             var valid = m_EdgeColors.TryGetValue(zoneType, out var color);
@@ -106,6 +118,10 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            if (!m_ShouldRenderParcels) {
+                return;
+            }
+
             if (!m_ZoneQuery.IsEmptyIgnoreFilter && m_UpdateColors) {
                 UpdateZoneColors();
             }
@@ -172,8 +188,8 @@ namespace Platter.Systems {
                     var prefabRef = prefabRefsArray[i];
                     var parcel = parcelsArray[i];
                     var trs = ParcelUtils.GetTransformMatrix(transform);
-                    var color = m_ColorArray[parcel.m_PreZoneType];
 
+                    // var color = m_ColorArray[parcel.m_PreZoneType];
                     if (!m_ParcelDataComponentLookup.TryGetComponent(prefabRef, out var parcelData)) {
                         return;
                     }
@@ -181,7 +197,7 @@ namespace Platter.Systems {
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local center to calculate the cube's world position.
-                    DrawingUtils.DrawParcel(m_OverlayRenderBuffer, color, parcelData.m_LotSize, trs, spawnable);
+                    DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, spawnable);
                 }
             }
         }

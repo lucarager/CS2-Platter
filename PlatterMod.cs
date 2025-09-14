@@ -4,6 +4,8 @@
 // </copyright>
 
 namespace Platter {
+    using System.IO;
+    using System.Reflection;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Colossal.UI;
@@ -13,8 +15,6 @@ namespace Platter {
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
-    using System.IO;
-    using System.Reflection;
 
     /// <summary>
     /// Mod entry point.

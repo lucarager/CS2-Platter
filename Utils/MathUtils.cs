@@ -6,7 +6,7 @@
 namespace Platter.Utils {
     using Colossal.Mathematics;
 
-    public class MathUtils {
+    public class PlatterMathUtils {
         public static Bezier4x3 InvertBezier(Bezier4x3 curve) {
             return new Bezier4x3(curve.d, curve.c, curve.b, curve.a);
         }

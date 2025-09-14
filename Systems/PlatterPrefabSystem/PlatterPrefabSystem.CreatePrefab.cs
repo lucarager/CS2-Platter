@@ -41,13 +41,11 @@ namespace Platter.Systems {
             placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
             placeableLotPrefabUIObject.m_Priority = zonePrefabUIObject.m_Priority;
 
-            // placeableLotPrefabUIObject.m_Group = zonePrefabUIObject.m_Group;
+            placeableLotPrefabUIObject.m_Group = zonePrefabUIObject.m_Group;
             placeableLotPrefabUIObject.active = zonePrefabUIObject.active;
             parcelPrefabBase.AddComponentFrom(placeableLotPrefabUIObject);
 
             m_Log.Debug($"Created Parcel SelectedPrefabBase with uiTag {parcelPrefabBase.uiTag}");
-
-            // Add to cache
 
             // Try to add it to the prefab System
             var success = m_PrefabSystem.AddPrefab(parcelPrefabBase);
@@ -55,8 +53,8 @@ namespace Platter.Systems {
             if (success) {
                 // Todo can we set data here instead of the system?
                 var prefabEntity = m_PrefabSystem.GetEntity(parcelPrefabBase);
-                this.m_PrefabBases.Add(parcelPrefabBase);
-                this.m_PrefabEntities.Add(parcelPrefabBase, prefabEntity);
+                m_PrefabBases.Add(parcelPrefabBase);
+                m_PrefabEntities.Add(parcelPrefabBase, prefabEntity);
             }
 
             return success;

@@ -13,7 +13,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -36,6 +35,7 @@ namespace Platter.Systems {
         // Systems & References
         private PrefabSystem m_PrefabSystem;
         private ZoneSystem m_ZoneSystem;
+        private PlatterToolSystem m_PlatterToolSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -49,6 +49,7 @@ namespace Platter.Systems {
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
+            m_PlatterToolSystem = PlatterToolSystem.Instance;
 
             // Queries
             m_ParcelCreatedQuery = GetEntityQuery(
@@ -87,14 +88,14 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
             var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
+            var currentDefaultPreZone = m_PlatterToolSystem.PreZoneType;
+            var currentDefaultAllowSpawn = m_PlatterToolSystem.AllowSpawn;
 
-            new Dictionary<Block, Entity>(32);
-
+            m_Log.Debug($"OnUpdate() -- currentDefaultPreZone {currentDefaultPreZone}");
+            m_Log.Debug($"OnUpdate() -- currentDefaultAllowSpawn {currentDefaultAllowSpawn}");
             m_Log.Debug($"OnUpdate() -- Found {entities.Length}");
 
-            for (var i = 0; i < entities.Length; i++) {
-                var parcelEntity = entities[i];
-
+            foreach (var parcelEntity in entities) {
                 if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     return;
                 }
@@ -139,22 +140,16 @@ namespace Platter.Systems {
                     return;
                 }
 
-                // Spawnable Data
-                // Todo this should come from the tool.
-                m_CommandBuffer.AddComponent<ParcelSpawnable>(parcelEntity, default);
-
-                // Todo this should come from the tool of course.
-                if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "Commercial High"), out var zonePrefab) ||
-                    !m_PrefabSystem.TryGetEntity(zonePrefab, out var zonePrefabEntity) ||
-                    !EntityManager.TryGetComponent<ZoneData>(zonePrefabEntity, out var zoneData)) {
-                    m_Log.Error("couldn't find zone");
-                    return;
+                // Spawnable?
+                if (currentDefaultAllowSpawn) {
+                    m_CommandBuffer.AddComponent<ParcelSpawnable>(parcelEntity, default);
                 }
 
                 // Update prezoned type
-                parcel.m_PreZoneType = zoneData.m_ZoneType;
-                m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
+                // parcel.m_PreZoneType = currentDefaultPreZone;
+                // m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
 
+                // If this is a temp entity, exit.
                 if (EntityManager.HasComponent<Temp>(parcelEntity)) {
                     return;
                 }
@@ -196,7 +191,7 @@ namespace Platter.Systems {
 
                     for (var l = 0; l < cellCount; l++) {
                         cellBuffer.Add(new Cell() {
-                            m_Zone = zoneData.m_ZoneType
+                            m_Zone = parcel.m_PreZoneType
                         });
                     }
                 }

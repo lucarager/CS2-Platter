@@ -4,9 +4,9 @@
 // </copyright>
 
 namespace Game.Prefabs {
-    using System.Collections.Generic;
     using Game.Zones;
     using Platter.Components;
+    using System.Collections.Generic;
     using Unity.Entities;
 
     /// <summary>
@@ -27,6 +27,16 @@ namespace Game.Prefabs {
         /// Todo.
         /// </summary>
         public ZoneBlockPrefab m_ZoneBlock;
+
+        /// <summary>
+        /// todo.
+        /// </summary>
+        public ZoneType m_PreZoneType;
+
+        /// <summary>
+        /// todo.
+        /// </summary>
+        public bool m_AllowSpawning;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelPrefab"/> class.
@@ -53,9 +63,9 @@ namespace Game.Prefabs {
 
             components.Add(ComponentType.ReadWrite<PlaceableObjectData>());
             components.Add(ComponentType.ReadWrite<ParcelData>());
-
-            // components.Add(ComponentType.ReadWrite<BuildingData>());
-            // components.Add(ComponentType.ReadWrite<BuildingTerraformData>());
+            // Making it a "building" fixes snapping
+            components.Add(ComponentType.ReadWrite<BuildingData>());
+            components.Add(ComponentType.ReadWrite<BuildingTerraformData>());
         }
 
         /// <inheritdoc/>
@@ -68,5 +78,41 @@ namespace Game.Prefabs {
             components.Add(ComponentType.ReadWrite<SubLane>());
             components.Add(ComponentType.ReadWrite<SubObject>());
         }
+
+        /// <inheritdoc/>
+        // public override void LateInitialize(EntityManager entityManager, Entity currentEntity) {
+        //    var prefabSystem = entityManager.World.GetExistingSystemManaged<PrefabSystem>();
+        //    var prefabData = entityManager.GetComponentData<PrefabData>(currentEntity);
+        //    var prefabBase = prefabSystem.GetPrefab<PrefabBase>(prefabData);
+        //    var parcelPrefab = prefabBase.GetComponent<ParcelPrefab>();
+        //    var zoneBlockPrefab = prefabSystem.GetEntity(parcelPrefab.m_ZoneBlock);
+
+        // // Parceldata
+        //    var parcelData = entityManager.GetComponentData<ParcelData>(currentEntity);
+        //    parcelData.m_ZoneBlockPrefab = zoneBlockPrefab;
+        //    parcelData.m_LotSize = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth);
+        //    entityManager.SetComponentData<ParcelData>(currentEntity, parcelData);
+
+        // // Some dimensions.
+        //    var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
+
+        // // Geometry data
+        //    var oGeoData = entityManager.GetComponentData<ObjectGeometryData>(currentEntity);
+        //    oGeoData.m_MinLod = 100;
+        //    oGeoData.m_Size = parcelGeo.Size;
+        //    oGeoData.m_Pivot = parcelGeo.Pivot;
+        //    oGeoData.m_LegSize = new float3(0f, 0f, 0f);
+        //    oGeoData.m_Bounds = parcelGeo.Bounds;
+        //    oGeoData.m_Layers = MeshLayer.First;
+        //    oGeoData.m_Flags &= ~GeometryFlags.Overridable;
+        //    oGeoData.m_Flags |= GeometryFlags.Physical | GeometryFlags.WalkThrough;
+        //    entityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
+
+        // // Placeable data
+        //    var placeableData = entityManager.GetComponentData<PlaceableObjectData>(currentEntity);
+        //    placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadEdge | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround;
+        //    placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
+        //    entityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
+        // }
     }
 }

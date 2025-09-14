@@ -13,6 +13,7 @@ namespace Platter.Systems {
     using Game.Notifications;
     using Game.Objects;
     using Game.Prefabs;
+    using Game.Simulation;
     using Game.Tools;
     using Platter.Constants;
     using Unity.Entities;
@@ -23,14 +24,15 @@ namespace Platter.Systems {
     public partial class PlatterToolSystem : ObjectToolBaseSystem {
         /// <inheritdoc/>
         public override bool TrySetPrefab(Game.Prefabs.PrefabBase prefab) {
-            m_Log.Debug($"TrySetPrefab(prefab {prefab})");
+            m_Log.Debug($"TrySetPrefab(prefab {prefab}) -- Active tool: ${m_ToolSystem.activeTool}");
 
-            if (m_ToolSystem.activeTool == this && prefab is ParcelPrefab parcelPrefab) {
-                SelectedPrefab = parcelPrefab;
-                return true;
+            if (m_ToolSystem.activeTool != this || prefab is not ParcelPrefab parcelPrefab) {
+                return false;
             }
 
-            return false;
+            SelectedPrefab = parcelPrefab;
+            m_RoadEditorData.RecalculatePoints = true;
+            return true;
         }
 
         /// <inheritdoc/>
@@ -129,7 +131,7 @@ namespace Platter.Systems {
             return currentMode switch {
                 PlatterToolMode.Plop => HandlePlopUpdate(inputDeps),
                 PlatterToolMode.Brush => HandleBrushUpdate(inputDeps),
-                PlatterToolMode.RoadEdge => HandleRoadEdgeUpdate(inputDeps),
+                PlatterToolMode.RoadEdge => HandleRoadEditorUpdate(inputDeps),
                 _ => inputDeps,
             };
         }
@@ -139,41 +141,32 @@ namespace Platter.Systems {
                 return inputDeps;
             }
 
-            // if (GetRaycastResult(out ControlPoint currentControlPoint, out var raycastForceUpdate)) {
-            //    currentControlPoint.m_Rotation = m_Rotation.value.m_Rotation;
-            //    applyMode = ApplyMode.None;
+            if (GetRaycastResult(out ControlPoint currentControlPoint, out var raycastForceUpdate)) {
+                // Valid raycast - update position.
+                var position = currentControlPoint.m_HitPosition;
+                var rotation = currentControlPoint.m_Rotation;
 
-            // bool isNewRaycastPoint = !m_LastRaycastPoint.Equals(currentControlPoint) || raycastForceUpdate;
-            //    if (!isNewRaycastPoint) {
-            //        return inputDeps;
-            //    }
+                // Calculate terrain height.
+                var terrainHeightData = m_TerrainSystem.GetHeightData();
+                position.y = TerrainUtils.SampleHeight(ref terrainHeightData, position);
 
-            // m_LastRaycastPoint = currentControlPoint;
+                // Don't update if the cursor hasn't moved.
+                if (position.x != m_LastCursorPosition.x || position.z != m_LastCursorPosition.z) {
+                    MakeCreateDefinitionsJob(
+                        m_SelectedEntity,
+                        position,
+                        rotation,
+                        RandomSeed.Next()
+                    );
+                } else {
+                    applyMode = ApplyMode.None;
+                }
 
-            // ControlPoint lastControlPoint = default;
-            //    if (m_ControlPoints.Length > 0) {
-            //        lastControlPoint = m_ControlPoints[0];
-            //        m_ControlPoints.Clear();
-            //    }
+                // Update references
+                m_LastRaycastPoint = currentControlPoint;
+                m_LastCursorPosition = position;
+            }
 
-            // m_ControlPoints.Add(in currentControlPoint);
-            //    inputDeps = MakeSnapControlJob(inputDeps);
-            //    JobHandle.ScheduleBatchedJobs();
-
-            // if (!raycastForceUpdate) {
-            //        inputDeps.Complete();
-            //        var updatedControlPoint = m_ControlPoints[0];
-            //        raycastForceUpdate = !lastControlPoint.EqualsIgnoreHit(updatedControlPoint);
-            //    }
-
-            // if (raycastForceUpdate) {
-            //        applyMode = ApplyMode.Clear;
-            //        inputDeps = UpdateDefinitions(inputDeps);
-            //    }
-            // } else {
-            //    applyMode = ApplyMode.Clear;
-            //    m_LastRaycastPoint = default;
-            // }
             return inputDeps;
         }
 
@@ -181,10 +174,25 @@ namespace Platter.Systems {
             return inputDeps;
         }
 
+        public void ResetRoadEditor() {
+            m_Log.Debug($"ResetRoadEditor() -- Road Editor reset requested.");
+            m_RoadEditorData.Reset();
+        }
+
+        public void Reset() {
+            m_Log.Debug($"Reset() -- Tool reset requested.");
+            ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
+            ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
+            m_HoveredEntity = Entity.Null;
+            m_LastHitPosition = float3.zero;
+            m_Points.Clear();
+            ResetRoadEditor();
+        }
+
         /// <summary>
-        /// Update loop for Road Edge Tool mode.
+        /// Update loop for Road Editor Tool mode.
         ///
-        /// In Road Edge Mode, our job is to <br/>
+        /// In Road Editor Mode, our job is to <br/>
         ///     1. Handle the selection of a Road Entity. <br/>
         ///     2. When a Road Entity is selected, <br/>
         ///         2a. Handle any tool configuration and preview them in-game <br/>
@@ -193,15 +201,26 @@ namespace Platter.Systems {
         /// </summary>
         /// <param name="inputDeps"></param>
         /// <returns>inputDeps.</returns>
-        public JobHandle HandleRoadEdgeUpdate(JobHandle inputDeps) {
-            var logPrefix = "HandleRoadEdgeUpdate()";
+        public JobHandle HandleRoadEditorUpdate(JobHandle inputDeps) {
+            const string logPrefix = "HandleRoadEditorUpdate()";
 
             // ###
             // First, let's handle any "create" actions requested
             // ###
-            if (m_CreateAction.WasPressedThisFrame()) {
+            if (m_CreateAction.WasPressedThisFrame() || ApplyWasRequested) {
+                m_Log.Debug($"{logPrefix} -- Create action.");
+                m_Log.Debug($"{logPrefix} -- m_CreateAction.WasPressedThisFrame(): {m_CreateAction.WasPressedThisFrame()}");
+                m_Log.Debug($"{logPrefix} -- ApplyWasRequested: {ApplyWasRequested}");
+
+                // Reset
+                ApplyWasRequested = false;
+
                 // Validate
-                if (m_RoadEditorData.SelectedEdgeEntity == Entity.Null || EntityManager.Exists(m_RoadEditorData.SelectedEdgeEntity) || m_SelectedEntity == Entity.Null) {
+                if (m_RoadEditorData.SelectedEdgeEntity == Entity.Null || m_SelectedEntity == Entity.Null) {
+                    m_Log.Debug($"{logPrefix} -- Create action invalid, aborting.");
+                    m_Log.Debug($"{logPrefix} -- SelectedEdgeEntity: {m_RoadEditorData.SelectedEdgeEntity}");
+                    m_Log.Debug($"{logPrefix} -- m_SelectedEntity: {m_SelectedEntity}");
+
                     return inputDeps;
                 }
 
@@ -209,12 +228,7 @@ namespace Platter.Systems {
                 applyMode = ApplyMode.Apply;
 
                 // Reset the tool
-                ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
-                ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
-                m_RoadEditorData.Reset();
-                m_HoveredEntity = Entity.Null;
-                m_LastHitPosition = float3.zero;
-
+                Reset();
                 return inputDeps;
             }
 
@@ -234,6 +248,7 @@ namespace Platter.Systems {
                 if (applyWasPressed) {
                     if (m_RoadEditorData.Start(entity)) {
                         m_Log.Debug($"{logPrefix} -- Selected entity: {entity}");
+                        m_RoadEditorData.RecalculatePoints = true;
                         SwapHighlitedEntities(m_RoadEditorData.SelectedEdgeEntity, entity);
                     }
                 } else if (previousHoveredEntity != m_HoveredEntity) {
@@ -247,12 +262,10 @@ namespace Platter.Systems {
                 }
             } else if (m_CancelAction.WasPressedThisFrame() ||
                 (m_RoadEditorData.SelectedEdgeEntity != Entity.Null && !EntityManager.Exists(m_RoadEditorData.SelectedEdgeEntity))) {
+                m_Log.Debug($"{logPrefix} -- Cancel action.");
+
                 // Right click & we had something selected -> deselect and reset the tool.
-                ChangeHighlighting(m_RoadEditorData.SelectedEdgeEntity, ChangeObjectHighlightMode.RemoveHighlight);
-                ChangeHighlighting(m_HoveredEntity, ChangeObjectHighlightMode.RemoveHighlight);
-                m_RoadEditorData.SelectedEdgeEntity = Entity.Null;
-                m_HoveredEntity = Entity.Null;
-                m_LastHitPosition = float3.zero;
+                Reset();
             } else if (m_HoveredEntity != Entity.Null) {
                 // No raycast hit, no action pressed, remove hover from any entity that was being hovered before.
                 if (m_HoveredEntity != m_RoadEditorData.SelectedEdgeEntity) {
@@ -263,59 +276,56 @@ namespace Platter.Systems {
                 m_LastHitPosition = float3.zero;
             }
 
+            // Exit early if we do not have a road selected
+            if (m_RoadEditorData.SelectedEdgeEntity == Entity.Null) {
+                return inputDeps;
+            }
+
+            // Exit early if we do not need to recalculate points at this stage.
+            if (!m_RoadEditorData.RecalculatePoints) {
+                applyMode = ApplyMode.None; // This will "keep" temp entities
+                return inputDeps;
+            }
+
             // ###
-            // This part of the code handles the creation of preview entities.
+            // This part of the code handles the creation of entities.
             // ###
-            if (m_RoadEditorData.SelectedEdgeEntity != Entity.Null) {
-                var terrainHeightData = m_TerrainSystem.GetHeightData();
-                m_Points.Clear();
+            var terrainHeightData = m_TerrainSystem.GetHeightData();
+            m_Points.Clear();
 
-                // Demo data
-                var rotation = 1;
-                var width = m_SelectedParcelSize.x * DimensionConstants.CellSize;
+            var rotation = 1; // Demo data
+            var parcelWidth = m_SelectedParcelSize.x * DimensionConstants.CellSize;
 
-                m_Log.Debug($"Calculating parcel points.");
-                m_Log.Debug($"RoadEditorSpacing ${RoadEditorSpacing.ToJSONString()}");
-                m_Log.Debug($"RoadEditorOffset ${RoadEditorOffset.ToJSONString()}");
-                m_Log.Debug($"RoadEditorSides ${RoadEditorSides.ToJSONString()}");
+            m_Log.Debug($"Calculating parcel points.");
+            m_Log.Debug($"RoadEditorSpacing ${RoadEditorSpacing.ToJSONString()}");
+            m_Log.Debug($"RoadEditorOffset ${RoadEditorOffset.ToJSONString()}");
+            m_Log.Debug($"RoadEditorSides ${RoadEditorSides.ToJSONString()}");
 
-                m_RoadEditorData.CalculatePoints(
-                    RoadEditorSpacing,
-                    rotation,
-                    RoadEditorOffset,
-                    width,
-                    m_Points,
-                    ref terrainHeightData,
-                    RoadEditorSides,
-                    m_OverlayBuffer,
-                    true
+            m_RoadEditorData.CalculatePoints(
+                RoadEditorSpacing,
+                rotation,
+                parcelWidth / 2,
+                parcelWidth / 2,
+                RoadEditorOffset,
+                parcelWidth,
+                m_Points,
+                ref terrainHeightData,
+                RoadEditorSides,
+                m_OverlayBuffer,
+                true
+            );
+
+            m_Log.Debug($"Rendering {m_Points.Count} parcels");
+
+            // Step along length and place preview objects.
+            foreach (var transformData in m_Points) {
+                m_Log.Debug($"Creating temp parcel from enitity {m_SelectedEntity} transform {transformData.ToJSONString()}");
+                MakeCreateDefinitionsJob(
+                    m_SelectedEntity,
+                    transformData.m_Position,
+                    transformData.m_Rotation,
+                    RandomSeed.Next()
                 );
-
-                m_Log.Debug($"Rendering {m_Points.Count} parcels");
-
-                // Step along length and place preview objects.
-                foreach (var transformData in m_Points) {
-                    // m_OverlayBuffer.DrawCircle(UnityEngine.Color.white, transformData.m_Position, 3f);
-                    // var trs = ParcelUtils.GetTransformMatrix(transformData);
-                    // var pColor = UnityEngine.Color.red;
-
-                    // if (m_PlatterOverlaySystem.TryGetZoneColor(PreZoneType, out var color)) {
-                    //    pColor = color;
-                    // }
-
-                    // m_Log.Debug($"Rendering parcel with {PreZoneType.m_Index} zone type");
-
-                    // DrawingUtils.DrawParcel(m_OverlayBuffer, pColor, SelectedParcelSize, trs);
-
-                    // Create entity.
-                    m_Log.Debug($"Creating temp parcel from enitity {m_SelectedEntity} transform {transformData.ToJSONString()}");
-                    MakeCreateDefinitionsJob(
-                        m_SelectedEntity,
-                        transformData.m_Position,
-                        transformData.m_Rotation,
-                        RandomSeed.Next()
-                    );
-                }
             }
 
             return inputDeps;

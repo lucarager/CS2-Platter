@@ -1,6 +1,5 @@
 import { FocusKey, Theme, UniqueFocusKey } from "cs2/bindings";
 import { ModuleRegistry } from "cs2/modding";
-import { DropdownItemProps, DropdownProps, DropdownToggleProps } from "cs2/ui";
 import { HTMLAttributes } from "react";
 
 // These are specific to the types of components that this mod uses.
@@ -30,6 +29,7 @@ type PropsStepToolButton = {
     onSelect?: (x: any) => any;
 } & HTMLAttributes<any>;
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 type TabBarProps = {};
 
 type PropsSection = {
@@ -38,16 +38,21 @@ type PropsSection = {
     children: string | JSX.Element | JSX.Element[];
 };
 
+type CheckboxProps = {
+    checked?: boolean;
+    disabled?: boolean;
+    theme?: any;
+    className?: string;
+    [key: string]: any;
+};
+
 // This is an array of the different components and sass themes that are appropriate for your UI. You need to figure out which ones you need from the registry.
 const registryIndex = {
     Section: [
         "game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx",
         "Section",
     ],
-    ToolButton: [
-        "game-ui/game/components/tool-options/tool-button/tool-button.tsx",
-        "ToolButton",
-    ],
+    ToolButton: ["game-ui/game/components/tool-options/tool-button/tool-button.tsx", "ToolButton"],
     StepToolButton: [
         "game-ui/game/components/tool-options/tool-button/tool-button.tsx",
         "StepToolButton",
@@ -55,6 +60,11 @@ const registryIndex = {
     TabBar: [
         "game-ui/game/components/asset-menu/asset-category-tab-bar/asset-category-tab-bar.tsx",
         "TabBar",
+    ],
+    Checkbox: ["game-ui/common/input/toggle/checkbox/checkbox.tsx", "Checkbox"],
+    checkboxTheme: [
+        "game-ui/game/components/statistics-panel/menu/item/statistics-item.module.scss",
+        "classes",
     ],
     tabBarTheme: [
         "game-ui/game/components/asset-menu/asset-category-tab-bar/asset-category-tab-bar.scss",
@@ -70,10 +80,7 @@ const registryIndex = {
     ],
     FOCUS_DISABLED: ["game-ui/common/focus/focus-key.ts", "FOCUS_DISABLED"],
     FOCUS_AUTO: ["game-ui/common/focus/focus-key.ts", "FOCUS_AUTO"],
-    useUniqueFocusKey: [
-        "game-ui/common/focus/focus-key.ts",
-        "useUniqueFocusKey",
-    ],
+    useUniqueFocusKey: ["game-ui/common/focus/focus-key.ts", "useUniqueFocusKey"],
     assetGridTheme: [
         "game-ui/game/components/asset-menu/asset-grid/asset-grid.module.scss",
         "classes",
@@ -103,9 +110,9 @@ export class VanillaComponentResolver {
     private cachedData: Partial<Record<keyof typeof registryIndex, any>> = {};
     private updateCache(entry: keyof typeof registryIndex) {
         const entryData = registryIndex[entry];
-        return (this.cachedData[entry] = this.registryData.registry.get(
-            entryData[0],
-        )![entryData[1]]);
+        return (this.cachedData[entry] = this.registryData.registry.get(entryData[0])![
+            entryData[1]
+        ]);
     }
 
     // This section defines your components and themes in a way that you can access via the singleton in your components.
@@ -117,39 +124,31 @@ export class VanillaComponentResolver {
         return this.cachedData["ToolButton"] ?? this.updateCache("ToolButton");
     }
     public get StepToolButton(): (props: PropsStepToolButton) => JSX.Element {
-        return (
-            this.cachedData["StepToolButton"] ??
-            this.updateCache("StepToolButton")
-        );
+        return this.cachedData["StepToolButton"] ?? this.updateCache("StepToolButton");
     }
     public get TabBar(): (props: TabBarProps) => JSX.Element {
         return this.cachedData["TabBar"] ?? this.updateCache("TabBar");
     }
-
+    public get Checkbox(): (props: CheckboxProps) => JSX.Element {
+        return this.cachedData["Checkbox"] ?? this.updateCache("Checkbox");
+    }
     public get toolButtonTheme(): Theme | any {
-        return (
-            this.cachedData["toolButtonTheme"] ??
-            this.updateCache("toolButtonTheme")
-        );
+        return this.cachedData["toolButtonTheme"] ?? this.updateCache("toolButtonTheme");
+    }
+    public get checkboxTheme(): Theme | any {
+        return this.cachedData["checkboxTheme"] ?? this.updateCache("checkboxTheme");
     }
     public get mouseToolOptionsTheme(): Theme | any {
         return (
-            this.cachedData["mouseToolOptionsTheme"] ??
-            this.updateCache("mouseToolOptionsTheme")
+            this.cachedData["mouseToolOptionsTheme"] ?? this.updateCache("mouseToolOptionsTheme")
         );
     }
     public get assetGridTheme(): Theme | any {
-        return (
-            this.cachedData["assetGridTheme"] ??
-            this.updateCache("assetGridTheme")
-        );
+        return this.cachedData["assetGridTheme"] ?? this.updateCache("assetGridTheme");
     }
 
     public get FOCUS_DISABLED(): UniqueFocusKey {
-        return (
-            this.cachedData["FOCUS_DISABLED"] ??
-            this.updateCache("FOCUS_DISABLED")
-        );
+        return this.cachedData["FOCUS_DISABLED"] ?? this.updateCache("FOCUS_DISABLED");
     }
     public get FOCUS_AUTO(): UniqueFocusKey {
         return this.cachedData["FOCUS_AUTO"] ?? this.updateCache("FOCUS_AUTO");
@@ -158,10 +157,7 @@ export class VanillaComponentResolver {
         focusKey: FocusKey,
         debugName: string,
     ) => UniqueFocusKey | null {
-        return (
-            this.cachedData["useUniqueFocusKey"] ??
-            this.updateCache("useUniqueFocusKey")
-        );
+        return this.cachedData["useUniqueFocusKey"] ?? this.updateCache("useUniqueFocusKey");
     }
     // public get Dropdown(): (props: DropdownProps) => JSX.Element { return this.cachedData["Dropdown"] ?? this.updateCache("Dropdown") }
     // public get DropdownItem(): <T>(props: DropdownItemProps<T>) => JSX.Element { return this.cachedData["DropdownItem"] ?? this.updateCache("DropdownItem") }

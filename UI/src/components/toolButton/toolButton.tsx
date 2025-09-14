@@ -1,21 +1,17 @@
 import React from "react";
 import { Button } from "cs2/ui";
-import { Theme } from "cs2/bindings";
-import { getModule, ModuleRegistryExtend } from "cs2/modding";
-import { $bindings } from "modBindings";
+import { ModuleRegistryExtend } from "cs2/modding";
+import { GAME_BINDINGS } from "modBindings";
 import styles from "./toolButton.module.scss";
-
-// Getting the vanilla theme css for compatibility
-const ToolBarButtonTheme: Theme | any = getModule(
-    "game-ui/game/components/toolbar/components/feature-button/toolbar-feature-button.module.scss",
-    "classes",
-);
+import { useValue } from "cs2/api";
+import { VanillaThemes } from "../vanilla/Components";
 
 export const buttonId = "platterToolButton";
 
 export const ToolButton: ModuleRegistryExtend = (Component) => {
     const c = (props: any) => {
-        const toolEnabledBinding = $bindings.toolEnabled.use();
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const toolEnabledBinding = useValue(GAME_BINDINGS.TOOL_ENABLED.binding);
         const iconSrc = "Media/Game/Icons/Zones.svg";
         const { children, ...otherProps } = props || {};
 
@@ -23,12 +19,12 @@ export const ToolButton: ModuleRegistryExtend = (Component) => {
             <>
                 <Button
                     id={buttonId}
-                    className={ToolBarButtonTheme.button + " " + styles.Icon}
+                    className={VanillaThemes.toolbarFeatureButton.button + " " + styles.Icon}
                     src={iconSrc}
                     variant="icon"
-                    onSelect={() => $bindings.toolEnabled.set(!toolEnabledBinding)}></Button>
+                    onSelect={() => GAME_BINDINGS.TOOL_ENABLED.set(!toolEnabledBinding)}></Button>
 
-                <Component {...otherProps}></Component>
+                <Component {...otherProps}>{children}</Component>
             </>
         );
     };

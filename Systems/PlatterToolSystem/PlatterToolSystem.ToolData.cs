@@ -76,6 +76,8 @@ namespace Platter.Systems {
                 get; set;
             }
 
+            public bool RecalculatePoints { get; set; } = false;
+
             public ToolData_RoadEditor(EntityManager entityManager, PrefabSystem prefabSystem)
                 : base(entityManager, prefabSystem) {
             }
@@ -114,6 +116,7 @@ namespace Platter.Systems {
                 SelectedCurveGeo = default;
                 SelectedCurveEdgeGeo = default;
                 SelectedPrefabBase = null;
+                RecalculatePoints = false;
             }
 
             public class CurveData {
@@ -121,7 +124,7 @@ namespace Platter.Systems {
                 public float3 StartPointLocation;
                 public float3 EndPointLocation;
                 public float Length;
-                public float StartingPoint = 0;
+                public float RelativeStartingPosition = 0;
                 public float Direction = 1;
 
                 public CurveData(Bezier4x3 curve, float direction) {
@@ -155,16 +158,20 @@ namespace Platter.Systems {
             public virtual void CalculatePoints(
                 float spacing,
                 int rotation,
-                float offset,
-                float size,
+                float startOffset,
+                float endOffset,
+                float roadOffset,
+                float parcelWidth,
                 List<Transform> pointList,
                 ref TerrainHeightData heightData,
                 bool4 sides,
                 OverlayRenderSystem.Buffer overlayBuffer,
                 bool debug
             ) {
+                this.RecalculatePoints = false;
+
                 // Make sure there's always a little offset, for directional vector calc
-                offset += 0.1f;
+                roadOffset += 0.1f;
 
                 // Don't do anything if we don't have a valid start point.
                 if (SelectedEdgeEntity == Entity.Null) {
@@ -194,22 +201,19 @@ namespace Platter.Systems {
                 if (sides.z) {
                     curvesDict["start"].Add(new CurveData(SelectedCurveStartGeo.m_Geometry.m_Left.m_Right, 1f));
                     curvesDict["start"].Add(new CurveData(SelectedCurveStartGeo.m_Geometry.m_Right.m_Right, 1f));
-                    curvesDict["start"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveStartGeo.m_Geometry.m_Right.m_Left), -1f));
-                    curvesDict["start"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveStartGeo.m_Geometry.m_Left.m_Left), -1f));
+                    curvesDict["start"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveStartGeo.m_Geometry.m_Right.m_Left), 1f));
+                    curvesDict["start"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveStartGeo.m_Geometry.m_Left.m_Left), 1f));
                 }
 
                 if (sides.w) {
                     curvesDict["end"].Add(new CurveData(SelectedCurveEndGeo.m_Geometry.m_Left.m_Left, -1f));
                     curvesDict["end"].Add(new CurveData(SelectedCurveEndGeo.m_Geometry.m_Right.m_Left, -1f));
-                    curvesDict["end"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveEndGeo.m_Geometry.m_Right.m_Right), 1f));
-                    curvesDict["end"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveEndGeo.m_Geometry.m_Left.m_Right), 1f));
+                    curvesDict["end"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveEndGeo.m_Geometry.m_Right.m_Right), -1f));
+                    curvesDict["end"].Add(new CurveData(PlatterMathUtils.InvertBezier(SelectedCurveEndGeo.m_Geometry.m_Left.m_Right), -1f));
                 }
 
-                foreach (var curves in curvesDict.Values) {
-                    if (curves.Count == 0) {
-                        continue;
-                    }
-
+                foreach (var curves in curvesDict.Values.Where(curves => curves.Count != 0)) {
+                    // Draw debug circles if needed
                     if (debug) {
                         var debugLinesColor = 0;
                         foreach (var curve in curves) {
@@ -222,33 +226,36 @@ namespace Platter.Systems {
 
                     var totalLength = 0f;
 
+                    // Calculate total length of curve and set the relative starting position of each individual curve
                     for (var i = 0; i < curves.Count; i++) {
                         var curve = curves[i];
                         if (curves.ElementAtOrDefault(i - 1) != null) {
-                            curve.StartingPoint = curves[i - 1].StartingPoint + curves[i - 1].Length;
+                            curve.RelativeStartingPosition = curves[i - 1].RelativeStartingPosition + curves[i - 1].Length;
                         }
 
                         totalLength += curve.Length;
                     }
 
-                    var pointsCount = math.floor((totalLength + spacing) / (size + spacing));
+                    // Reduce length by start and end offsets
+                    totalLength = totalLength - startOffset - endOffset;
+
+                    var pointsCount = math.floor((totalLength + spacing) / (parcelWidth + spacing));
                     var intervals = pointsCount - 1;
                     var stepLength = intervals == 0 ? 0 : totalLength / intervals;
 
-                    // Generate points, retrieving the correct position on the correct curve.
                     var currentCurveIndex = 0;
                     var debugPointsColor = 0;
+                    var currentPosition = startOffset;
 
+                    // Generate points, retrieving the correct position on the correct curve.
                     for (var i = 0; i < pointsCount; i++) {
-                        var currentPosition = i * stepLength;
-
                         // Get the right curve given the currentPosition
-                        if (currentPosition > curves[currentCurveIndex].StartingPoint + curves[currentCurveIndex].Length && currentCurveIndex < curves.Count - 1) {
+                        if (currentPosition > curves[currentCurveIndex].RelativeStartingPosition + curves[currentCurveIndex].Length && currentCurveIndex < curves.Count - 1) {
                             currentCurveIndex++;
                         }
 
                         var currentCurve = curves[currentCurveIndex];
-                        var relativePosition = currentPosition - currentCurve.StartingPoint;
+                        var relativePosition = currentPosition - currentCurve.RelativeStartingPosition;
                         var relativePercentage = relativePosition / currentCurve.Length;
                         var pointPositionOnCurve = MathUtils.Position(
                             currentCurve.Curve,
@@ -257,7 +264,7 @@ namespace Platter.Systems {
                         var tangent = MathUtils.Tangent(currentCurve.Curve, relativePercentage);
                         var perpendicular2dVector = new Vector3(tangent.z, 0f, -tangent.x);
                         float3 normal = perpendicular2dVector.normalized;
-                        var shiftedPointPosition = pointPositionOnCurve + (normal * offset * currentCurve.Direction);
+                        var shiftedPointPosition = pointPositionOnCurve + (normal * roadOffset * currentCurve.Direction);
                         Vector3 direction = pointPositionOnCurve - shiftedPointPosition;
                         var perpendicularRotation = Quaternion.LookRotation(direction.normalized);
 
@@ -270,6 +277,9 @@ namespace Platter.Systems {
                             m_Position = shiftedPointPosition,
                             m_Rotation = perpendicularRotation,
                         });
+
+                        // Increase pointer
+                        currentPosition += stepLength;
                     }
                 }
             }

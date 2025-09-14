@@ -1,0 +1,105 @@
+.moddedSection {
+    border-top: 1px solid  rgba(255, 255, 255, .2);
+    padding: 8rem 0;
+    background-color: rgba(82, 174, 255, 0.15);
+    margin-bottom: -6px;
+
+    .title {
+        font-weight: 600;
+        margin-left: 12rem;
+        margin-bottom: 8rem;
+        color:  var(--accentColorNormal) ;
+        font-size: var(--fontSizeM) ;
+        line-height: 1.25em;
+    }
+}
+
+.button[disabled] {
+    pointer-events: none;
+    cursor: default;
+    opacity: .5;
+}
+
+.controlsRow {
+    display: flex;
+    flex-direction: row;
+
+    &:first-child {
+        margin-right: 6rem;
+    }
+}
+
+.dropdownToggleInner {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+
+.controlsRowValue {
+    width: 24rem;
+}
+
+.controlsRowWidthDropdown {
+    button {
+        padding-left: 10rem;
+        padding-right: 10rem;
+        text-align: left;
+        color: rgba(217, 217, 217, 1);
+
+        img {
+            width: 100%;
+            height: 100%;
+        }
+
+
+        & > div {
+            align-items: center;
+            display: flex;
+        }
+    }
+}
+
+.dropdownMenu {
+    height: 75%;
+    background-color: var(--panelColorDark) ;
+    backdrop-filter: var(--panelBlur) ;
+    color:  var(--accentColorNormal) ;
+
+    button {
+        padding-left: 10rem;
+        padding-right: 10rem;
+        text-align: left;
+        color: rgba(217, 217, 217, 1);
+        align-items: center;
+        display: flex;
+    }
+}
+
+.dropdownToggle {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(15, 16, 19, 1);
+    border-top-left-radius: 4rem;
+    border-top-right-radius: 4rem;
+    border-bottom-left-radius: 4rem;
+    border-bottom-right-radius: 4rem;
+    padding: 4rem 6rem;
+    color: rgba(217, 217, 217, 1);
+}
+
+.dropdownIcon {
+    --size: 20rem;
+}
+
+.dropdownToggleIcon {
+    opacity: 0.5;
+}
+
+.dropdownToggleLabel {
+    margin-right: 10rem;
+    margin-left: 4rem;
+    color: rgba(217, 217, 217, 1);
+    font-weight: 600;
+}

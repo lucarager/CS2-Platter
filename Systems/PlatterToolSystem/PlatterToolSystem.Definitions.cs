@@ -4,7 +4,6 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System.Collections.Generic;
     using Colossal.Annotations;
     using Colossal.Collections;
     using Game;
@@ -18,6 +17,7 @@ namespace Platter.Systems {
     using Game.Tools;
     using Game.Zones;
     using Platter.Utils;
+    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -80,35 +80,49 @@ namespace Platter.Systems {
         private float m_RoadEditorSpacing = 1f;
         private float m_RoadEditorOffset = 2f;
         private bool4 m_RoadEditorSides = new bool4(true, true, false, false);
+        private float3 m_LastCursorPosition;
 
         // Mode Data
         private ToolData_Plop m_PlopData;
         private ToolData_RoadEditor m_RoadEditorData;
         private PlatterToolMode m_CurrentMode = PlatterToolMode.Plop;
+        public bool ApplyWasRequested = false;
 
         public int2 SelectedParcelSize {
             get => this.m_SelectedParcelSize;
-            set => this.m_SelectedParcelSize = value;
+            set {
+                m_SelectedParcelSize = value;
+                m_RoadEditorData.RecalculatePoints = true;
+            }
         }
 
         public float RoadEditorSpacing {
             get => m_RoadEditorSpacing;
-            set => m_RoadEditorSpacing = value;
+            set {
+                m_RoadEditorSpacing = value;
+                m_RoadEditorData.RecalculatePoints = true;
+            }
         }
 
         public float RoadEditorOffset {
             get => m_RoadEditorOffset;
-            set => m_RoadEditorOffset = value;
+            set {
+                m_RoadEditorOffset = value;
+                m_RoadEditorData.RecalculatePoints = true;
+            }
         }
 
         public bool4 RoadEditorSides {
             get => m_RoadEditorSides;
-            set => m_RoadEditorSides = value;
+            set {
+                m_RoadEditorSides = value;
+                m_RoadEditorData.RecalculatePoints = true;
+            }
         }
 
-        public ZoneType PreZoneType {
-            get; set;
-        }
+        public ZoneType PreZoneType { get; set; } = ZoneType.None;
+
+        public bool AllowSpawn { get; set; } = true;
 
         private struct Rotation {
             public quaternion m_Rotation;
@@ -124,25 +138,6 @@ namespace Platter.Systems {
             set {
                 m_SelectedPrefab = value as ObjectGeometryPrefab;
                 m_SelectedEntity = m_SelectedPrefab is null ? Entity.Null : m_PrefabSystem.GetEntity(m_SelectedPrefab);
-            }
-        }
-
-        public TransformPrefab Transform {
-            get => m_TransformPrefab;
-            set {
-                if (value != m_TransformPrefab) {
-                    m_TransformPrefab = value;
-                    m_ForceUpdate = true;
-                    if (value != null) {
-                        m_SelectedPrefab = null;
-                        var eventPrefabChanged = m_ToolSystem.EventPrefabChanged;
-                        if (eventPrefabChanged == null) {
-                            return;
-                        }
-
-                        eventPrefabChanged(value);
-                    }
-                }
             }
         }
 

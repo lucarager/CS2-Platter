@@ -1,4 +1,4 @@
-import { type ValueBinding, bindValue, trigger, useValue } from "cs2/api";
+import { type ValueBinding, bindValue, trigger } from "cs2/api";
 import mod from "mod.json";
 
 export class BidirectionalBinding<T> {
@@ -24,9 +24,5 @@ export class BidirectionalBinding<T> {
 
     public set(value: T) {
         trigger(mod.id, this.triggerId, value);
-    }
-
-    public use() {
-        return useValue(this._binding);
     }
 }

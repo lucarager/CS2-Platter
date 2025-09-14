@@ -1,41 +1,34 @@
 import { trigger } from "cs2/api";
 import mod from "../mod.json";
 import { BidirectionalBinding as TwoWayBinding } from "utils/bidirectionalBinding";
+import { PrefabData, ZoneData } from "types";
 
-export type PrefabData = {
-    name: string | undefined;
-    thumbnail: string | undefined;
-};
-
-export type ZoneData = {
-    name: string;
-    thumbnail: string;
-    index: number;
-};
-
-export const $bindings = {
-    toolEnabled: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
-    toolMode: new TwoWayBinding<number>("TOOL_MODE", 0),
-    infoSectionAllowSpawningToggle: new TwoWayBinding<boolean>(
-        "ALLOW_SPAWNING_INFO_SECTION",
-        false,
-    ),
-    pointsCount: new TwoWayBinding<number>("POINTS_COUNT", 0),
-    blockWidth: new TwoWayBinding<number>("BLOCK_WIDTH", 2),
-    blockDepth: new TwoWayBinding<number>("BLOCK_DEPTH", 2),
-    zone: new TwoWayBinding<number>("ZONE", 0),
-    spacing: new TwoWayBinding<number>("RE_SPACING", 1),
-    offset: new TwoWayBinding<number>("RE_OFFSET", 2),
-    sides: new TwoWayBinding<boolean[]>("RE_SIDES", [true, true, false, false]),
-    prefab: new TwoWayBinding<PrefabData>("PREFAB_DATA", {
+export const GAME_BINDINGS = {
+    TOOL_ENABLED: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
+    TOOL_MODE: new TwoWayBinding<number>("TOOL_MODE", 0),
+    ALLOW_SPAWNING_INFO_SECTION: new TwoWayBinding<boolean>("ALLOW_SPAWNING_INFO_SECTION", false),
+    POINTS_COUNT: new TwoWayBinding<number>("POINTS_COUNT", 0),
+    BLOCK_WIDTH: new TwoWayBinding<number>("BLOCK_WIDTH", 2),
+    BLOCK_DEPTH: new TwoWayBinding<number>("BLOCK_DEPTH", 2),
+    ZONE: new TwoWayBinding<number>("ZONE", 0),
+    RE_SPACING: new TwoWayBinding<number>("RE_SPACING", 1),
+    RE_OFFSET: new TwoWayBinding<number>("RE_OFFSET", 2),
+    RE_SIDES: new TwoWayBinding<boolean[]>("RE_SIDES", [true, true, false, false]),
+    PREFAB_DATA: new TwoWayBinding<PrefabData>("PREFAB_DATA", {
         name: undefined,
         thumbnail: undefined,
     }),
-    zoneData: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
+    ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
+    RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
+    ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
 };
 
-export const triggers = {
-    adjustBlockSize: (action: string) => {
+export const GAME_TRIGGERS = {
+    ADJUST_BLOCK_SIZE: (action: string) => {
+        console.log("ADJUST_BLOCK_SIZE", action);
         trigger(mod.id, "TRIGGER:ADJUST_BLOCK_SIZE", action);
+    },
+    REQUEST_APPLY: () => {
+        trigger(mod.id, "TRIGGER:REQUEST_APPLY");
     },
 };
