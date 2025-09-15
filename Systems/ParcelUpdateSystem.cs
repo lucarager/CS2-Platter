@@ -35,7 +35,7 @@ namespace Platter.Systems {
         // Systems & References
         private PrefabSystem m_PrefabSystem;
         private ZoneSystem m_ZoneSystem;
-        private PlatterToolSystem m_PlatterToolSystem;
+        private PlatterUISystem m_PlatterUISystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -49,7 +49,7 @@ namespace Platter.Systems {
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
-            m_PlatterToolSystem = PlatterToolSystem.Instance;
+            m_PlatterUISystem = World.GetOrCreateSystemManaged<PlatterUISystem>();
 
             // Queries
             m_ParcelCreatedQuery = GetEntityQuery(
@@ -88,8 +88,8 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
             var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
-            var currentDefaultPreZone = m_PlatterToolSystem.PreZoneType;
-            var currentDefaultAllowSpawn = m_PlatterToolSystem.AllowSpawn;
+            var currentDefaultPreZone = m_PlatterUISystem.PreZoneType;
+            var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawn;
 
             m_Log.Debug($"OnUpdate() -- currentDefaultPreZone {currentDefaultPreZone}");
             m_Log.Debug($"OnUpdate() -- currentDefaultAllowSpawn {currentDefaultAllowSpawn}");

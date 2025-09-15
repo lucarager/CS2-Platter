@@ -1,14 +1,16 @@
 import React from "react";
 import { ModuleRegistryExtend } from "cs2/modding";
 import { VanillaComponents, VanillaThemes } from "components/vanilla/Components";
-import { useValue } from "cs2/api";
-import { GAME_BINDINGS, GAME_TRIGGERS } from "modBindings";
+import { bindValue, useValue } from "cs2/api";
+import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import styles from "./mouseToolOptions.module.scss";
 import { Dropdown, DropdownToggle, Icon, DropdownItem } from "cs2/ui";
 import { c } from "utils/classes";
 import { VanillaFocusKey } from "../vanilla/Components";
 
 export type BlockControlProps = Record<string, never>;
+
+const v = bindValue<any>("toolbar", "assetCategories");
 
 export const PlatterMouseToolOptionsExtension: ModuleRegistryExtend = (Component) => {
     const ExtendedComponent = (props: any) => {
@@ -18,6 +20,10 @@ export const PlatterMouseToolOptionsExtension: ModuleRegistryExtend = (Component
         const zoneDataBinding = useValue(GAME_BINDINGS.ZONE_DATA.binding);
         const zoneBinding = useValue(GAME_BINDINGS.ZONE.binding);
         const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
+        // Test
+        const b = useValue(v);
+
+        console.log("b", b)
 
         const dropDownList = (
             <div>
@@ -39,11 +45,15 @@ export const PlatterMouseToolOptionsExtension: ModuleRegistryExtend = (Component
 
         const { children, ...otherProps } = props || {};
 
-        console.log("dropdown", VanillaThemes.dropdown)
-
         const Toolbar = (
             <div className={styles.moddedSection}>
-                <div className={styles.title}>Platter</div>
+                <div className={styles.moddedSection_Header}>
+                    <img
+                        className={styles.moddedSection_Header_Image}
+                        src="coui://platter/logo.png"
+                    />
+                    <h1 className={styles.moddedSection_Header_Title}>Platter</h1>
+                </div>
                 <VanillaComponents.Section title="Zoning">
                     <Dropdown
                         focusKey={VanillaFocusKey.FOCUS_DISABLED}

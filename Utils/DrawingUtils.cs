@@ -38,23 +38,24 @@ namespace Platter.Utils {
                 this.width = width;
             }
         }
-
         public static void DrawParcel(
             OverlayRenderSystem.Buffer buffer,
-
-            // Color zoneColor,
             int2 lotSize,
             float4x4 trs,
             bool spawnable = false
         ) {
+            DrawParcel(buffer, lotSize, trs, ColorConstants.ParcelBackground, spawnable);
+        }
+
+        public static void DrawParcel(
+            OverlayRenderSystem.Buffer buffer,
+            int2 lotSize,
+            float4x4 trs,
+            Color backgroundColor,
+            bool spawnable = false
+        ) {
             // Final container of lines to draw
             var linesToDraw = new List<LineDef>();
-
-            // var innerColor = zoneColor;
-
-            // if (innerColor == null) {
-            //    innerColor = ColorConstants.ParcelCellOutline;
-            // }
 
             // Calculate data
             var parcelGeo = new ParcelGeometry(lotSize);
@@ -69,8 +70,8 @@ namespace Platter.Utils {
             linesToDraw.Add(new LineDef(parcelCorners.c2, parcelCorners.c3, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
             linesToDraw.Add(new LineDef(parcelCorners.c3, parcelCorners.c0, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
 
-            // Add "background"
-            linesToDraw.Add(new LineDef(parcelFront, parcelBack, ColorConstants.ParcelBackground, parcelGeo.Size.x));
+            // Add background
+            linesToDraw.Add(new LineDef(parcelFront, parcelBack, backgroundColor, parcelGeo.Size.x));
 
             // Calculate inner lines
             var frontNode = new float3(parcelCorners.c1);

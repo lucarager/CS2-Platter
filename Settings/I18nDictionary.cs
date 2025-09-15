@@ -4,8 +4,10 @@
 // </copyright>
 
 namespace Platter.Settings {
-    using Colossal;
     using System.Collections.Generic;
+    using Colossal;
+    using Game.Tools;
+
 
     /// <summary>
     /// Todo.
@@ -23,6 +25,17 @@ namespace Platter.Settings {
 
             m_Localization = new Dictionary<string, string>() {
                 { m_Setting.GetSettingsLocaleID(), PlatterMod.Id },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.ApplyActionName)), "ApplyActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.CreateActionName)), "CreateActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.CancelActionName)), "CancelActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.IncreaseParcelWidthActionName)), "IncreaseParcelWidthActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.IncreaseParcelDepthActionName)), "IncreaseParcelDepthActionName" },
+                
+                { "Assets.NAME[PlatterCat]", "PlatterCat" },
+                { "Assets.DESCRIPTION[PlatterCat]", "PlatterCat Desc" },
+                { "SubServices.NAME[PlatterCat]", "PlatterCat 2" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "PlatterCat Desc 2" },
+
                 { "Assets.NAME[Parcel 2x2]", "Parcel 2x2" },
                 { "Assets.DESCRIPTION[Parcel 2x2]", "Parcel 2x2" },
                 { "Assets.NAME[Parcel 2x3]", "Parcel 2x3" },

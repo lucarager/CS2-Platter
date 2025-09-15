@@ -4,13 +4,26 @@
     background-color: rgba(82, 174, 255, 0.15);
     margin-bottom: -6px;
 
-    .title {
-        font-weight: 600;
-        margin-left: 12rem;
-        margin-bottom: 8rem;
-        color:  var(--accentColorNormal) ;
-        font-size: var(--fontSizeM) ;
-        line-height: 1.25em;
+    &_Header {
+    display: flex;
+    flex-direction: row;
+    padding-left: 12rem;
+    padding-bottom: 4rem;
+    align-items: center;
+
+    &_Image {
+        width: 24rem;
+        height: 24rem;
+        margin-right: 4rem;
+        }
+
+        &_Title {
+            font-weight: 600;
+
+            color:  var(--accentColorNormal) ;
+            font-size: var(--fontSizeM) ;
+            line-height: 1.25em;
+        }
     }
 }
 

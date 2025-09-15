@@ -1,9 +1,10 @@
-﻿// <copyright file="PlatterPrefabSystem.CreatePrefab.cs" company="Luca Rager">
+﻿// <copyright file="PlatterPrefabSystem.CreateParcelPrefab.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using Colossal.Json;
     using Game.Prefabs;
     using Game.UI;
     using UnityEngine;
@@ -15,7 +16,7 @@ namespace Platter.Systems {
         /// <summary>
         /// todo.
         /// </summary>
-        private bool CreatePrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject) {
+        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab) {
             var name = $"{PrefabNamePrefix} {lotWidth}x{lotDepth}";
             var icon = $"coui://platter/{PrefabNamePrefix}_{lotWidth}x{lotDepth}.svg";
 
@@ -40,8 +41,7 @@ namespace Platter.Systems {
             placeableLotPrefabUIObject.name = PrefabNamePrefix;
             placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
             placeableLotPrefabUIObject.m_Priority = zonePrefabUIObject.m_Priority;
-
-            placeableLotPrefabUIObject.m_Group = zonePrefabUIObject.m_Group;
+            placeableLotPrefabUIObject.m_Group = uiCategoryPrefab;
             placeableLotPrefabUIObject.active = zonePrefabUIObject.active;
             parcelPrefabBase.AddComponentFrom(placeableLotPrefabUIObject);
 

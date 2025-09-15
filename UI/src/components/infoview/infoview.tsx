@@ -2,9 +2,8 @@ import React from "react";
 import { getModule } from "cs2/modding";
 import { Theme, FocusKey } from "cs2/bindings";
 import { trigger, useValue } from "cs2/api";
-import { VanillaComponentResolver } from "utils/VanillaComponentResolver";
 import mod from "mod.json";
-import { GAME_BINDINGS } from "modBindings";
+import { GAME_BINDINGS } from "gameBindings";
 import { VanillaComponents, VanillaThemes } from "components/vanilla/Components";
 
 interface InfoSectionComponent {

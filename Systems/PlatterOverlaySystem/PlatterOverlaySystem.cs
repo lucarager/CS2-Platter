@@ -9,6 +9,7 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Prefabs;
     using Game.Rendering;
+    using Game.Tools;
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
@@ -150,6 +151,7 @@ namespace Platter.Systems {
                     m_ParcelDataComponentLookup = GetComponentLookup<ParcelData>(),
                     m_ObjectGeometryComponentLookup = GetComponentLookup<ObjectGeometryData>(),
                     m_ParcelSpawnableComponentLookup = GetComponentLookup<ParcelSpawnable>(),
+                    m_TempComponentLookup = GetComponentLookup<Temp>(),
                 };
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, overlayRenderBufferHandle);
 
@@ -173,6 +175,7 @@ namespace Platter.Systems {
             [ReadOnly] public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
             [ReadOnly] public ComponentLookup<ObjectGeometryData> m_ObjectGeometryComponentLookup;
             [ReadOnly] public ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
+            [ReadOnly] public ComponentLookup<Temp> m_TempComponentLookup;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
@@ -189,15 +192,19 @@ namespace Platter.Systems {
                     var parcel = parcelsArray[i];
                     var trs = ParcelUtils.GetTransformMatrix(transform);
 
-                    // var color = m_ColorArray[parcel.m_PreZoneType];
                     if (!m_ParcelDataComponentLookup.TryGetComponent(prefabRef, out var parcelData)) {
                         return;
                     }
 
+                    var isTemp = m_TempComponentLookup.HasComponent(prefabRef);
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local center to calculate the cube's world position.
-                    DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, spawnable);
+                    if (isTemp && m_ColorArray[parcel.m_PreZoneType] != null) {
+                        DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, m_ColorArray[parcel.m_PreZoneType], spawnable);
+                    } else {
+                        DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, spawnable);
+                    }
                 }
             }
         }

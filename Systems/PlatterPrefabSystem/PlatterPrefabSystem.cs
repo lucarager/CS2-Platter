@@ -13,6 +13,7 @@ namespace Platter.Systems {
     using Platter.Utils;
     using System.Collections.Generic;
     using Unity.Entities;
+    using UnityEngine;
 
     /// <summary>
     /// Todo.
@@ -50,24 +51,29 @@ namespace Platter.Systems {
 
             // Getting PrefabSystem instance from World
             m_PrefabSystem = m_World.GetOrCreateSystemManaged<PrefabSystem>();
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out var zonePrefab)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefab not found");
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out var zonePrefabBase)) {
+                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabBase not found");
             }
 
             if (!m_PrefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out var roadPrefabBase)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. roadPrefabBase not found");
             }
 
-            if (!zonePrefab.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("UIAssetCategoryPrefab", "ZonesOffice"), out var uiAssetCategoryPrefabBase)) {
+                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. uiAssetCategoryPrefab not found");
+            }
+
+            if (!zonePrefabBase.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabUIObject not found");
             }
 
-            // Cast prefabs
-            var roadPrefab = (RoadPrefab)roadPrefabBase;
+            m_Log.Debug($"{logMethodPrefix} Creating Category Prefab...");
+            CreateCategoryPrefab((UIAssetCategoryPrefab)uiAssetCategoryPrefabBase, out var uiCategoryPrefab);
 
+            m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
                 for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (!CreatePrefab(i, j, roadPrefab, zonePrefabUIObject)) {
+                    if (!CreateParcelPrefab(i, j, (RoadPrefab)roadPrefabBase, zonePrefabUIObject, uiCategoryPrefab)) {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;
                     }
@@ -78,6 +84,31 @@ namespace Platter.Systems {
             PrefabsAreInstalled = true;
 
             m_Log.Debug($"{logMethodPrefix} Completed.");
+        }
+
+        private bool CreateCategoryPrefab(UIAssetCategoryPrefab uiCategoryPrefabClone, out UIAssetCategoryPrefab uiCategoryPrefab) {
+
+            var name = $"PlatterCat";
+            var icon = $"coui://platter/logo.png";
+
+            var uiCategoryPrefabBase = ScriptableObject.CreateInstance<UIAssetCategoryPrefab>();
+
+            uiCategoryPrefabBase.name = name;
+            uiCategoryPrefabBase.m_Menu = uiCategoryPrefabClone.m_Menu;
+
+            var uiObject = ScriptableObject.CreateInstance<UIObject>();
+            uiObject.active = true;
+            uiObject.m_Group = null;
+            uiObject.m_Priority = 30;
+            uiObject.m_Icon = icon;
+            uiObject.m_IsDebugObject = false;
+            uiObject.m_Icon = icon;
+            uiObject.name = name;
+            uiCategoryPrefabBase.AddComponentFrom(uiObject);
+
+            var success = m_PrefabSystem.AddPrefab(uiCategoryPrefabBase);
+            uiCategoryPrefab = uiCategoryPrefabBase;
+            return success;
         }
     }
 }

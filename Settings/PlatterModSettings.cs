@@ -18,21 +18,33 @@ namespace Platter.Settings {
     [SettingsUIMouseAction(ApplyActionName, ActionType.Button, false, false, new string[] { "PlatterTool" })]
     [SettingsUIKeyboardAction(CreateActionName, ActionType.Button, false, false, usages: new string[] { "PlatterTool" })]
     [SettingsUIMouseAction(CancelActionName, ActionType.Button, false, false, usages: new string[] { "PlatterTool" })]
+    [SettingsUIMouseAction(IncreaseParcelWidthActionName, ActionType.Axis, true, false, usages: new string[] { "PlatterTool" })]
+    [SettingsUIMouseAction(IncreaseParcelDepthActionName, ActionType.Axis, true, false, usages: new string[] { "PlatterTool" })]
     public class PlatterModSettings : ModSetting {
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        internal const string ApplyActionName = "PlatterToolApply";
+        public const string ApplyActionName = "PlatterToolApply";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        internal const string CreateActionName = "PlatterToolCreate";
+        public const string CreateActionName = "PlatterToolCreate";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        internal const string CancelActionName = "PlatterToolCancel";
+        public const string CancelActionName = "PlatterToolCancel";
+
+        /// <summary>
+        /// Tool's apply action name.
+        /// </summary>
+        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
+
+        /// <summary>
+        /// Tool's apply action name.
+        /// </summary>
+        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -63,8 +75,24 @@ namespace Platter.Settings {
         /// Gets or sets the Platter Tool cancel action (copied from game action).
         /// </summary>
         [SettingsUIMouseBinding(CancelActionName)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Cancel")]
+        [SettingsUIBindingMimic(InputManager.kShortcutsMap, "Cancel")]
         public ProxyBinding PlatterToolCancel {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets the Platter Tool cancel action (copied from game action).
+        /// </summary>
+        [SettingsUIMouseBinding(IncreaseParcelWidthActionName)]
+        public ProxyBinding PlatterToolIncreaseParcelWidth {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets the Platter Tool cancel action (copied from game action).
+        /// </summary>
+        [SettingsUIMouseBinding(IncreaseParcelDepthActionName)]
+        public ProxyBinding PlatterToolIncreaseParcelDepth {
             get; set;
         }
 
