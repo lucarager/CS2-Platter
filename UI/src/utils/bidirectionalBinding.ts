@@ -1,7 +1,7 @@
 import { type ValueBinding, bindValue, trigger } from "cs2/api";
 import mod from "mod.json";
 
-export class BidirectionalBinding<T> {
+export class TwoWayBinding<T> {
     public id: string;
     private _binding: ValueBinding<T>;
 
@@ -17,7 +17,7 @@ export class BidirectionalBinding<T> {
         return this._binding;
     }
 
-    public constructor(id: string, fallbackValue: T) {
+    public constructor(id: string, fallbackValue?: T) {
         this.id = id;
         this._binding = bindValue<T>(mod.id, this.bindingId, fallbackValue);
     }

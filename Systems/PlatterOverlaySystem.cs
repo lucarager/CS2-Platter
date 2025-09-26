@@ -41,18 +41,25 @@ namespace Platter.Systems {
 
         // Queries
         private EntityQuery m_ParcelQuery;
-        private EntityQuery m_ZoneQuery;        
+        private EntityQuery m_ZoneQuery;
 
         // Data
         private Dictionary<ZoneType, Color> m_FillColors;
         private Dictionary<ZoneType, Color> m_EdgeColors;
-        private bool m_ShouldRenderParcels = false;
+        private bool m_ShouldRenderParcels = true;
+        private bool m_ShouldRenderParcelsOverride = false;
         private bool m_UpdateColors;
 
         public bool RenderParcels {
             get => m_ShouldRenderParcels;
             set {
                 m_ShouldRenderParcels = value;
+            }
+        }
+        public bool RenderParcelsOverride {
+            get => m_ShouldRenderParcelsOverride;
+            set {
+                m_ShouldRenderParcelsOverride = value;
             }
         }
 
@@ -75,6 +82,9 @@ namespace Platter.Systems {
                 new EntityQueryDesc {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Parcel>()
+                    },
+                    None = new ComponentType[] {
+                        ComponentType.ReadOnly<Deleted>(),
                     },
                 });
 
@@ -119,7 +129,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            if (!m_ShouldRenderParcels) {
+            if (!m_ShouldRenderParcels && !m_ShouldRenderParcelsOverride) {
                 return;
             }
 
@@ -196,7 +206,7 @@ namespace Platter.Systems {
                         return;
                     }
 
-                    var isTemp = m_TempComponentLookup.HasComponent(prefabRef);
+                    var isTemp = m_TempComponentLookup.HasComponent(entity);
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local center to calculate the cube's world position.

@@ -1,0 +1,32 @@
+:root {
+    --size: 46rem;
+}
+
+.wrapper {
+    position: relative;
+}
+
+.Icon {
+    pointer-events: auto;
+    // order: 5;
+}
+
+.Icon img {
+    width: var(--size);
+    height: var(--size);
+}
+
+.panel {
+    position: absolute;
+    width: 300rem;
+    top: 110%;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+}
+
+.headerText {
+    margin-left: -5rem;
+}

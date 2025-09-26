@@ -54,6 +54,7 @@ export type VanillaSectionProps = {
     title?: string | null;
     uiTag?: string;
     children: string | JSX.Element | JSX.Element[];
+    focusKey?: UniqueFocusKey | null;
 };
 
 export type VanillaCheckboxProps = {

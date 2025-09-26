@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     using Game;
     using System;
+    using Unity.Burst;
     using Unity.Entities;
     using Unity.Mathematics;
 
@@ -16,6 +17,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Struct containing data for a replacement job (building, road, etc.)
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public struct ConnectionUpdateDataJob : IComparable<ConnectionUpdateDataJob> {
             /// <summary>
             /// Parcel to update.

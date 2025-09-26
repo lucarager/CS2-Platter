@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     using Game;
     using Game.Buildings;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -17,6 +18,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Find eligible entities and add them to a queue.
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public struct CreateEntitiesQueueJob : IJobChunk {
             /// <summary>
             /// todo.

@@ -1,6 +1,5 @@
-﻿// <copyright file="ReflectionExtensions.cs" company="Luca Rager">
-// Copyright (c) Luca Rager. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// <copyright file="ReflectionExtensions.cs" company="Yenyangs Mods. MIT License">
+// Copyright (c) Yenyangs Mods. MIT License. All rights reserved.
 // </copyright>
 
 namespace Platter.Extensions {
@@ -28,9 +27,15 @@ namespace Platter.Extensions {
                 PlatterMod.Instance.Log.Error(new System.Exception("memberName"), $"{nameof(ReflectionExtensions)} {nameof(GetMemberInfo)} Couldn't find member name! ");
             }
 
-            return memInf is PropertyInfo
-                ? memInf.As<PropertyInfo>().GetValue(obj, null)
-                : memInf is FieldInfo ? memInf.As<FieldInfo>().GetValue(obj) : throw new System.Exception();
+            if (memInf is PropertyInfo) {
+                return memInf.As<PropertyInfo>().GetValue(obj, null);
+            }
+
+            if (memInf is FieldInfo) {
+                return memInf.As<FieldInfo>().GetValue(obj);
+            }
+
+            throw new System.Exception();
         }
 
         /// <summary>
@@ -84,7 +89,11 @@ namespace Platter.Extensions {
                 bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy),
         };
             flds = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Where(flds, i => i is not null));
-            return flds.Count != 0 ? flds[0] : (MemberInfo)null;
+            if (flds.Count != 0) {
+                return flds[0];
+            }
+
+            return null;
         }
 
         [System.Diagnostics.DebuggerHidden]

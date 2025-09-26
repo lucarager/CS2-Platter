@@ -14,6 +14,7 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -22,6 +23,9 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
+#if USE_BURST
+    [BurstCompile]
+#endif
     public partial class RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Find the best and eligible road for a given parcel.
@@ -104,8 +108,9 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute(int index) {
+#if !USE_BURST
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob(index: {index})");
-
+#endif
                 // Retrieve the data
                 var currentEntityData = m_ConnectionUpdateDataList[index];
 
@@ -162,8 +167,9 @@ namespace Platter.Systems {
 
                 // Update the data in the list with what we found
                 this.m_ConnectionUpdateDataList[index] = currentEntityData;
-
+#if !USE_BURST
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob() -- Updated list with eligible roads.");
+#endif
             }
 
             /// <summary>

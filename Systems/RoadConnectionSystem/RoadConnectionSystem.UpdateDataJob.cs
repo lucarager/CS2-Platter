@@ -6,10 +6,14 @@
 namespace Platter.Systems {
     using Game;
     using Game.Common;
+    using Game.Net;
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
+    using Game.Zones;
     using Platter.Components;
+    using System.Xml;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -21,6 +25,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Perform updates to roads and parcels.
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public struct UpdateDataJob : IJob {
             /// <summary>
             /// todo.
@@ -45,7 +52,37 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
+            [ReadOnly] public BufferLookup<SubBlock> m_SubBlockBufferLookup;
+
+            /// <summary>
+            /// todo.
+            /// </summary>
             [ReadOnly] public TrafficConfigurationData m_TrafficConfigurationData;
+
+            /// <summary>
+            /// todo.
+            /// </summary>
+            [ReadOnly] public ComponentLookup<Edge> m_EdgeComponentLookup;
+
+            /// <summary>
+            /// todo.
+            /// </summary>
+            public ComponentLookup<Node> m_NodeComponentLookup;
+
+            /// <summary>
+            /// todo.
+            /// </summary>
+            public ComponentLookup<NodeGeometry> m_NodeGeoComponentLookup;
+
+            /// <summary>
+            /// todo.
+            /// </summary>
+            public ComponentLookup<Elevation> m_ElevationComponentLookup;
+
+            /// <summary>
+            /// todo.
+            /// </summary>
+            public ComponentLookup<Aggregated> m_AggregatedComponentLookup;
 
             /// <summary>
             /// todo.
@@ -62,8 +99,9 @@ namespace Platter.Systems {
                 if (m_ConnectionUpdateDataList.Length == 0) {
                     return;
                 }
-
+#if !USE_BURST
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Processing {m_ConnectionUpdateDataList.Length} entries.");
+#endif
 
                 for (var i = 0; i < m_ConnectionUpdateDataList.Length; i++) {
                     var updateData = m_ConnectionUpdateDataList[i];
@@ -83,11 +121,15 @@ namespace Platter.Systems {
                     // or it's a newly created building
                     if (roadChanged || parcelHasCreatedComponent) {
                         if (roadChanged) {
+#if !USE_BURST      
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updating parcel {updateData.m_Parcel} road. {parcel.m_RoadEdge} -> {updateData.m_NewRoad}...");
+#endif
                         }
 
                         if (parcelHasCreatedComponent) {
+#if !USE_BURST     
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updating CREATED parcel {updateData.m_Parcel} with road {updateData.m_NewRoad}...");
+#endif
                         }
 
                         // If this is a TEMP entity
@@ -96,8 +138,9 @@ namespace Platter.Systems {
                             parcel.m_RoadEdge = updateData.m_NewRoad;
                             parcel.m_CurvePosition = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-
+#if !USE_BURST
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updated TEMP parcel {parcel}.");
+#endif
                         } else {
                             // Check if the parcel had a road and now doesn't, or vice versa, to update the icon status
                             if (parcelHadRoad != parcelHasNewRoad) {
@@ -115,7 +158,7 @@ namespace Platter.Systems {
                                         updateData.m_FrontPos,
                                         IconPriority.Warning,
                                         IconClusterLayer.Default,
-                                        IconFlags.IgnoreTarget,
+                                        IconFlags.OnTop,
                                         default,
                                         false,
                                         false,
@@ -125,39 +168,21 @@ namespace Platter.Systems {
                                 }
                             }
 
-                            // If the parcel had a road before, remove the parcel from that road's buffer
-                            // @todo add a parcel buffer to roads
-                            // @todo notify road that parcel is present to recalculate blocks
-                            if (parcelHadRoad) {
-                                // var connectedBuildingBuffer = m_ConnectedBuildings[parcel.m_RoadEdge];
-                                // CollectionUtils.RemoveValue<ConnectedBuilding>(connectedBuildingBuffer, new ConnectedBuilding(updateData.m_Building));
-                            }
-
                             // Update data
                             parcel.m_RoadEdge = updateData.m_NewRoad;
                             parcel.m_CurvePosition = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-
+#if !USE_BURST
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updated parcel {parcel}.");
-
-                            // If the parcel has a new road, add the parcel to that road's buffer
-                            if (parcelHasNewRoad) {
-                                // Looking through the code (CellCheckSystem), we might need to update all of these to trigger a recalc:
-                                // this.m_ZoneUpdateCollectSystem.isUpdated &&
-                                // this.m_ObjectUpdateCollectSystem.isUpdated &&
-                                // this.m_NetUpdateCollectSystem.netsUpdated &&
-                                // this.m_AreaUpdateCollectSystem.lotsUpdated &&
-                                // this.m_AreaUpdateCollectSystem.mapTilesUpdated
-                                // m_CommandBuffer.AddComponent<Updated>(updateData.m_NewRoad, default);
-
-                                // m_ConnectedBuildings[updateData.m_NewRoad].Add(new ConnectedBuilding(updateData.m_Building));
-                            }
+#endif
                         }
                     }
 
                     // Alternatively, we could just be updating the building's curve position
                     else if (parcelHasNewCurvePosition) {
+#if !USE_BURST
                         PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Giving parcel updated curvepos...");
+#endif
 
                         parcel.m_CurvePosition = updateData.m_CurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
@@ -171,7 +196,7 @@ namespace Platter.Systems {
                             updateData.m_FrontPos,
                             IconPriority.Warning,
                             IconClusterLayer.Default,
-                            IconFlags.IgnoreTarget,
+                            IconFlags.OnTop,
                             default,
                             false,
                             false,

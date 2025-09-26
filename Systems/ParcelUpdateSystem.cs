@@ -29,7 +29,7 @@ namespace Platter.Systems {
         private EntityCommandBuffer m_CommandBuffer;
 
         // Queries
-        private EntityQuery m_ParcelCreatedQuery;
+        private EntityQuery m_ParcelQuery;
         private EntityQuery m_ZoneQuery;
 
         // Systems & References
@@ -52,7 +52,7 @@ namespace Platter.Systems {
             m_PlatterUISystem = World.GetOrCreateSystemManaged<PlatterUISystem>();
 
             // Queries
-            m_ParcelCreatedQuery = GetEntityQuery(
+            m_ParcelQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Parcel>()
@@ -62,7 +62,7 @@ namespace Platter.Systems {
                         ComponentType.ReadOnly<Deleted>()
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(), // todo handle temp entities
+                        ComponentType.ReadOnly<Temp>()
                     },
                 });
 
@@ -81,15 +81,15 @@ namespace Platter.Systems {
                 });
 
             // Update Cycle
-            RequireForUpdate(m_ParcelCreatedQuery);
+            RequireForUpdate(m_ParcelQuery);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
-            var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
+            var entities = m_ParcelQuery.ToEntityArray(Allocator.Temp);
             var currentDefaultPreZone = m_PlatterUISystem.PreZoneType;
-            var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawn;
+            var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawning;
 
             m_Log.Debug($"OnUpdate() -- currentDefaultPreZone {currentDefaultPreZone}");
             m_Log.Debug($"OnUpdate() -- currentDefaultAllowSpawn {currentDefaultAllowSpawn}");
@@ -163,6 +163,9 @@ namespace Platter.Systems {
                     m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
                     m_Size = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth),
                 };
+
+                // Builorder is used for cell priority calculations, lowest = oldest = higher priority. 
+                // Manually setting to 0 ensures priority.
                 var buildOder = new BuildOrder() {
                     m_Order = 0,
                 };
@@ -179,6 +182,7 @@ namespace Platter.Systems {
                 } else {
                     m_Log.Debug($"OnUpdate() -- Creating a new block...");
                     var blockEntity = m_CommandBuffer.CreateEntity(zoneBlockData.m_Archetype);
+                    m_Log.Debug($"OnUpdate() -- blockEntity {blockEntity} created");
                     m_CommandBuffer.SetComponent<PrefabRef>(blockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(blockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
@@ -191,7 +195,13 @@ namespace Platter.Systems {
 
                     for (var l = 0; l < cellCount; l++) {
                         cellBuffer.Add(new Cell() {
-                            m_Zone = parcel.m_PreZoneType
+                            m_Zone = parcel.m_PreZoneType,
+
+                            // "Visible" flag is usually added by the game's cell overlap systems
+                            // By adding it manually, we ensure that the game takes our custom blocks as a priority (given the 0 build order)
+                            // otherwise it always prioritizes visible cells first, which would be the ones already existing on roads
+                            // This may break in the future should the logic in CellOverlapJobs.cs change
+                            m_State = CellFlags.Visible,
                         });
                     }
                 }
