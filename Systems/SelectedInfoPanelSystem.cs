@@ -51,7 +51,8 @@ namespace Platter.Systems {
 
             // Bindings
             AddBinding(m_AllowSpawningBinding = new ValueBinding<bool>(PlatterMod.Id, "BINDING:ALLOW_SPAWNING_INFO_SECTION", false));
-            AddBinding(new TriggerBinding(PlatterMod.Id, "EVENT:ALLOW_SPAWNING_TOGGLED", HandleAllowSpawningToggleEvent));
+
+            // AddBinding(new TriggerBinding(PlatterMod.Id, "EVENT:ALLOW_SPAWNING_TOGGLED", HandleAllowSpawningToggleEvent));
         }
 
         /// <inheritdoc/>

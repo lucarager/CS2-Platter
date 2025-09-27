@@ -4,9 +4,9 @@
 // </copyright>
 
 namespace Platter.Extensions {
-    using System;
     using Colossal.UI.Binding;
     using Game.UI;
+    using System;
 
     public abstract partial class ExtendedUISystemBase : UISystemBase {
         public ValueBindingHelper<T> CreateBinding<T>(string key, T initialValue) {

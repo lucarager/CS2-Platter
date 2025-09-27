@@ -6,8 +6,6 @@
 namespace Platter.Settings {
     using System.Collections.Generic;
     using Colossal;
-    using Game.Tools;
-
 
     /// <summary>
     /// Todo.
@@ -25,17 +23,48 @@ namespace Platter.Settings {
 
             m_Localization = new Dictionary<string, string>() {
                 { m_Setting.GetSettingsLocaleID(), PlatterMod.Id },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.ApplyActionName)), "ApplyActionName" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.CreateActionName)), "CreateActionName" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.CancelActionName)), "CancelActionName" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.IncreaseParcelWidthActionName)), "IncreaseParcelWidthActionName" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.IncreaseParcelDepthActionName)), "IncreaseParcelDepthActionName" },
-                
-                { "Assets.NAME[PlatterCat]", "PlatterCat" },
-                { "Assets.DESCRIPTION[PlatterCat]", "PlatterCat Desc" },
-                { "SubServices.NAME[PlatterCat]", "PlatterCat 2" },
-                { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "PlatterCat Desc 2" },
 
+                // ToggleRenderActionName
+                { m_Setting.GetBindingKeyLocaleID(nameof(PlatterModSettings.ToggleRenderActionName)), "Binding Key: ToggleRenderActionName" },
+                { m_Setting.GetBindingKeyHintLocaleID(nameof(PlatterModSettings.ToggleRenderActionName)), "Hint Tooltip: ToggleRenderActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterToggleRender)), "Label: ToggleRenderActionName" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterToggleRender)), "Description: ToggleRenderActionName" },
+
+                // ToggleSpawnActionName
+                { m_Setting.GetBindingKeyLocaleID(nameof(PlatterModSettings.ToggleSpawnActionName)), "Binding Key: ToggleSpawnActionName" },
+                { m_Setting.GetBindingKeyHintLocaleID(nameof(PlatterModSettings.ToggleSpawnActionName)), "Hint Tooltip: ToggleSpawnActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterToggleSpawn)), "Label: ToggleSpawnActionName" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterToggleSpawn)), "Description: ToggleSpawnActionName" },
+
+                // IncreaseParcelWidthActionName
+                { m_Setting.GetBindingKeyLocaleID(nameof(PlatterModSettings.IncreaseParcelWidthActionName)), "Binding Key: IncreaseParcelWidthActionName" },
+                { m_Setting.GetBindingKeyHintLocaleID(nameof(PlatterModSettings.IncreaseParcelWidthActionName)), "Hint Tooltip: IncreaseParcelWidthActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelWidth)), "Label: IncreaseParcelWidthActionName" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelWidth)), "Description: IncreaseParcelWidthActionName" },
+
+                // DecreaseParcelWidthActionName
+                { m_Setting.GetBindingKeyLocaleID(nameof(PlatterModSettings.DecreaseParcelWidthActionName)), "Binding Key: DecreaseParcelWidthActionName" },
+                { m_Setting.GetBindingKeyHintLocaleID(nameof(PlatterModSettings.DecreaseParcelWidthActionName)), "Hint Tooltip: DecreaseParcelWidthActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelWidth)), "Label: DecreaseParcelWidthActionName" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelWidth)), "Description: DecreaseParcelWidthActionName" },
+
+                // IncreaseParcelDepthActionName
+                { m_Setting.GetBindingKeyLocaleID(nameof(PlatterModSettings.IncreaseParcelDepthActionName)), "Binding Key: IncreaseParcelDepthActionName" },
+                { m_Setting.GetBindingKeyHintLocaleID(nameof(PlatterModSettings.IncreaseParcelDepthActionName)), "Hint Tooltip: IncreaseParcelDepthActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelDepth)), "Label: IncreaseParcelDepthActionName" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelDepth)), "Description: IncreaseParcelDepthActionName" },
+
+                // DecreaseParcelDepthActionName
+                { m_Setting.GetBindingKeyLocaleID(nameof(PlatterModSettings.DecreaseParcelDepthActionName)), "Binding Key: DecreaseParcelDepthActionName" },
+                { m_Setting.GetBindingKeyHintLocaleID(nameof(PlatterModSettings.DecreaseParcelDepthActionName)), "Hint Tooltip: DecreaseParcelDepthActionName" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelDepth)), "Label: DecreaseParcelDepthActionName" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelDepth)), "Description: DecreaseParcelDepthActionName" },
+
+                // Parcel Prefabs & Category Prefabs
+                { "Assets.NAME[PlatterCat]", "Platter Category" },
+                { "Assets.DESCRIPTION[PlatterCat]", "Platter Category Description" },
+                { "SubServices.NAME[PlatterCat]", "Platter Category 2" },
+                { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "Platter Category 2" },
                 { "Assets.NAME[Parcel 2x2]", "Parcel 2x2" },
                 { "Assets.DESCRIPTION[Parcel 2x2]", "Parcel 2x2" },
                 { "Assets.NAME[Parcel 2x3]", "Parcel 2x3" },
@@ -86,6 +115,13 @@ namespace Platter.Settings {
                 { "Assets.DESCRIPTION[Parcel 6x5]", "Parcel 6x5" },
                 { "Assets.NAME[Parcel 6x6]", "Parcel 6x6" },
                 { "Assets.DESCRIPTION[Parcel 6x6]", "Parcel 6x6" },
+
+                // UI
+                { "PlatterMod.UI.SectionTitle.Prezoning", "Pre-Zone" },
+                { "PlatterMod.UI.SectionTitle.Lotsize", "Lot Size" },
+                { "PlatterMod.UI.SectionTitle.ParcelControls", "Parcel Controls" },
+                { "PlatterMod.UI.SectionTitle.RenderParcels", "Render Parcels" },
+                { "PlatterMod.UI.SectionTitle.AllowSpawn", "Enable Spawning on Parcels" },
             };
         }
 

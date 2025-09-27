@@ -1,10 +1,9 @@
-﻿// <copyright file="PlatterPrefabSystem.CreateParcelPrefab.cs" company="Luca Rager">
+﻿// <copyright file="PlatterPrefabSystem.CreatePrefab.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Json;
     using Game.Prefabs;
     using Game.UI;
     using UnityEngine;

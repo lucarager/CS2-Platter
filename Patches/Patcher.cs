@@ -4,9 +4,9 @@
 // </copyright>
 
 namespace Platter.Patches {
+    using System;
     using Colossal.Logging;
     using HarmonyLib;
-    using System;
 
     /// <summary>
     /// A basic Harmony patching class.

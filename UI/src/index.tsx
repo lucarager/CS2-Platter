@@ -1,8 +1,9 @@
 import { ModRegistrar, ModuleRegistry } from "cs2/modding";
 import { GAME_BINDINGS } from "gameBindings";
-import { PlatterMouseToolOptionsExtension } from "components/mouseToolOptions/mouseToolOptions";
+import { PlatterMouseToolOptions } from "components/mouseToolOptions/mouseToolOptions";
 import { initialize } from "components/vanilla/Components";
 import { SelectedInfoPanelComponent } from "components/infoview/infoview";
+import { ToolButton } from "components/toolButton/toolButton";
 
 // Register bindings
 GAME_BINDINGS.BLOCK_DEPTH;
@@ -10,10 +11,18 @@ GAME_BINDINGS.BLOCK_DEPTH;
 const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     initialize(moduleRegistry);
 
+    // moduleRegistry.extend(
+    //     "game-ui/game/components/toolbar/top/city-info-field/city-info-field.tsx",
+    //     "CityInfoField",
+    //     ToolButton,
+    // );
+
+    moduleRegistry.append("GameTopLeft", ToolButton);
+
     moduleRegistry.extend(
         "game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx",
         "MouseToolOptions",
-        PlatterMouseToolOptionsExtension,
+        PlatterMouseToolOptions,
     );
 
     moduleRegistry.extend(

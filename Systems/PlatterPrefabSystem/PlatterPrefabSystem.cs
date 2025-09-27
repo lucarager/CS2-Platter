@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Prefabs;
@@ -11,7 +12,6 @@ namespace Platter.Systems {
     using Game.UI;
     using HarmonyLib;
     using Platter.Utils;
-    using System.Collections.Generic;
     using Unity.Entities;
     using UnityEngine;
 
@@ -87,9 +87,8 @@ namespace Platter.Systems {
         }
 
         private bool CreateCategoryPrefab(UIAssetCategoryPrefab uiCategoryPrefabClone, out UIAssetCategoryPrefab uiCategoryPrefab) {
-
             var name = $"PlatterCat";
-            var icon = $"coui://platter/logo.png";
+            var icon = $"coui://platter/logo.svg";
 
             var uiCategoryPrefabBase = ScriptableObject.CreateInstance<UIAssetCategoryPrefab>();
 
@@ -99,7 +98,7 @@ namespace Platter.Systems {
             var uiObject = ScriptableObject.CreateInstance<UIObject>();
             uiObject.active = true;
             uiObject.m_Group = null;
-            uiObject.m_Priority = 30;
+            uiObject.m_Priority = 100;
             uiObject.m_Icon = icon;
             uiObject.m_IsDebugObject = false;
             uiObject.m_Icon = icon;

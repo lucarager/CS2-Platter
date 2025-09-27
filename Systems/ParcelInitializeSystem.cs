@@ -101,7 +101,7 @@ namespace Platter.Systems {
                 // Placeable data
                 var placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
                 placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround;
-                placeableData.m_PlacementOffset = new float3(100f, 0, 100f); // Seems to only be used for "Shore" snapping
+                placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
 
                 // Building Data

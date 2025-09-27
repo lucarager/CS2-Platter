@@ -5,6 +5,7 @@
 
 namespace Platter.Systems {
     using Game;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -16,6 +17,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Convert the queue of parcels to a list of ConnectionUpdateDataJob structs.
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public struct CreateUniqueEntitiesListJob : IJob {
             /// <summary>
             /// todo.

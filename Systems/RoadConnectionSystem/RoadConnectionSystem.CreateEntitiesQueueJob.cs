@@ -1,4 +1,4 @@
-﻿// <copyright file="RoadConnectionSystem.CreateEntitiesQueue.cs" company="Luca Rager">
+﻿// <copyright file="RoadConnectionSystem.CreateEntitiesQueueJob.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     using Game;
     using Game.Buildings;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -17,6 +18,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Find eligible entities and add them to a queue.
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public struct CreateEntitiesQueueJob : IJobChunk {
             /// <summary>
             /// todo.

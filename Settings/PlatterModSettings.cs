@@ -15,36 +15,41 @@ namespace Platter.Settings {
     /// The mod's settings.
     /// </summary>
     [FileLocation(PlatterMod.ModName)]
-    [SettingsUIMouseAction(ApplyActionName, ActionType.Button, false, false, new string[] { "PlatterTool" })]
-    [SettingsUIKeyboardAction(CreateActionName, ActionType.Button, false, false, usages: new string[] { "PlatterTool" })]
-    [SettingsUIMouseAction(CancelActionName, ActionType.Button, false, false, usages: new string[] { "PlatterTool" })]
-    [SettingsUIMouseAction(IncreaseParcelWidthActionName, ActionType.Axis, true, false, usages: new string[] { "PlatterTool" })]
-    [SettingsUIMouseAction(IncreaseParcelDepthActionName, ActionType.Axis, true, false, usages: new string[] { "PlatterTool" })]
+    [SettingsUIMouseAction(IncreaseParcelWidthActionName, ActionType.Button, usages: new string[] { Usages.kToolUsage })]
+    [SettingsUIMouseAction(DecreaseParcelWidthActionName, ActionType.Button, usages: new string[] { Usages.kToolUsage })]
+    [SettingsUIMouseAction(IncreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIMouseAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
     public class PlatterModSettings : ModSetting {
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string ApplyActionName = "PlatterToolApply";
+        public const string ToggleRenderActionName = "ToggleParcelRendering";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string CreateActionName = "PlatterToolCreate";
+        public const string ToggleSpawnActionName = "ToggleParcelSpawning";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string CancelActionName = "PlatterToolCancel";
+        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidth";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
+        public const string DecreaseParcelWidthActionName = "DecreaseParcelWidth";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
+        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepth";
+
+        /// <summary>
+        /// Tool's apply action name.
+        /// </summary>
+        public const string DecreaseParcelDepthActionName = "DecreaseParcelDepth";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -55,44 +60,50 @@ namespace Platter.Settings {
         }
 
         /// <summary>
-        /// Gets or sets the Platter Tool apply action (copied from game action).
+        /// Gets or sets ...
         /// </summary>
-        [SettingsUIMouseBinding(ApplyActionName)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        public ProxyBinding PlatterToolApply {
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ToggleRenderActionName, ctrl: true)]
+        public ProxyBinding PlatterToggleRender {
             get; set;
         }
 
         /// <summary>
-        /// Gets or sets the Platter Tool apply action (copied from game action).
+        /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(CreateActionName)]
-        public ProxyBinding PlatterToolCreate {
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ToggleSpawnActionName, ctrl: true)]
+        public ProxyBinding PlatterToggleSpawn {
             get; set;
         }
 
         /// <summary>
-        /// Gets or sets the Platter Tool cancel action (copied from game action).
+        /// Gets or sets ...
         /// </summary>
-        [SettingsUIMouseBinding(CancelActionName)]
-        [SettingsUIBindingMimic(InputManager.kShortcutsMap, "Cancel")]
-        public ProxyBinding PlatterToolCancel {
+        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Positive, IncreaseParcelWidthActionName, false, true, false)]
+        public ProxyBinding PlatterIncreaseParcelWidth {
             get; set;
         }
 
         /// <summary>
-        /// Gets or sets the Platter Tool cancel action (copied from game action).
+        /// Gets or sets ...
         /// </summary>
-        [SettingsUIMouseBinding(IncreaseParcelWidthActionName)]
-        public ProxyBinding PlatterToolIncreaseParcelWidth {
+        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Negative, DecreaseParcelWidthActionName, false, true, true)]
+        public ProxyBinding PlatterDecreaseParcelWidth {
             get; set;
         }
 
         /// <summary>
-        /// Gets or sets the Platter Tool cancel action (copied from game action).
+        /// Gets or sets ...
         /// </summary>
-        [SettingsUIMouseBinding(IncreaseParcelDepthActionName)]
-        public ProxyBinding PlatterToolIncreaseParcelDepth {
+        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Positive, IncreaseParcelDepthActionName, true, false, false)]
+        public ProxyBinding PlatterIncreaseParcelDepth {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets ...
+        /// </summary>
+        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Negative, DecreaseParcelDepthActionName, true, false, true)]
+        public ProxyBinding PlatterDecreaseParcelDepth {
             get; set;
         }
 

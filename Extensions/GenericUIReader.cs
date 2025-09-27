@@ -4,11 +4,11 @@
 // </copyright>
 
 namespace Platter.Extensions {
+    using Colossal.UI.Binding;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
-    using Colossal.UI.Binding;
     using Unity.Entities;
     using UnityEngine;
 

@@ -1,6 +1,6 @@
 import { trigger } from "cs2/api";
 import mod from "../mod.json";
-import { BidirectionalBinding as TwoWayBinding } from "utils/bidirectionalBinding";
+import { TwoWayBinding } from "utils/bidirectionalBinding";
 import { PrefabData, ZoneData } from "types";
 
 export const GAME_BINDINGS = {
@@ -14,8 +14,10 @@ export const GAME_BINDINGS = {
     }),
     ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
+    ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ZONE: new TwoWayBinding<number>("ZONE", 0),
+    // TEST: new TwoWayBinding<any[]>("test", []),
 };
 
 export const GAME_TRIGGERS = {

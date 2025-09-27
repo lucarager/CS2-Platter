@@ -1,9 +1,11 @@
-﻿// <copyright file="OverlaySystem.cs" company="Luca Rager">
+﻿// <copyright file="PlatterOverlaySystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -13,8 +15,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -41,19 +41,23 @@ namespace Platter.Systems {
 
         // Queries
         private EntityQuery m_ParcelQuery;
-        private EntityQuery m_ZoneQuery;        
+        private EntityQuery m_ZoneQuery;
 
         // Data
         private Dictionary<ZoneType, Color> m_FillColors;
         private Dictionary<ZoneType, Color> m_EdgeColors;
-        private bool m_ShouldRenderParcels = false;
+        private bool m_ShouldRenderParcels = true;
+        private bool m_ShouldRenderParcelsOverride = false;
         private bool m_UpdateColors;
 
         public bool RenderParcels {
             get => m_ShouldRenderParcels;
-            set {
-                m_ShouldRenderParcels = value;
-            }
+            set => m_ShouldRenderParcels = value;
+        }
+
+        public bool RenderParcelsOverride {
+            get => m_ShouldRenderParcelsOverride;
+            set => m_ShouldRenderParcelsOverride = value;
         }
 
         public bool TryGetZoneColor(ZoneType zoneType, out Color value) {
@@ -75,6 +79,9 @@ namespace Platter.Systems {
                 new EntityQueryDesc {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Parcel>()
+                    },
+                    None = new ComponentType[] {
+                        ComponentType.ReadOnly<Deleted>(),
                     },
                 });
 
@@ -110,6 +117,7 @@ namespace Platter.Systems {
             entities.Dispose();
         }
 
+        /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
             if (m_FillColors.Count == 0) {
@@ -119,7 +127,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            if (!m_ShouldRenderParcels) {
+            if (!m_ShouldRenderParcels && !m_ShouldRenderParcelsOverride) {
                 return;
             }
 
@@ -196,7 +204,7 @@ namespace Platter.Systems {
                         return;
                     }
 
-                    var isTemp = m_TempComponentLookup.HasComponent(prefabRef);
+                    var isTemp = m_TempComponentLookup.HasComponent(entity);
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local center to calculate the cube's world position.

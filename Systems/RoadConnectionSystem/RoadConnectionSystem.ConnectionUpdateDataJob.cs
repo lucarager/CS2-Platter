@@ -1,11 +1,12 @@
-﻿// <copyright file="RoadConnectionSystem.ConnectionUpdateData.cs" company="Luca Rager">
+﻿// <copyright file="RoadConnectionSystem.ConnectionUpdateDataJob.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
-    using Game;
     using System;
+    using Game;
+    using Unity.Burst;
     using Unity.Entities;
     using Unity.Mathematics;
 
@@ -16,6 +17,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Struct containing data for a replacement job (building, road, etc.)
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public struct ConnectionUpdateDataJob : IComparable<ConnectionUpdateDataJob> {
             /// <summary>
             /// Parcel to update.

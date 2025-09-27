@@ -13,6 +13,7 @@ namespace Platter.Systems {
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
+    using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
@@ -100,6 +101,7 @@ namespace Platter.Systems {
                     },
                     Any = new ComponentType[]
                     {
+                        ComponentType.ReadOnly<Created>(),
                         ComponentType.ReadOnly<Updated>(),
                         ComponentType.ReadOnly<Deleted>()
                     },
@@ -113,7 +115,7 @@ namespace Platter.Systems {
                 ComponentType.Exclude<Deleted>(),
                 ComponentType.Exclude<Temp>()
             });
-            this.m_TrafficConfigQuery = base.GetEntityQuery(new ComponentType[] {
+            m_TrafficConfigQuery = base.GetEntityQuery(new ComponentType[] {
                 ComponentType.ReadOnly<TrafficConfigurationData>()
             });
 
@@ -128,7 +130,7 @@ namespace Platter.Systems {
             m_SpawnLocationTypeHandle = GetComponentTypeHandle<Game.Objects.SpawnLocation>(false);
             m_ConnectedBuildingTypeHandle = GetBufferTypeHandle<ConnectedBuilding>(false);
 
-            base.RequireForUpdate(this.m_ModificationQuery);
+            RequireForUpdate(m_ModificationQuery);
         }
 
         /// <inheritdoc/>
@@ -170,9 +172,15 @@ namespace Platter.Systems {
 
             // Job to set data
             UpdateDataJob updateRoadAndParcelDataJobData = default;
+            updateRoadAndParcelDataJobData.m_EdgeComponentLookup = GetComponentLookup<Edge>(false);
+            updateRoadAndParcelDataJobData.m_NodeComponentLookup = GetComponentLookup<Node>(true);
+            updateRoadAndParcelDataJobData.m_NodeGeoComponentLookup = GetComponentLookup<NodeGeometry>(true);
+            updateRoadAndParcelDataJobData.m_ElevationComponentLookup = GetComponentLookup<Elevation>(true);
+            updateRoadAndParcelDataJobData.m_AggregatedComponentLookup = GetComponentLookup<Aggregated>(true);
             updateRoadAndParcelDataJobData.m_ParcelComponentLookup = GetComponentLookup<Parcel>(false);
             updateRoadAndParcelDataJobData.m_CreatedComponentLookup = GetComponentLookup<Created>(true);
             updateRoadAndParcelDataJobData.m_TempComponentLookup = GetComponentLookup<Temp>(true);
+            updateRoadAndParcelDataJobData.m_SubBlockBufferLookup = GetBufferLookup<SubBlock>(false);
             updateRoadAndParcelDataJobData.m_ConnectionUpdateDataList = entitiesToUpdateList;
             updateRoadAndParcelDataJobData.m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
             updateRoadAndParcelDataJobData.m_IconCommandBuffer = m_IconCommandSystem.CreateCommandBuffer();
