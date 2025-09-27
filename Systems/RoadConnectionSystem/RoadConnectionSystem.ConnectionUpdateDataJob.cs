@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     using System;
     using Game;
+    using Unity.Burst;
     using Unity.Entities;
     using Unity.Mathematics;
 

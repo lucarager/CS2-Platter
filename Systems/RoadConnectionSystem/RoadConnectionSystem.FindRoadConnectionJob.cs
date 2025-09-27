@@ -14,6 +14,7 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
