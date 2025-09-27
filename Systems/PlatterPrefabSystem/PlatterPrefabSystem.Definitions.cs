@@ -4,11 +4,11 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System.Collections.Generic;
     using Game;
     using Game.Prefabs;
     using Game.UI;
     using Platter.Utils;
+    using System.Collections.Generic;
     using Unity.Entities;
     using Unity.Mathematics;
 

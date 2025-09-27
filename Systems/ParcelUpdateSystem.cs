@@ -146,8 +146,8 @@ namespace Platter.Systems {
                 }
 
                 // Update prezoned type
-                // parcel.m_PreZoneType = currentDefaultPreZone;
-                // m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
+                parcel.m_PreZoneType = ZoneType.None;
+                m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
 
                 // If this is a temp entity, exit.
                 if (EntityManager.HasComponent<Temp>(parcelEntity)) {
@@ -164,7 +164,7 @@ namespace Platter.Systems {
                     m_Size = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth),
                 };
 
-                // Builorder is used for cell priority calculations, lowest = oldest = higher priority. 
+                // Builorder is used for cell priority calculations, lowest = oldest = higher priority.
                 // Manually setting to 0 ensures priority.
                 var buildOder = new BuildOrder() {
                     m_Order = 0,

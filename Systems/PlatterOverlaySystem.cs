@@ -1,9 +1,11 @@
-﻿// <copyright file="OverlaySystem.cs" company="Luca Rager">
+﻿// <copyright file="PlatterOverlaySystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -13,8 +15,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -52,15 +52,12 @@ namespace Platter.Systems {
 
         public bool RenderParcels {
             get => m_ShouldRenderParcels;
-            set {
-                m_ShouldRenderParcels = value;
-            }
+            set => m_ShouldRenderParcels = value;
         }
+
         public bool RenderParcelsOverride {
             get => m_ShouldRenderParcelsOverride;
-            set {
-                m_ShouldRenderParcelsOverride = value;
-            }
+            set => m_ShouldRenderParcelsOverride = value;
         }
 
         public bool TryGetZoneColor(ZoneType zoneType, out Color value) {
@@ -120,6 +117,7 @@ namespace Platter.Systems {
             entities.Dispose();
         }
 
+        /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
             if (m_FillColors.Count == 0) {

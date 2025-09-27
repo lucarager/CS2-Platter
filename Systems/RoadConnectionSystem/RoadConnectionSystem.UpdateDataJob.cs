@@ -12,8 +12,6 @@ namespace Platter.Systems {
     using Game.Tools;
     using Game.Zones;
     using Platter.Components;
-    using System.Xml;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -121,13 +119,13 @@ namespace Platter.Systems {
                     // or it's a newly created building
                     if (roadChanged || parcelHasCreatedComponent) {
                         if (roadChanged) {
-#if !USE_BURST      
+#if !USE_BURST
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updating parcel {updateData.m_Parcel} road. {parcel.m_RoadEdge} -> {updateData.m_NewRoad}...");
 #endif
                         }
 
                         if (parcelHasCreatedComponent) {
-#if !USE_BURST     
+#if !USE_BURST
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updating CREATED parcel {updateData.m_Parcel} with road {updateData.m_NewRoad}...");
 #endif
                         }

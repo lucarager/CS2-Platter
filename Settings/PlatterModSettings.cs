@@ -24,32 +24,32 @@ namespace Platter.Settings {
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string ToggleRenderActionName = "Toggle Parcel rendering";
+        public const string ToggleRenderActionName = "ToggleParcelRendering";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string ToggleSpawnActionName = "Toggle Parcel spawning";
+        public const string ToggleSpawnActionName = "ToggleParcelSpawning";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string IncreaseParcelWidthActionName = "Increase Parcel width";
+        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidth";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string DecreaseParcelWidthActionName = "Decrease Parcel Width";
+        public const string DecreaseParcelWidthActionName = "DecreaseParcelWidth";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string IncreaseParcelDepthActionName = "Increase Parcel Depth";
+        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepth";
 
         /// <summary>
         /// Tool's apply action name.
         /// </summary>
-        public const string DecreaseParcelDepthActionName = "Decrease Parcel Depth";
+        public const string DecreaseParcelDepthActionName = "DecreaseParcelDepth";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -60,7 +60,7 @@ namespace Platter.Settings {
         }
 
         /// <summary>
-        /// ...
+        /// Gets or sets ...
         /// </summary>
         [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ToggleRenderActionName, ctrl: true)]
         public ProxyBinding PlatterToggleRender {
@@ -68,7 +68,7 @@ namespace Platter.Settings {
         }
 
         /// <summary>
-        /// ...
+        /// Gets or sets ...
         /// </summary>
         [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ToggleSpawnActionName, ctrl: true)]
         public ProxyBinding PlatterToggleSpawn {
@@ -76,7 +76,7 @@ namespace Platter.Settings {
         }
 
         /// <summary>
-        /// ...
+        /// Gets or sets ...
         /// </summary>
         [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Positive, IncreaseParcelWidthActionName, false, true, false)]
         public ProxyBinding PlatterIncreaseParcelWidth {
@@ -84,16 +84,15 @@ namespace Platter.Settings {
         }
 
         /// <summary>
-        /// ...
+        /// Gets or sets ...
         /// </summary>
         [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Negative, DecreaseParcelWidthActionName, false, true, true)]
         public ProxyBinding PlatterDecreaseParcelWidth {
             get; set;
         }
 
-
         /// <summary>
-        /// ...
+        /// Gets or sets ...
         /// </summary>
         [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Positive, IncreaseParcelDepthActionName, true, false, false)]
         public ProxyBinding PlatterIncreaseParcelDepth {
@@ -101,7 +100,7 @@ namespace Platter.Settings {
         }
 
         /// <summary>
-        /// ...
+        /// Gets or sets ...
         /// </summary>
         [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Negative, DecreaseParcelDepthActionName, true, false, true)]
         public ProxyBinding PlatterDecreaseParcelDepth {

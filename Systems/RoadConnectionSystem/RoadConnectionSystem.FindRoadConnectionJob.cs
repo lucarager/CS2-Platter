@@ -14,7 +14,6 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -111,6 +110,7 @@ namespace Platter.Systems {
 #if !USE_BURST
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob(index: {index})");
 #endif
+
                 // Retrieve the data
                 var currentEntityData = m_ConnectionUpdateDataList[index];
 

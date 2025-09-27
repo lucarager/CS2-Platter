@@ -1,4 +1,9 @@
-﻿namespace Platter.Systems {
+﻿// <copyright file="PlatterTooltipSystem.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Systems {
     using Game.Input;
     using Game.Prefabs;
     using Game.Tools;
@@ -7,7 +12,7 @@
     using Unity.Entities;
 
     /// <summary>
-    /// Tooltip System
+    /// Tooltip System.
     /// </summary>
     public partial class PlatterTooltipSystem : TooltipSystemBase {
         private ToolSystem m_ToolSystem;
@@ -21,15 +26,16 @@
         private ProxyAction m_IncreaseDepthAction;
         private ProxyAction m_DecreaseDepthAction;
 
+        /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_IncreaseWidthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
-            m_DecreaseWidthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
-            m_IncreaseDepthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
-            m_DecreaseDepthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
+            m_IncreaseWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
+            m_DecreaseWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
+            m_IncreaseDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
+            m_DecreaseDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
 
             m_Tooltip_IncreaseWidth = new InputHintTooltip(m_IncreaseDepthAction, InputManager.DeviceType.Mouse);
             m_Tooltip_DecreaseWidth = new InputHintTooltip(m_DecreaseDepthAction, InputManager.DeviceType.Mouse);
@@ -37,6 +43,7 @@
             m_Tooltip_DecreaseDepth = new InputHintTooltip(m_DecreaseWidthAction, InputManager.DeviceType.Mouse);
         }
 
+        /// <inheritdoc/>
         protected override void OnUpdate() {
             if (CurrentlyUsingParcelsInObjectTool()) {
                 AddMouseTooltip(m_Tooltip_IncreaseWidth);

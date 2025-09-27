@@ -4,8 +4,10 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Colossal.Entities;
-    using Colossal.Json;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
     using Game;
@@ -13,34 +15,22 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Input;
     using Game.Prefabs;
-    using Game.Prefabs.Modes;
-    using Game.Simulation;
     using Game.Tools;
     using Game.UI;
     using Game.Zones;
     using Platter.Extensions;
     using Platter.Settings;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
     using Unity.Mathematics;
-    using UnityEngine;
-    using UnityEngine.InputSystem;
-    using static Colossal.AssetPipeline.Diagnostic.Report;
-    using static Game.UI.Tooltip.TooltipGroup;
-    using static Platter.Systems.PlatterUISystem;
 
     /// <summary>
     /// todo.
     /// </summary>
     public partial class PlatterUISystem : ExtendedUISystemBase {
-
         public ZoneType PreZoneType { get; set; } = ZoneType.None;
+
         public bool AllowSpawning { get; set; } = true;
 
         // Systems
@@ -66,7 +56,7 @@ namespace Platter.Systems {
         private List<ZoneUIData> m_ZoneData;
         private Dictionary<int, ZoneType> m_ZoneTypeData;
         private bool loadZones = true;
-        private static readonly Dictionary<string, Entity> m_AssetMenuDataDict = new();
+        private static readonly Dictionary<string, Entity> MAssetMenuDataDict = new();
         private List<Entity> m_SelectedThemes;
         private List<Entity> m_SelectedAssetPacks;
 
@@ -88,7 +78,7 @@ namespace Platter.Systems {
         private ProxyAction m_DecreaseBlockDepthAction;
         private ProxyAction m_ToggleRender;
         private ProxyAction m_ToggleSpawn;
-        
+
         /// <summary>
         /// Todo.
         /// </summary>
@@ -217,12 +207,12 @@ namespace Platter.Systems {
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
 
             // Shortcuts
-            m_IncreaseBlockWidthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
-            m_IncreaseBlockDepthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
-            m_DecreaseBlockWidthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
-            m_DecreaseBlockDepthAction = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
-            m_ToggleRender = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.ToggleRenderActionName);
-            m_ToggleSpawn = PlatterMod.Instance.ActiveSettings.GetAction(PlatterModSettings.ToggleSpawnActionName);
+            m_IncreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
+            m_IncreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
+            m_DecreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
+            m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
+            m_ToggleRender = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
+            m_ToggleSpawn = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
 
             m_ToolSystem.EventToolChanged += OnToolChanged;
         }
@@ -291,9 +281,9 @@ namespace Platter.Systems {
         }
 
         private void OnToolChanged(ToolBaseSystem tool) {
-
         }
 
+        /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode) {
             base.OnGameLoadingComplete(purpose, mode);
             m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
@@ -357,6 +347,7 @@ namespace Platter.Systems {
                             if (!m_PrefabSystem.TryGetPrefab<ZonePrefab>(assetEntity, out var zonePrefab)) {
                                 return;
                             }
+
                             var zoneData = EntityManager.GetComponentData<ZoneData>(assetEntity);
 
                             m_ZoneTypeData.Add(zoneData.m_ZoneType.m_Index, zoneData.m_ZoneType);
@@ -401,11 +392,7 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
-            if (m_ToolSystem.activeTool is ObjectToolSystem objectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab) {
-                return true;
-            }
-
-            return false;
+            return m_ToolSystem.activeTool is ObjectToolSystem objectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
         }
 
         /// <summary>

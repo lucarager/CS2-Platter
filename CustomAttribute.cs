@@ -4,20 +4,17 @@
 // </copyright>
 
 namespace Game.Settings {
-    using System.Collections.Generic;
     using Game.Input;
+    using System.Collections.Generic;
 
     public class CustomSettingsUIMouseBindingAttribute : SettingsUIMouseBindingAttribute {
-        public readonly string defaultKey;
-        public readonly bool alt;
-        public readonly bool ctrl;
-        public readonly bool shift;
+        public new readonly string defaultKey;
+        public new readonly bool alt;
+        public new readonly bool ctrl;
+        public new readonly bool shift;
 
-        public override string control {
-            get {
-                return defaultKey;
-            }
-        }
+        public override string control => defaultKey;
+
         public override IEnumerable<string> modifierControls {
             get {
                 if (shift) {
@@ -41,6 +38,5 @@ namespace Game.Settings {
             this.ctrl = ctrl;
             this.defaultKey = defaultKey;
         }
-
     }
 }

@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Prefabs;
@@ -11,7 +12,6 @@ namespace Platter.Systems {
     using Game.UI;
     using HarmonyLib;
     using Platter.Utils;
-    using System.Collections.Generic;
     using Unity.Entities;
     using UnityEngine;
 
@@ -87,7 +87,6 @@ namespace Platter.Systems {
         }
 
         private bool CreateCategoryPrefab(UIAssetCategoryPrefab uiCategoryPrefabClone, out UIAssetCategoryPrefab uiCategoryPrefab) {
-
             var name = $"PlatterCat";
             var icon = $"coui://platter/logo.svg";
 

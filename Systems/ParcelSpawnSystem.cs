@@ -1,19 +1,17 @@
-﻿using Game;
-using Game.Common;
-using Game.Prefabs;
-using Game.Tools;
-using Platter.Components;
-using Platter.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections;
-using Unity.Entities;
-using UnityEngine.Rendering;
+﻿// <copyright file="ParcelSpawnSystem.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace Platter.Systems {
+    using Game;
+    using Game.Common;
+    using Game.Tools;
+    using Platter.Components;
+    using Platter.Utils;
+    using Unity.Collections;
+    using Unity.Entities;
+
     public partial class ParcelSpawnSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
@@ -71,6 +69,7 @@ namespace Platter.Systems {
             });
         }
 
+        /// <inheritdoc/>
         protected override void OnUpdate() {
         }
 
@@ -79,11 +78,16 @@ namespace Platter.Systems {
             m_Log.Debug($"UpdateSpawning(allowSpawn={allowSpawn})");
 
             var query = allowSpawn ? m_DisabledQuery : m_EnabledQuery;
+            var entities = query.ToEntityArray(Allocator.Temp);
 
-            if (allowSpawn) {
-                EntityManager.AddComponent<ParcelSpawnable>(query);
-            } else {
-                EntityManager.RemoveComponent<ParcelSpawnable>(query);
+            foreach (var entity in entities) {
+                if (allowSpawn) {
+                    EntityManager.AddComponent<ParcelSpawnable>(entity);
+                } else {
+                    EntityManager.RemoveComponent<ParcelSpawnable>(entity);
+                }
+
+                EntityManager.AddComponent<Updated>(entity);
             }
         }
     }

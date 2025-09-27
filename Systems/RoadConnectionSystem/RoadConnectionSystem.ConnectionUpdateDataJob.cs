@@ -1,12 +1,11 @@
-﻿// <copyright file="RoadConnectionSystem.ConnectionUpdateData.cs" company="Luca Rager">
+﻿// <copyright file="RoadConnectionSystem.ConnectionUpdateDataJob.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
-    using Game;
     using System;
-    using Unity.Burst;
+    using Game;
     using Unity.Entities;
     using Unity.Mathematics;
 
