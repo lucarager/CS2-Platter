@@ -12,7 +12,7 @@ while still leveraging the vanilla zoning tools and building spawning/growth.
 Volunteer translators can head to https://crowdin.com/project/platter-cs2 and help translate this mod.
 
 ## Support
-I will respond on the code modding channels on **Cities: Skylines Modding Discord**
+I will respond on the code modding channels on [Cities: Skylines Modding Discord](https://discord.gg/7TvzxhGvf8)
 
 ## System Overview for Maintainers
 Overview of the various systems and what they do:
