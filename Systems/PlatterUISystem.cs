@@ -229,19 +229,19 @@ namespace Platter.Systems {
             m_DecreaseBlockDepthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
 
             // Handle Shortcuts
-            if (m_IncreaseBlockWidthAction.IsInProgress()) {
+            if (m_IncreaseBlockWidthAction.WasPerformedThisFrame()) {
                 IncreaseBlockWidth();
             }
 
-            if (m_IncreaseBlockDepthAction.IsInProgress()) {
+            if (m_IncreaseBlockDepthAction.WasPerformedThisFrame()) {
                 IncreaseBlockDepth();
             }
 
-            if (m_DecreaseBlockWidthAction.IsInProgress()) {
+            if (m_DecreaseBlockWidthAction.WasPerformedThisFrame()) {
                 DecreaseBlockWidth();
             }
 
-            if (m_DecreaseBlockDepthAction.IsInProgress()) {
+            if (m_DecreaseBlockDepthAction.WasPerformedThisFrame()) {
                 DecreaseBlockDepth();
             }
 

@@ -13,8 +13,8 @@ namespace Platter.Constants {
         public static readonly float ParcelHeight = 1f;
 
         // Parcel Overlays
-        public static readonly float ParcelOutlineWidth = StandardLineWidth;
-        public static readonly float ParcelFrontIndicatorHollowLineWidth = 0.2f;
+        public static readonly float ParcelOutlineWidth = StandardLineWidth * 2;
+        public static readonly float ParcelFrontIndicatorHollowLineWidth = StandardLineWidth;
         public static readonly float ParcelFrontIndicatorDiameter = 3f;
         public static readonly float ParcelCellOutlineWidth = StandardLineWidth;
 
