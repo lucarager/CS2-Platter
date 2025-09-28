@@ -4,8 +4,8 @@
 // </copyright>
 
 namespace Game.Settings {
-    using Game.Input;
     using System.Collections.Generic;
+    using Game.Input;
 
     public class CustomSettingsUIMouseBindingAttribute : SettingsUIMouseBindingAttribute {
         public new readonly string defaultKey;

@@ -4,9 +4,8 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
     using Game;
-    using Unity.Burst;
+    using System;
     using Unity.Entities;
     using Unity.Mathematics;
 

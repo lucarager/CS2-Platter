@@ -8,6 +8,10 @@ namespace Platter.Components {
     using Unity.Entities;
 
     public struct ParcelOwner : IComponentData, IQueryTypeParameter, ISerializable {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParcelOwner"/> struct.
+        /// </summary>
+        /// <param name="owner"></param>
         public ParcelOwner(Entity owner) {
             m_Owner = owner;
         }

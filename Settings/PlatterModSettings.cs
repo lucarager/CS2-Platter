@@ -102,7 +102,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(BindingKeyboard.X, actionName: DecreaseParcelDepthActionName,  alt: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.X, actionName: DecreaseParcelDepthActionName, alt: true)]
         public ProxyBinding PlatterDecreaseParcelDepth {
             get; set;
         }

@@ -4,8 +4,6 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
-    using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -15,6 +13,8 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
+    using System;
+    using System.Collections.Generic;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;

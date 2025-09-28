@@ -7,14 +7,12 @@ namespace Platter.Systems {
     using Colossal.Collections;
     using Colossal.Mathematics;
     using Game;
-    using Game.Buildings;
     using Game.Common;
     using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;

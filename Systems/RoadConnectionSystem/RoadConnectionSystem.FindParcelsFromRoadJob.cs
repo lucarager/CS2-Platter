@@ -13,8 +13,6 @@ namespace Platter.Systems {
     using Game.Objects;
     using Game.Prefabs;
     using Platter.Components;
-    using Platter.Utils;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -113,61 +111,61 @@ namespace Platter.Systems {
 #endif
 
                 //// Retrieve the data
-                //var currentEntityData = m_ConnectionUpdateDataList[index];
+                // var currentEntityData = m_ConnectionUpdateDataList[index];
 
                 //// If entity has DELETED component
                 //// mark its entry in the list as deleted and exit early
-                //if (m_DeletedDataComponentLookup.HasComponent(currentEntityData.m_Parcel)) {
+                // if (m_DeletedDataComponentLookup.HasComponent(currentEntityData.m_Parcel)) {
                 //    currentEntityData.m_Deleted = true;
                 //    m_ConnectionUpdateDataList[index] = currentEntityData;
                 //    return;
-                //}
+                // }
 
-                //var parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
-                //var parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
-                //var parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
+                // var parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
+                // var parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
+                // var parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
 
                 //// The "front position" is the point where a parcel is expected to connect to a road.
-                //var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
-                //var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, parcelGeo.FrontNode);
+                // var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
+                // var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, parcelGeo.FrontNode);
 
                 //// Initializes a FindRoadConnectionIterator, used to iterate through potential road connections.
-                //FindRoadConnectionIterator findRoadConnectionIterator = default;
-                //findRoadConnectionIterator.m_BestCurvePos = 0f;
-                //findRoadConnectionIterator.m_BestRoad = Entity.Null;
-                //findRoadConnectionIterator.m_CanBeOnRoad = true;
-                //findRoadConnectionIterator.m_ConnectedBuildingsBufferLookup = m_ConnectedBuildingsBufferLookup;
-                //findRoadConnectionIterator.m_CurveDataComponentLookup = m_CurveDataComponentLookup;
-                //findRoadConnectionIterator.m_CompositionDataComponentLookup = m_CompositionDataComponentLookup;
-                //findRoadConnectionIterator.m_EdgeGeometryDataComponentLookup = m_EdgeGeometryDataComponentLookup;
-                //findRoadConnectionIterator.m_StartNodeGeometryDataComponentLookup = m_StartNodeGeometryDataComponentLookup;
-                //findRoadConnectionIterator.m_EndNodeGeometryDataComponentLookup = m_EndNodeGeometryDataComponentLookup;
-                //findRoadConnectionIterator.m_PrefabNetCompositionDataComponentLookup = m_PrefabNetCompositionDataComponentLookup;
-                //findRoadConnectionIterator.m_DeletedDataComponentLookup = m_DeletedDataComponentLookup;
-                //findRoadConnectionIterator.m_Bounds = new Bounds3(
+                // FindRoadConnectionIterator findRoadConnectionIterator = default;
+                // findRoadConnectionIterator.m_BestCurvePos = 0f;
+                // findRoadConnectionIterator.m_BestRoad = Entity.Null;
+                // findRoadConnectionIterator.m_CanBeOnRoad = true;
+                // findRoadConnectionIterator.m_ConnectedBuildingsBufferLookup = m_ConnectedBuildingsBufferLookup;
+                // findRoadConnectionIterator.m_CurveDataComponentLookup = m_CurveDataComponentLookup;
+                // findRoadConnectionIterator.m_CompositionDataComponentLookup = m_CompositionDataComponentLookup;
+                // findRoadConnectionIterator.m_EdgeGeometryDataComponentLookup = m_EdgeGeometryDataComponentLookup;
+                // findRoadConnectionIterator.m_StartNodeGeometryDataComponentLookup = m_StartNodeGeometryDataComponentLookup;
+                // findRoadConnectionIterator.m_EndNodeGeometryDataComponentLookup = m_EndNodeGeometryDataComponentLookup;
+                // findRoadConnectionIterator.m_PrefabNetCompositionDataComponentLookup = m_PrefabNetCompositionDataComponentLookup;
+                // findRoadConnectionIterator.m_DeletedDataComponentLookup = m_DeletedDataComponentLookup;
+                // findRoadConnectionIterator.m_Bounds = new Bounds3(
                 //    frontPosition - RoadConnectionSystem.MaxDistance,
                 //    frontPosition + RoadConnectionSystem.MaxDistance
-                //);
-                //findRoadConnectionIterator.m_MinDistance = RoadConnectionSystem.MaxDistance;
-                //findRoadConnectionIterator.m_FrontPosition = frontPosition;
+                // );
+                // findRoadConnectionIterator.m_MinDistance = RoadConnectionSystem.MaxDistance;
+                // findRoadConnectionIterator.m_FrontPosition = frontPosition;
 
                 //// Find suitable roads, iterate over roads and check which is best
-                //m_NetSearchTree.Iterate<FindRoadConnectionIterator>(ref findRoadConnectionIterator, 0);
+                // m_NetSearchTree.Iterate<FindRoadConnectionIterator>(ref findRoadConnectionIterator, 0);
 
-                //for (var k = 0; k < m_UpdatedNetChunks.Length; k++) {
+                // for (var k = 0; k < m_UpdatedNetChunks.Length; k++) {
                 //    var netArray = m_UpdatedNetChunks[k].GetNativeArray(m_EntityTypeHandle);
                 //    for (var l = 0; l < netArray.Length; l++) {
                 //        findRoadConnectionIterator.CheckEdge(netArray[l]);
                 //    }
-                //}
+                // }
 
                 //// Update our BuildingRoadUpdateData struct with the new info
-                //currentEntityData.m_NewRoad = findRoadConnectionIterator.m_BestRoad;
-                //currentEntityData.m_FrontPos = findRoadConnectionIterator.m_FrontPosition;
-                //currentEntityData.m_CurvePos = findRoadConnectionIterator.m_BestCurvePos;
+                // currentEntityData.m_NewRoad = findRoadConnectionIterator.m_BestRoad;
+                // currentEntityData.m_FrontPos = findRoadConnectionIterator.m_FrontPosition;
+                // currentEntityData.m_CurvePos = findRoadConnectionIterator.m_BestCurvePos;
 
                 //// Update the data in the list with what we found
-                //this.m_ConnectionUpdateDataList[index] = currentEntityData;
+                // this.m_ConnectionUpdateDataList[index] = currentEntityData;
 #if !USE_BURST
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindParcelsFromRoadJob() -- Updated list with eligible roads.");
 #endif

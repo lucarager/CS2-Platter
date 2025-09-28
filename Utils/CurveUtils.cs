@@ -75,7 +75,7 @@ namespace Platter.Utils {
         /// <returns>Integrand of arc length.</returns>
         public static float CubicSpeedXZ(Bezier4x3 bezier, float t) {
             // Pythagorean theorem.
-            float3 tangent = MathUtils.Tangent(bezier, t);
+            var tangent = MathUtils.Tangent(bezier, t);
             var derivXsqr = tangent.x * tangent.x;
             var derivZsqr = tangent.z * tangent.z;
 

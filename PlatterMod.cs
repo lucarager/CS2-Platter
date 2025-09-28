@@ -4,6 +4,11 @@
 // </copyright>
 
 namespace Platter {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
     using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
@@ -12,23 +17,12 @@ namespace Platter {
     using Game;
     using Game.Input;
     using Game.Modding;
-    using Game.Prefabs;
-    using Game.Rendering;
     using Game.SceneFlow;
     using Newtonsoft.Json;
-    using Platter.Components;
-    using Platter.Extensions;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Entities;
-    using static Game.Input.InputManager;
 
     /// <summary>
     /// Mod entry point.
@@ -114,13 +108,13 @@ namespace Platter {
             AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
 
             // Inject additional settings config
-            //ModifyMouseSettings(Settings);
+            // ModifyMouseSettings(Settings);
 
             // Apply input bindings.
             Settings.RegisterKeyBindings();
 
             // Compatibility
-            //ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
+            // ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
 
             // Activate Systems
             updateSystem.UpdateAfter<PlatterPrefabSystem>(SystemUpdatePhase.UIUpdate);
@@ -165,35 +159,35 @@ namespace Platter {
 
         /**
          * {
-						"m_Name": "Mouse",
-						"m_Id": "04cce1df-8960-4bb6-bb4b-5046e219c2fd",
-						"m_Path": "AxisWithModifiers(m_Mode=2,m_IsRebindable=false,m_CanBeEmpty=false,m_Usages=24)",
-						"m_Interactions": "",
-						"m_Processors": "Invert,Scale(factor=0.005),ScrollSensitivity",
-						"m_Groups": "",
-						"m_Action": "Precise Rotation",
-						"m_Flags": 4
-					},
-					{
-						"m_Name": "binding",
-						"m_Id": "fe1ef8d2-1876-45a0-9264-72fdc2ee3b5c",
-						"m_Path": "\u003cMouse\u003e/scroll/y",
-						"m_Interactions": "",
-						"m_Processors": "",
-						"m_Groups": "Mouse",
-						"m_Action": "Precise Rotation",
-						"m_Flags": 8
-					},
-					{
-						"m_Name": "modifier",
-						"m_Id": "f825725f-0ef0-4e0e-bae8-0d12b065c121",
-						"m_Path": "\u003cKeyboard\u003e/shift",
-						"m_Interactions": "",
-						"m_Processors": "",
-						"m_Groups": "Mouse",
-						"m_Action": "Precise Rotation",
-						"m_Flags": 8
-					},
+                         "m_Name": "Mouse",
+                         "m_Id": "04cce1df-8960-4bb6-bb4b-5046e219c2fd",
+                         "m_Path": "AxisWithModifiers(m_Mode=2,m_IsRebindable=false,m_CanBeEmpty=false,m_Usages=24)",
+                         "m_Interactions": "",
+                         "m_Processors": "Invert,Scale(factor=0.005),ScrollSensitivity",
+                         "m_Groups": "",
+                         "m_Action": "Precise Rotation",
+                         "m_Flags": 4
+                     },
+                     {
+                         "m_Name": "binding",
+                         "m_Id": "fe1ef8d2-1876-45a0-9264-72fdc2ee3b5c",
+                         "m_Path": "\u003cMouse\u003e/scroll/y",
+                         "m_Interactions": "",
+                         "m_Processors": "",
+                         "m_Groups": "Mouse",
+                         "m_Action": "Precise Rotation",
+                         "m_Flags": 8
+                     },
+                     {
+                         "m_Name": "modifier",
+                         "m_Id": "f825725f-0ef0-4e0e-bae8-0d12b065c121",
+                         "m_Path": "\u003cKeyboard\u003e/shift",
+                         "m_Interactions": "",
+                         "m_Processors": "",
+                         "m_Groups": "Mouse",
+                         "m_Action": "Precise Rotation",
+                         "m_Flags": 8
+                     },
         */
         private static void ModifyMouseSettings(ModSetting originalSettings) {
             var log = LogManager.GetLogger(ModName);
@@ -244,8 +238,8 @@ namespace Platter {
                             using System.IO.StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
                             {
                                 var entireFile = reader.ReadToEnd();
-                                Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
-                                Dictionary<string, string> translations = varient.Make<Dictionary<string, string>>();
+                                var varient = Colossal.Json.JSON.Load(entireFile);
+                                var translations = varient.Make<Dictionary<string, string>>();
                                 GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
                             }
                         } catch (Exception e) {

@@ -1,12 +1,20 @@
-﻿using System;
-using Colossal.Serialization.Entities;
-using Unity.Entities;
+﻿// <copyright file="ConnectedParcel.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace Platter.Components {
+    using Colossal.Serialization.Entities;
+    using System;
+    using Unity.Entities;
 
     public struct ConnectedParcel : IBufferElementData, IEquatable<ConnectedParcel>, IEmptySerializable {
         public Entity m_Parcel;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectedParcel"/> struct.
+        /// </summary>
+        /// <param name="parcel"></param>
         public ConnectedParcel(Entity parcel) {
             m_Parcel = parcel;
         }

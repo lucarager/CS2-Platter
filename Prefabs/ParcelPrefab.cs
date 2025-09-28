@@ -4,9 +4,9 @@
 // </copyright>
 
 namespace Game.Prefabs {
-    using System.Collections.Generic;
     using Game.Zones;
     using Platter.Components;
+    using System.Collections.Generic;
     using Unity.Entities;
 
     /// <summary>

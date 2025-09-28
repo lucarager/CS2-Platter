@@ -4,14 +4,15 @@
 // </copyright>
 
 namespace Platter.Extensions {
-    using Colossal.UI.Binding;
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Colossal.UI.Binding;
     using Unity.Entities;
     using UnityEngine;
 
     public class GenericUIWriter<T> : IWriter<T> {
+        /// <inheritdoc/>
         public void Write(IJsonWriter writer, T value) {
             WriteGeneric(writer, value);
         }

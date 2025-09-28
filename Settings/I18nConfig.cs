@@ -1,11 +1,11 @@
-﻿// <copyright file="I18nDictionary.cs" company="Luca Rager">
+﻿// <copyright file="I18nConfig.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Settings {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Todo.

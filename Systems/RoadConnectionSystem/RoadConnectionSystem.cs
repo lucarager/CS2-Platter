@@ -7,13 +7,11 @@ namespace Platter.Systems {
     using Colossal.Mathematics;
     using Game;
     using Game.Audio;
-    using Game.Buildings;
     using Game.Common;
     using Game.Net;
     using Game.Notifications;
     using Game.Objects;
     using Game.Prefabs;
-    using Game.Simulation;
     using Game.Tools;
     using Game.Zones;
     using Platter.Components;
@@ -22,10 +20,7 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
-    using UnityEngine.PlayerLoop;
     using UnityEngine.Scripting;
-    using static Game.Prefabs.CompositionFlags;
-    using static Unity.Collections.Unicode;
 
     /// <summary>
     /// todo.
@@ -57,7 +52,7 @@ namespace Platter.Systems {
         private ComponentTypeHandle<StartNodeGeometry> m_StartNodeGeometryTypeHandle;
         private ComponentTypeHandle<EndNodeGeometry> m_EndNodeGeometryTypeHandle;
         private ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
-        
+
         private BufferTypeHandle<ConnectedParcel> m_ConnectedParcelBufferTypeHandle;
 
         /// <summary>

@@ -4,9 +4,6 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Colossal.Entities;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
@@ -21,6 +18,9 @@ namespace Platter.Systems {
     using Platter.Extensions;
     using Platter.Settings;
     using Platter.Utils;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -388,7 +388,7 @@ namespace Platter.Systems {
         }
 
         private void FilterOutUpgrades(NativeList<UIObjectInfo> elementInfos) {
-            for (int i = elementInfos.Length - 1; i >= 0; i--) {
+            for (var i = elementInfos.Length - 1; i >= 0; i--) {
                 if (base.EntityManager.HasComponent<ServiceUpgradeData>(elementInfos[i].entity)) {
                     elementInfos.RemoveAtSwapBack(i);
                 }

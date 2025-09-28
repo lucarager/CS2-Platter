@@ -4,23 +4,17 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Serialization.Entities;
-    using Game;
-    using Game.Common;
-    using Game.Objects;
-    using Game.Prefabs;
-    using Game.Rendering;
-    using Game.SceneFlow;
-    using Game.Simulation;
-    using Game.UI;
-    using HarmonyLib;
-    using Platter.Components;
-    using Platter.Extensions;
-    using Platter.Utils;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Colossal.Serialization.Entities;
+    using Game;
+    using Game.Prefabs;
+    using Game.UI;
+    using Platter.Components;
+    using Platter.Extensions;
+    using Platter.Utils;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
@@ -137,7 +131,6 @@ namespace Platter.Systems {
 
                 // add Parcel to force vanilla skip all entities with the Parcel component
                 originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
-
 
                 // generate EntityQuery
                 var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(m_BuildingInitializeSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });

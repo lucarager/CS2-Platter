@@ -4,8 +4,8 @@
 // </copyright>
 
 namespace Platter.Extensions {
-    using System;
     using Colossal.UI.Binding;
+    using System;
 
     public class ValueBindingHelper<T> {
         private readonly Action<T> _updateCallBack;
@@ -18,6 +18,11 @@ namespace Platter.Extensions {
             get => Binding.value; set => Binding.Update(value);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValueBindingHelper{T}"/> class.
+        /// </summary>
+        /// <param name="binding"></param>
+        /// <param name="updateCallBack"></param>
         public ValueBindingHelper(ValueBinding<T> binding, Action<T> updateCallBack = null) {
             Binding = binding;
             _updateCallBack = updateCallBack;

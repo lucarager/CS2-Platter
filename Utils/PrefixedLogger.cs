@@ -10,6 +10,10 @@ namespace Platter.Utils {
         private readonly string m_Prefix;
         private readonly ILog m_Log;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PrefixedLogger"/> class.
+        /// </summary>
+        /// <param name="prefix"></param>
         public PrefixedLogger(string prefix) {
             m_Prefix = prefix;
             m_Log = PlatterMod.Instance.Log;

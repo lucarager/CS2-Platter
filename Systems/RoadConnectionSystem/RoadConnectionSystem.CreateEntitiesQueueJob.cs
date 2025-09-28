@@ -7,14 +7,12 @@ namespace Platter.Systems {
     using Colossal.Collections;
     using Colossal.Mathematics;
     using Game;
-    using Game.Buildings;
     using Game.Common;
     using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
-    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -121,7 +119,7 @@ namespace Platter.Systems {
 
                     // Handle edge delete
                     for (var i = 0; i < connectedBuildingsBufferAccessor.Length; i++) {
-                        DynamicBuffer<ConnectedParcel> dynamicBuffer = connectedBuildingsBufferAccessor[i];
+                        var dynamicBuffer = connectedBuildingsBufferAccessor[i];
                         for (var j = 0; j < dynamicBuffer.Length; j++) {
                             m_ParcelEntitiesQueue.Enqueue(dynamicBuffer[j].m_Parcel);
                         }
