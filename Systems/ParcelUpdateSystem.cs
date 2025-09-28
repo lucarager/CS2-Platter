@@ -107,7 +107,7 @@ namespace Platter.Systems {
                     // Mark Blocks for deletion
                     for (var j = 0; j < subBlockBuffer.Length; j++) {
                         var subBlockEntity = subBlockBuffer[j].m_SubBlock;
-                        this.m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);
+                        m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);
                     }
 
                     return;

@@ -48,7 +48,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public BufferTypeHandle<ConnectedBuilding> m_ConnectedBuildingBufferTypeHandle;
+            [ReadOnly] public BufferTypeHandle<ConnectedParcel> m_ConnectedParcelBufferTypeHandle;
 
             /// <summary>
             /// todo.
@@ -112,14 +112,22 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
-                var connectedBuildingsBufferAccessor = chunk.GetBufferAccessor<ConnectedBuilding>(ref m_ConnectedBuildingBufferTypeHandle);
+                var connectedBuildingsBufferAccessor = chunk.GetBufferAccessor<ConnectedParcel>(ref m_ConnectedParcelBufferTypeHandle);
 
                 if (connectedBuildingsBufferAccessor.Length != 0) {
 #if !USE_BURST
                     PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] CreateEntitiesQueueJob() -- connectedBuildingsBufferAccessor {connectedBuildingsBufferAccessor.Length} entries.");
 #endif
 
-                    // todo handle deletion
+                    // Handle edge delete
+                    for (var i = 0; i < connectedBuildingsBufferAccessor.Length; i++) {
+                        DynamicBuffer<ConnectedParcel> dynamicBuffer = connectedBuildingsBufferAccessor[i];
+                        for (var j = 0; j < dynamicBuffer.Length; j++) {
+                            m_ParcelEntitiesQueue.Enqueue(dynamicBuffer[j].m_Parcel);
+                        }
+                    }
+
+                    // Handle edge update
                     if (!chunk.Has<Deleted>(ref m_DeletedTypeHandle)) {
                         var edgeGeoArray = chunk.GetNativeArray<EdgeGeometry>(ref m_EdgeGeometryTypeHandle);
                         var startNodeGeoArray = chunk.GetNativeArray<StartNodeGeometry>(ref m_StartNodeGeometryTypeHandle);

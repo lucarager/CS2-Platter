@@ -59,7 +59,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public BufferLookup<ConnectedBuilding> m_ConnectedBuildingsBufferLookup;
+            [ReadOnly] public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
             /// <summary>
             /// todo.
@@ -136,7 +136,7 @@ namespace Platter.Systems {
                 findRoadConnectionIterator.m_BestCurvePos = 0f;
                 findRoadConnectionIterator.m_BestRoad = Entity.Null;
                 findRoadConnectionIterator.m_CanBeOnRoad = true;
-                findRoadConnectionIterator.m_ConnectedBuildingsBufferLookup = m_ConnectedBuildingsBufferLookup;
+                findRoadConnectionIterator.m_ConnectedParcelsBufferLookup = m_ConnectedParcelsBufferLookup;
                 findRoadConnectionIterator.m_CurveDataComponentLookup = m_CurveDataComponentLookup;
                 findRoadConnectionIterator.m_CompositionDataComponentLookup = m_CompositionDataComponentLookup;
                 findRoadConnectionIterator.m_EdgeGeometryDataComponentLookup = m_EdgeGeometryDataComponentLookup;
@@ -167,7 +167,7 @@ namespace Platter.Systems {
                 currentEntityData.m_CurvePos = findRoadConnectionIterator.m_BestCurvePos;
 
                 // Update the data in the list with what we found
-                this.m_ParcelEntitiesList[index] = currentEntityData;
+                m_ParcelEntitiesList[index] = currentEntityData;
 #if !USE_BURST
                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob() -- Updated list with eligible roads.");
 #endif
@@ -210,7 +210,7 @@ namespace Platter.Systems {
                 /// <summary>
                 /// todo.
                 /// </summary>
-                public BufferLookup<ConnectedBuilding> m_ConnectedBuildingsBufferLookup;
+                public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
                 /// <summary>
                 /// todo.
@@ -249,20 +249,20 @@ namespace Platter.Systems {
 
                 /// <inheritdoc/>
                 public bool Intersect(QuadTreeBoundsXZ bounds) {
-                    return MathUtils.Intersect(bounds.m_Bounds.xz, this.m_Bounds.xz);
+                    return MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz);
                 }
 
                 /// <inheritdoc/>
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity edgeEntity) {
-                    if (!MathUtils.Intersect(bounds.m_Bounds.xz, this.m_Bounds.xz)) {
+                    if (!MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz)) {
                         return;
                     }
 
-                    if (this.m_DeletedDataComponentLookup.HasComponent(edgeEntity)) {
+                    if (m_DeletedDataComponentLookup.HasComponent(edgeEntity)) {
                         return;
                     }
 
-                    this.CheckEdge(edgeEntity);
+                    CheckEdge(edgeEntity);
                 }
 
                 /// <summary>
@@ -271,7 +271,7 @@ namespace Platter.Systems {
                 /// <param name="edgeEntity">Todo.</param>
                 public void CheckEdge(Entity edgeEntity) {
                     // Exit early if the edge doesn't have a "Connected Buildings" buffer
-                    if (!this.m_ConnectedBuildingsBufferLookup.HasBuffer(edgeEntity)) {
+                    if (!m_ConnectedParcelsBufferLookup.HasBuffer(edgeEntity)) {
                         return;
                     }
 
@@ -279,8 +279,8 @@ namespace Platter.Systems {
                     // Exit early if the road is elevated or a tunnel.
                     NetCompositionData netCompositionData = default;
                     if (
-                        this.m_CompositionDataComponentLookup.TryGetComponent(edgeEntity, out var composition) &&
-                        this.m_PrefabNetCompositionDataComponentLookup.TryGetComponent(composition.m_Edge, out netCompositionData) &&
+                        m_CompositionDataComponentLookup.TryGetComponent(edgeEntity, out var composition) &&
+                        m_PrefabNetCompositionDataComponentLookup.TryGetComponent(composition.m_Edge, out netCompositionData) &&
                         (netCompositionData.m_Flags.m_General & (CompositionFlags.General.Elevated | CompositionFlags.General.Tunnel)) != 0U) {
                         return;
                     }
@@ -299,12 +299,12 @@ namespace Platter.Systems {
                         var curve = m_CurveDataComponentLookup[edgeEntity];
 
                         // Finds the nearest point on the curve to the entity's front position.
-                        _ = MathUtils.Distance(curve.m_Bezier.xz, this.m_FrontPosition.xz, out var nearestPointToFront);
+                        MathUtils.Distance(curve.m_Bezier.xz, m_FrontPosition.xz, out var nearestPointToFront);
                         var positionOfNearestPointToBuildingFront = MathUtils.Position(curve.m_Bezier, nearestPointToFront);
 
                         // Compute the tangent vector and determine the side of the curve (right or left)
                         var tangent = MathUtils.Tangent(curve.m_Bezier, nearestPointToFront).xz;
-                        var toFront = this.m_FrontPosition.xz - positionOfNearestPointToBuildingFront.xz;
+                        var toFront = m_FrontPosition.xz - positionOfNearestPointToBuildingFront.xz;
                         var isRightSide = math.dot(MathUtils.Right(tangent), toFront) >= 0f;
 
                         // Determine the relevant flags based on the side

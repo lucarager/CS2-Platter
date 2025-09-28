@@ -4,7 +4,9 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using Colossal.Collections;
     using Game;
+    using Game.Buildings;
     using Game.Common;
     using Game.Net;
     using Game.Notifications;
@@ -88,6 +90,11 @@ namespace Platter.Systems {
             /// </summary>
             public IconCommandBuffer m_IconCommandBuffer;
 
+            /// <summary>
+            /// todo.
+            /// </summary>
+            public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
+
             /// <inheritdoc/>
             public void Execute() {
                 if (m_ParcelEntitiesList.Length == 0) {
@@ -111,8 +118,8 @@ namespace Platter.Systems {
                     var parcelHasNewCurvePosition = updateData.m_CurvePos != parcel.m_CurvePosition;
 
                     // Determine if we should perform an update
-                    // Either the "new best road" we found is not the one the building has stored
-                    // or it's a newly created building
+                    // Either the "new best road" we found is not the one the parcel has stored
+                    // or it's a newly created parcel
                     if (roadChanged || parcelHasCreatedComponent) {
                         if (roadChanged) {
 #if !USE_BURST
@@ -162,17 +169,32 @@ namespace Platter.Systems {
                                 }
                             }
 
+                            // Remove old ConnectedParcel
+                            if (parcelHadRoad) {
+#if !USE_BURST
+                                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Parcel had a road - removing {updateData.m_Parcel} from road {parcel.m_RoadEdge}'s ConnectedParcels buffer.");
+#endif
+                                CollectionUtils.RemoveValue<ConnectedParcel>(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
+                            }
+
                             // Update data
                             parcel.m_RoadEdge = updateData.m_NewRoad;
                             parcel.m_CurvePosition = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+
+                            if (parcelHasNewRoad) {
+#if !USE_BURST
+                                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Parcel has new road - adding {updateData.m_Parcel} to road {updateData.m_NewRoad}'s ConnectedParcels buffer.");
+#endif
+                                m_ConnectedParcelsBufferLookup[updateData.m_NewRoad].Add(new ConnectedParcel(updateData.m_Parcel));
+                            }
 #if !USE_BURST
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updated parcel {parcel}.");
 #endif
                         }
                     }
 
-                    // Alternatively, we could just be updating the building's curve position
+                    // Alternatively, we could just be updating the parcel's curve position
                     else if (parcelHasNewCurvePosition) {
 #if !USE_BURST
                         PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Giving parcel updated curvepos...");

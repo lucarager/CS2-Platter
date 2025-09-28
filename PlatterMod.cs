@@ -127,6 +127,7 @@ namespace Platter {
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelCreateSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<ParcelSpawnSystem>(SystemUpdatePhase.Modification3);
+            updateSystem.UpdateAt<VanillaRoadInitializeSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
@@ -138,8 +139,9 @@ namespace Platter {
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;
-            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
-                Log.Info($"Current mod asset at {modAsset.path}");
+            if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
+                Log.Error($"Failed to get executable asset path. Exiting.");
+                return;
             }
 
             var assemblyPath = Path.GetDirectoryName(modAsset.GetMeta().path);
@@ -159,41 +161,6 @@ namespace Platter {
 
             // Revert harmony patches.
             Patcher.Instance?.UnPatchAll();
-        }
-
-        private static void ModifyBuildingSystem(BuildingInitializeSystem originalSystem) {
-            var log = LogManager.GetLogger(ModName);
-
-            // get original system's EntityQuery
-            var queryField = originalSystem.GetType().GetField("m_PrefabQuery", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (queryField == null) {
-                log.Error("Could not find m_PrefabQuery for compatibility patching");
-                return;
-            }
-
-            var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
-            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            var componentType = ComponentType.ReadOnly<Parcel>();
-
-            foreach (var originalQueryDesc in originalQueryDescs) {
-                if (originalQueryDesc.None.Contains(componentType)) {
-                    continue;
-                }
-
-                // add Parcel to force vanilla skip all entities with the Parcel component
-                originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
-
-                var getQueryMethod = typeof(ComponentSystemBase).GetMethod("GetEntityQuery", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { typeof(EntityQueryDesc[]) }, Array.Empty<ParameterModifier>());
-
-                // generate EntityQuery
-                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
-
-                // replace current query to use more restrictive
-                queryField.SetValue(originalSystem, modifiedQuery);
-
-                // add EntityQuery to update check
-                originalSystem.RequireForUpdate(modifiedQuery);
-            }
         }
 
         /**
