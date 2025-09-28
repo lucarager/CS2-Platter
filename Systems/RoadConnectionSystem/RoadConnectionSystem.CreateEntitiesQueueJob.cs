@@ -218,12 +218,12 @@ namespace Platter.Systems {
                 /// <summary>
                 /// todo.
                 /// </summary>
-                public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+                public ComponentLookup<Parcel> m_ParcelComponentLookup;
 
                 /// <summary>
                 /// todo.
                 /// </summary>
-                public ComponentLookup<Parcel> m_ParcelComponentLookup;
+                public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
 
                 /// <summary>
                 /// todo.
@@ -250,6 +250,10 @@ namespace Platter.Systems {
 #endif
 
                     if (!MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz)) {
+                        return;
+                    }
+
+                    if (!m_ParcelComponentLookup.HasComponent(parcelEntity)) {
                         return;
                     }
 
