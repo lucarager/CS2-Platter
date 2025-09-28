@@ -70,7 +70,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ToggleSpawnActionName, ctrl: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.L, actionName: ToggleSpawnActionName, ctrl: true)]
         public ProxyBinding PlatterToggleSpawn {
             get; set;
         }
@@ -78,7 +78,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z, IncreaseParcelWidthActionName, false, true, false)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.Z, actionName: IncreaseParcelWidthActionName, ctrl: true)]
         public ProxyBinding PlatterIncreaseParcelWidth {
             get; set;
         }
@@ -86,7 +86,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z, DecreaseParcelWidthActionName, false, true, true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.X, actionName: DecreaseParcelWidthActionName, ctrl: true)]
         public ProxyBinding PlatterDecreaseParcelWidth {
             get; set;
         }
@@ -94,7 +94,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z,  IncreaseParcelDepthActionName, true, false, false)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.Z, actionName: IncreaseParcelDepthActionName, alt: true)]
         public ProxyBinding PlatterIncreaseParcelDepth {
             get; set;
         }
@@ -102,7 +102,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z, DecreaseParcelDepthActionName, true, false, false)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.X, actionName: DecreaseParcelDepthActionName,  alt: true)]
         public ProxyBinding PlatterDecreaseParcelDepth {
             get; set;
         }
