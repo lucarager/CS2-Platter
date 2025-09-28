@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+
 namespace Platter {
     using System;
     using System.Collections.Generic;
@@ -85,7 +86,7 @@ namespace Platter {
             Log.Info($"[Platter] Loaded localization files.");
 
             // Generate i18n files
-#if DEBUG
+#if DEBUG && EXPORT_EN_US
             Log.Info($"[Platter] Exporting localization");
             var localeDict = new I18nConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
@@ -131,7 +132,7 @@ namespace Platter {
             updateSystem.UpdateAt<PlatterTooltipSystem>(SystemUpdatePhase.UITooltip);
 
             // Compatibility
-            ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
+            // ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;
@@ -170,7 +171,7 @@ namespace Platter {
 
             EntityQuery originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
             EntityQueryDesc[] originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            ComponentType componentType = ComponentType.ReadOnly<Parcel>();
+            ComponentType componentType = ComponentType.ReadOnly<ParcelData>();
 
             foreach (EntityQueryDesc originalQueryDesc in originalQueryDescs) {
                 if (originalQueryDesc.None.Contains(componentType)) {

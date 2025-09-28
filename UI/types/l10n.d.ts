@@ -48,6 +48,7 @@ declare module "cs2/l10n" {
   	Temperature = "temperature",
   	NetElevation = "netElevation",
   	ScreenFrequency = "screenFrequency",
+  	Height = "height",
   	Custom = "custom"
   }
   export enum LocElementType {

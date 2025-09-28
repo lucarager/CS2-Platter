@@ -41,9 +41,9 @@ function handleClick(eventName: string) {
     trigger(mod.id, eventName);
 }
 
-const FocusDisabled$ = getModule<FocusKey>("game-ui/common/focus/focus-key.ts", "FOCUS_DISABLED");
+const FocusDisabled$ = getModule("game-ui/common/focus/focus-key.ts", "FOCUS_DISABLED");
 
-const descriptionToolTipStyle = getModule<any>(
+const descriptionToolTipStyle = getModule(
     "game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss",
     "classes",
 );
