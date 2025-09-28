@@ -32,7 +32,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // TODO Only do this for blocks that should belong to a parcel, not edges!
-            this.m_ParcelBlockQuery = GetEntityQuery(new EntityQueryDesc[]
+            m_ParcelBlockQuery = GetEntityQuery(new EntityQueryDesc[]
             {
                 new () {
                     All = new ComponentType[]

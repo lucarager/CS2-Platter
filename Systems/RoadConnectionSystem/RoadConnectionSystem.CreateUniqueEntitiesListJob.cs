@@ -24,44 +24,44 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            public NativeQueue<Entity> m_EntitiesToUpdateQueue;
+            public NativeQueue<Entity> m_ParcelEntitiesQueue;
 
             /// <summary>
             /// todo.
             /// </summary>
-            public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ConnectionUpdateDataList;
+            public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ParcelEntittiesList;
 
             /// <inheritdoc/>
             public void Execute() {
                 // Point a list of ConnectionUpdateDataJob structs from our quuee
-                var parcelsToUpdate = m_EntitiesToUpdateQueue.Count;
-                m_ConnectionUpdateDataList.ResizeUninitialized(parcelsToUpdate);
+                var parcels = m_ParcelEntitiesQueue.Count;
+                m_ParcelEntittiesList.ResizeUninitialized(parcels);
 
-                for (var i = 0; i < parcelsToUpdate; i++) {
-                    m_ConnectionUpdateDataList[i] = new RoadConnectionSystem.ConnectionUpdateDataJob(m_EntitiesToUpdateQueue.Dequeue());
+                for (var i = 0; i < parcels; i++) {
+                    m_ParcelEntittiesList[i] = new RoadConnectionSystem.ConnectionUpdateDataJob(m_ParcelEntitiesQueue.Dequeue());
                 }
 
                 // Sort the list (by parcel index) so that we can easily dedupe
-                m_ConnectionUpdateDataList.Sort<RoadConnectionSystem.ConnectionUpdateDataJob>();
+                m_ParcelEntittiesList.Sort<RoadConnectionSystem.ConnectionUpdateDataJob>();
 
                 // Deduplicate the list
                 var currentBuildingEntity = Entity.Null;
                 var readIndex = 0;
                 var writeIndex = 0;
-                while (readIndex < m_ConnectionUpdateDataList.Length) {
-                    var currentBuildingData = m_ConnectionUpdateDataList[readIndex++];
+                while (readIndex < m_ParcelEntittiesList.Length) {
+                    var currentBuildingData = m_ParcelEntittiesList[readIndex++];
 
                     // If the current data's parcel entity is not what we have stored previously,
                     // we can store it back into the list at the current valid write index
                     if (currentBuildingData.m_Parcel != currentBuildingEntity) {
-                        m_ConnectionUpdateDataList[writeIndex++] = currentBuildingData;
+                        m_ParcelEntittiesList[writeIndex++] = currentBuildingData;
                         currentBuildingEntity = currentBuildingData.m_Parcel;
                     }
                 }
 
                 // If the deduplication mechanism reduced our list, shorten it
-                if (writeIndex < m_ConnectionUpdateDataList.Length) {
-                    m_ConnectionUpdateDataList.RemoveRange(writeIndex, this.m_ConnectionUpdateDataList.Length - writeIndex);
+                if (writeIndex < m_ParcelEntittiesList.Length) {
+                    m_ParcelEntittiesList.RemoveRange(writeIndex, this.m_ParcelEntittiesList.Length - writeIndex);
                 }
             }
         }

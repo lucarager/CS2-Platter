@@ -4,11 +4,6 @@
 // </copyright>
 
 namespace Platter {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
     using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
@@ -18,14 +13,22 @@ namespace Platter {
     using Game.Input;
     using Game.Modding;
     using Game.Prefabs;
+    using Game.Rendering;
     using Game.SceneFlow;
     using Newtonsoft.Json;
     using Platter.Components;
+    using Platter.Extensions;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using static Game.Input.InputManager;
 
     /// <summary>
     /// Mod entry point.
@@ -111,10 +114,13 @@ namespace Platter {
             AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
 
             // Inject additional settings config
-            // ModifyMouseSettings(Settings);
+            //ModifyMouseSettings(Settings);
 
             // Apply input bindings.
             Settings.RegisterKeyBindings();
+
+            // Compatibility
+            //ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
 
             // Activate Systems
             updateSystem.UpdateAfter<PlatterPrefabSystem>(SystemUpdatePhase.UIUpdate);
@@ -129,9 +135,6 @@ namespace Platter {
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<PlatterOverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<PlatterTooltipSystem>(SystemUpdatePhase.UITooltip);
-
-            // Compatibility
-            ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;
@@ -162,17 +165,17 @@ namespace Platter {
             var log = LogManager.GetLogger(ModName);
 
             // get original system's EntityQuery
-            FieldInfo queryField = originalSystem.GetType().GetField("m_PrefabQuery", BindingFlags.Instance | BindingFlags.NonPublic);
+            var queryField = originalSystem.GetType().GetField("m_PrefabQuery", BindingFlags.Instance | BindingFlags.NonPublic);
             if (queryField == null) {
                 log.Error("Could not find m_PrefabQuery for compatibility patching");
                 return;
             }
 
-            EntityQuery originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
-            EntityQueryDesc[] originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            ComponentType componentType = ComponentType.ReadOnly<Parcel>();
+            var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
+            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
+            var componentType = ComponentType.ReadOnly<Parcel>();
 
-            foreach (EntityQueryDesc originalQueryDesc in originalQueryDescs) {
+            foreach (var originalQueryDesc in originalQueryDescs) {
                 if (originalQueryDesc.None.Contains(componentType)) {
                     continue;
                 }
@@ -180,10 +183,10 @@ namespace Platter {
                 // add Parcel to force vanilla skip all entities with the Parcel component
                 originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
 
-                MethodInfo getQueryMethod = typeof(ComponentSystemBase).GetMethod("GetEntityQuery", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { typeof(EntityQueryDesc[]) }, Array.Empty<ParameterModifier>());
+                var getQueryMethod = typeof(ComponentSystemBase).GetMethod("GetEntityQuery", BindingFlags.Instance | BindingFlags.NonPublic, null, CallingConventions.Any, new Type[] { typeof(EntityQueryDesc[]) }, Array.Empty<ParameterModifier>());
 
                 // generate EntityQuery
-                EntityQuery modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
+                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
 
                 // replace current query to use more restrictive
                 queryField.SetValue(originalSystem, modifiedQuery);
@@ -193,51 +196,42 @@ namespace Platter {
             }
         }
 
+        /**
+         * {
+						"m_Name": "Mouse",
+						"m_Id": "04cce1df-8960-4bb6-bb4b-5046e219c2fd",
+						"m_Path": "AxisWithModifiers(m_Mode=2,m_IsRebindable=false,m_CanBeEmpty=false,m_Usages=24)",
+						"m_Interactions": "",
+						"m_Processors": "Invert,Scale(factor=0.005),ScrollSensitivity",
+						"m_Groups": "",
+						"m_Action": "Precise Rotation",
+						"m_Flags": 4
+					},
+					{
+						"m_Name": "binding",
+						"m_Id": "fe1ef8d2-1876-45a0-9264-72fdc2ee3b5c",
+						"m_Path": "\u003cMouse\u003e/scroll/y",
+						"m_Interactions": "",
+						"m_Processors": "",
+						"m_Groups": "Mouse",
+						"m_Action": "Precise Rotation",
+						"m_Flags": 8
+					},
+					{
+						"m_Name": "modifier",
+						"m_Id": "f825725f-0ef0-4e0e-bae8-0d12b065c121",
+						"m_Path": "\u003cKeyboard\u003e/shift",
+						"m_Interactions": "",
+						"m_Processors": "",
+						"m_Groups": "Mouse",
+						"m_Action": "Precise Rotation",
+						"m_Flags": 8
+					},
+        */
         private static void ModifyMouseSettings(ModSetting originalSettings) {
             var log = LogManager.GetLogger(ModName);
-
-            log.Debug(originalSettings.id);
-            log.Debug(originalSettings.name);
-            log.Debug(originalSettings.keyBindingRegistered);
-
-            // get original system's EntityQuery
-            // MemberInfo[] fields2 = originalSettings.GetType().BaseType.GetMembers(BindingFlags.NonPublic | BindingFlags.Instance);
-            // foreach (MemberInfo mi in fields2) {
-            //    Log.Debug($"2 {mi.Name} {mi.MemberType}");
-            // }
             var keyBindingPropertiesPropArray = originalSettings.GetType().BaseType.GetProperty("keyBindingProperties", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            // Type objectType = typeof(PlatterModSettings);
-            // PropertyInfo arrayProperty = objectType.BaseType.GetProperty("m_keyBindingProperties", BindingFlags.Instance | BindingFlags.NonPublic);
-            // object arrayInstance = arrayProperty.GetValue(originalSettings);
-            // System.Array targetArray = (System.Array)arrayInstance;
-
-            // var device = InputManager.DeviceType.Mouse;
-            // var actionName = "DecreaseParcelDepthActionName";
-            // var actionType = ActionType.Vector2;
-            // var component = ActionComponent.Up;
-            // var control = "<Mouse>/scroll";
-            // var enumerables = new string[] { "<Keyboard>/shift" };
-
-            // var propEL = (PropertyInfo)targetArray.GetValue(3);
-            // var prop = (PropertyInfo)propEL.GetValue(originalSettings);
-
-            // var modifiers = enumerables.Select((string modifierControl) => new ProxyModifier {
-            //    m_Component = component,
-            //    m_Name = "modifier",
-            //    m_Path = modifierControl
-            // }).ToArray<ProxyModifier>();
-
-            // var newBinding = new ProxyBinding(originalSettings.id, actionName, component, "binding", new CompositeInstance(device.ToString())) {
-            //    device = device,
-            //    path = control,
-            //    originalPath = control,
-            //    modifiers = modifiers,
-            //    originalModifiers = modifiers
-            // };
-
-            // prop.SetValue(originalSettings, newBinding);
-            // targetArray.SetValue(prop, 3);
             if (keyBindingPropertiesPropArray == null) {
                 log.Error("Could not find keyBindingPropertiesPropArray for compatibility patching");
                 return;
@@ -247,37 +241,20 @@ namespace Platter {
 
             for (var i = 0; i < keyBindingProperties.Length; i++) {
                 var keyBindingProperty = keyBindingProperties[i];
-                var prop = (PropertyInfo)keyBindingProperty.GetValue(originalSettings);
                 var binding = (ProxyBinding)keyBindingProperty.GetValue(originalSettings);
 
-                log.Debug($"binding {binding}");
-                log.Debug($"binding device {binding.device}");
-                log.Debug($"binding component {binding.component}");
                 log.Debug($"binding actionName {binding.actionName}");
-                log.Debug($"binding mapName {binding.mapName}");
-                if (binding.actionName == "DecreaseParcelDepthActionName") {
-                    var device = InputManager.DeviceType.Mouse;
-                    var actionName = binding.actionName;
-                    var component = ActionComponent.Up;
-                    var control = "<Mouse>/scroll";
-                    var enumerables = new string[] { "<Keyboard>/shift" };
 
-                    var modifiers = enumerables.Select((string modifierControl) => new ProxyModifier {
-                        m_Component = component,
+                if (binding.actionName == "DecreaseParcelDepth") {
+                    var modifier = binding.modifiers[0];
+                    var modifiers = new string[] { "<Keyboard>/ctrl" }.Select((string modifierControl) => new ProxyModifier {
+                        m_Component = modifier.m_Component,
                         m_Name = "modifier",
                         m_Path = modifierControl
-                    }).ToArray<ProxyModifier>();
+                    }).ToList();
 
-                    var newBinding = new ProxyBinding(originalSettings.id, actionName, component, "binding", new CompositeInstance(device.ToString())) {
-                        device = device,
-                        path = control,
-                        originalPath = control,
-                        modifiers = modifiers,
-                        originalModifiers = modifiers
-                    };
-
-                    log.Debug($"newBinding {newBinding.actionName}");
-                    prop.SetValue(originalSettings, newBinding);
+                    binding.modifiers = modifiers;
+                    keyBindingProperty.SetValue(originalSettings, binding);
                 }
             }
         }

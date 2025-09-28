@@ -78,7 +78,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Positive, IncreaseParcelWidthActionName, false, true, false)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.Z, IncreaseParcelWidthActionName, false, true, false)]
         public ProxyBinding PlatterIncreaseParcelWidth {
             get; set;
         }
@@ -86,7 +86,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Negative, DecreaseParcelWidthActionName, false, true, true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.Z, DecreaseParcelWidthActionName, false, true, true)]
         public ProxyBinding PlatterDecreaseParcelWidth {
             get; set;
         }
@@ -94,7 +94,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Positive, IncreaseParcelDepthActionName, true, false, false)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.Z,  IncreaseParcelDepthActionName, true, false, false)]
         public ProxyBinding PlatterIncreaseParcelDepth {
             get; set;
         }
@@ -102,7 +102,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
-        [CustomSettingsUIMouseBindingAttribute("<Mouse>/scroll/y", AxisComponent.Negative, DecreaseParcelDepthActionName, true, false, true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.Z, DecreaseParcelDepthActionName, true, false, false)]
         public ProxyBinding PlatterDecreaseParcelDepth {
             get; set;
         }

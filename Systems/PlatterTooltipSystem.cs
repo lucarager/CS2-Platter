@@ -17,14 +17,14 @@ namespace Platter.Systems {
     public partial class PlatterTooltipSystem : TooltipSystemBase {
         private ToolSystem m_ToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
-        private InputHintTooltip m_Tooltip_IncreaseWidth;
-        private InputHintTooltip m_Tooltip_DecreaseWidth;
-        private InputHintTooltip m_Tooltip_IncreaseDepth;
-        private InputHintTooltip m_Tooltip_DecreaseDepth;
         private ProxyAction m_IncreaseWidthAction;
         private ProxyAction m_DecreaseWidthAction;
         private ProxyAction m_IncreaseDepthAction;
         private ProxyAction m_DecreaseDepthAction;
+        private InputHintTooltip m_Tooltip_IncreaseWidth;
+        private InputHintTooltip m_Tooltip_DecreaseWidth;
+        private InputHintTooltip m_Tooltip_IncreaseDepth;
+        private InputHintTooltip m_Tooltip_DecreaseDepth;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -37,10 +37,10 @@ namespace Platter.Systems {
             m_IncreaseDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
             m_DecreaseDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
 
-            m_Tooltip_IncreaseWidth = new InputHintTooltip(m_IncreaseDepthAction, InputManager.DeviceType.Mouse);
-            m_Tooltip_DecreaseWidth = new InputHintTooltip(m_DecreaseDepthAction, InputManager.DeviceType.Mouse);
-            m_Tooltip_IncreaseDepth = new InputHintTooltip(m_IncreaseWidthAction, InputManager.DeviceType.Mouse);
-            m_Tooltip_DecreaseDepth = new InputHintTooltip(m_DecreaseWidthAction, InputManager.DeviceType.Mouse);
+            m_Tooltip_IncreaseWidth = new InputHintTooltip(m_IncreaseDepthAction, InputManager.DeviceType.Keyboard);
+            m_Tooltip_DecreaseWidth = new InputHintTooltip(m_DecreaseDepthAction, InputManager.DeviceType.Keyboard);
+            m_Tooltip_IncreaseDepth = new InputHintTooltip(m_IncreaseWidthAction, InputManager.DeviceType.Keyboard);
+            m_Tooltip_DecreaseDepth = new InputHintTooltip(m_DecreaseWidthAction, InputManager.DeviceType.Keyboard);
         }
 
         /// <inheritdoc/>

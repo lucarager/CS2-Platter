@@ -69,13 +69,13 @@ namespace Platter.Systems {
         private ValueBindingHelper<int> m_BlockDepthBinding;
         private ValueBindingHelper<bool> m_RenderParcelsBinding;
         private ValueBindingHelper<bool> m_AllowSpawningBinding;
-        private RawValueBinding m_TestBinding;
 
         // Shortcuts
         private ProxyAction m_IncreaseBlockWidthAction;
         private ProxyAction m_IncreaseBlockDepthAction;
         private ProxyAction m_DecreaseBlockWidthAction;
         private ProxyAction m_DecreaseBlockDepthAction;
+        private IProxyAction m_PreciseRotationAction;
         private ProxyAction m_ToggleRender;
         private ProxyAction m_ToggleSpawn;
 
@@ -211,6 +211,7 @@ namespace Platter.Systems {
             m_IncreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
             m_DecreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
             m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
+            m_PreciseRotationAction = (IProxyAction)m_ObjectToolSystem.GetMemberValue("m_PreciseRotation");
             m_ToggleRender = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
             m_ToggleSpawn = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
 
@@ -242,6 +243,11 @@ namespace Platter.Systems {
 
             if (m_DecreaseBlockDepthAction.IsInProgress()) {
                 DecreaseBlockDepth();
+            }
+
+            if (m_PreciseRotationAction.IsInProgress()) {
+                var num = m_PreciseRotationAction.ReadValue<float>();
+                m_Log.Debug($"{num}");
             }
 
             if (m_ToggleRender.WasPerformedThisFrame()) {

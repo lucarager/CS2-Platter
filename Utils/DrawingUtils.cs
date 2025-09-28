@@ -104,16 +104,6 @@ namespace Platter.Utils {
                 );
             }
 
-            //// Draw background
-            // buffer.DrawLine(
-            //    new Color(0f, 0f, 0f, 1f),
-            //    new Line3.Segment(
-            //        ParcelUtils.GetWorldPosition(trs, parcelCenter, ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront)),
-            //        ParcelUtils.GetWorldPosition(trs, parcelCenter, ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelBack))
-            //    ),
-            //    parcelGeo.Size.x
-            // );
-
             // Draw "Front Circle"
             buffer.DrawCircle(
                 ColorConstants.ParcelFrontIndicator,
