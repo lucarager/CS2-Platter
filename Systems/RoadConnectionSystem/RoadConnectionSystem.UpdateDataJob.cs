@@ -36,7 +36,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ConnectionUpdateDataList;
+            [ReadOnly] public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ParcelEntitiesList;
 
             /// <summary>
             /// todo.
@@ -76,11 +76,6 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            public ComponentLookup<Elevation> m_ElevationComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
             public ComponentLookup<Aggregated> m_AggregatedComponentLookup;
 
             /// <summary>
@@ -95,15 +90,15 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute() {
-                if (m_ConnectionUpdateDataList.Length == 0) {
+                if (m_ParcelEntitiesList.Length == 0) {
                     return;
                 }
 #if !USE_BURST
-                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Processing {m_ConnectionUpdateDataList.Length} entries.");
+                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Processing {m_ParcelEntitiesList.Length} entries.");
 #endif
 
-                for (var i = 0; i < m_ConnectionUpdateDataList.Length; i++) {
-                    var updateData = m_ConnectionUpdateDataList[i];
+                for (var i = 0; i < m_ParcelEntitiesList.Length; i++) {
+                    var updateData = m_ParcelEntitiesList[i];
                     var parcel = m_ParcelComponentLookup[updateData.m_Parcel];
 
                     // A few utility bools
