@@ -33,6 +33,17 @@ namespace Platter.Utils {
 
         public float3x4 CornerNodes => GetParcelCorners();
 
+        public float3x4 CornerNodesRelativeToGeometryCenter {
+            get {
+                var corners = GetParcelCorners();
+                corners.c0.z -= m_ParcelSize.z / 2;
+                corners.c1.z -= m_ParcelSize.z / 2;
+                corners.c2.z -= m_ParcelSize.z / 2;
+                corners.c3.z -= m_ParcelSize.z / 2;
+                return corners;
+            }
+        }
+
         public float3 Pivot => GetPivot();
 
         public static float3 GetParcelSize(int2 lotSize) {

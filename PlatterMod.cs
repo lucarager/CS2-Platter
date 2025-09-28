@@ -4,11 +4,6 @@
 // </copyright>
 
 namespace Platter {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
     using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
@@ -18,10 +13,16 @@ namespace Platter {
     using Game.Input;
     using Game.Modding;
     using Game.SceneFlow;
+    using Game.Simulation;
     using Newtonsoft.Json;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
     using Unity.Collections.LowLevel.Unsafe;
 
     /// <summary>
@@ -127,6 +128,11 @@ namespace Platter {
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<PlatterOverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<PlatterTooltipSystem>(SystemUpdatePhase.UITooltip);
+
+            // Experimental Systems
+            updateSystem.UpdateAt<ExpBuildingSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<ExpConstructionSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;

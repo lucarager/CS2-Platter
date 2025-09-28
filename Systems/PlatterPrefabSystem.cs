@@ -151,23 +151,23 @@ namespace Platter.Systems {
             }
 
             if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out var zonePrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabBase not found");
+                m_Log.Error($"{logMethodPrefix} Failed retrieving zonePrefabBase and must exit.");
             }
 
             if (!m_PrefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out var roadPrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. roadPrefabBase not found");
+                m_Log.Error($"{logMethodPrefix} Failed retrieving roadPrefabBase and must exit.");
             }
 
             if (!m_PrefabSystem.TryGetPrefab(new PrefabID("UIAssetCategoryPrefab", "ZonesOffice"), out var uiAssetCategoryPrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. uiAssetCategoryPrefab not found");
+                m_Log.Error($"{logMethodPrefix} Failed retrieving uiAssetCategoryPrefab and must exit.");
             }
 
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("SurfacePrefab", "Concrete Surface 01"), out var surfacePrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. uiAssetCategoryPrefab not found");
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("SurfacePrefab", "Concrete Surface 01"), out var areaPrefabBase)) {
+                m_Log.Error($"{logMethodPrefix} Failed retrieving areaPrefabBase and must exit.");
             }
 
             if (!zonePrefabBase.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabUIObject not found");
+                m_Log.Error($"{logMethodPrefix} Failed retrieving zonePrefabUIObject and must exit.");
             }
 
             m_Log.Debug($"{logMethodPrefix} Creating Category Prefab...");
@@ -176,7 +176,7 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
                 for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (!CreateParcelPrefab(i, j, (RoadPrefab)roadPrefabBase, zonePrefabUIObject, uiCategoryPrefab, (AreaPrefab)surfacePrefabBase)) {
+                    if (!CreateParcelPrefab(i, j, (RoadPrefab)roadPrefabBase, zonePrefabUIObject, uiCategoryPrefab, (AreaPrefab)areaPrefabBase)) {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;
                     }
@@ -189,9 +189,10 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Completed.");
         }
 
-        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab surfacePrefabBase) {
+        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase) {
             var name = $"{PrefabNamePrefix} {lotWidth}x{lotDepth}";
             var icon = $"coui://platter/{PrefabNamePrefix}_{lotWidth}x{lotDepth}.svg";
+            var parcelGeo = new ParcelGeometry(new int2(lotWidth, lotDepth));
 
             // Point our new prefab
             var parcelPrefabBase = ScriptableObject.CreateInstance<ParcelPrefab>();
@@ -208,30 +209,24 @@ namespace Platter.Systems {
             // Adding ZoneBlock data.
             parcelPrefabBase.m_ZoneBlock = roadPrefab.m_ZoneBlock;
 
+            var corners = parcelGeo.CornerNodesRelativeToGeometryCenter;
+
             // (experimental) adding area data
             var objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
             objectSubAreas.name = $"{name}-areas";
             objectSubAreas.m_SubAreas = new ObjectSubAreaInfo[1] { new () {
-                m_AreaPrefab = surfacePrefabBase,
+                m_AreaPrefab = areaPrefabBase,
                 m_NodePositions = new float3[] {
-                    new (-2.42344284f, 0.0391235352f, 2.70939636f),
-                    new (0.812075436f, 0.03857422f, 2.70975351f),
-                    new (0.8111607f, 0.108810425f, 7.99953938f),
-                    new (8.000113f, 0.108810425f, 8.000127f),
-                    new (8.001804f, 0.00482177734f, -6.2592535f),
-                    new (-8.000103f, 0.008728027f, -6.259306f),
-                    new (-8.001758f, -0.0100097656f, 7.99932957f),
-                    new (-2.42445755f, -0.0192260742f, 7.99994755f),
+                    corners.c0,
+                    corners.c1,
+                    corners.c2,
+                    corners.c3,
                 },
-                m_ParentMeshes = new int[8] {
+                m_ParentMeshes = new int[4] {
                      -1,
                      -1,
                      0,
                      0,
-                     -1,
-                     -1,
-                     -1,
-                     -1
                 }
             } };
             parcelPrefabBase.AddComponentFrom(objectSubAreas);
