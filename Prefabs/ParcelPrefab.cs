@@ -67,7 +67,7 @@ namespace Game.Prefabs {
             // Making it a "building" fixes snapping
             // The following are required for this to be a valid building
             // See BuildingInitializeSystem.onUpdate()
-            components.Add(ComponentType.ReadWrite<BuildingData>());
+            // components.Add(ComponentType.ReadWrite<BuildingData>());
 
             // components.Add(ComponentType.ReadWrite<ObjectGeometryData>());
             // components.Add(ComponentType.ReadWrite<BuildingTerraformData>());

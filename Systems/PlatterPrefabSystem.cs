@@ -117,6 +117,7 @@ namespace Platter.Systems {
             m_BuildingInitializeSystem = World.GetOrCreateSystemManaged<BuildingInitializeSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
+            /*
             // Override base system
             var originalQuery = (EntityQuery)m_BuildingInitializeSystem.GetMemberValue("m_PrefabQuery");
             var originalQueryDescs = originalQuery.GetEntityQueryDescs();
@@ -144,7 +145,7 @@ namespace Platter.Systems {
 
                 // add modified EntityQuery to update check
                 m_BuildingInitializeSystem.RequireForUpdate(modifiedQuery);
-            }
+            }*/
         }
 
         /// <inheritdoc/>

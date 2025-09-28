@@ -4,6 +4,8 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using Colossal.Entities;
+    using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
     using Game.Objects;
@@ -23,6 +25,7 @@ namespace Platter.Systems {
 
         // Queries
         private EntityQuery m_PrefabQuery;
+        private EntityQuery m_LateInitializeQuery;
 
         // Systems & References
         private PrefabSystem m_PrefabSystem;
@@ -48,8 +51,43 @@ namespace Platter.Systems {
                     }
                 });
 
+            // Adding BuildingData in the same frame that the prefab entity is created causing a conflict with vanilla BuildingInitializeSystem.
+            // This query allows us to initialize this portion later than the vanilla buildings.
+            m_LateInitializeQuery = SystemAPI.QueryBuilder()
+                .WithAll<PrefabData, ParcelData>()
+                .WithNone<Game.Prefabs.BuildingData>()
+                .Build();
+
             // Update Cycle
             RequireForUpdate(m_PrefabQuery);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGamePreload(purpose, mode);
+
+            if (m_LateInitializeQuery.IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
+            NativeArray<Entity> prefabEntities = m_LateInitializeQuery.ToEntityArray(Allocator.Temp);
+
+            for (int i = 0; i < prefabEntities.Length; i++)
+            {
+                Entity currentPrefabEntity = prefabEntities[i];
+                if (EntityManager.TryGetComponent(currentPrefabEntity, out ParcelData parcelData))
+                {
+                    Game.Prefabs.BuildingData buildingData = new Game.Prefabs.BuildingData()
+                    {
+                        m_Flags = BuildingFlags.RequireRoad,
+                        m_LotSize = parcelData.m_LotSize,
+                    };
+                    EntityManager.AddComponent<Game.Prefabs.BuildingData>(currentPrefabEntity);
+                    EntityManager.SetComponentData(currentPrefabEntity, buildingData);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -103,11 +141,6 @@ namespace Platter.Systems {
                 placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround;
                 placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
-
-                // Building Data
-                var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
-                buildingData.m_LotSize = parcelData.m_LotSize;
-                buildingData.m_Flags = BuildingFlags.RequireRoad;
 
                 //// Terraform Data
                 // var terraformData = EntityManager.GetComponentData<BuildingTerraformData>(currentEntity);
