@@ -9,7 +9,7 @@ while still leveraging the vanilla zoning tools and building spawning/growth.
 `donations link here`
 
 ## Translations
-`Translations link here`
+Volunteer translators can head to https://crowdin.com/project/platter-cs2 and help translate this mod.
 
 ## Support
 I will respond on the code modding channels on **Cities: Skylines Modding Discord**
