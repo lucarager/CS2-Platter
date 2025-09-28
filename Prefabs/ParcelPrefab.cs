@@ -72,6 +72,9 @@ namespace Game.Prefabs {
             // components.Add(ComponentType.ReadWrite<ObjectGeometryData>());
             // components.Add(ComponentType.ReadWrite<BuildingTerraformData>());
             // components.Add(ComponentType.ReadWrite<BuildingTerraformOverride>());
+
+            // Experimental
+            components.Add(ComponentType.ReadWrite<ObjectSubAreas>());
         }
 
         /// <inheritdoc/>
@@ -81,8 +84,6 @@ namespace Game.Prefabs {
             components.Add(ComponentType.ReadWrite<Parcel>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<SubBlock>());
-            components.Add(ComponentType.ReadWrite<SubLane>());
-            components.Add(ComponentType.ReadWrite<SubObject>());
         }
 
         /// <inheritdoc/>

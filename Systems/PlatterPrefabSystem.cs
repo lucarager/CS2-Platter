@@ -162,6 +162,10 @@ namespace Platter.Systems {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. uiAssetCategoryPrefab not found");
             }
 
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("SurfacePrefab", "Concrete Surface 01"), out var surfacePrefabBase)) {
+                m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. uiAssetCategoryPrefab not found");
+            }
+
             if (!zonePrefabBase.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving original Prefabs and Components, exiting. zonePrefabUIObject not found");
             }
@@ -172,7 +176,7 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
                 for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (!CreateParcelPrefab(i, j, (RoadPrefab)roadPrefabBase, zonePrefabUIObject, uiCategoryPrefab)) {
+                    if (!CreateParcelPrefab(i, j, (RoadPrefab)roadPrefabBase, zonePrefabUIObject, uiCategoryPrefab, (AreaPrefab)surfacePrefabBase)) {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;
                     }
@@ -185,7 +189,7 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Completed.");
         }
 
-        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab) {
+        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab surfacePrefabBase) {
             var name = $"{PrefabNamePrefix} {lotWidth}x{lotDepth}";
             var icon = $"coui://platter/{PrefabNamePrefix}_{lotWidth}x{lotDepth}.svg";
 
@@ -203,6 +207,34 @@ namespace Platter.Systems {
 
             // Adding ZoneBlock data.
             parcelPrefabBase.m_ZoneBlock = roadPrefab.m_ZoneBlock;
+
+            // (experimental) adding area data
+            var objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
+            objectSubAreas.name = $"{name}-areas";
+            objectSubAreas.m_SubAreas = new ObjectSubAreaInfo[1] { new () {
+                m_AreaPrefab = surfacePrefabBase,
+                m_NodePositions = new float3[] {
+                    new (-2.42344284f, 0.0391235352f, 2.70939636f),
+                    new (0.812075436f, 0.03857422f, 2.70975351f),
+                    new (0.8111607f, 0.108810425f, 7.99953938f),
+                    new (8.000113f, 0.108810425f, 8.000127f),
+                    new (8.001804f, 0.00482177734f, -6.2592535f),
+                    new (-8.000103f, 0.008728027f, -6.259306f),
+                    new (-8.001758f, -0.0100097656f, 7.99932957f),
+                    new (-2.42445755f, -0.0192260742f, 7.99994755f),
+                },
+                m_ParentMeshes = new int[8] {
+                     -1,
+                     -1,
+                     0,
+                     0,
+                     -1,
+                     -1,
+                     -1,
+                     -1
+                }
+            } };
+            parcelPrefabBase.AddComponentFrom(objectSubAreas);
 
             // Point and populate the new UIObject for our cloned Prefab
             var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
