@@ -82,7 +82,7 @@ namespace Platter {
             Log.Info($"[Platter] Loaded localization files.");
 
             // Generate i18n files
-#if DEBUG
+#if DEBUG && EXPORT_EN_US
             Log.Info($"[Platter] Exporting localization");
             var localeDict = new I18nConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
@@ -112,9 +112,6 @@ namespace Platter {
 
             // Apply input bindings.
             Settings.RegisterKeyBindings();
-
-            // Compatibility
-            // ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
 
             // Activate Systems
             updateSystem.UpdateAfter<PlatterPrefabSystem>(SystemUpdatePhase.UIUpdate);
@@ -155,69 +152,6 @@ namespace Platter {
 
             // Revert harmony patches.
             Patcher.Instance?.UnPatchAll();
-        }
-
-        /**
-         * {
-                         "m_Name": "Mouse",
-                         "m_Id": "04cce1df-8960-4bb6-bb4b-5046e219c2fd",
-                         "m_Path": "AxisWithModifiers(m_Mode=2,m_IsRebindable=false,m_CanBeEmpty=false,m_Usages=24)",
-                         "m_Interactions": "",
-                         "m_Processors": "Invert,Scale(factor=0.005),ScrollSensitivity",
-                         "m_Groups": "",
-                         "m_Action": "Precise Rotation",
-                         "m_Flags": 4
-                     },
-                     {
-                         "m_Name": "binding",
-                         "m_Id": "fe1ef8d2-1876-45a0-9264-72fdc2ee3b5c",
-                         "m_Path": "\u003cMouse\u003e/scroll/y",
-                         "m_Interactions": "",
-                         "m_Processors": "",
-                         "m_Groups": "Mouse",
-                         "m_Action": "Precise Rotation",
-                         "m_Flags": 8
-                     },
-                     {
-                         "m_Name": "modifier",
-                         "m_Id": "f825725f-0ef0-4e0e-bae8-0d12b065c121",
-                         "m_Path": "\u003cKeyboard\u003e/shift",
-                         "m_Interactions": "",
-                         "m_Processors": "",
-                         "m_Groups": "Mouse",
-                         "m_Action": "Precise Rotation",
-                         "m_Flags": 8
-                     },
-        */
-        private static void ModifyMouseSettings(ModSetting originalSettings) {
-            var log = LogManager.GetLogger(ModName);
-            var keyBindingPropertiesPropArray = originalSettings.GetType().BaseType.GetProperty("keyBindingProperties", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            if (keyBindingPropertiesPropArray == null) {
-                log.Error("Could not find keyBindingPropertiesPropArray for compatibility patching");
-                return;
-            }
-
-            var keyBindingProperties = (PropertyInfo[])keyBindingPropertiesPropArray.GetValue(originalSettings);
-
-            for (var i = 0; i < keyBindingProperties.Length; i++) {
-                var keyBindingProperty = keyBindingProperties[i];
-                var binding = (ProxyBinding)keyBindingProperty.GetValue(originalSettings);
-
-                log.Debug($"binding actionName {binding.actionName}");
-
-                if (binding.actionName == "DecreaseParcelDepth") {
-                    var modifier = binding.modifiers[0];
-                    var modifiers = new string[] { "<Keyboard>/ctrl" }.Select((string modifierControl) => new ProxyModifier {
-                        m_Component = modifier.m_Component,
-                        m_Name = "modifier",
-                        m_Path = modifierControl
-                    }).ToList();
-
-                    binding.modifiers = modifiers;
-                    keyBindingProperty.SetValue(originalSettings, binding);
-                }
-            }
         }
 
         private void LoadNonEnglishLocalizations() {

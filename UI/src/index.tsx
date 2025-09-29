@@ -11,12 +11,6 @@ GAME_BINDINGS.BLOCK_DEPTH;
 const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     initialize(moduleRegistry);
 
-    // moduleRegistry.extend(
-    //     "game-ui/game/components/toolbar/top/city-info-field/city-info-field.tsx",
-    //     "CityInfoField",
-    //     ToolButton,
-    // );
-
     moduleRegistry.append("GameTopLeft", ToolButton);
 
     moduleRegistry.extend(
