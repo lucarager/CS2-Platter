@@ -10,11 +10,8 @@ namespace Platter {
     using Colossal.Logging;
     using Colossal.UI;
     using Game;
-    using Game.Input;
     using Game.Modding;
     using Game.SceneFlow;
-    using Game.Simulation;
-    using Newtonsoft.Json;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
@@ -108,9 +105,6 @@ namespace Platter {
             // Load saved settings.
             AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
 
-            // Inject additional settings config
-            // ModifyMouseSettings(Settings);
-
             // Apply input bindings.
             Settings.RegisterKeyBindings();
 
@@ -128,13 +122,13 @@ namespace Platter {
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<PlatterOverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<PlatterTooltipSystem>(SystemUpdatePhase.UITooltip);
+            updateSystem.UpdateAt<ParcelSearchSystem>(SystemUpdatePhase.Modification5);
 
             // Experimental Systems
-            updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<ParcelSearchSystem>(SystemUpdatePhase.Modification5);
+            //updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
+            //updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
+            //updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
+            //updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;
