@@ -38,7 +38,7 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(ParcelCreateSystem));
             m_Log.Debug($"OnCreate()");
 
-            // Retriefve Systems
+            // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier3>();
             m_PlatterUISystem = World.GetOrCreateSystemManaged<PlatterUISystem>();
 

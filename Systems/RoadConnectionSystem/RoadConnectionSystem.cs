@@ -40,11 +40,10 @@ namespace Platter.Systems {
         private EntityQuery m_TrafficConfigQuery;
 
         // Systems & References
-        private Game.Objects.SearchSystem m_ObjectSearchSystem;
+        private ParcelSearchSystem m_ParcelSearchSystem;
         private ModificationBarrier4B m_ModificationBarrier;
         private Game.Net.SearchSystem m_NetSearchSystem;
         private IconCommandSystem m_IconCommandSystem;
-        private AudioManager m_AudioManager;
 
         // Typehandles
         private EntityTypeHandle m_EntityTypeHandle;
@@ -71,11 +70,10 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Reference Systems
-            m_ObjectSearchSystem = World.GetOrCreateSystemManaged<Game.Objects.SearchSystem>();
+            m_ParcelSearchSystem = World.GetOrCreateSystemManaged<ParcelSearchSystem>();
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4B>();
             m_NetSearchSystem = World.GetOrCreateSystemManaged<Game.Net.SearchSystem>();
             m_IconCommandSystem = World.GetOrCreateSystemManaged<IconCommandSystem>();
-            m_AudioManager = World.GetOrCreateSystemManaged<AudioManager>();
 
             // Define Queries
             m_ModificationQuery = GetEntityQuery(new EntityQueryDesc[] {
@@ -166,7 +164,7 @@ namespace Platter.Systems {
             createEntitiesQueueJobData.m_ParcelDataComponentLookup = GetComponentLookup<ParcelData>();
             createEntitiesQueueJobData.m_ParcelComponentLookup = GetComponentLookup<Parcel>();
             createEntitiesQueueJobData.m_TransformComponentLookup = GetComponentLookup<Transform>();
-            createEntitiesQueueJobData.m_ObjectSearchTree = m_ObjectSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle);
+            createEntitiesQueueJobData.m_ObjectSearchTree = m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle);
             createEntitiesQueueJobData.m_EdgeGeometryTypeHandle = m_EdgeGeometryTypeHandle;
             createEntitiesQueueJobData.m_StartNodeGeometryTypeHandle = m_StartNodeGeometryTypeHandle;
             createEntitiesQueueJobData.m_EndNodeGeometryTypeHandle = m_EndNodeGeometryTypeHandle;

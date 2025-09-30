@@ -20,7 +20,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ExpConstructionSystem : GameSystemBase {
+    public partial class ExpBuildingConnectSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -37,20 +37,29 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(ExpConstructionSystem));
+            m_Log = new PrefixedLogger(nameof(ExpBuildingConnectSystem));
             m_Log.Debug($"OnCreate()");
 
-            // Retriefve Systems
+            // Retrieve Systems
 
             // Queries
-            m_Query = GetEntityQuery(new ComponentType[]
-            {
-                ComponentType.ReadOnly<UnderConstruction>(),
-                ComponentType.ReadOnly<Building>(),
-                ComponentType.Exclude<Destroyed>(),
-                ComponentType.Exclude<Deleted>(),
-                ComponentType.Exclude<Temp>()
-            });
+            m_Query = GetEntityQuery(
+                new EntityQueryDesc {
+                    All = new ComponentType[] {
+                        ComponentType.ReadOnly<Building>(),
+                        ComponentType.ReadOnly<UnderConstruction>(),
+                    },
+                    Any = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Created>(),
+                        ComponentType.ReadOnly<Updated>(),
+                        ComponentType.ReadOnly<BatchesUpdated>()
+                    },
+                    None = new ComponentType[] {
+                        ComponentType.ReadOnly<ConnectedParcel>(),
+                        ComponentType.ReadOnly<Temp>(),
+                    },
+                });
 
             // Update Cycle
             RequireForUpdate(m_Query);
@@ -58,7 +67,11 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            var entities = m_Query.ToEntityArray(Allocator.Temp);
 
+            foreach (var entity in entities) {
+                m_Log.Debug($"Building was updated {entity}");
+            }
         }
     }
 }

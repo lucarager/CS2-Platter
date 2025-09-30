@@ -37,7 +37,7 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(VanillaRoadInitializeSystem));
             m_Log.Debug($"OnCreate()");
 
-            // Retriefve Systems
+            // Retrieve Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             // Queries

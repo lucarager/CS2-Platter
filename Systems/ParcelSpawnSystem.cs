@@ -32,7 +32,7 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(ParcelSpawnSystem));
             m_Log.Debug($"OnCreate()");
 
-            // Retriefve Systems
+            // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier3>();
 
             // Queries

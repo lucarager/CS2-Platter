@@ -45,7 +45,7 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(ParcelUpdateSystem));
             m_Log.Debug($"OnCreate()");
 
-            // Retriefve Systems
+            // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
@@ -104,9 +104,18 @@ namespace Platter.Systems {
                 if (EntityManager.HasComponent<Deleted>(parcelEntity)) {
                     m_Log.Debug($"OnUpdate() -- [DELETE] Deleting parcel {parcelEntity}");
 
-                    // Mark Blocks for deletion
                     for (var j = 0; j < subBlockBuffer.Length; j++) {
                         var subBlockEntity = subBlockBuffer[j].m_SubBlock;
+
+                        // Manually unzone so that we clear underlying vanilla zoning
+                        var cellBuffer = EntityManager.GetBuffer<Cell>(subBlockEntity);
+                        for (var k = 0; k < subBlockBuffer.Length; k++) {
+                            var cell = cellBuffer[k];
+                            cell.m_Zone = ZoneType.None;
+                            cellBuffer[k] = cell;
+                        }
+
+                        // Mark Blocks for deletion
                         m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);
                     }
 

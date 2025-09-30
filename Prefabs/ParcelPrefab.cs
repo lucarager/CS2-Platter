@@ -47,13 +47,13 @@ namespace Game.Prefabs {
         /// <summary>
         /// Gets the parcel's LotSize.
         /// </summary>
-        public int LotSize => this.m_LotWidth * this.m_LotDepth;
+        public int LotSize => m_LotWidth * m_LotDepth;
 
         /// <inheritdoc/>
         public override void GetDependencies(List<PrefabBase> prefabs) {
             base.GetDependencies(prefabs);
-            if (this.m_ZoneBlock != null) {
-                prefabs.Add(this.m_ZoneBlock);
+            if (m_ZoneBlock != null) {
+                prefabs.Add(m_ZoneBlock);
             }
         }
 

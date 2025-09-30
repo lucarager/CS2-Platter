@@ -243,10 +243,6 @@ namespace Platter.Systems {
                 }
 
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity parcelEntity) {
-#if !USE_BURST
-                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindParcelNextToRoadIterator.Iterate() -- parcelEntity {parcelEntity}.");
-#endif
-
                     if (!MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz)) {
                         return;
                     }
@@ -254,6 +250,10 @@ namespace Platter.Systems {
                     if (!m_ParcelComponentLookup.HasComponent(parcelEntity)) {
                         return;
                     }
+
+#if !USE_BURST
+                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindParcelNextToRoadIterator.Iterate() -- parcelEntity {parcelEntity}.");
+#endif
 
                     var parcelPrefabRef = m_PrefabRefComponentLookup[parcelEntity];
                     var parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];

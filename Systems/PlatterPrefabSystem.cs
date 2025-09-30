@@ -8,6 +8,7 @@ namespace Platter.Systems {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Colossal.IO.AssetDatabase.Internal;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Prefabs;
@@ -22,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Todo.
     /// </summary>
-    public partial class PlatterPrefabSystem : UISystemBase {
+    public partial class PlatterPrefabSystem : GameSystemBase {
         /// <summary>
         /// Range of block sizes we support.
         /// <para>x = min width.</para>
@@ -40,10 +41,12 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        public static readonly Dictionary<string, string[]> SourcePrefabNames = new() {
-            { "subLanePrefab", new string[2] { "NetLaneGeometryPrefab", "EU Car Bay Line" } },
-            { "roadPrefab", new string[2] { "RoadPrefab", "Alley" } },
-            { "uiPrefab", new string[2] { "ZonePrefab", "EU Residential Mixed" } },
+        private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
+            { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
+            { "road", new PrefabID("RoadPrefab", "Alley") },
+            { "uiAssetCategory", new PrefabID("UIAssetCategoryPrefab", "ZonesOffice") },
+            { "area", new PrefabID("SurfacePrefab", "Concrete Surface 01") },
+            { "netLane", new PrefabID("NetLaneGeometryPrefab", "Gravel Pavement Transition") },
         };
 
         /// <summary>
@@ -140,9 +143,12 @@ namespace Platter.Systems {
             }
         }
 
+        protected override void OnUpdate() {}
+
         /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
+
             var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
 
             if (PrefabsAreInstalled) {
@@ -150,33 +156,31 @@ namespace Platter.Systems {
                 return;
             }
 
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "EU Residential Mixed"), out var zonePrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving zonePrefabBase and must exit.");
+            var prefabBaseDict = new Dictionary<string, PrefabBase>();
+
+            foreach (var (key, prefabId) in m_SourcePrefabsDict) {
+                if (!m_PrefabSystem.TryGetPrefab(prefabId, out var prefabBase)) {
+                    m_Log.Error($"{logMethodPrefix} Failed retrieving prefabBase {prefabId} and must exit.");
+                    continue;
+                }
+
+                prefabBaseDict[key] = prefabBase;
             }
 
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("RoadPrefab", "Alley"), out var roadPrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving roadPrefabBase and must exit.");
-            }
-
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("UIAssetCategoryPrefab", "ZonesOffice"), out var uiAssetCategoryPrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving uiAssetCategoryPrefab and must exit.");
-            }
-
-            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("SurfacePrefab", "Concrete Surface 01"), out var areaPrefabBase)) {
-                m_Log.Error($"{logMethodPrefix} Failed retrieving areaPrefabBase and must exit.");
-            }
-
-            if (!zonePrefabBase.TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
+            if (!prefabBaseDict["zone"].TryGetExactly<UIObject>(out var zonePrefabUIObject)) {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving zonePrefabUIObject and must exit.");
             }
 
+            m_Log.Debug($"{logMethodPrefix} Creating Area Prefab...");
+            CreateParcelAreaPrefab((AreaPrefab)prefabBaseDict["area"], (NetLanePrefab)prefabBaseDict["netLane"], out var areaPrefab);
+
             m_Log.Debug($"{logMethodPrefix} Creating Category Prefab...");
-            CreateCategoryPrefab((UIAssetCategoryPrefab)uiAssetCategoryPrefabBase, out var uiCategoryPrefab);
+            CreateCategoryPrefab((UIAssetCategoryPrefab)prefabBaseDict["uiAssetCategory"], out var uiCategoryPrefab);
 
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
                 for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (!CreateParcelPrefab(i, j, (RoadPrefab)roadPrefabBase, zonePrefabUIObject, uiCategoryPrefab, (AreaPrefab)areaPrefabBase)) {
+                    if (!CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], zonePrefabUIObject, uiCategoryPrefab, areaPrefab)) {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
                         return;
                     }
@@ -215,20 +219,21 @@ namespace Platter.Systems {
             var objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
             objectSubAreas.name = $"{name}-areas";
             objectSubAreas.m_SubAreas = new ObjectSubAreaInfo[1] { new () {
-                m_AreaPrefab = areaPrefabBase,
-                m_NodePositions = new float3[] {
-                    corners.c0,
-                    corners.c1,
-                    corners.c2,
-                    corners.c3,
-                },
-                m_ParentMeshes = new int[4] {
-                     -1,
-                     -1,
-                     0,
-                     0,
+                    m_AreaPrefab = areaPrefabBase,
+                    m_NodePositions = new float3[] {
+                        corners.c0,
+                        corners.c1,
+                        corners.c2,
+                        corners.c3,
+                    },
+                    m_ParentMeshes = new int[4] {
+                         -1,
+                         -1,
+                         0,
+                         0,
+                    }
                 }
-            } };
+            };
             parcelPrefabBase.AddComponentFrom(objectSubAreas);
 
             // Point and populate the new UIObject for our cloned Prefab
@@ -256,14 +261,14 @@ namespace Platter.Systems {
             return success;
         }
 
-        private bool CreateCategoryPrefab(UIAssetCategoryPrefab uiCategoryPrefabClone, out UIAssetCategoryPrefab uiCategoryPrefab) {
+        private bool CreateCategoryPrefab(UIAssetCategoryPrefab originalUICategoryPrefab, out UIAssetCategoryPrefab uiCategoryPrefab) {
             var name = $"PlatterCat";
             var icon = $"coui://platter/logo.svg";
 
             var uiCategoryPrefabBase = ScriptableObject.CreateInstance<UIAssetCategoryPrefab>();
 
             uiCategoryPrefabBase.name = name;
-            uiCategoryPrefabBase.m_Menu = uiCategoryPrefabClone.m_Menu;
+            uiCategoryPrefabBase.m_Menu = originalUICategoryPrefab.m_Menu;
 
             var uiObject = ScriptableObject.CreateInstance<UIObject>();
             uiObject.active = true;
@@ -278,6 +283,27 @@ namespace Platter.Systems {
             var success = m_PrefabSystem.AddPrefab(uiCategoryPrefabBase);
             uiCategoryPrefab = uiCategoryPrefabBase;
             return success;
+        }
+
+        private bool CreateParcelAreaPrefab(AreaPrefab originalAreaPrefab, NetLanePrefab borderPrefab, out AreaPrefab areaPrefab) {
+            var parecelAreaPrefab = (AreaPrefab) originalAreaPrefab.Clone("Parcel Enclosed Area");
+
+            var enclosedArea = ScriptableObject.CreateInstance<EnclosedArea>();
+            enclosedArea.name = "EnclosedArea";
+            enclosedArea.m_BorderLaneType = borderPrefab;
+            enclosedArea.m_CounterClockWise = false;
+
+            parecelAreaPrefab.AddComponentFrom(enclosedArea);
+
+            var success = m_PrefabSystem.AddPrefab(parecelAreaPrefab);
+
+            if (success) {
+                areaPrefab = parecelAreaPrefab;
+                return true;
+            }
+
+            areaPrefab = null;
+            return false;
         }
     }
 }

@@ -115,7 +115,7 @@ namespace Platter {
             Settings.RegisterKeyBindings();
 
             // Activate Systems
-            updateSystem.UpdateAfter<PlatterPrefabSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<PlatterPrefabSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelCreateSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<ParcelSpawnSystem>(SystemUpdatePhase.Modification3);
@@ -130,9 +130,11 @@ namespace Platter {
             updateSystem.UpdateAt<PlatterTooltipSystem>(SystemUpdatePhase.UITooltip);
 
             // Experimental Systems
-            updateSystem.UpdateAt<ExpBuildingSystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateAt<ExpConstructionSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
+            updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
+            updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
+            updateSystem.UpdateAt<ParcelSearchSystem>(SystemUpdatePhase.Modification5);
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;
