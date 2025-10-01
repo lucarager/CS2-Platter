@@ -62,7 +62,7 @@ namespace Platter.Systems {
             visible = CheckEntityEligibility();
 
             if (visible && EntityManager.TryGetComponent<Parcel>(selectedEntity, out var parcel)) {
-                m_AllowSpawningBinding.Update(parcel.m_AllowSpawning);
+                //m_AllowSpawningBinding.Update(parcel.m_AllowSpawning);
             }
 
             RequestUpdate();

@@ -5,6 +5,7 @@
 
 namespace Platter.Systems {
     using Colossal.Collections;
+    using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -13,6 +14,7 @@ namespace Platter.Systems {
     using Game.Serialization;
     using Game.Tools;
     using Platter.Components;
+    using Platter.Utils;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -20,6 +22,9 @@ namespace Platter.Systems {
     using GeometryFlags = Game.Objects.GeometryFlags;
 
     public partial class ParcelSearchSystem : GameSystemBase, IPreDeserialize {
+        // Logger
+        private PrefixedLogger m_Log;
+
         private ToolSystem m_ToolSystem;
         private EntityQuery m_UpdatedQuery;
         private EntityQuery m_AllQuery;
@@ -29,12 +34,20 @@ namespace Platter.Systems {
         private JobHandle m_StaticWriteDependencies;
         private JobHandle m_MovingReadDependencies;
         private JobHandle m_MovingWriteDependencies;
-        private bool m_Loaded;
+        private bool m_NeedFirstLoad;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
+
+            // Logger
+            m_Log = new PrefixedLogger(nameof(ParcelSearchSystem));
+            m_Log.Debug($"OnCreate()");
+
+            // Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+
+            // Queries
             m_UpdatedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
                 new() {
@@ -72,9 +85,9 @@ namespace Platter.Systems {
             base.OnDestroy();
         }
 
-        private bool GetLoaded() {
-            if (m_Loaded) {
-                m_Loaded = false;
+        private bool GetIfFirstLoad() {
+            if (m_NeedFirstLoad) {
+                m_NeedFirstLoad = false;
                 return true;
             }
 
@@ -83,9 +96,13 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var loaded = GetLoaded();
+            var firstLoad = GetIfFirstLoad();
 
-            var entityQuery = loaded ? m_AllQuery : m_UpdatedQuery;
+            var entityQuery = firstLoad ? m_AllQuery : m_UpdatedQuery;
+
+            if (firstLoad) {
+                m_Log.Debug($"OnUpdate() -- First load.");
+            }
 
             if (entityQuery.IsEmptyIgnoreFilter) {
                 return;
@@ -101,7 +118,7 @@ namespace Platter.Systems {
             updateSearchTreeJob.m_OverriddenType = GetComponentTypeHandle<Overridden>();
             updateSearchTreeJob.m_PrefabObjectGeometryData = GetComponentLookup<ObjectGeometryData>();
             updateSearchTreeJob.m_EditorMode = m_ToolSystem.actionMode.IsEditor();
-            updateSearchTreeJob.m_Loaded = loaded;
+            updateSearchTreeJob.m_FirstLoad = firstLoad;
             updateSearchTreeJob.m_SearchTree = GetStaticSearchTree(false, out var updateSearchTreeJobHandle);
 
             base.Dependency = updateSearchTreeJob.Schedule(entityQuery, JobHandle.CombineDependencies(base.Dependency, updateSearchTreeJobHandle));
@@ -143,7 +160,7 @@ namespace Platter.Systems {
             jobHandle2.Complete();
             staticSearchTree.Clear();
             movingSearchTree.Clear();
-            m_Loaded = true;
+            m_NeedFirstLoad = true;
         }
 
 #if USE_BURST
@@ -159,7 +176,7 @@ namespace Platter.Systems {
             [ReadOnly] public ComponentTypeHandle<Overridden> m_OverriddenType;
             [ReadOnly] public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
             [ReadOnly] public bool m_EditorMode;
-            [ReadOnly] public bool m_Loaded;
+            [ReadOnly] public bool m_FirstLoad;
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
@@ -197,7 +214,7 @@ namespace Platter.Systems {
                             boundsMask |= BoundsMask.HasLot;
                         }
 
-                        if (m_Loaded || chunk.Has<Created>(ref m_CreatedType)) {
+                        if (m_FirstLoad || chunk.Has<Created>(ref m_CreatedType)) {
                             m_SearchTree.Add(parcelEntity, new QuadTreeBoundsXZ(bounds, boundsMask, objectGeometryData.m_MinLod));
                         } else {
                             m_SearchTree.Update(parcelEntity, new QuadTreeBoundsXZ(bounds, boundsMask, objectGeometryData.m_MinLod));

@@ -5,10 +5,11 @@
 
 namespace Platter.Components {
     using Colossal.Serialization.Entities;
+    using Game.Prefabs;
     using System;
     using Unity.Entities;
 
-    public struct ConnectedParcel : IBufferElementData, IEquatable<ConnectedParcel>, IEmptySerializable {
+    public struct ConnectedParcel : IBufferElementData, IEquatable<ConnectedParcel>, IEmptySerializable, ISerializable {
         public Entity m_Parcel;
 
         /// <summary>
@@ -25,6 +26,18 @@ namespace Platter.Components {
 
         public override int GetHashCode() {
             return m_Parcel.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public void Serialize<TWriter>(TWriter writer)
+            where TWriter : IWriter {
+            writer.Write(m_Parcel);
+        }
+
+        /// <inheritdoc/>
+        public void Deserialize<TReader>(TReader reader)
+            where TReader : IReader {
+            reader.Read(out m_Parcel);
         }
     }
 }

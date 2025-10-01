@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     using Colossal.Collections;
     using Game;
+    using Game.Buildings;
     using Game.Common;
     using Game.Net;
     using Game.Notifications;
@@ -179,6 +180,8 @@ namespace Platter.Systems {
                             parcel.m_RoadEdge = updateData.m_NewRoad;
                             parcel.m_CurvePosition = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+
+                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
 
                             if (parcelHasNewRoad) {
 #if !USE_BURST

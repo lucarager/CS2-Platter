@@ -95,12 +95,12 @@ namespace Platter.Systems {
                 oGeoData.m_Bounds = parcelGeo.Bounds;
                 oGeoData.m_Layers = MeshLayer.First;
                 oGeoData.m_Flags &= ~GeometryFlags.Overridable;
-                oGeoData.m_Flags |= GeometryFlags.Physical | GeometryFlags.WalkThrough;
+                oGeoData.m_Flags |= GeometryFlags.WalkThrough;
                 EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
 
                 // Placeable data
                 var placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
-                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround;
+                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround | Game.Objects.PlacementFlags.NetObject;
                 placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
 
@@ -108,18 +108,6 @@ namespace Platter.Systems {
                 var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
                 buildingData.m_LotSize = parcelData.m_LotSize;
                 buildingData.m_Flags = BuildingFlags.RequireRoad;
-
-                //// Terraform Data
-                // var terraformData = EntityManager.GetComponentData<BuildingTerraformData>(currentEntity);
-                // terraformData.m_FlatX0 = new float3(0f);
-                // terraformData.m_FlatZ0 = new float3(0f);
-                // terraformData.m_FlatX1 = new float3(0f);
-                // terraformData.m_FlatZ1 = new float3(0f);
-                // terraformData.m_Smooth = new float4(-40f, -32f, 40f, 32f);
-                // terraformData.m_HeightOffset = 0f;
-                // terraformData.m_DontRaise = false;
-                // terraformData.m_DontLower = false;
-                // EntityManager.SetComponentData<BuildingTerraformData>(currentEntity, terraformData);
 
                 // Finished
                 m_Log.Debug($"OnUpdate() -- Finished initializing {parcelPrefabRef} on entity {currentEntity.Index}");

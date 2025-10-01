@@ -12,6 +12,7 @@ namespace Platter {
     using Game;
     using Game.Modding;
     using Game.SceneFlow;
+    using Game.Serialization;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
@@ -109,6 +110,7 @@ namespace Platter {
             Settings.RegisterKeyBindings();
 
             // Activate Systems
+            updateSystem.UpdateBefore<PreDeserialize<ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAt<PlatterPrefabSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelCreateSystem>(SystemUpdatePhase.Modification3);

@@ -234,7 +234,7 @@ namespace Platter.Systems {
                     }
                 }
             };
-            parcelPrefabBase.AddComponentFrom(objectSubAreas);
+            //parcelPrefabBase.AddComponentFrom(objectSubAreas);
 
             // Point and populate the new UIObject for our cloned Prefab
             var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();

@@ -4,15 +4,29 @@
 // </copyright>
 
 namespace Platter.Components {
+    using Colossal.Serialization.Entities;
+    using Game.Zones;
     using Unity.Entities;
 
     /// <summary>
     /// todo.
     /// </summary>
-    public struct ParcelComposition : IComponentData, IQueryTypeParameter {
+    public struct ParcelComposition : IComponentData, IQueryTypeParameter, ISerializable {
         /// <summary>
         /// todo.
         /// </summary>
         public Entity m_ZoneBlockPrefab;
+
+        /// <inheritdoc/>
+        public void Serialize<TWriter>(TWriter writer)
+            where TWriter : IWriter {
+            writer.Write(m_ZoneBlockPrefab);
+        }
+
+        /// <inheritdoc/>
+        public void Deserialize<TReader>(TReader reader)
+            where TReader : IReader {
+            reader.Read(out m_ZoneBlockPrefab);
+        }
     }
 }

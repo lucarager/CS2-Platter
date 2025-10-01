@@ -128,7 +128,6 @@ namespace Platter.Systems {
                 // Retrieve components
                 if (!EntityManager.TryGetComponent<Parcel>(parcelEntity, out var parcel) ||
                     !EntityManager.TryGetComponent<PrefabRef>(parcelEntity, out var prefabRef) ||
-                    !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var prefabBase) ||
                     !EntityManager.TryGetComponent<ParcelData>(prefabRef, out var parcelData) ||
                     !EntityManager.TryGetComponent<ParcelComposition>(parcelEntity, out var parcelComposition) ||
                     !EntityManager.TryGetComponent<Transform>(parcelEntity, out var transform)) {
@@ -136,7 +135,6 @@ namespace Platter.Systems {
                     return;
                 }
 
-                var parcelPrefab = prefabBase.GetComponent<ParcelPrefab>();
                 var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
 
                 // Store Zoneblock
@@ -170,7 +168,7 @@ namespace Platter.Systems {
                 var block = new Block() {
                     m_Position = ParcelUtils.GetWorldPosition(transform, parcelGeo.Center),
                     m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
-                    m_Size = new int2(parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth),
+                    m_Size = new int2(parcelData.m_LotSize.x, parcelData.m_LotSize.y),
                 };
 
                 // Builorder is used for cell priority calculations, lowest = oldest = higher priority.

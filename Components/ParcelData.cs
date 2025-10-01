@@ -13,12 +13,14 @@ namespace Platter.Components {
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter {
             writer.Write(m_LotSize);
+            writer.Write(m_ZoneBlockPrefab);
         }
 
         /// <inheritdoc/>
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader {
             reader.Read(out m_LotSize);
+            reader.Read(out m_ZoneBlockPrefab);
         }
 
         public int2 m_LotSize;
