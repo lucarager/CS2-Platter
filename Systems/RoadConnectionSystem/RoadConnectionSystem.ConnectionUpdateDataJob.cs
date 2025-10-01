@@ -50,16 +50,16 @@ namespace Platter.Systems {
             /// </summary>
             /// <param name="parcel">A Parcel to update.</param>
             public ConnectionUpdateDataJob(Entity parcel) {
-                this.m_Parcel = parcel;
-                this.m_NewRoad = Entity.Null;
-                this.m_FrontPos = default;
-                this.m_CurvePos = 0f;
-                this.m_Deleted = false;
+                m_Parcel = parcel;
+                m_NewRoad = Entity.Null;
+                m_FrontPos = default;
+                m_CurvePos = 0f;
+                m_Deleted = false;
             }
 
             /// <inheritdoc/>
             public int CompareTo(RoadConnectionSystem.ConnectionUpdateDataJob other) {
-                return this.m_Parcel.Index - other.m_Parcel.Index;
+                return m_Parcel.Index - other.m_Parcel.Index;
             }
         }
     }

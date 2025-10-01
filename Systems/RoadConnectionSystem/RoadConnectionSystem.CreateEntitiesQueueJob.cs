@@ -16,6 +16,7 @@ namespace Platter.Systems {
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine.Rendering;
 
     /// <summary>
     /// todo.
@@ -110,53 +111,58 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
-                var connectedBuildingsBufferAccessor = chunk.GetBufferAccessor<ConnectedParcel>(ref m_ConnectedParcelBufferTypeHandle);
+                var connectedParcelBufferAccessor = chunk.GetBufferAccessor<ConnectedParcel>(ref m_ConnectedParcelBufferTypeHandle);
 
-                if (connectedBuildingsBufferAccessor.Length != 0) {
+                if (connectedParcelBufferAccessor.Length != 0) {
 #if !USE_BURST
-                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] CreateEntitiesQueueJob() -- connectedBuildingsBufferAccessor {connectedBuildingsBufferAccessor.Length} entries.");
+                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] CreateEntitiesQueueJob() -- connectedParcelBufferAccessor {connectedParcelBufferAccessor.Length} entries. Deleted: {chunk.Has<Deleted>(ref m_DeletedTypeHandle)}");
 #endif
 
                     // Handle edge delete
-                    for (var i = 0; i < connectedBuildingsBufferAccessor.Length; i++) {
-                        var dynamicBuffer = connectedBuildingsBufferAccessor[i];
-                        for (var j = 0; j < dynamicBuffer.Length; j++) {
-                            m_ParcelEntitiesQueue.Enqueue(dynamicBuffer[j].m_Parcel);
-                        }
-                    }
-
-                    // Handle edge update
-                    if (!chunk.Has<Deleted>(ref m_DeletedTypeHandle)) {
-                        var edgeGeoArray = chunk.GetNativeArray<EdgeGeometry>(ref m_EdgeGeometryTypeHandle);
-                        var startNodeGeoArray = chunk.GetNativeArray<StartNodeGeometry>(ref m_StartNodeGeometryTypeHandle);
-                        var endNodeGeoArray = chunk.GetNativeArray<EndNodeGeometry>(ref m_EndNodeGeometryTypeHandle);
-
-                        for (var k = 0; k < edgeGeoArray.Length; k++) {
-                            var edgeGeometry = edgeGeoArray[k];
-                            var startNodeGeo = startNodeGeoArray[k].m_Geometry;
-                            var endNodeGeo = endNodeGeoArray[k].m_Geometry;
-
-                            FindParcelNextToRoadIterator findParcelIterator = default;
-
-                            findParcelIterator.m_Bounds = MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, RoadConnectionSystem.MaxDistance);
-                            findParcelIterator.m_EdgeGeometry = edgeGeometry;
-                            findParcelIterator.m_StartGeometry = startNodeGeo;
-                            findParcelIterator.m_EndGeometry = endNodeGeo;
-                            findParcelIterator.m_MinDistance = RoadConnectionSystem.MaxDistance;
-                            findParcelIterator.m_ParcelEntitiesQueue = m_ParcelEntitiesQueue;
-                            findParcelIterator.m_PrefabRefComponentLookup = m_PrefabRefComponentLookup;
-                            findParcelIterator.m_EdgeGeometryComponentLookup = m_EdgeGeometryComponentLookup;
-                            findParcelIterator.m_StartNodeGeometryComponentLookup = m_StartNodeGeometryComponentLookup;
-                            findParcelIterator.m_EndNodeGeometryComponentLookup = m_EndNodeGeometryComponentLookup;
-                            findParcelIterator.m_ParcelDataComponentLookup = m_ParcelDataComponentLookup;
-                            findParcelIterator.m_ParcelComponentLookup = m_ParcelComponentLookup;
-                            findParcelIterator.m_TransformComponentLookup = m_TransformComponentLookup;
-
-                            m_ObjectSearchTree.Iterate<FindParcelNextToRoadIterator>(ref findParcelIterator, 0);
+                    if (chunk.Has<Deleted>(ref m_DeletedTypeHandle)) {
+                        for (var i = 0; i < connectedParcelBufferAccessor.Length; i++) {
+                            var dynamicBuffer = connectedParcelBufferAccessor[i];
+                            for (var j = 0; j < dynamicBuffer.Length; j++) {
+                                var parcel = m_ParcelComponentLookup[dynamicBuffer[j].m_Parcel];
+                                parcel.m_RoadEdge = Entity.Null;
+                                m_ParcelComponentLookup[dynamicBuffer[j].m_Parcel] = parcel;
+                                m_ParcelEntitiesQueue.Enqueue(dynamicBuffer[j].m_Parcel);
+                            }
                         }
 
                         return;
                     }
+
+                    // Handle edge update
+                    var edgeGeoArray = chunk.GetNativeArray<EdgeGeometry>(ref m_EdgeGeometryTypeHandle);
+                    var startNodeGeoArray = chunk.GetNativeArray<StartNodeGeometry>(ref m_StartNodeGeometryTypeHandle);
+                    var endNodeGeoArray = chunk.GetNativeArray<EndNodeGeometry>(ref m_EndNodeGeometryTypeHandle);
+
+                    for (var k = 0; k < edgeGeoArray.Length; k++) {
+                        var edgeGeometry = edgeGeoArray[k];
+                        var startNodeGeo = startNodeGeoArray[k].m_Geometry;
+                        var endNodeGeo = endNodeGeoArray[k].m_Geometry;
+
+                        FindParcelNextToRoadIterator findParcelIterator = default;
+
+                        findParcelIterator.m_Bounds = MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, RoadConnectionSystem.MaxDistance);
+                        findParcelIterator.m_EdgeGeometry = edgeGeometry;
+                        findParcelIterator.m_StartGeometry = startNodeGeo;
+                        findParcelIterator.m_EndGeometry = endNodeGeo;
+                        findParcelIterator.m_MinDistance = RoadConnectionSystem.MaxDistance;
+                        findParcelIterator.m_ParcelEntitiesQueue = m_ParcelEntitiesQueue;
+                        findParcelIterator.m_PrefabRefComponentLookup = m_PrefabRefComponentLookup;
+                        findParcelIterator.m_EdgeGeometryComponentLookup = m_EdgeGeometryComponentLookup;
+                        findParcelIterator.m_StartNodeGeometryComponentLookup = m_StartNodeGeometryComponentLookup;
+                        findParcelIterator.m_EndNodeGeometryComponentLookup = m_EndNodeGeometryComponentLookup;
+                        findParcelIterator.m_ParcelDataComponentLookup = m_ParcelDataComponentLookup;
+                        findParcelIterator.m_ParcelComponentLookup = m_ParcelComponentLookup;
+                        findParcelIterator.m_TransformComponentLookup = m_TransformComponentLookup;
+
+                        m_ObjectSearchTree.Iterate<FindParcelNextToRoadIterator>(ref findParcelIterator, 0);
+                    }
+
+                    return;
                 } else {
                     var parcelEntityArray = chunk.GetNativeArray(m_EntityTypeHandle);
 #if !USE_BURST

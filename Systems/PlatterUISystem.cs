@@ -12,6 +12,7 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Input;
     using Game.Prefabs;
+    using Game.Prefabs.Modes;
     using Game.Tools;
     using Game.UI;
     using Game.Zones;
@@ -34,7 +35,7 @@ namespace Platter.Systems {
         public bool AllowSpawning { get; set; } = true;
 
         // Systems
-        private Game.Prefabs.PrefabSystem m_PrefabSystem;
+        private PrefabSystem m_PrefabSystem;
         private ToolSystem m_ToolSystem;
         private ZoneSystem m_ZoneSystem;
         private ObjectToolSystem m_ObjectToolSystem;
@@ -180,7 +181,7 @@ namespace Platter.Systems {
 
             // Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_ImageSystem = World.GetOrCreateSystemManaged<ImageSystem>();
@@ -340,6 +341,7 @@ namespace Platter.Systems {
                 foreach (var category in sortedCategories) {
                     var categoryEntity = category.entity;
                     var categoryPrefab = m_PrefabSystem.GetPrefab<PrefabBase>(category.prefabData);
+                    m_Log.Debug($"CollectData -- {categoryPrefab.name}");
 
                     if (EntityManager.TryGetBuffer<UIGroupElement>(categoryEntity, true, out var assetsBuffer)) {
                         var assets = UIObjectInfo.GetObjects(EntityManager, assetsBuffer, Allocator.TempJob);

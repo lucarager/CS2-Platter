@@ -61,8 +61,6 @@ namespace Platter.Systems {
 
             var parcelEntities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
 
-            GetBufferLookup<SubBlock>(true);
-
             for (var i = 0; i < parcelEntities.Length; i++) {
                 var parcelEntity = parcelEntities[i];
                 var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);

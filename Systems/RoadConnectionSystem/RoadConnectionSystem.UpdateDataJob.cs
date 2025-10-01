@@ -201,10 +201,15 @@ namespace Platter.Systems {
 
                         parcel.m_CurvePosition = updateData.m_CurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+
+                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
                     }
 
-                    // Make sure we have the icons pop up when no roads are present
                     if (noRoad && !updateData.m_Deleted) {
+                        // Mark parcel as updated
+                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
+
+                        // Make sure we have the icons pop up when no roads are present
                         m_IconCommandBuffer.Add(
                             updateData.m_Parcel,
                             m_TrafficConfigurationData.m_RoadConnectionNotification,

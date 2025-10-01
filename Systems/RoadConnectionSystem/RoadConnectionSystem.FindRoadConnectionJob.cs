@@ -268,7 +268,7 @@ namespace Platter.Systems {
                 /// </summary>
                 /// <param name="edgeEntity">Todo.</param>
                 public void CheckEdge(Entity edgeEntity) {
-                    // Exit early if the edge doesn't have a "Connected Buildings" buffer
+                    // Exit early if the edge doesn't have a "Connected Parcels" buffer
                     if (!m_ConnectedParcelsBufferLookup.HasBuffer(edgeEntity)) {
                         return;
                     }

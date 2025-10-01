@@ -12,7 +12,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    internal partial class SubBlockSerializerSystem : GameSystemBase {
+    internal partial class SerializeSubBlockSystem : GameSystemBase {
         private EntityQuery m_Query;
 
         /// <inheritdoc/>

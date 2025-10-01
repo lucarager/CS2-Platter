@@ -15,6 +15,7 @@ namespace Platter {
     using Game.Prefabs;
     using Game.SceneFlow;
     using Game.Serialization;
+    using Game.Zones;
     using Platter.Components;
     using Platter.Patches;
     using Platter.Settings;
@@ -116,10 +117,12 @@ namespace Platter {
 
             // Patch
             ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
+            ModifySubBlockSerializationSystem(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
 
             // Activate Systems
-            updateSystem.UpdateAt<SubBlockSerializerSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateBefore<PreDeserialize<ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAt<SerializeSubBlockSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAt<SerializeConnectedParcelSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAt<CustomPrefabSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelCreateSystem>(SystemUpdatePhase.Modification3);
@@ -161,14 +164,14 @@ namespace Platter {
             // get original system's EntityQuery
             var queryField = typeof(BuildingInitializeSystem).GetField("m_PrefabQuery", BindingFlags.Instance | BindingFlags.NonPublic);
             if (queryField == null) {
-                log.Error("Could not find m_PrefabQuery for compatibility patching");
+                log.Error("ModifyBuildingSystem() -- Could not find m_PrefabQuery for compatibility patching");
                 return;
             }
 
             var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
 
             if (originalQuery.GetHashCode() == 0) {
-                log.Error("BuildingInitializeSystem was not initialized!");
+                log.Error("ModifyBuildingSystem() -- BuildingInitializeSystem was not initialized!");
             }
 
             var originalQueryDescs = originalQuery.GetEntityQueryDescs();
@@ -199,6 +202,57 @@ namespace Platter {
                 // add EntityQuery to update check
                 originalSystem.RequireForUpdate(modifiedQuery);
             }
+
+            log.Debug("ModifyBuildingSystem() -- Patching complete.");
+        }
+
+        private static void ModifySubBlockSerializationSystem(ComponentSystemBase originalSystem) {
+            var log = LogManager.GetLogger(ModName);
+            log.Debug("ModifySubBlockSerializationSystem()");
+
+            // get original system's EntityQuery
+            var queryField = typeof(SubBlockSystem).GetField("m_Query", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (queryField == null) {
+                log.Error("ModifySubBlockSerializationSystem() -- Could not find m_Query for compatibility patching");
+                return;
+            }
+
+            var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
+
+            if (originalQuery.GetHashCode() == 0) {
+                log.Error("ModifySubBlockSerializationSystem() -- SubBlockSystem was not initialized!");
+            }
+
+            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
+            var componentType = ComponentType.ReadOnly<ParcelOwner>();
+
+            foreach (var originalQueryDesc in originalQueryDescs) {
+                if (originalQueryDesc.None.Contains(componentType)) {
+                    continue;
+                }
+
+                // add Parcel to force vanilla skip all entities with the Parcel component
+                originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
+                var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
+                    "GetEntityQuery",
+                    BindingFlags.Instance | BindingFlags.NonPublic,
+                    null,
+                    CallingConventions.Any,
+                    new Type[] { typeof(EntityQueryDesc[]) },
+                    Array.Empty<ParameterModifier>()
+                 );
+
+                // generate EntityQuery
+                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
+
+                // replace current query to use more restrictive
+                queryField.SetValue(originalSystem, modifiedQuery);
+
+                // add EntityQuery to update check
+                originalSystem.RequireForUpdate(modifiedQuery);
+            }
+
+            log.Debug("ModifySubBlockSerializationSystem() -- Patching complete.");
         }
 
         /// <inheritdoc/>
