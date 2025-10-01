@@ -120,17 +120,15 @@ namespace Platter.Systems {
                     // Either the "new best road" we found is not the one the parcel has stored
                     // or it's a newly created parcel
                     if (roadChanged || parcelHasCreatedComponent) {
-                        if (roadChanged) {
 #if !USE_BURST
+                        if (roadChanged) {
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updating parcel {updateData.m_Parcel} road. {parcel.m_RoadEdge} -> {updateData.m_NewRoad}...");
-#endif
                         }
 
                         if (parcelHasCreatedComponent) {
-#if !USE_BURST
                             PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Updating CREATED parcel {updateData.m_Parcel} with road {updateData.m_NewRoad}...");
-#endif
                         }
+#endif
 
                         // If this is a TEMP entity
                         if (parcelHasTempComponent) {
@@ -169,7 +167,7 @@ namespace Platter.Systems {
                             }
 
                             // Remove old ConnectedParcel
-                            if (parcelHadRoad) {
+                            if (parcelHadRoad && m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
 #if !USE_BURST
                                 PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] UpdateDataJob() -- Parcel had a road - removing {updateData.m_Parcel} from road {parcel.m_RoadEdge}'s ConnectedParcels buffer.");
 #endif

@@ -1,4 +1,4 @@
-﻿// <copyright file="PlatterPrefabSystem.cs" company="Luca Rager">
+﻿// <copyright file="PrefabSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -8,11 +8,9 @@ namespace Platter.Systems {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using Colossal.IO.AssetDatabase.Internal;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Prefabs;
-    using Game.UI;
     using Platter.Components;
     using Platter.Extensions;
     using Platter.Utils;
@@ -23,7 +21,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Todo.
     /// </summary>
-    public partial class PlatterPrefabSystem : GameSystemBase {
+    public partial class CustomPrefabSystem : GameSystemBase {
         /// <summary>
         /// Range of block sizes we support.
         /// <para>x = min width.</para>
@@ -61,7 +59,7 @@ namespace Platter.Systems {
         private Dictionary<PrefabBase, Entity> m_PrefabEntities;
 
         // Systems & References
-        private static PrefabSystem m_PrefabSystem;
+        private static Game.Prefabs.PrefabSystem m_PrefabSystem;
         private static BuildingInitializeSystem m_BuildingInitializeSystem;
 
         // Class State
@@ -103,7 +101,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(PlatterPrefabSystem));
+            m_Log = new PrefixedLogger(nameof(CustomPrefabSystem));
             m_Log.Debug($"OnCreate()");
 
             // Storage
@@ -112,35 +110,44 @@ namespace Platter.Systems {
 
             // Systems
             m_BuildingInitializeSystem = World.GetOrCreateSystemManaged<BuildingInitializeSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
 
             // Override base system
-            var originalQuery = (EntityQuery)m_BuildingInitializeSystem.GetMemberValue("m_PrefabQuery");
-            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            var componentType = ComponentType.ReadOnly<Parcel>();
-            var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
-                "GetEntityQuery",
-                BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                CallingConventions.Any,
-                new Type[] { typeof(EntityQueryDesc[]) },
-                Array.Empty<ParameterModifier>()
-            );
+            //var originalQuery = (EntityQuery)m_BuildingInitializeSystem.GetMemberValue("m_PrefabQuery");
+            //var originalQueryDescs = originalQuery.GetEntityQueryDescs();
+            //var componentType = ComponentType.ReadOnly<Parcel>();
+            //var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
+            //    "GetEntityQuery",
+            //    BindingFlags.Instance | BindingFlags.NonPublic,
+            //    null,
+            //    CallingConventions.Any,
+            //    new Type[] { typeof(EntityQueryDesc[]) },
+            //    Array.Empty<ParameterModifier>()
+            //);
 
-            foreach (var originalQueryDesc in originalQueryDescs) {
-                if (originalQueryDesc.None.Contains(componentType)) {
-                    continue;
-                }
+            //m_Log.Debug($"OnCreate() -- Patching BuildingInitializeSystem m_PrefabQuery.");
 
-                // add Parcel to force vanilla skip all entities with the Parcel component
-                originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
+            //for (var i = 0; i < originalQueryDescs.Length; i++) {
+            //    var originalQueryDesc = originalQueryDescs[i];
 
-                // generate EntityQuery
-                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(m_BuildingInitializeSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
+            //    if (originalQueryDesc.None.Contains(componentType)) {
+            //        continue;
+            //    }
 
-                // add modified EntityQuery to update check
-                m_BuildingInitializeSystem.RequireForUpdate(modifiedQuery);
-            }
+            //    // add Parcel to force vanilla skip all entities with the Parcel component
+            //    originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
+
+            //    // generate EntityQuery
+            //    var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(
+            //        m_BuildingInitializeSystem,
+            //        new object[] { new EntityQueryDesc[] { originalQueryDesc } }
+            //    );
+
+            //    // add modified EntityQuery to update check
+            //    m_BuildingInitializeSystem.RequireForUpdate(modifiedQuery);
+
+            //    m_Log.Debug($"OnCreate() -- Patched building query {i + 1}/{originalQueryDescs.Length}.");
+            //}
         }
 
         protected override void OnUpdate() {}

@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
     using Game.Net;
@@ -23,7 +24,7 @@ namespace Platter.Systems {
         private EntityQuery m_RoadPrefabQuery;
 
         // Systems & References
-        private PrefabSystem m_PrefabSystem;
+        private Game.Prefabs.PrefabSystem m_PrefabSystem;
 
         // Type handles
         private EntityTypeHandle m_EntityTypeHandle;
@@ -38,7 +39,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
 
             // Queries
             m_RoadPrefabCreatedQuery = GetEntityQuery(new EntityQueryDesc {
@@ -92,11 +93,12 @@ namespace Platter.Systems {
             }
         }
 
-        // protected override void OnGamePreload(Purpose purpose, GameMode mode) {
+        /// <inheritdoc/>
+        //protected override void OnGamePreload(Purpose purpose, GameMode mode) {
         //    base.OnGamePreload(purpose, mode);
         //    var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
 
-        // var chunkArray = m_RoadPrefabQuery.ToArchetypeChunkArray(Allocator.TempJob);
+        //    var chunkArray = m_RoadPrefabQuery.ToArchetypeChunkArray(Allocator.TempJob);
         //    foreach (var archetypeChunk in chunkArray) {
         //        var entityArray = archetypeChunk.GetNativeArray(m_EntityTypeHandle);
         //        var prefabDataArray = archetypeChunk.GetNativeArray<PrefabData>(ref m_ComponentTypeHandle);
@@ -105,14 +107,14 @@ namespace Platter.Systems {
         //                var entity = entityArray[i];
         //                var prefab = m_PrefabSystem.GetPrefab<RoadPrefab>(prefabDataArray[i]);
 
-        // if (prefab.m_ZoneBlock != null && !EntityManager.HasBuffer<ConnectedParcel>(entity)) {
+        //                if (prefab.m_ZoneBlock != null && !EntityManager.HasBuffer<ConnectedParcel>(entity)) {
         //                    m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to road entity of prefab {prefab.name}");
         //                    EntityManager.AddBuffer<ConnectedParcel>(entity);
         //                }
         //            }
         //        }
         //    }
-        // }
+        //}
     }
 }
 

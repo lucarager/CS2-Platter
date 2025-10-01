@@ -34,13 +34,13 @@ namespace Platter.Systems {
         public bool AllowSpawning { get; set; } = true;
 
         // Systems
-        private PrefabSystem m_PrefabSystem;
+        private Game.Prefabs.PrefabSystem m_PrefabSystem;
         private ToolSystem m_ToolSystem;
         private ZoneSystem m_ZoneSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private ImageSystem m_ImageSystem;
         private CityConfigurationSystem m_CityConfigurationSystem;
-        private PlatterOverlaySystem m_PlatterOverlaySystem;
+        private OverlaySystem m_PlatterOverlaySystem;
         private ParcelSpawnSystem m_ParcelSpawnSystem;
 
         // Queries
@@ -180,12 +180,12 @@ namespace Platter.Systems {
 
             // Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_ImageSystem = World.GetOrCreateSystemManaged<ImageSystem>();
             m_CityConfigurationSystem = World.GetOrCreateSystemManaged<CityConfigurationSystem>();
-            m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<PlatterOverlaySystem>();
+            m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<OverlaySystem>();
             m_ParcelSpawnSystem = World.GetOrCreateSystemManaged<ParcelSpawnSystem>();
 
             // Data
@@ -311,7 +311,7 @@ namespace Platter.Systems {
         };
 
         private void CollectData() {
-            m_Log.Debug($"CollectData");
+            m_Log.Debug($"CollectData()");
 
             var entities = m_Query.ToEntityArray(Allocator.Temp);
 
@@ -330,7 +330,7 @@ namespace Platter.Systems {
                 ));
                 m_ZoneTypeData.Add(zoneData.m_ZoneType.m_Index, zoneData.m_ZoneType);
             } else {
-                m_Log.Error($"Failed retrieving unzonedPrefabBase");
+                m_Log.Error($"CollectData() -- Failed retrieving unzonedPrefabBase");
             }
 
             foreach (var assetMenuEntity in entities) {
@@ -340,8 +340,6 @@ namespace Platter.Systems {
                 foreach (var category in sortedCategories) {
                     var categoryEntity = category.entity;
                     var categoryPrefab = m_PrefabSystem.GetPrefab<PrefabBase>(category.prefabData);
-
-                    m_Log.Debug($"CollectData -- categoryPrefab.name {categoryPrefab.name}");
 
                     if (EntityManager.TryGetBuffer<UIGroupElement>(categoryEntity, true, out var assetsBuffer)) {
                         var assets = UIObjectInfo.GetObjects(EntityManager, assetsBuffer, Allocator.TempJob);
@@ -364,7 +362,7 @@ namespace Platter.Systems {
                                 zoneData.m_ZoneType.m_Index
                             ));
 
-                            m_Log.Debug($"CollectData -- categoryEntity {categoryPrefab.name} -- asset.name {zonePrefab.name}");
+                            m_Log.Debug($"CollectData -- {categoryPrefab.name} -> {zonePrefab.name}");
                         }
                     }
                 }
@@ -470,7 +468,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void DecreaseBlockWidth() {
-            if (m_SelectedParcelSize.x > PlatterPrefabSystem.BlockSizes.x) {
+            if (m_SelectedParcelSize.x > CustomPrefabSystem.BlockSizes.x) {
                 m_SelectedParcelSize.x -= 1;
             }
 
@@ -482,7 +480,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void IncreaseBlockWidth() {
-            if (m_SelectedParcelSize.x < PlatterPrefabSystem.BlockSizes.z) {
+            if (m_SelectedParcelSize.x < CustomPrefabSystem.BlockSizes.z) {
                 m_SelectedParcelSize.x += 1;
             }
 
@@ -494,7 +492,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void DecreaseBlockDepth() {
-            if (m_SelectedParcelSize.y > PlatterPrefabSystem.BlockSizes.y) {
+            if (m_SelectedParcelSize.y > CustomPrefabSystem.BlockSizes.y) {
                 m_SelectedParcelSize.y -= 1;
             }
 
@@ -506,7 +504,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void IncreaseBlockDepth() {
-            if (m_SelectedParcelSize.y < PlatterPrefabSystem.BlockSizes.w) {
+            if (m_SelectedParcelSize.y < CustomPrefabSystem.BlockSizes.w) {
                 m_SelectedParcelSize.y += 1;
             }
 

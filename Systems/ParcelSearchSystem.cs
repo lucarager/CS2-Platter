@@ -154,6 +154,8 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         public void PreDeserialize(Context context) {
+            m_Log.Debug($"PreDeserialize()");
+
             var staticSearchTree = GetStaticSearchTree(false, out var jobHandle);
             var movingSearchTree = GetMovingSearchTree(false, out var jobHandle2);
             jobHandle.Complete();

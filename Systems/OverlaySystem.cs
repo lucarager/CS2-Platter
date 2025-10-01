@@ -26,15 +26,15 @@ namespace Platter.Systems {
     /// Overlay Rendering System.
     /// <todo>Add culling and burst</todo>
     /// </summary>
-    public partial class PlatterOverlaySystem : GameSystemBase {
+    public partial class OverlaySystem : GameSystemBase {
         /// <summary>
         /// Instance.
         /// </summary>
-        public static PlatterOverlaySystem Instance;
+        public static OverlaySystem Instance;
 
         // Systems & References
         private OverlayRenderSystem m_OverlayRenderSystem;
-        private PrefabSystem m_PrefabSystem;
+        private Game.Prefabs.PrefabSystem m_PrefabSystem;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -71,7 +71,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(PlatterOverlaySystem));
+            m_Log = new PrefixedLogger(nameof(OverlaySystem));
             m_Log.Debug($"OnCreate()");
 
             // Queries
@@ -94,7 +94,7 @@ namespace Platter.Systems {
 
             // Systems & References
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
 
             // Color Data
             m_FillColors = new Dictionary<ZoneType, Color>();
@@ -120,6 +120,8 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
+            m_Log.Debug($"OnGamePreload({purpose}, {mode})");
+
             if (m_FillColors.Count == 0) {
                 m_UpdateColors = true;
             }

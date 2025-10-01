@@ -131,10 +131,6 @@ namespace Platter.Systems {
                         var startNodeGeoArray = chunk.GetNativeArray<StartNodeGeometry>(ref m_StartNodeGeometryTypeHandle);
                         var endNodeGeoArray = chunk.GetNativeArray<EndNodeGeometry>(ref m_EndNodeGeometryTypeHandle);
 
-#if !USE_BURST
-                        PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] CreateEntitiesQueueJob() -- edgeGeoArray {edgeGeoArray.Length} entries.");
-#endif
-
                         for (var k = 0; k < edgeGeoArray.Length; k++) {
                             var edgeGeometry = edgeGeoArray[k];
                             var startNodeGeo = startNodeGeoArray[k].m_Geometry;

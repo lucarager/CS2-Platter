@@ -33,7 +33,7 @@ namespace Platter.Systems {
         private EntityQuery m_ZoneQuery;
 
         // Systems & References
-        private PrefabSystem m_PrefabSystem;
+        private Game.Prefabs.PrefabSystem m_PrefabSystem;
         private ZoneSystem m_ZoneSystem;
         private PlatterUISystem m_PlatterUISystem;
 
@@ -47,7 +47,7 @@ namespace Platter.Systems {
 
             // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_PlatterUISystem = World.GetOrCreateSystemManaged<PlatterUISystem>();
 
@@ -91,10 +91,6 @@ namespace Platter.Systems {
             var currentDefaultPreZone = m_PlatterUISystem.PreZoneType;
             var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawning;
 
-            m_Log.Debug($"OnUpdate() -- currentDefaultPreZone {currentDefaultPreZone}");
-            m_Log.Debug($"OnUpdate() -- currentDefaultAllowSpawn {currentDefaultAllowSpawn}");
-            m_Log.Debug($"OnUpdate() -- Found {entities.Length}");
-
             foreach (var parcelEntity in entities) {
                 if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     return;
@@ -102,18 +98,18 @@ namespace Platter.Systems {
 
                 // DELETE state
                 if (EntityManager.HasComponent<Deleted>(parcelEntity)) {
-                    m_Log.Debug($"OnUpdate() -- [DELETE] Deleting parcel {parcelEntity}");
+                    m_Log.Debug($"OnUpdate() -- [DELETE] Deleting parcel {parcelEntity} with {subBlockBuffer.Length} subBlocks");
 
                     for (var j = 0; j < subBlockBuffer.Length; j++) {
                         var subBlockEntity = subBlockBuffer[j].m_SubBlock;
 
                         // Manually unzone so that we clear underlying vanilla zoning
-                        var cellBuffer = EntityManager.GetBuffer<Cell>(subBlockEntity);
-                        for (var k = 0; k < subBlockBuffer.Length; k++) {
-                            var cell = cellBuffer[k];
-                            cell.m_Zone = ZoneType.None;
-                            cellBuffer[k] = cell;
-                        }
+                        //var cellBuffer = EntityManager.GetBuffer<Cell>(subBlockEntity);
+                        //for (var k = 0; k < subBlockBuffer.Length; k++) {
+                        //    var cell = cellBuffer[k];
+                        //    cell.m_Zone = ZoneType.None;
+                        //    cellBuffer[k] = cell;
+                        //}
 
                         // Mark Blocks for deletion
                         m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);

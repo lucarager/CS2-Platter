@@ -11,8 +11,11 @@ namespace Platter {
     using Colossal.UI;
     using Game;
     using Game.Modding;
+    using Game.Net;
+    using Game.Prefabs;
     using Game.SceneFlow;
     using Game.Serialization;
+    using Platter.Components;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
@@ -22,6 +25,8 @@ namespace Platter {
     using System.Linq;
     using System.Reflection;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Entities;
+    using UnityEngine;
 
     /// <summary>
     /// Mod entry point.
@@ -109,9 +114,13 @@ namespace Platter {
             // Apply input bindings.
             Settings.RegisterKeyBindings();
 
+            // Patch
+            ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
+
             // Activate Systems
+            updateSystem.UpdateAt<SubBlockSerializerSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateBefore<PreDeserialize<ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAt<PlatterPrefabSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAt<CustomPrefabSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<ParcelCreateSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<ParcelSpawnSystem>(SystemUpdatePhase.Modification3);
@@ -122,8 +131,8 @@ namespace Platter {
             updateSystem.UpdateAt<ParcelBlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<PlatterUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<PlatterOverlaySystem>(SystemUpdatePhase.Rendering);
-            updateSystem.UpdateAt<PlatterTooltipSystem>(SystemUpdatePhase.UITooltip);
+            updateSystem.UpdateAt<OverlaySystem>(SystemUpdatePhase.Rendering);
+            updateSystem.UpdateAt<TooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateAt<ParcelSearchSystem>(SystemUpdatePhase.Modification5);
 
             // Experimental Systems
@@ -141,6 +150,55 @@ namespace Platter {
 
             var assemblyPath = Path.GetDirectoryName(modAsset.GetMeta().path);
             UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
+
+            Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
+        }
+
+        private static void ModifyBuildingSystem(ComponentSystemBase originalSystem) {
+            var log = LogManager.GetLogger(ModName);
+            log.Debug("ModifyBuildingSystem()");
+
+            // get original system's EntityQuery
+            var queryField = typeof(BuildingInitializeSystem).GetField("m_PrefabQuery", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (queryField == null) {
+                log.Error("Could not find m_PrefabQuery for compatibility patching");
+                return;
+            }
+
+            var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
+
+            if (originalQuery.GetHashCode() == 0) {
+                log.Error("BuildingInitializeSystem was not initialized!");
+            }
+
+            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
+            var componentType = ComponentType.ReadOnly<Parcel>();
+
+            foreach (var originalQueryDesc in originalQueryDescs) {
+                if (originalQueryDesc.None.Contains(componentType)) {
+                    continue;
+                }
+
+                // add Parcel to force vanilla skip all entities with the Parcel component
+                originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
+                var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
+                    "GetEntityQuery",
+                    BindingFlags.Instance | BindingFlags.NonPublic, 
+                    null,
+                    CallingConventions.Any, 
+                    new Type[] { typeof(EntityQueryDesc[]) }, 
+                    Array.Empty<ParameterModifier>()
+                 );
+
+                // generate EntityQuery
+                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
+
+                // replace current query to use more restrictive
+                queryField.SetValue(originalSystem, modifiedQuery);
+
+                // add EntityQuery to update check
+                originalSystem.RequireForUpdate(modifiedQuery);
+            }
         }
 
         /// <inheritdoc/>

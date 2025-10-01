@@ -68,21 +68,15 @@ namespace Platter.Systems {
                 var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
                 var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
 
-                m_Log.Debug($"OnUpdate() -- Updating references for parcel {parcelEntity}");
-
                 if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find parcel's {parcelEntity} subblock buffer");
                     return;
                 }
 
-                m_Log.Debug($"OnUpdate() -- {parcelEntity} has {subBlockBuffer.Length} subBlocks.");
-
                 for (var j = 0; j < subBlockBuffer.Length; j++) {
                     var subBlock = subBlockBuffer[j];
                     var blockEntity = subBlock.m_SubBlock;
                     var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
-
-                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating CurvePosition to {parcel.m_CurvePosition}.");
 
                     curvePosition.m_CurvePosition = parcel.m_CurvePosition;
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);

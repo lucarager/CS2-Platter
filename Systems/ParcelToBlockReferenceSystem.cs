@@ -31,7 +31,6 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(ParcelToBlockReferenceSystem));
             m_Log.Debug($"OnCreate()");
 
-            // TODO Only do this for blocks that should belong to a parcel, not edges!
             m_ParcelBlockQuery = GetEntityQuery(new EntityQueryDesc[]
             {
                 new () {
@@ -53,8 +52,6 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug($"OnUpdate() -- Setting Block ownership references");
-
             var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
             var subBlockBufferLookup = GetBufferLookup<SubBlock>();
 
@@ -76,9 +73,7 @@ namespace Platter.Systems {
                 if (EntityManager.HasComponent<Created>(blockEntity)) {
                     m_Log.Debug($"OnUpdate() -- Block was CREATED. Adding block reference to parcel.");
 
-                    if (CollectionUtils.TryAddUniqueValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity))) {
-                        m_Log.Debug($"OnUpdate() -- Succesfully added {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
-                    } else {
+                    if (!CollectionUtils.TryAddUniqueValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity))) {
                         m_Log.Error($"OnUpdate() -- Unsuccesfully tried adding {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
                     }
 
@@ -89,7 +84,6 @@ namespace Platter.Systems {
                 m_Log.Debug($"OnUpdate() -- Block was DELETED. Removing block from parcel buffer");
 
                 CollectionUtils.RemoveValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity));
-                m_Log.Debug($"OnUpdate() -- Succesfully deleted {blockEntity} from {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
             }
         }
     }
