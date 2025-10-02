@@ -1,9 +1,12 @@
-﻿// <copyright file="PlatterUISystem.cs" company="Luca Rager">
+﻿// <copyright file="P_UISystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Colossal.Entities;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
@@ -19,9 +22,6 @@ namespace Platter.Systems {
     using Platter.Extensions;
     using Platter.Settings;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;

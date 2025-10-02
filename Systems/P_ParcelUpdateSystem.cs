@@ -1,4 +1,4 @@
-﻿// <copyright file="ParcelUpdateSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_ParcelUpdateSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -89,12 +89,12 @@ namespace Platter.Systems {
                         var subBlockEntity = subBlockBuffer[j].m_SubBlock;
 
                         // Manually unzone so that we clear underlying vanilla zoning
-                        //var cellBuffer = EntityManager.GetBuffer<Cell>(subBlockEntity);
-                        //for (var k = 0; k < subBlockBuffer.Length; k++) {
+                        // var cellBuffer = EntityManager.GetBuffer<Cell>(subBlockEntity);
+                        // for (var k = 0; k < subBlockBuffer.Length; k++) {
                         //    var cell = cellBuffer[k];
                         //    cell.m_Zone = ZoneType.None;
                         //    cellBuffer[k] = cell;
-                        //}
+                        // }
 
                         // Mark Blocks for deletion
                         m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);

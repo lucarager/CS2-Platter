@@ -4,8 +4,8 @@
 // </copyright>
 
 namespace Platter.Settings {
-    using Colossal;
     using System.Collections.Generic;
+    using Colossal;
 
     /// <summary>
     /// Todo.

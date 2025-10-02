@@ -1,4 +1,4 @@
-﻿// <copyright file="PrefabSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_PrefabSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -93,7 +93,10 @@ namespace Platter.Systems {
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
         }
 
-        protected override void OnUpdate() {}
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
+        }
 
         /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
@@ -184,7 +187,8 @@ namespace Platter.Systems {
                     }
                 }
             };
-            //parcelPrefabBase.AddComponentFrom(objectSubAreas);
+
+            // parcelPrefabBase.AddComponentFrom(objectSubAreas);
 
             // Point and populate the new UIObject for our cloned Prefab
             var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
@@ -236,7 +240,7 @@ namespace Platter.Systems {
         }
 
         private bool CreateParcelAreaPrefab(AreaPrefab originalAreaPrefab, NetLanePrefab borderPrefab, out AreaPrefab areaPrefab) {
-            var parecelAreaPrefab = (AreaPrefab) originalAreaPrefab.Clone("Parcel Enclosed Area");
+            var parecelAreaPrefab = (AreaPrefab)originalAreaPrefab.Clone("Parcel Enclosed Area");
 
             var enclosedArea = ScriptableObject.CreateInstance<EnclosedArea>();
             enclosedArea.name = "EnclosedArea";

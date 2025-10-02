@@ -1,4 +1,4 @@
-﻿// <copyright file="SelectedInfoPanelSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_SelectedInfoPanelSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -62,7 +62,7 @@ namespace Platter.Systems {
             visible = CheckEntityEligibility();
 
             if (visible && EntityManager.TryGetComponent<Parcel>(selectedEntity, out var parcel)) {
-                //m_AllowSpawningBinding.Update(parcel.m_AllowSpawning);
+                // m_AllowSpawningBinding.Update(parcel.m_AllowSpawning);
             }
 
             RequestUpdate();

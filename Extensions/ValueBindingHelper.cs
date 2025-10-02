@@ -4,8 +4,8 @@
 // </copyright>
 
 namespace Platter.Extensions {
-    using Colossal.UI.Binding;
     using System;
+    using Colossal.UI.Binding;
 
     public class ValueBindingHelper<T> {
         private readonly Action<T> _updateCallBack;

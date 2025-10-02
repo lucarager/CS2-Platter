@@ -4,10 +4,10 @@
 // </copyright>
 
 namespace Platter.Utils {
+    using System.Collections.Generic;
     using Colossal.Mathematics;
     using Game.Rendering;
     using Platter.Constants;
-    using System.Collections.Generic;
     using Unity.Mathematics;
     using UnityEngine;
     using static Game.Rendering.OverlayRenderSystem;

@@ -1,4 +1,4 @@
-﻿// <copyright file="VanillaRoadInitializeSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_VanillaRoadInitializeSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -87,11 +87,11 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        //protected override void OnGamePreload(Purpose purpose, GameMode mode) {
+        // protected override void OnGamePreload(Purpose purpose, GameMode mode) {
         //    base.OnGamePreload(purpose, mode);
         //    var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
 
-        //    var chunkArray = m_RoadPrefabQuery.ToArchetypeChunkArray(Allocator.TempJob);
+        // var chunkArray = m_RoadPrefabQuery.ToArchetypeChunkArray(Allocator.TempJob);
         //    foreach (var archetypeChunk in chunkArray) {
         //        var entityArray = archetypeChunk.GetNativeArray(m_EntityTypeHandle);
         //        var prefabDataArray = archetypeChunk.GetNativeArray<PrefabData>(ref m_ComponentTypeHandle);
@@ -100,14 +100,14 @@ namespace Platter.Systems {
         //                var entity = entityArray[i];
         //                var prefab = m_PrefabSystem.GetPrefab<RoadPrefab>(prefabDataArray[i]);
 
-        //                if (prefab.m_ZoneBlock != null && !EntityManager.HasBuffer<ConnectedParcel>(entity)) {
+        // if (prefab.m_ZoneBlock != null && !EntityManager.HasBuffer<ConnectedParcel>(entity)) {
         //                    m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to road entity of prefab {prefab.name}");
         //                    EntityManager.AddBuffer<ConnectedParcel>(entity);
         //                }
         //            }
         //        }
         //    }
-        //}
+        // }
     }
 }
 

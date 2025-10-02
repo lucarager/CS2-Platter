@@ -4,6 +4,11 @@
 // </copyright>
 
 namespace Platter {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
     using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
@@ -20,11 +25,6 @@ namespace Platter {
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using UnityEngine;
@@ -139,10 +139,10 @@ namespace Platter {
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
 
             // Experimental Systems
-            //updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
-            //updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
-            //updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
-            //updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
+            // updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
+            // updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
+            // updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
+            // updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
 
             // Add mod UI resource directory to UI resource handler.
             var assemblyName = Assembly.GetExecutingAssembly().FullName;
@@ -186,10 +186,10 @@ namespace Platter {
                 originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
                 var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
                     "GetEntityQuery",
-                    BindingFlags.Instance | BindingFlags.NonPublic, 
+                    BindingFlags.Instance | BindingFlags.NonPublic,
                     null,
-                    CallingConventions.Any, 
-                    new Type[] { typeof(EntityQueryDesc[]) }, 
+                    CallingConventions.Any,
+                    new Type[] { typeof(EntityQueryDesc[]) },
                     Array.Empty<ParameterModifier>()
                  );
 
