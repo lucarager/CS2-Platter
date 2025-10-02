@@ -52,16 +52,16 @@ namespace Platter.Systems {
                 ComponentType.ReadOnly<UnderConstruction>(),
                 ComponentType.Exclude<Destroyed>(),
                 ComponentType.Exclude<Deleted>(),
-                ComponentType.Exclude<Temp>()
+                ComponentType.Exclude<Temp>(),
             });
 
             m_ParcelQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>()
+                        ComponentType.ReadOnly<Parcel>(),
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>()
+                        ComponentType.ReadOnly<Temp>(),
                     },
             });
 
@@ -110,7 +110,7 @@ namespace Platter.Systems {
 
                 var parcelBuffer = EntityManager.AddBuffer<ConnectedParcel>(entity);
                 parcelBuffer.Add(new ConnectedParcel() {
-                    m_Parcel = parcel
+                    m_Parcel = parcel,
                 });
 
                 m_Log.Debug($"OnUpdate() -- Processing entity {entity} out of {entities.Length}");

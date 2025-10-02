@@ -46,11 +46,11 @@ namespace Platter.Systems {
             m_ParcelCreatedQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>()
+                        ComponentType.ReadOnly<Parcel>(),
                     },
                     Any = new ComponentType[] {
                         ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadOnly<Temp>()
+                        ComponentType.ReadOnly<Temp>(),
                     },
                     None = new ComponentType[] {
                         ComponentType.ReadOnly<Updated>(),

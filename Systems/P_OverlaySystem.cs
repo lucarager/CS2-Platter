@@ -78,7 +78,7 @@ namespace Platter.Systems {
             m_ParcelQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>()
+                        ComponentType.ReadOnly<Parcel>(),
                     },
                     None = new ComponentType[] {
                         ComponentType.ReadOnly<Deleted>(),
@@ -89,7 +89,7 @@ namespace Platter.Systems {
             {
                 ComponentType.ReadOnly<ZoneData>(),
                 ComponentType.ReadOnly<PrefabData>(),
-                ComponentType.Exclude<Deleted>()
+                ComponentType.Exclude<Deleted>(),
             });
 
             // Systems & References
@@ -175,17 +175,28 @@ namespace Platter.Systems {
         }
 
         protected struct DrawOverlaysJob : IJobChunk {
-            [ReadOnly] public OverlayRenderSystem.Buffer m_OverlayRenderBuffer;
-            [ReadOnly] public float3 m_CameraPosition;
-            [ReadOnly] public NativeHashMap<ZoneType, Color> m_ColorArray;
-            [ReadOnly] public EntityTypeHandle m_EntityTypeHandle;
-            [ReadOnly] public ComponentTypeHandle<Game.Objects.Transform> m_TransformComponentTypeHandle;
-            [ReadOnly] public ComponentTypeHandle<PrefabRef> m_PrefabRefComponentTypeHandle;
-            [ReadOnly] public ComponentTypeHandle<Parcel> m_ParcelComponentTypeHandle;
-            [ReadOnly] public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-            [ReadOnly] public ComponentLookup<ObjectGeometryData> m_ObjectGeometryComponentLookup;
-            [ReadOnly] public ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
-            [ReadOnly] public ComponentLookup<Temp> m_TempComponentLookup;
+            [ReadOnly]
+            public OverlayRenderSystem.Buffer m_OverlayRenderBuffer;
+            [ReadOnly]
+            public float3 m_CameraPosition;
+            [ReadOnly]
+            public NativeHashMap<ZoneType, Color> m_ColorArray;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<Game.Objects.Transform> m_TransformComponentTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<PrefabRef> m_PrefabRefComponentTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<Parcel> m_ParcelComponentTypeHandle;
+            [ReadOnly]
+            public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<ObjectGeometryData> m_ObjectGeometryComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Temp> m_TempComponentLookup;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {

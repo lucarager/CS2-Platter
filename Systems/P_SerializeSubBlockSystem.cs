@@ -21,7 +21,7 @@ namespace Platter.Systems {
             m_Query = base.GetEntityQuery(new ComponentType[]
             {
                 ComponentType.ReadOnly<Block>(),
-                ComponentType.ReadOnly<ParcelOwner>()
+                ComponentType.ReadOnly<ParcelOwner>(),
             });
             base.RequireForUpdate(m_Query);
         }
@@ -39,8 +39,10 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct SubBlockJob : IJobChunk {
-            [ReadOnly] public EntityTypeHandle m_EntityType;
-            [ReadOnly] public ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
             public BufferLookup<SubBlock> m_SubBlocksBufferLookup;
 
             public void Execute(in ArchetypeChunk chunk) {

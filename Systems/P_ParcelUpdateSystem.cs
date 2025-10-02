@@ -59,10 +59,10 @@ namespace Platter.Systems {
                     },
                     Any = new ComponentType[] {
                         ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>()
+                        ComponentType.ReadOnly<Deleted>(),
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>()
+                        ComponentType.ReadOnly<Temp>(),
                     },
                 });
 

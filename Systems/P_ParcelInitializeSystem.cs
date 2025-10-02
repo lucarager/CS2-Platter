@@ -44,8 +44,8 @@ namespace Platter.Systems {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<PrefabData>(),
                         ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadWrite<ParcelData>()
-                    }
+                        ComponentType.ReadWrite<ParcelData>(),
+                    },
                 });
 
             // Update Cycle

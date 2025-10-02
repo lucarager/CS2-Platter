@@ -78,7 +78,7 @@ namespace Platter {
             Log.Info($"[Platter] Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
             // Initialize Settings
-            Settings = new(this);
+            Settings = new (this);
 
             // Load i18n
             GameManager.instance.localizationManager.AddSource("en-US", new I18nConfig(Settings));
@@ -285,7 +285,7 @@ namespace Platter {
                             Log.Debug($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
-                            using System.IO.StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
+                            using System.IO.StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
                             {
                                 var entireFile = reader.ReadToEnd();
                                 var varient = Colossal.Json.JSON.Load(entireFile);

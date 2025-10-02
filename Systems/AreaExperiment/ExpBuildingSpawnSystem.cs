@@ -48,7 +48,7 @@ namespace Platter.Systems {
                     Any = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<BatchesUpdated>()
+                        ComponentType.ReadOnly<BatchesUpdated>(),
                     },
                     None = new ComponentType[] {
                         ComponentType.ReadOnly<Temp>(),

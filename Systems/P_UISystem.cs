@@ -53,7 +53,7 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Data
-        private int2 m_SelectedParcelSize = new(2, 2);
+        private int2 m_SelectedParcelSize = new (2, 2);
         private List<ZoneUIData> m_ZoneData;
         private Dictionary<int, ZoneType> m_ZoneTypeData;
         private List<Entity> m_SelectedThemes;
@@ -153,15 +153,15 @@ namespace Platter.Systems {
             // Logger
             m_Log = new PrefixedLogger(nameof(P_UISystem));
             m_Log.Debug($"OnCreate()");
-            m_ZoneData = new();
-            m_ZoneTypeData = new();
+            m_ZoneData = new ();
+            m_ZoneTypeData = new ();
 
             // Queries
             m_ZoneQuery = GetEntityQuery(new ComponentType[]
             {
                 ComponentType.ReadOnly<ZoneData>(),
                 ComponentType.ReadOnly<PrefabData>(),
-                ComponentType.Exclude<Deleted>()
+                ComponentType.Exclude<Deleted>(),
             });
 
             m_Query = GetEntityQuery(new ComponentType[] {
@@ -196,7 +196,7 @@ namespace Platter.Systems {
             m_ZoneBinding = CreateBinding<int>("ZONE", 0, SetPreZone);
             m_BlockWidthBinding = CreateBinding<int>("BLOCK_WIDTH", 2);
             m_BlockDepthBinding = CreateBinding<int>("BLOCK_DEPTH", 2);
-            PrefabUIData defaultParcel = new("Parcel 2x2", "coui://platter/Parcel_2x2.svg");
+            PrefabUIData defaultParcel = new ("Parcel 2x2", "coui://platter/Parcel_2x2.svg");
             m_PrefabDataBinding = CreateBinding<PrefabUIData>("PREFAB_DATA", defaultParcel);
             m_ZoneDataBinding = CreateBinding<ZoneUIData[]>("ZONE_DATA", m_ZoneData.ToArray());
             m_RenderParcelsBinding = CreateBinding<bool>("RENDER_PARCELS", true, SetRenderParcels);

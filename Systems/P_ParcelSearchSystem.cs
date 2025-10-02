@@ -50,7 +50,7 @@ namespace Platter.Systems {
             // Queries
             m_UpdatedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
-                new() {
+                new () {
                     All = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Parcel>(),
@@ -58,17 +58,17 @@ namespace Platter.Systems {
                     Any = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>()
+                        ComponentType.ReadOnly<Deleted>(),
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>()
-                    }
-                }
+                        ComponentType.ReadOnly<Temp>(),
+                    },
+                },
             });
             m_AllQuery = GetEntityQuery(new ComponentType[]
             {
                 ComponentType.ReadOnly<Parcel>(),
-                ComponentType.Exclude<Temp>()
+                ComponentType.Exclude<Temp>(),
             });
             m_StaticSearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
             m_MovingSearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
@@ -169,16 +169,26 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct UpdateSearchTreeJob : IJobChunk {
-            [ReadOnly] public EntityTypeHandle m_EntityType;
-            [ReadOnly] public ComponentTypeHandle<Owner> m_OwnerType;
-            [ReadOnly] public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
-            [ReadOnly] public ComponentTypeHandle<PrefabRef> m_PrefabRefType;
-            [ReadOnly] public ComponentTypeHandle<Created> m_CreatedType;
-            [ReadOnly] public ComponentTypeHandle<Deleted> m_DeletedType;
-            [ReadOnly] public ComponentTypeHandle<Overridden> m_OverriddenType;
-            [ReadOnly] public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
-            [ReadOnly] public bool m_EditorMode;
-            [ReadOnly] public bool m_FirstLoad;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<Owner> m_OwnerType;
+            [ReadOnly]
+            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
+            [ReadOnly]
+            public ComponentTypeHandle<PrefabRef> m_PrefabRefType;
+            [ReadOnly]
+            public ComponentTypeHandle<Created> m_CreatedType;
+            [ReadOnly]
+            public ComponentTypeHandle<Deleted> m_DeletedType;
+            [ReadOnly]
+            public ComponentTypeHandle<Overridden> m_OverriddenType;
+            [ReadOnly]
+            public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
+            [ReadOnly]
+            public bool m_EditorMode;
+            [ReadOnly]
+            public bool m_FirstLoad;
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
 
             public void Execute(in ArchetypeChunk chunk) {

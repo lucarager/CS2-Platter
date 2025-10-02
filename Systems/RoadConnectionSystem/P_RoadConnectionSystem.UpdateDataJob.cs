@@ -37,32 +37,38 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
+            [ReadOnly]
+            public NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Created> m_CreatedComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Created> m_CreatedComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Temp> m_TempComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Temp> m_TempComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public BufferLookup<SubBlock> m_SubBlockBufferLookup;
+            [ReadOnly]
+            public BufferLookup<SubBlock> m_SubBlockBufferLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public TrafficConfigurationData m_TrafficConfigurationData;
+            [ReadOnly]
+            public TrafficConfigurationData m_TrafficConfigurationData;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Edge> m_EdgeComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Edge> m_EdgeComponentLookup;
 
             /// <summary>
             /// todo.
@@ -174,7 +180,7 @@ namespace Platter.Systems {
                             parcel.m_CurvePosition = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
-                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
+                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new ());
 
                             if (parcelHasNewRoad) {
 #if !USE_BURST
@@ -197,12 +203,12 @@ namespace Platter.Systems {
                         parcel.m_CurvePosition = updateData.m_CurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
-                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
+                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new ());
                     }
 
                     if (noRoad && !updateData.m_Deleted) {
                         // Mark parcel as updated
-                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
+                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new ());
 
                         // Make sure we have the icons pop up when no roads are present
                         m_IconCommandBuffer.Add(

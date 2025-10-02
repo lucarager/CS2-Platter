@@ -8,8 +8,6 @@ namespace Platter.Extensions {
     using Colossal.UI.Binding;
 
     public class ValueBindingHelper<T> {
-        private readonly Action<T> _updateCallBack;
-
         public ValueBinding<T> Binding {
             get;
         }
@@ -36,5 +34,7 @@ namespace Platter.Extensions {
         public static implicit operator T(ValueBindingHelper<T> helper) {
             return helper.Binding.value;
         }
+
+        private readonly Action<T> _updateCallBack;
     }
 }

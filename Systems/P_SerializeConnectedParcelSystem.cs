@@ -39,8 +39,10 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct DeserializeJob : IJobChunk {
-            [ReadOnly] public EntityTypeHandle m_EntityType;
-            [ReadOnly] public ComponentTypeHandle<Parcel> m_ParcelType;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<Parcel> m_ParcelType;
             public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
             public void Execute(in ArchetypeChunk chunk) {

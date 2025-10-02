@@ -76,33 +76,33 @@ namespace Platter.Systems {
                     Any = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>()
+                        ComponentType.ReadOnly<Deleted>(),
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>()
-                    }
+                        ComponentType.ReadOnly<Temp>(),
+                    },
                 },
                 new () {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Game.Net.Edge>(),
-                        ComponentType.ReadOnly<ConnectedParcel>()
+                        ComponentType.ReadOnly<ConnectedParcel>(),
                     },
                     Any = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>()
+                        ComponentType.ReadOnly<Deleted>(),
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>()
-                    }
-                }
+                        ComponentType.ReadOnly<Temp>(),
+                    },
+                },
             });
 
             m_UpdatedNetQuery = GetEntityQuery(new EntityQueryDesc[] {
                 new () {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Game.Net.Edge>(),
-                        ComponentType.ReadOnly<ConnectedParcel>()
+                        ComponentType.ReadOnly<ConnectedParcel>(),
                     },
                     Any = new ComponentType[]
                     {
@@ -110,13 +110,13 @@ namespace Platter.Systems {
                         ComponentType.ReadOnly<Updated>(),
                     },
                     None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>()
-                    }
-                }
+                        ComponentType.ReadOnly<Temp>(),
+                    },
+                },
             });
 
             m_TrafficConfigQuery = base.GetEntityQuery(new ComponentType[] {
-                ComponentType.ReadOnly<TrafficConfigurationData>()
+                ComponentType.ReadOnly<TrafficConfigurationData>(),
             });
 
             RequireForUpdate(m_ModificationQuery);

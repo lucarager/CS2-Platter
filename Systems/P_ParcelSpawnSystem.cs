@@ -40,9 +40,9 @@ namespace Platter.Systems {
                     None = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Deleted>(),
-                        ComponentType.ReadOnly<Temp>()
-                    }
-                }
+                        ComponentType.ReadOnly<Temp>(),
+                    },
+                },
             });
 
             m_DisabledQuery = GetEntityQuery(new EntityQueryDesc[]
@@ -56,9 +56,9 @@ namespace Platter.Systems {
                     {
                         ComponentType.ReadOnly<ParcelSpawnable>(),
                         ComponentType.ReadOnly<Deleted>(),
-                        ComponentType.ReadOnly<Temp>()
-                    }
-                }
+                        ComponentType.ReadOnly<Temp>(),
+                    },
+                },
             });
         }
 

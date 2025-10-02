@@ -29,7 +29,7 @@ namespace Platter.Systems {
         /// <para>z = max width.</para>
         /// <para>w = max width.</para>
         /// </summary>
-        public static readonly int4 BlockSizes = new(2, 2, 6, 6);
+        public static readonly int4 BlockSizes = new (2, 2, 6, 6);
 
         /// <summary>
         /// Todo.
@@ -44,7 +44,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
+        private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new () {
             { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
             { "road", new PrefabID("RoadPrefab", "Alley") },
             { "uiAssetCategory", new PrefabID("UIAssetCategoryPrefab", "ZonesOffice") },
@@ -184,8 +184,8 @@ namespace Platter.Systems {
                          -1,
                          0,
                          0,
-                    }
-                }
+                    },
+                },
             };
 
             // parcelPrefabBase.AddComponentFrom(objectSubAreas);

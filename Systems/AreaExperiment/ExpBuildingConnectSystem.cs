@@ -50,7 +50,7 @@ namespace Platter.Systems {
                     {
                         ComponentType.ReadOnly<Created>(),
                         ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<BatchesUpdated>()
+                        ComponentType.ReadOnly<BatchesUpdated>(),
                     },
                     None = new ComponentType[] {
                         ComponentType.ReadOnly<ConnectedParcel>(),

@@ -40,7 +40,7 @@ namespace Platter.Systems {
             m_ParcelUpdatedQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>()
+                        ComponentType.ReadOnly<Parcel>(),
                     },
                     Any = new ComponentType[] {
                         ComponentType.ReadOnly<Updated>(),

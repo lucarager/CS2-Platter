@@ -37,72 +37,86 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public EntityTypeHandle m_EntityTypeHandle;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public BufferTypeHandle<ConnectedParcel> m_ConnectedParcelBufferTypeHandle;
+            [ReadOnly]
+            public BufferTypeHandle<ConnectedParcel> m_ConnectedParcelBufferTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentTypeHandle<EdgeGeometry> m_EdgeGeometryTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<EdgeGeometry> m_EdgeGeometryTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentTypeHandle<StartNodeGeometry> m_StartNodeGeometryTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<StartNodeGeometry> m_StartNodeGeometryTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentTypeHandle<EndNodeGeometry> m_EndNodeGeometryTypeHandle;
+            [ReadOnly]
+            public ComponentTypeHandle<EndNodeGeometry> m_EndNodeGeometryTypeHandle;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ObjectSearchTree;
+            [ReadOnly]
+            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ObjectSearchTree;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<EdgeGeometry> m_EdgeGeometryComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<EdgeGeometry> m_EdgeGeometryComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Parcel> m_ParcelComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Parcel> m_ParcelComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Transform> m_TransformComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Transform> m_TransformComponentLookup;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {

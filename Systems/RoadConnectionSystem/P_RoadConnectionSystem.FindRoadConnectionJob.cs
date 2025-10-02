@@ -37,72 +37,86 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Deleted> m_DeletedDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Deleted> m_DeletedDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Transform> m_TransformComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Transform> m_TransformComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
+            [ReadOnly]
+            public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Curve> m_CurveDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Curve> m_CurveDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<Composition> m_CompositionDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<Composition> m_CompositionDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
+            [ReadOnly]
+            public ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
+            [ReadOnly]
+            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeList<ArchetypeChunk> m_UpdatedNetChunks;
+            [ReadOnly]
+            public NativeList<ArchetypeChunk> m_UpdatedNetChunks;
 
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public EntityTypeHandle m_EntityTypeHandle;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityTypeHandle;
 
             /// <inheritdoc/>
             public void Execute(int index) {

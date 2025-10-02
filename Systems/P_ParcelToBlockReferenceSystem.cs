@@ -37,14 +37,14 @@ namespace Platter.Systems {
                     All = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Block>(),
-                        ComponentType.ReadOnly<ParcelOwner>()
+                        ComponentType.ReadOnly<ParcelOwner>(),
                     },
                     Any = new ComponentType[]
                     {
                         ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadOnly<Deleted>()
-                    }
-                }
+                        ComponentType.ReadOnly<Deleted>(),
+                    },
+                },
             });
 
             RequireForUpdate(m_ParcelBlockQuery);
