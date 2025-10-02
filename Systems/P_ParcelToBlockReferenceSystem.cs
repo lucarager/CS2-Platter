@@ -53,7 +53,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
-            var subBlockBufferLookup = SystemAPI.GetBufferLookup<SubBlock>();
+            var subBlockBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>();
 
             for (var i = 0; i < blockEntities.Length; i++) {
                 var blockEntity = blockEntities[i];
@@ -73,7 +73,7 @@ namespace Platter.Systems {
                 if (EntityManager.HasComponent<Created>(blockEntity)) {
                     m_Log.Debug($"OnUpdate() -- Block was CREATED. Adding block reference to parcel.");
 
-                    if (!CollectionUtils.TryAddUniqueValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity))) {
+                    if (!CollectionUtils.TryAddUniqueValue<ParcelSubBlock>(subBlockBuffer, new ParcelSubBlock(blockEntity))) {
                         m_Log.Error($"OnUpdate() -- Unsuccesfully tried adding {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
                     }
 
@@ -83,7 +83,7 @@ namespace Platter.Systems {
                 // Todo is this needed? The parcel will be destroyed, too.
                 m_Log.Debug($"OnUpdate() -- Block was DELETED. Removing block from parcel buffer");
 
-                CollectionUtils.RemoveValue<SubBlock>(subBlockBuffer, new SubBlock(blockEntity));
+                CollectionUtils.RemoveValue<ParcelSubBlock>(subBlockBuffer, new ParcelSubBlock(blockEntity));
             }
         }
     }

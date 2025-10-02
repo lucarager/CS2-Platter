@@ -115,10 +115,6 @@ namespace Platter {
             // Apply input bindings.
             Settings.RegisterKeyBindings();
 
-            // Patch
-            ModifyBuildingSystem(updateSystem.World.GetOrCreateSystemManaged<BuildingInitializeSystem>());
-            ModifySubBlockSerializationSystem(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
-
             // Activate Systems
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAt<P_SerializeSubBlockSystem>(SystemUpdatePhase.Deserialize);
@@ -155,104 +151,6 @@ namespace Platter {
             UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
 
             Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
-        }
-
-        private static void ModifyBuildingSystem(ComponentSystemBase originalSystem) {
-            var log = LogManager.GetLogger(ModName);
-            log.Debug("ModifyBuildingSystem()");
-
-            // get original system's EntityQuery
-            var queryField = typeof(BuildingInitializeSystem).GetField("m_PrefabQuery", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (queryField == null) {
-                log.Error("ModifyBuildingSystem() -- Could not find m_PrefabQuery for compatibility patching");
-                return;
-            }
-
-            var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
-
-            if (originalQuery.GetHashCode() == 0) {
-                log.Error("ModifyBuildingSystem() -- BuildingInitializeSystem was not initialized!");
-            }
-
-            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            var componentType = ComponentType.ReadOnly<Parcel>();
-
-            foreach (var originalQueryDesc in originalQueryDescs) {
-                if (originalQueryDesc.None.Contains(componentType)) {
-                    continue;
-                }
-
-                // add Parcel to force vanilla skip all entities with the Parcel component
-                originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
-                var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
-                    "GetEntityQuery",
-                    BindingFlags.Instance | BindingFlags.NonPublic,
-                    null,
-                    CallingConventions.Any,
-                    new Type[] { typeof(EntityQueryDesc[]) },
-                    Array.Empty<ParameterModifier>()
-                 );
-
-                // generate EntityQuery
-                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
-
-                // replace current query to use more restrictive
-                queryField.SetValue(originalSystem, modifiedQuery);
-
-                // add EntityQuery to update check
-                originalSystem.RequireForUpdate(modifiedQuery);
-            }
-
-            log.Debug("ModifyBuildingSystem() -- Patching complete.");
-        }
-
-        private static void ModifySubBlockSerializationSystem(ComponentSystemBase originalSystem) {
-            var log = LogManager.GetLogger(ModName);
-            log.Debug("ModifySubBlockSerializationSystem()");
-
-            // get original system's EntityQuery
-            var queryField = typeof(SubBlockSystem).GetField("m_Query", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (queryField == null) {
-                log.Error("ModifySubBlockSerializationSystem() -- Could not find m_Query for compatibility patching");
-                return;
-            }
-
-            var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
-
-            if (originalQuery.GetHashCode() == 0) {
-                log.Error("ModifySubBlockSerializationSystem() -- SubBlockSystem was not initialized!");
-            }
-
-            var originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            var componentType = ComponentType.ReadOnly<ParcelOwner>();
-
-            foreach (var originalQueryDesc in originalQueryDescs) {
-                if (originalQueryDesc.None.Contains(componentType)) {
-                    continue;
-                }
-
-                // add Parcel to force vanilla skip all entities with the Parcel component
-                originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
-                var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
-                    "GetEntityQuery",
-                    BindingFlags.Instance | BindingFlags.NonPublic,
-                    null,
-                    CallingConventions.Any,
-                    new Type[] { typeof(EntityQueryDesc[]) },
-                    Array.Empty<ParameterModifier>()
-                 );
-
-                // generate EntityQuery
-                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
-
-                // replace current query to use more restrictive
-                queryField.SetValue(originalSystem, modifiedQuery);
-
-                // add EntityQuery to update check
-                originalSystem.RequireForUpdate(modifiedQuery);
-            }
-
-            log.Debug("ModifySubBlockSerializationSystem() -- Patching complete.");
         }
 
         /// <inheritdoc/>

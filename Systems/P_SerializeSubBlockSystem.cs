@@ -28,22 +28,24 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var subBlockJob = default(SubBlockJob);
-            subBlockJob.m_EntityType = SystemAPI.GetEntityTypeHandle();
-            subBlockJob.m_ParcelOwnerType = SystemAPI.GetComponentTypeHandle<ParcelOwner>();
-            subBlockJob.m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<SubBlock>();
-            base.Dependency = subBlockJob.Schedule(m_Query, base.Dependency);
+            var subBlockJob = new SerializeJob() {
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                m_ParcelOwnerType = SystemAPI.GetComponentTypeHandle<ParcelOwner>(),
+                m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(),
+            }.Schedule(m_Query, base.Dependency);
+
+            base.Dependency = subBlockJob;
         }
 
 #if USE_BURST
         [BurstCompile]
 #endif
-        private struct SubBlockJob : IJobChunk {
+        private struct SerializeJob : IJobChunk {
             [ReadOnly]
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
             public ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
-            public BufferLookup<SubBlock> m_SubBlocksBufferLookup;
+            public BufferLookup<ParcelSubBlock> m_SubBlocksBufferLookup;
 
             public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
@@ -51,7 +53,7 @@ namespace Platter.Systems {
                 for (var i = 0; i < parcelOwnerArray.Length; i++) {
                     var blockEntity = entityArray[i];
                     var parcelOwner = parcelOwnerArray[i];
-                    m_SubBlocksBufferLookup[parcelOwner.m_Owner].Add(new SubBlock(blockEntity));
+                    m_SubBlocksBufferLookup[parcelOwner.m_Owner].Add(new ParcelSubBlock(blockEntity));
                 }
             }
 

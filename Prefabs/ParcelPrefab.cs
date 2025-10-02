@@ -70,11 +70,8 @@ namespace Game.Prefabs {
             components.Add(ComponentType.ReadWrite<ParcelData>());
             components.Add(ComponentType.ReadWrite<PlaceableObjectData>());
 
-            // Making it a "building" fixes snapping
-            // components.Add(ComponentType.ReadWrite<BuildingData>());
-
             // Experimental
-            components.Add(ComponentType.ReadWrite<ObjectSubAreas>());
+            // components.Add(ComponentType.ReadWrite<ObjectSubAreas>());
         }
 
         /// <inheritdoc/>
@@ -83,7 +80,7 @@ namespace Game.Prefabs {
 
             components.Add(ComponentType.ReadWrite<Parcel>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
-            components.Add(ComponentType.ReadWrite<SubBlock>());
+            components.Add(ComponentType.ReadWrite<ParcelSubBlock>());
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Platter.Systems {
                 new EntityQueryDesc {
                     All = new ComponentType[] {
                         ComponentType.ReadOnly<Parcel>(),
-                        ComponentType.ReadOnly<SubBlock>(),
+                        ComponentType.ReadOnly<ParcelSubBlock>(),
                     },
                     Any = new ComponentType[] {
                         ComponentType.ReadOnly<Updated>(),
@@ -77,7 +77,7 @@ namespace Platter.Systems {
             var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawning;
 
             foreach (var parcelEntity in entities) {
-                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
+                if (!EntityManager.TryGetBuffer<ParcelSubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     return;
                 }
 

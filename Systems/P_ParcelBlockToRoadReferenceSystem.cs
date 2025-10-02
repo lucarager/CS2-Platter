@@ -66,7 +66,7 @@ namespace Platter.Systems {
                 var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
                 var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
 
-                if (!EntityManager.TryGetBuffer<SubBlock>(parcelEntity, false, out var subBlockBuffer)) {
+                if (!EntityManager.TryGetBuffer<ParcelSubBlock>(parcelEntity, false, out var subBlockBuffer)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find parcel's {parcelEntity} subblock buffer");
                     return;
                 }

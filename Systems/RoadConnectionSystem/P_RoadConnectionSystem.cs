@@ -201,7 +201,7 @@ namespace Platter.Systems {
                 m_ParcelComponentLookup = SystemAPI.GetComponentLookup<Parcel>(false),
                 m_CreatedComponentLookup = SystemAPI.GetComponentLookup<Created>(true),
                 m_TempComponentLookup = SystemAPI.GetComponentLookup<Temp>(true),
-                m_SubBlockBufferLookup = SystemAPI.GetBufferLookup<SubBlock>(false),
+                m_SubBlockBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
                 m_ConnectedParcelsBufferLookup = SystemAPI.GetBufferLookup<ConnectedParcel>(),
                 m_ParcelEntitiesList = parcelEntitiesList,
                 m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer(),

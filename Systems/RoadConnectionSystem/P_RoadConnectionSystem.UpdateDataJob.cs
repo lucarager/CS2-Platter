@@ -56,7 +56,7 @@ namespace Platter.Systems {
             /// todo.
             /// </summary>
             [ReadOnly]
-            public BufferLookup<SubBlock> m_SubBlockBufferLookup;
+            public BufferLookup<ParcelSubBlock> m_SubBlockBufferLookup;
 
             /// <summary>
             /// todo.
