@@ -15,7 +15,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    public partial class VanillaRoadInitializeSystem : GameSystemBase {
+    public partial class P_VanillaRoadInitializeSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -35,7 +35,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(VanillaRoadInitializeSystem));
+            m_Log = new PrefixedLogger(nameof(P_VanillaRoadInitializeSystem));
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems

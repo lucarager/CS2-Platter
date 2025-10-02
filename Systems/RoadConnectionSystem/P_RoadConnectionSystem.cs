@@ -25,7 +25,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// todo.
         /// </summary>
@@ -40,25 +40,16 @@ namespace Platter.Systems {
         private EntityQuery m_TrafficConfigQuery;
 
         // Systems & References
-        private ParcelSearchSystem m_ParcelSearchSystem;
+        private P_ParcelSearchSystem m_ParcelSearchSystem;
         private ModificationBarrier4B m_ModificationBarrier;
         private Game.Net.SearchSystem m_NetSearchSystem;
         private IconCommandSystem m_IconCommandSystem;
 
-        // Typehandles
-        private EntityTypeHandle m_EntityTypeHandle;
-        private ComponentTypeHandle<EdgeGeometry> m_EdgeGeometryTypeHandle;
-        private ComponentTypeHandle<StartNodeGeometry> m_StartNodeGeometryTypeHandle;
-        private ComponentTypeHandle<EndNodeGeometry> m_EndNodeGeometryTypeHandle;
-        private ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
-
-        private BufferTypeHandle<ConnectedParcel> m_ConnectedParcelBufferTypeHandle;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="RoadConnectionSystem"/> class.
+        /// Initializes a new instance of the <see cref="P_RoadConnectionSystem"/> class.
         /// </summary>
         [Preserve]
-        public RoadConnectionSystem() {
+        public P_RoadConnectionSystem() {
         }
 
         /// <inheritdoc/>
@@ -66,11 +57,11 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logging
-            m_Log = new PrefixedLogger(nameof(RoadConnectionSystem));
+            m_Log = new PrefixedLogger(nameof(P_RoadConnectionSystem));
             m_Log.Debug($"OnCreate()");
 
             // Reference Systems
-            m_ParcelSearchSystem = World.GetOrCreateSystemManaged<ParcelSearchSystem>();
+            m_ParcelSearchSystem = World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4B>();
             m_NetSearchSystem = World.GetOrCreateSystemManaged<Game.Net.SearchSystem>();
             m_IconCommandSystem = World.GetOrCreateSystemManaged<IconCommandSystem>();
@@ -127,14 +118,6 @@ namespace Platter.Systems {
                 ComponentType.ReadOnly<TrafficConfigurationData>()
             });
 
-            // Get TypeHandles
-            m_EntityTypeHandle = GetEntityTypeHandle();
-            m_EdgeGeometryTypeHandle = GetComponentTypeHandle<EdgeGeometry>();
-            m_StartNodeGeometryTypeHandle = GetComponentTypeHandle<StartNodeGeometry>();
-            m_EndNodeGeometryTypeHandle = GetComponentTypeHandle<EndNodeGeometry>();
-            m_DeletedTypeHandle = GetComponentTypeHandle<Deleted>();
-            m_ConnectedParcelBufferTypeHandle = GetBufferTypeHandle<ConnectedParcel>(false);
-
             RequireForUpdate(m_ModificationQuery);
         }
 
@@ -151,24 +134,22 @@ namespace Platter.Systems {
             NativeQueue<Entity> parcelEntitiesQueue = new(Allocator.TempJob);
             NativeQueue<Entity> edgeEntitiesQueue = new(Allocator.TempJob);
             CreateEntitiesQueueJob createEntitiesQueueJobData = default;
-            m_EntityTypeHandle.Update(this);
-            createEntitiesQueueJobData.m_EntityTypeHandle = m_EntityTypeHandle;
-            m_ConnectedParcelBufferTypeHandle.Update(this);
+            createEntitiesQueueJobData.m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle();
             createEntitiesQueueJobData.m_ParcelEntitiesQueue = parcelEntitiesQueue.AsParallelWriter();
             createEntitiesQueueJobData.m_EdgeEntitiesQueue = edgeEntitiesQueue.AsParallelWriter();
-            createEntitiesQueueJobData.m_ConnectedParcelBufferTypeHandle = m_ConnectedParcelBufferTypeHandle;
-            createEntitiesQueueJobData.m_PrefabRefComponentLookup = GetComponentLookup<PrefabRef>();
-            createEntitiesQueueJobData.m_EdgeGeometryComponentLookup = GetComponentLookup<EdgeGeometry>();
-            createEntitiesQueueJobData.m_StartNodeGeometryComponentLookup = GetComponentLookup<StartNodeGeometry>();
-            createEntitiesQueueJobData.m_EndNodeGeometryComponentLookup = GetComponentLookup<EndNodeGeometry>();
-            createEntitiesQueueJobData.m_ParcelDataComponentLookup = GetComponentLookup<ParcelData>();
-            createEntitiesQueueJobData.m_ParcelComponentLookup = GetComponentLookup<Parcel>();
-            createEntitiesQueueJobData.m_TransformComponentLookup = GetComponentLookup<Transform>();
+            createEntitiesQueueJobData.m_ConnectedParcelBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ConnectedParcel>();
+            createEntitiesQueueJobData.m_PrefabRefComponentLookup = SystemAPI.GetComponentLookup<PrefabRef>();
+            createEntitiesQueueJobData.m_EdgeGeometryComponentLookup = SystemAPI.GetComponentLookup<EdgeGeometry>();
+            createEntitiesQueueJobData.m_StartNodeGeometryComponentLookup = SystemAPI.GetComponentLookup<StartNodeGeometry>();
+            createEntitiesQueueJobData.m_EndNodeGeometryComponentLookup = SystemAPI.GetComponentLookup<EndNodeGeometry>();
+            createEntitiesQueueJobData.m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>();
+            createEntitiesQueueJobData.m_ParcelComponentLookup = SystemAPI.GetComponentLookup<Parcel>();
+            createEntitiesQueueJobData.m_TransformComponentLookup = SystemAPI.GetComponentLookup<Transform>();
             createEntitiesQueueJobData.m_ObjectSearchTree = m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle);
-            createEntitiesQueueJobData.m_EdgeGeometryTypeHandle = m_EdgeGeometryTypeHandle;
-            createEntitiesQueueJobData.m_StartNodeGeometryTypeHandle = m_StartNodeGeometryTypeHandle;
-            createEntitiesQueueJobData.m_EndNodeGeometryTypeHandle = m_EndNodeGeometryTypeHandle;
-            createEntitiesQueueJobData.m_DeletedTypeHandle = m_DeletedTypeHandle;
+            createEntitiesQueueJobData.m_EdgeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<EdgeGeometry>();
+            createEntitiesQueueJobData.m_StartNodeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<StartNodeGeometry>();
+            createEntitiesQueueJobData.m_EndNodeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<EndNodeGeometry>();
+            createEntitiesQueueJobData.m_DeletedTypeHandle = SystemAPI.GetComponentTypeHandle<Deleted>();
 
             var createEntitiesQueueJobHandle = createEntitiesQueueJobData.ScheduleParallel(
                 m_ModificationQuery,
@@ -187,17 +168,17 @@ namespace Platter.Systems {
 
             // Job to find the "best eligible road" for a given entity in the list
             FindRoadConnectionJob findRoadConnectionJobData = default;
-            findRoadConnectionJobData.m_DeletedDataComponentLookup = GetComponentLookup<Deleted>();
-            findRoadConnectionJobData.m_PrefabRefComponentLookup = GetComponentLookup<PrefabRef>();
-            findRoadConnectionJobData.m_ParcelDataComponentLookup = GetComponentLookup<ParcelData>();
-            findRoadConnectionJobData.m_TransformComponentLookup = GetComponentLookup<Game.Objects.Transform>();
+            findRoadConnectionJobData.m_DeletedDataComponentLookup = SystemAPI.GetComponentLookup<Deleted>();
+            findRoadConnectionJobData.m_PrefabRefComponentLookup = SystemAPI.GetComponentLookup<PrefabRef>();
+            findRoadConnectionJobData.m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>();
+            findRoadConnectionJobData.m_TransformComponentLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>();
             findRoadConnectionJobData.m_ConnectedParcelsBufferLookup = GetBufferLookup<ConnectedParcel>();
-            findRoadConnectionJobData.m_CurveDataComponentLookup = GetComponentLookup<Curve>();
-            findRoadConnectionJobData.m_CompositionDataComponentLookup = GetComponentLookup<Composition>();
-            findRoadConnectionJobData.m_EdgeGeometryDataComponentLookup = GetComponentLookup<EdgeGeometry>();
-            findRoadConnectionJobData.m_StartNodeGeometryDataComponentLookup = GetComponentLookup<StartNodeGeometry>();
-            findRoadConnectionJobData.m_EndNodeGeometryDataComponentLookup = GetComponentLookup<EndNodeGeometry>();
-            findRoadConnectionJobData.m_PrefabNetCompositionDataComponentLookup = GetComponentLookup<NetCompositionData>();
+            findRoadConnectionJobData.m_CurveDataComponentLookup = SystemAPI.GetComponentLookup<Curve>();
+            findRoadConnectionJobData.m_CompositionDataComponentLookup = SystemAPI.GetComponentLookup<Composition>();
+            findRoadConnectionJobData.m_EdgeGeometryDataComponentLookup = SystemAPI.GetComponentLookup<EdgeGeometry>();
+            findRoadConnectionJobData.m_StartNodeGeometryDataComponentLookup = SystemAPI.GetComponentLookup<StartNodeGeometry>();
+            findRoadConnectionJobData.m_EndNodeGeometryDataComponentLookup = SystemAPI.GetComponentLookup<EndNodeGeometry>();
+            findRoadConnectionJobData.m_PrefabNetCompositionDataComponentLookup = SystemAPI.GetComponentLookup<NetCompositionData>();
             var updatedNetChunks = m_UpdatedNetQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var netQueryChunkListJob);
             findRoadConnectionJobData.m_UpdatedNetChunks = updatedNetChunks;
             findRoadConnectionJobData.m_NetSearchTree = m_NetSearchSystem.GetNetSearchTree(true, out var netSearchTreeJobHandle);
@@ -217,13 +198,13 @@ namespace Platter.Systems {
 
             // Job to set data
             UpdateDataJob updateDataJobData = default;
-            updateDataJobData.m_EdgeComponentLookup = GetComponentLookup<Edge>(false);
-            updateDataJobData.m_NodeComponentLookup = GetComponentLookup<Node>(true);
-            updateDataJobData.m_NodeGeoComponentLookup = GetComponentLookup<NodeGeometry>(true);
-            updateDataJobData.m_AggregatedComponentLookup = GetComponentLookup<Aggregated>(true);
-            updateDataJobData.m_ParcelComponentLookup = GetComponentLookup<Parcel>(false);
-            updateDataJobData.m_CreatedComponentLookup = GetComponentLookup<Created>(true);
-            updateDataJobData.m_TempComponentLookup = GetComponentLookup<Temp>(true);
+            updateDataJobData.m_EdgeComponentLookup = SystemAPI.GetComponentLookup<Edge>(false);
+            updateDataJobData.m_NodeComponentLookup = SystemAPI.GetComponentLookup<Node>(true);
+            updateDataJobData.m_NodeGeoComponentLookup = SystemAPI.GetComponentLookup<NodeGeometry>(true);
+            updateDataJobData.m_AggregatedComponentLookup = SystemAPI.GetComponentLookup<Aggregated>(true);
+            updateDataJobData.m_ParcelComponentLookup = SystemAPI.GetComponentLookup<Parcel>(false);
+            updateDataJobData.m_CreatedComponentLookup = SystemAPI.GetComponentLookup<Created>(true);
+            updateDataJobData.m_TempComponentLookup = SystemAPI.GetComponentLookup<Temp>(true);
             updateDataJobData.m_SubBlockBufferLookup = GetBufferLookup<SubBlock>(false);
             updateDataJobData.m_ConnectedParcelsBufferLookup = GetBufferLookup<ConnectedParcel>();
             updateDataJobData.m_ParcelEntitiesList = parcelEntitiesList;
@@ -249,54 +230,54 @@ namespace Platter.Systems {
 
         private static void CheckDistance(EdgeGeometry edgeGeometry, EdgeNodeGeometry startGeometry, EdgeNodeGeometry endGeometry, float3 position, bool canBeOnRoad, ref float maxDistance) {
             if (MathUtils.DistanceSquared(edgeGeometry.m_Bounds.xz, position.xz) < maxDistance * maxDistance) {
-                RoadConnectionSystem.CheckDistance(edgeGeometry.m_Start.m_Left, position, ref maxDistance);
-                RoadConnectionSystem.CheckDistance(edgeGeometry.m_Start.m_Right, position, ref maxDistance);
-                RoadConnectionSystem.CheckDistance(edgeGeometry.m_End.m_Left, position, ref maxDistance);
-                RoadConnectionSystem.CheckDistance(edgeGeometry.m_End.m_Right, position, ref maxDistance);
+                CheckDistance(edgeGeometry.m_Start.m_Left, position, ref maxDistance);
+                CheckDistance(edgeGeometry.m_Start.m_Right, position, ref maxDistance);
+                CheckDistance(edgeGeometry.m_End.m_Left, position, ref maxDistance);
+                CheckDistance(edgeGeometry.m_End.m_Right, position, ref maxDistance);
                 if (canBeOnRoad) {
-                    RoadConnectionSystem.CheckDistance(edgeGeometry.m_Start.m_Left, edgeGeometry.m_Start.m_Right, position, ref maxDistance);
-                    RoadConnectionSystem.CheckDistance(edgeGeometry.m_End.m_Left, edgeGeometry.m_End.m_Right, position, ref maxDistance);
+                    CheckDistance(edgeGeometry.m_Start.m_Left, edgeGeometry.m_Start.m_Right, position, ref maxDistance);
+                    CheckDistance(edgeGeometry.m_End.m_Left, edgeGeometry.m_End.m_Right, position, ref maxDistance);
                 }
             }
 
             if (MathUtils.DistanceSquared(startGeometry.m_Bounds.xz, position.xz) < maxDistance * maxDistance) {
-                RoadConnectionSystem.CheckDistance(startGeometry.m_Left.m_Left, position, ref maxDistance);
-                RoadConnectionSystem.CheckDistance(startGeometry.m_Right.m_Right, position, ref maxDistance);
+                CheckDistance(startGeometry.m_Left.m_Left, position, ref maxDistance);
+                CheckDistance(startGeometry.m_Right.m_Right, position, ref maxDistance);
                 if (startGeometry.m_MiddleRadius > 0f) {
-                    RoadConnectionSystem.CheckDistance(startGeometry.m_Left.m_Right, position, ref maxDistance);
-                    RoadConnectionSystem.CheckDistance(startGeometry.m_Right.m_Left, position, ref maxDistance);
+                    CheckDistance(startGeometry.m_Left.m_Right, position, ref maxDistance);
+                    CheckDistance(startGeometry.m_Right.m_Left, position, ref maxDistance);
                 }
 
                 if (canBeOnRoad) {
                     if (startGeometry.m_MiddleRadius > 0f) {
-                        RoadConnectionSystem.CheckDistance(startGeometry.m_Left.m_Left, startGeometry.m_Left.m_Right, position, ref maxDistance);
-                        RoadConnectionSystem.CheckDistance(startGeometry.m_Right.m_Left, startGeometry.m_Middle, position, ref maxDistance);
-                        RoadConnectionSystem.CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
+                        CheckDistance(startGeometry.m_Left.m_Left, startGeometry.m_Left.m_Right, position, ref maxDistance);
+                        CheckDistance(startGeometry.m_Right.m_Left, startGeometry.m_Middle, position, ref maxDistance);
+                        CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
                     } else {
-                        RoadConnectionSystem.CheckDistance(startGeometry.m_Left.m_Left, startGeometry.m_Middle, position, ref maxDistance);
-                        RoadConnectionSystem.CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
+                        CheckDistance(startGeometry.m_Left.m_Left, startGeometry.m_Middle, position, ref maxDistance);
+                        CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
                     }
                 }
             }
 
             if (MathUtils.DistanceSquared(endGeometry.m_Bounds.xz, position.xz) < maxDistance * maxDistance) {
-                RoadConnectionSystem.CheckDistance(endGeometry.m_Left.m_Left, position, ref maxDistance);
-                RoadConnectionSystem.CheckDistance(endGeometry.m_Right.m_Right, position, ref maxDistance);
+                CheckDistance(endGeometry.m_Left.m_Left, position, ref maxDistance);
+                CheckDistance(endGeometry.m_Right.m_Right, position, ref maxDistance);
                 if (endGeometry.m_MiddleRadius > 0f) {
-                    RoadConnectionSystem.CheckDistance(endGeometry.m_Left.m_Right, position, ref maxDistance);
-                    RoadConnectionSystem.CheckDistance(endGeometry.m_Right.m_Left, position, ref maxDistance);
+                    CheckDistance(endGeometry.m_Left.m_Right, position, ref maxDistance);
+                    CheckDistance(endGeometry.m_Right.m_Left, position, ref maxDistance);
                 }
 
                 if (canBeOnRoad) {
                     if (endGeometry.m_MiddleRadius > 0f) {
-                        RoadConnectionSystem.CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Left.m_Right, position, ref maxDistance);
-                        RoadConnectionSystem.CheckDistance(endGeometry.m_Right.m_Left, endGeometry.m_Middle, position, ref maxDistance);
-                        RoadConnectionSystem.CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
+                        CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Left.m_Right, position, ref maxDistance);
+                        CheckDistance(endGeometry.m_Right.m_Left, endGeometry.m_Middle, position, ref maxDistance);
+                        CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
                         return;
                     }
 
-                    RoadConnectionSystem.CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Middle, position, ref maxDistance);
-                    RoadConnectionSystem.CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
+                    CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Middle, position, ref maxDistance);
+                    CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
                 }
             }
         }

@@ -14,7 +14,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Tooltip System.
     /// </summary>
-    public partial class TooltipSystem : TooltipSystemBase {
+    public partial class P_TooltipSystem : TooltipSystemBase {
         private ToolSystem m_ToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private ProxyAction m_IncreaseWidthAction;

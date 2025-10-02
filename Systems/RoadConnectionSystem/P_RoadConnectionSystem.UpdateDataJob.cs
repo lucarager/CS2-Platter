@@ -21,7 +21,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Perform updates to roads and parcels.
         /// </summary>
@@ -37,7 +37,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeList<RoadConnectionSystem.ConnectionUpdateDataJob> m_ParcelEntitiesList;
+            [ReadOnly] public NativeList<P_RoadConnectionSystem.ConnectionUpdateDataJob> m_ParcelEntitiesList;
 
             /// <summary>
             /// todo.

@@ -21,7 +21,7 @@ namespace Platter.Systems {
     using Unity.Jobs;
     using GeometryFlags = Game.Objects.GeometryFlags;
 
-    public partial class ParcelSearchSystem : GameSystemBase, IPreDeserialize {
+    public partial class P_ParcelSearchSystem : GameSystemBase, IPreDeserialize {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -41,7 +41,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(ParcelSearchSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelSearchSystem));
             m_Log.Debug($"OnCreate()");
 
             // Systems
@@ -108,7 +108,7 @@ namespace Platter.Systems {
                 return;
             }
 
-            var updateSearchTreeJob = default(ParcelSearchSystem.UpdateSearchTreeJob);
+            var updateSearchTreeJob = default(P_ParcelSearchSystem.UpdateSearchTreeJob);
             updateSearchTreeJob.m_EntityType = GetEntityTypeHandle();
             updateSearchTreeJob.m_OwnerType = GetComponentTypeHandle<Owner>();
             updateSearchTreeJob.m_TransformType = GetComponentTypeHandle<Game.Objects.Transform>();
@@ -116,7 +116,7 @@ namespace Platter.Systems {
             updateSearchTreeJob.m_CreatedType = GetComponentTypeHandle<Created>();
             updateSearchTreeJob.m_DeletedType = GetComponentTypeHandle<Deleted>();
             updateSearchTreeJob.m_OverriddenType = GetComponentTypeHandle<Overridden>();
-            updateSearchTreeJob.m_PrefabObjectGeometryData = GetComponentLookup<ObjectGeometryData>();
+            updateSearchTreeJob.m_PrefabObjectGeometryData = SystemAPI.GetComponentLookup<ObjectGeometryData>();
             updateSearchTreeJob.m_EditorMode = m_ToolSystem.actionMode.IsEditor();
             updateSearchTreeJob.m_FirstLoad = firstLoad;
             updateSearchTreeJob.m_SearchTree = GetStaticSearchTree(false, out var updateSearchTreeJobHandle);

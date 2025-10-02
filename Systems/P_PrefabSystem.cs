@@ -21,7 +21,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Todo.
     /// </summary>
-    public partial class CustomPrefabSystem : GameSystemBase {
+    public partial class P_PrefabSystem : GameSystemBase {
         /// <summary>
         /// Range of block sizes we support.
         /// <para>x = min width.</para>
@@ -101,7 +101,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(CustomPrefabSystem));
+            m_Log = new PrefixedLogger(nameof(P_PrefabSystem));
             m_Log.Debug($"OnCreate()");
 
             // Storage

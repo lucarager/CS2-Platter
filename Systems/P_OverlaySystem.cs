@@ -26,11 +26,11 @@ namespace Platter.Systems {
     /// Overlay Rendering System.
     /// <todo>Add culling and burst</todo>
     /// </summary>
-    public partial class OverlaySystem : GameSystemBase {
+    public partial class P_OverlaySystem : GameSystemBase {
         /// <summary>
         /// Instance.
         /// </summary>
-        public static OverlaySystem Instance;
+        public static P_OverlaySystem Instance;
 
         // Systems & References
         private OverlayRenderSystem m_OverlayRenderSystem;
@@ -71,7 +71,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(OverlaySystem));
+            m_Log = new PrefixedLogger(nameof(P_OverlaySystem));
             m_Log.Debug($"OnCreate()");
 
             // Queries
@@ -158,10 +158,10 @@ namespace Platter.Systems {
                     m_TransformComponentTypeHandle = GetComponentTypeHandle<Game.Objects.Transform>(),
                     m_PrefabRefComponentTypeHandle = GetComponentTypeHandle<PrefabRef>(),
                     m_ParcelComponentTypeHandle = GetComponentTypeHandle<Parcel>(),
-                    m_ParcelDataComponentLookup = GetComponentLookup<ParcelData>(),
-                    m_ObjectGeometryComponentLookup = GetComponentLookup<ObjectGeometryData>(),
-                    m_ParcelSpawnableComponentLookup = GetComponentLookup<ParcelSpawnable>(),
-                    m_TempComponentLookup = GetComponentLookup<Temp>(),
+                    m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(),
+                    m_ObjectGeometryComponentLookup = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
+                    m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
+                    m_TempComponentLookup = SystemAPI.GetComponentLookup<Temp>(),
                 };
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, overlayRenderBufferHandle);
 

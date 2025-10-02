@@ -12,7 +12,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Struct containing data for a replacement job (building, road, etc.)
         /// </summary>
@@ -58,7 +58,7 @@ namespace Platter.Systems {
             }
 
             /// <inheritdoc/>
-            public int CompareTo(RoadConnectionSystem.ConnectionUpdateDataJob other) {
+            public int CompareTo(P_RoadConnectionSystem.ConnectionUpdateDataJob other) {
                 return m_Parcel.Index - other.m_Parcel.Index;
             }
         }

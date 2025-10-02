@@ -12,7 +12,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    public partial class ParcelSpawnSystem : GameSystemBase {
+    public partial class P_ParcelSpawnSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -29,7 +29,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(ParcelSpawnSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelSpawnSystem));
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems

@@ -21,7 +21,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Find eligible entities and add them to a queue.
         /// </summary>
@@ -145,11 +145,11 @@ namespace Platter.Systems {
 
                         FindParcelNextToRoadIterator findParcelIterator = default;
 
-                        findParcelIterator.m_Bounds = MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, RoadConnectionSystem.MaxDistance);
+                        findParcelIterator.m_Bounds = MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, P_RoadConnectionSystem.MaxDistance);
                         findParcelIterator.m_EdgeGeometry = edgeGeometry;
                         findParcelIterator.m_StartGeometry = startNodeGeo;
                         findParcelIterator.m_EndGeometry = endNodeGeo;
-                        findParcelIterator.m_MinDistance = RoadConnectionSystem.MaxDistance;
+                        findParcelIterator.m_MinDistance = P_RoadConnectionSystem.MaxDistance;
                         findParcelIterator.m_ParcelEntitiesQueue = m_ParcelEntitiesQueue;
                         findParcelIterator.m_PrefabRefComponentLookup = m_PrefabRefComponentLookup;
                         findParcelIterator.m_EdgeGeometryComponentLookup = m_EdgeGeometryComponentLookup;
@@ -272,7 +272,7 @@ namespace Platter.Systems {
 
                     // Calculate the distance between parcel and road
                     var distance = m_MinDistance;
-                    RoadConnectionSystem.CheckDistance(m_EdgeGeometry, m_StartGeometry, m_EndGeometry, frontPosition, true, ref distance);
+                    P_RoadConnectionSystem.CheckDistance(m_EdgeGeometry, m_StartGeometry, m_EndGeometry, frontPosition, true, ref distance);
 
                     // If valid...
                     if (distance < m_MinDistance) {
@@ -284,7 +284,7 @@ namespace Platter.Systems {
                             var curStartNodeGeo = m_StartNodeGeometryComponentLookup[parcel.m_RoadEdge].m_Geometry;
                             var curEndNodeGeo = m_EndNodeGeometryComponentLookup[parcel.m_RoadEdge].m_Geometry;
                             var curDistance = m_MinDistance;
-                            RoadConnectionSystem.CheckDistance(curEdgeGeo, curStartNodeGeo, curEndNodeGeo, frontPosition, true, ref curDistance);
+                            P_RoadConnectionSystem.CheckDistance(curEdgeGeo, curStartNodeGeo, curEndNodeGeo, frontPosition, true, ref curDistance);
 
                             // If new road is closer, add parcel to queue
                             if (distance < curDistance) {

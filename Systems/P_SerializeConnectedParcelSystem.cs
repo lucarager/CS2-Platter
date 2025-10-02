@@ -5,6 +5,7 @@
 
 namespace Platter.Systems {
     using Game;
+    using Game.Buildings;
     using Game.Zones;
     using Platter.Components;
     using Unity.Burst;
@@ -12,7 +13,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    internal partial class SerializeSubBlockSystem : GameSystemBase {
+    internal partial class P_SerializeConnectedParcelSystem : GameSystemBase {
         private EntityQuery m_Query;
 
         /// <inheritdoc/>
@@ -20,36 +21,37 @@ namespace Platter.Systems {
             base.OnCreate();
             m_Query = base.GetEntityQuery(new ComponentType[]
             {
-                ComponentType.ReadOnly<Block>(),
-                ComponentType.ReadOnly<ParcelOwner>()
+                ComponentType.ReadOnly<Parcel>(),
             });
             base.RequireForUpdate(m_Query);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var subBlockJob = default(SubBlockJob);
-            subBlockJob.m_EntityType = GetEntityTypeHandle();
-            subBlockJob.m_ParcelOwnerType = GetComponentTypeHandle<ParcelOwner>();
-            subBlockJob.m_SubBlocksBufferLookup = GetBufferLookup<SubBlock>();
-            base.Dependency = subBlockJob.Schedule(m_Query, base.Dependency);
+            var deserializeJob = default(DeserializeJob);
+            deserializeJob.m_EntityType = GetEntityTypeHandle();
+            deserializeJob.m_ParcelType = GetComponentTypeHandle<Parcel>();
+            deserializeJob.m_ConnectedParcelsBufferLookup = GetBufferLookup<ConnectedParcel>();
+            base.Dependency = deserializeJob.Schedule(m_Query, base.Dependency);
         }
 
 #if USE_BURST
         [BurstCompile]
 #endif
-        private struct SubBlockJob : IJobChunk {
+        private struct DeserializeJob : IJobChunk {
             [ReadOnly] public EntityTypeHandle m_EntityType;
-            [ReadOnly] public ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
-            public BufferLookup<SubBlock> m_SubBlocksBufferLookup;
+            [ReadOnly] public ComponentTypeHandle<Parcel> m_ParcelType;
+            public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
-                var parcelOwnerArray = chunk.GetNativeArray<ParcelOwner>(ref m_ParcelOwnerType);
-                for (var i = 0; i < parcelOwnerArray.Length; i++) {
-                    var blockEntity = entityArray[i];
-                    var parcelOwner = parcelOwnerArray[i];
-                    m_SubBlocksBufferLookup[parcelOwner.m_Owner].Add(new SubBlock(blockEntity));
+                var parcelArray = chunk.GetNativeArray<Parcel>(ref m_ParcelType);
+                for (var i = 0; i < parcelArray.Length; i++) {
+                    var parcelEntity = entityArray[i];
+                    var parcel = parcelArray[i];
+                    if (parcel.m_RoadEdge != Entity.Null) {
+                        m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge].Add(new ConnectedParcel(parcelEntity));
+                    }
                 }
             }
 

@@ -17,7 +17,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ParcelInitializeSystem : GameSystemBase {
+    public partial class P_ParcelInitializeSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -32,7 +32,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(ParcelInitializeSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelInitializeSystem));
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems

@@ -20,7 +20,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ParcelUpdateSystem : GameSystemBase {
+    public partial class P_ParcelUpdateSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -30,32 +30,32 @@ namespace Platter.Systems {
 
         // Queries
         private EntityQuery m_ParcelQuery;
-        private EntityQuery m_ZoneQuery;
 
         // Systems & References
         private Game.Prefabs.PrefabSystem m_PrefabSystem;
         private ZoneSystem m_ZoneSystem;
-        private PlatterUISystem m_PlatterUISystem;
+        private P_UISystem m_PlatterUISystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(ParcelUpdateSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelUpdateSystem));
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
-            m_PlatterUISystem = World.GetOrCreateSystemManaged<PlatterUISystem>();
+            m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
             m_ParcelQuery = GetEntityQuery(
                 new EntityQueryDesc {
                     All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>()
+                        ComponentType.ReadOnly<Parcel>(),
+                        ComponentType.ReadOnly<SubBlock>(),
                     },
                     Any = new ComponentType[] {
                         ComponentType.ReadOnly<Updated>(),
@@ -63,20 +63,6 @@ namespace Platter.Systems {
                     },
                     None = new ComponentType[] {
                         ComponentType.ReadOnly<Temp>()
-                    },
-                });
-
-            m_ZoneQuery = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>()
-                    },
-                    Any = new ComponentType[] {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>()
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
                     },
                 });
 
@@ -88,7 +74,6 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
             var entities = m_ParcelQuery.ToEntityArray(Allocator.Temp);
-            var currentDefaultPreZone = m_PlatterUISystem.PreZoneType;
             var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawning;
 
             foreach (var parcelEntity in entities) {

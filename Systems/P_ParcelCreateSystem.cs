@@ -16,7 +16,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ParcelCreateSystem : GameSystemBase {
+    public partial class P_ParcelCreateSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -28,19 +28,19 @@ namespace Platter.Systems {
         private EntityQuery m_ParcelCreatedQuery;
 
         // Systems & References
-        private PlatterUISystem m_PlatterUISystem;
+        private P_UISystem m_PlatterUISystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(ParcelCreateSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelCreateSystem));
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier3>();
-            m_PlatterUISystem = World.GetOrCreateSystemManaged<PlatterUISystem>();
+            m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
             m_ParcelCreatedQuery = GetEntityQuery(

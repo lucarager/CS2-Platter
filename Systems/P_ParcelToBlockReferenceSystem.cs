@@ -17,7 +17,7 @@ namespace Platter.Systems {
     /// <summary>
     /// todo.
     /// </summary>
-    public partial class ParcelToBlockReferenceSystem : GameSystemBase {
+    public partial class P_ParcelToBlockReferenceSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -28,7 +28,7 @@ namespace Platter.Systems {
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = new PrefixedLogger(nameof(ParcelToBlockReferenceSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelToBlockReferenceSystem));
             m_Log.Debug($"OnCreate()");
 
             m_ParcelBlockQuery = GetEntityQuery(new EntityQueryDesc[]

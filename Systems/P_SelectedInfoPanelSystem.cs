@@ -15,7 +15,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
     /// </summary>
-    public partial class SelectedInfoPanelSystem : InfoSectionBase {
+    public partial class P_SelectedInfoPanelSystem : InfoSectionBase {
         private PrefixedLogger m_Log;
         private ValueBinding<bool> m_AllowSpawningBinding;
         private ToolSystem m_ToolSystem;
@@ -40,7 +40,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(SelectedInfoPanelSystem));
+            m_Log = new PrefixedLogger(nameof(P_SelectedInfoPanelSystem));
             m_Log.Debug($"OnCreate()");
 
             // Add section to UI System
