@@ -293,7 +293,7 @@ namespace Platter.Systems {
             base.OnGameLoadingComplete(purpose, mode);
             m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
 
-            if (purpose == Purpose.LoadGame && mode == GameMode.Game) {
+            if (mode == GameMode.Game) {
                 CollectData();
             }
 

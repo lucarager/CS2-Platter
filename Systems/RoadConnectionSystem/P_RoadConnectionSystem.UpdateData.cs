@@ -14,7 +14,7 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
-        /// Struct containing data for a replacement job (building, road, etc.)
+        /// Struct containing data for a replacement job 
         /// </summary>
         public struct UpdateData : IComparable<UpdateData> {
             /// <summary>

@@ -90,8 +90,8 @@ namespace Platter.Systems {
                 var oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
                 oGeoData.m_MinLod = 100;
                 oGeoData.m_Size = parcelGeo.Size;
-                oGeoData.m_Pivot = parcelGeo.Pivot;
-                oGeoData.m_LegSize = new float3(0f, 0f, 0f);
+                oGeoData.m_Pivot = parcelGeo.Center;
+                oGeoData.m_LegSize = new float3(2f, 2f, 2f);
                 oGeoData.m_Bounds = parcelGeo.Bounds;
                 oGeoData.m_Layers = MeshLayer.First;
                 oGeoData.m_Flags &= ~GeometryFlags.Overridable;
@@ -105,9 +105,9 @@ namespace Platter.Systems {
                 EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
 
                 // Building Data
-                var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
-                buildingData.m_LotSize = parcelData.m_LotSize;
-                buildingData.m_Flags = BuildingFlags.RequireRoad;
+                //var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
+                //buildingData.m_LotSize = parcelData.m_LotSize;
+                //buildingData.m_Flags = BuildingFlags.RequireRoad;
 
                 // Finished
                 m_Log.Debug($"OnUpdate() -- Finished initializing {parcelPrefabRef} on entity {currentEntity.Index}");

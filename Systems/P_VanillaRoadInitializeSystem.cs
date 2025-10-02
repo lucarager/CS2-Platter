@@ -85,37 +85,5 @@ namespace Platter.Systems {
                 }
             }
         }
-
-        /// <inheritdoc/>
-        // protected override void OnGamePreload(Purpose purpose, GameMode mode) {
-        //    base.OnGamePreload(purpose, mode);
-        //    var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
-
-        // var chunkArray = m_RoadPrefabQuery.ToArchetypeChunkArray(Allocator.TempJob);
-        //    foreach (var archetypeChunk in chunkArray) {
-        //        var entityArray = archetypeChunk.GetNativeArray(m_EntityTypeHandle);
-        //        var prefabDataArray = archetypeChunk.GetNativeArray<PrefabData>(ref m_ComponentTypeHandle);
-        //        if (entityArray.Length != 0) {
-        //            for (var i = 0; i < entityArray.Length; i++) {
-        //                var entity = entityArray[i];
-        //                var prefab = m_PrefabSystem.GetPrefab<RoadPrefab>(prefabDataArray[i]);
-
-        // if (prefab.m_ZoneBlock != null && !EntityManager.HasBuffer<ConnectedParcel>(entity)) {
-        //                    m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to road entity of prefab {prefab.name}");
-        //                    EntityManager.AddBuffer<ConnectedParcel>(entity);
-        //                }
-        //            }
-        //        }
-        //    }
-        // }
     }
 }
-
-// if (this.m_ZoneBlock != null) {
-//    components.Add(ComponentType.ReadWrite<SubBlock>());
-//    components.Add(ComponentType.ReadWrite<ConnectedBuilding>());
-//    components.Add(ComponentType.ReadWrite<ServiceCoverage>());
-//    components.Add(ComponentType.ReadWrite<ResourceAvailability>());
-//    components.Add(ComponentType.ReadWrite<Density>());
-//    return;
-// }

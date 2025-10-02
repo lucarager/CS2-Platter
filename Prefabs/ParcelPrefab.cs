@@ -4,10 +4,16 @@
 // </copyright>
 
 namespace Game.Prefabs {
-    using System.Collections.Generic;
+    using Colossal.Logging;
+    using Game.Objects;
     using Game.Zones;
+    using Platter;
     using Platter.Components;
+    using Platter.Systems;
+    using Platter.Utils;
+    using System.Collections.Generic;
     using Unity.Entities;
+    using Unity.Mathematics;
 
     /// <summary>
     /// Todo.
@@ -65,7 +71,7 @@ namespace Game.Prefabs {
             components.Add(ComponentType.ReadWrite<PlaceableObjectData>());
 
             // Making it a "building" fixes snapping
-            components.Add(ComponentType.ReadWrite<BuildingData>());
+            // components.Add(ComponentType.ReadWrite<BuildingData>());
 
             // Experimental
             components.Add(ComponentType.ReadWrite<ObjectSubAreas>());

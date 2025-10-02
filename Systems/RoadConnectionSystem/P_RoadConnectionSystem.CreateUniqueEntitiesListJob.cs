@@ -28,7 +28,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            public NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntittiesList;
+            public NativeList<UpdateData> m_ParcelEntittiesList;
 
             /// <inheritdoc/>
             public void Execute() {
@@ -37,11 +37,11 @@ namespace Platter.Systems {
                 m_ParcelEntittiesList.ResizeUninitialized(parcels);
 
                 for (var i = 0; i < parcels; i++) {
-                    m_ParcelEntittiesList[i] = new P_RoadConnectionSystem.UpdateData(m_ParcelEntitiesQueue.Dequeue());
+                    m_ParcelEntittiesList[i] = new UpdateData(m_ParcelEntitiesQueue.Dequeue());
                 }
 
                 // Sort the list (by parcel index) so that we can easily dedupe
-                m_ParcelEntittiesList.Sort<P_RoadConnectionSystem.UpdateData>();
+                m_ParcelEntittiesList.Sort<UpdateData>();
 
                 // Deduplicate the list
                 var currentBuildingEntity = Entity.Null;
@@ -60,7 +60,7 @@ namespace Platter.Systems {
 
                 // If the deduplication mechanism reduced our list, shorten it
                 if (writeIndex < m_ParcelEntittiesList.Length) {
-                    m_ParcelEntittiesList.RemoveRange(writeIndex, this.m_ParcelEntittiesList.Length - writeIndex);
+                    m_ParcelEntittiesList.RemoveRange(writeIndex, m_ParcelEntittiesList.Length - writeIndex);
                 }
             }
         }

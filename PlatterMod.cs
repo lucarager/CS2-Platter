@@ -124,7 +124,7 @@ namespace Platter {
             updateSystem.UpdateAt<P_SerializeSubBlockSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAt<P_SerializeConnectedParcelSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAt<P_PrefabSystem>(SystemUpdatePhase.PrefabUpdate);
-            updateSystem.UpdateAt<P_ParcelInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_ParcelSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_VanillaRoadInitializeSystem>(SystemUpdatePhase.Modification4);

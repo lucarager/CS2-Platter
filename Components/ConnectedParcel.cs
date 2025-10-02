@@ -20,10 +20,12 @@ namespace Platter.Components {
             m_Parcel = parcel;
         }
 
+        /// <inheritdoc/>
         public bool Equals(ConnectedParcel other) {
             return m_Parcel.Equals(other.m_Parcel);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode() {
             return m_Parcel.GetHashCode();
         }

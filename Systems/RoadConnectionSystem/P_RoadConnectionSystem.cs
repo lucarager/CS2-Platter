@@ -131,10 +131,9 @@ namespace Platter.Systems {
         /// 5. [UpdateDataJob] Update parcel and road data.
         /// </summary>
         protected override void OnUpdate() {
-            // Data structures for our entities
+            // Data structures 
             var parcelEntitiesQueue = new NativeQueue<Entity>(Allocator.TempJob);
             var parcelEntitiesList = new NativeList<UpdateData>(Allocator.TempJob);
-            var updatedNetChunks = m_UpdatedNetQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var netQueryChunkListJob);
 
             // [CreateEntitiesQueueJob] Populate a queue with parcels to update
             var createEntitiesQueueJobHandle = new CreateEntitiesQueueJob() {
@@ -167,6 +166,7 @@ namespace Platter.Systems {
             );
 
             // [FindRoadConnectionJob] Find road connections for each parcel
+            var updatedNetChunks = m_UpdatedNetQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var netQueryChunkListJob);
             var findRoadConnectionJobHandle = new FindRoadConnectionJob() {
                 m_DeletedDataComponentLookup = SystemAPI.GetComponentLookup<Deleted>(),
                 m_PrefabRefComponentLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
@@ -212,13 +212,15 @@ namespace Platter.Systems {
             // Dispose of data
             parcelEntitiesQueue.Dispose(createUniqueParcelListJobHandle);
             updatedNetChunks.Dispose(findRoadConnectionJobHandle);
-            parcelEntitiesList.Dispose(base.Dependency);
 
             // Set base dependencies
             base.Dependency = replaceRoadConnectionJobHandle;
 
             // Register depdencies with Barrier
             m_ModificationBarrier.AddJobHandleForProducer(base.Dependency);
+
+            // Dispose of our list at the end
+            parcelEntitiesList.Dispose(base.Dependency);
         }
 
         private static void CheckDistance(EdgeGeometry edgeGeometry, EdgeNodeGeometry startGeometry, EdgeNodeGeometry endGeometry, float3 position, bool canBeOnRoad, ref float maxDistance) {

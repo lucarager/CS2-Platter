@@ -125,6 +125,7 @@ namespace Platter.Systems {
                 // Retrive zone data
                 var blockPrefab = parcelComposition.m_ZoneBlockPrefab;
                 if (!EntityManager.TryGetComponent<ZoneBlockData>(blockPrefab, out var zoneBlockData)) {
+                    m_Log.Error($"OnUpdate() -- Couldn't find ZoneBlockData");
                     return;
                 }
 
