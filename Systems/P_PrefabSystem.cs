@@ -196,6 +196,7 @@ namespace Platter.Systems {
             placeableLotPrefabUIObject.name = PrefabNamePrefix;
             placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
             placeableLotPrefabUIObject.m_Priority = zonePrefabUIObject.m_Priority;
+            placeableLotPrefabUIObject.m_Priority = ((lotWidth - 2) * BlockSizes.z) + lotDepth - 1;
             placeableLotPrefabUIObject.m_Group = uiCategoryPrefab;
             placeableLotPrefabUIObject.active = zonePrefabUIObject.active;
             parcelPrefabBase.AddComponentFrom(placeableLotPrefabUIObject);
