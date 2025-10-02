@@ -17,7 +17,7 @@ export const ToolButton = () => {
         <>
             {enabled ? <ToolPanel /> : null}
             <Button variant="floating" onSelect={() => setIsEnabled(!enabled)}>
-                <img src={iconSrc} style={{ width: "100%" }} />
+                <img src={iconSrc} style={{ width: "100%", height: "100%" }} />
             </Button>
         </>
     );

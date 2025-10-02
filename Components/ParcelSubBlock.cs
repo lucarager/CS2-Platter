@@ -3,7 +3,6 @@
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
-    [InternalBufferCapacity(4)]
     public struct ParcelSubBlock : IBufferElementData, IEquatable<ParcelSubBlock>, IEmptySerializable {
         public Entity m_SubBlock;
 
