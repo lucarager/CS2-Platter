@@ -74,7 +74,6 @@ namespace Platter.Systems {
         private ProxyAction m_IncreaseBlockDepthAction;
         private ProxyAction m_DecreaseBlockWidthAction;
         private ProxyAction m_DecreaseBlockDepthAction;
-        private IProxyAction m_PreciseRotationAction;
         private ProxyAction m_ToggleRender;
         private ProxyAction m_ToggleSpawn;
 
@@ -210,7 +209,6 @@ namespace Platter.Systems {
             m_IncreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
             m_DecreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
             m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
-            m_PreciseRotationAction = (IProxyAction)m_ObjectToolSystem.GetMemberValue("m_PreciseRotation");
             m_ToggleRender = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
             m_ToggleSpawn = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
 
@@ -242,11 +240,6 @@ namespace Platter.Systems {
 
             if (m_DecreaseBlockDepthAction.WasPerformedThisFrame()) {
                 DecreaseBlockDepth();
-            }
-
-            if (m_PreciseRotationAction.IsInProgress()) {
-                var num = m_PreciseRotationAction.ReadValue<float>();
-                m_Log.Debug($"{num}");
             }
 
             if (m_ToggleRender.WasPerformedThisFrame()) {
@@ -366,6 +359,8 @@ namespace Platter.Systems {
                         }
                     }
                 }
+
+                sortedCategories.Dispose();
             }
         }
 
@@ -396,7 +391,7 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activeTool is ObjectToolSystem objectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
+            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
         }
 
         /// <summary>
