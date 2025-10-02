@@ -24,11 +24,7 @@ namespace Platter.Systems {
         private EntityQuery m_RoadPrefabQuery;
 
         // Systems & References
-        private Game.Prefabs.PrefabSystem m_PrefabSystem;
-
-        // Type handles
-        private EntityTypeHandle m_EntityTypeHandle;
-        private ComponentTypeHandle<PrefabData> m_ComponentTypeHandle;
+        private PrefabSystem m_PrefabSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -39,7 +35,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
-            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             // Queries
             m_RoadPrefabCreatedQuery = GetEntityQuery(new EntityQueryDesc {
@@ -64,10 +60,6 @@ namespace Platter.Systems {
                 },
             });
 
-            // Type handles
-            m_EntityTypeHandle = GetEntityTypeHandle();
-            m_ComponentTypeHandle = GetComponentTypeHandle<PrefabData>();
-
             // Update Cycle
             RequireForUpdate(m_RoadPrefabCreatedQuery);
         }
@@ -75,10 +67,11 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             var logMethodPrefix = $"OnUpdate() --";
+            var entityTypeHandle = SystemAPI.GetEntityTypeHandle();
 
             var chunkArray = m_RoadPrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
             foreach (var archetypeChunk in chunkArray) {
-                var entityArray = archetypeChunk.GetNativeArray(m_EntityTypeHandle);
+                var entityArray = archetypeChunk.GetNativeArray(entityTypeHandle);
                 if (entityArray.Length != 0) {
                     for (var i = 0; i < entityArray.Length; i++) {
                         var entity = entityArray[i];

@@ -53,7 +53,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
-            var subBlockBufferLookup = GetBufferLookup<SubBlock>();
+            var subBlockBufferLookup = SystemAPI.GetBufferLookup<SubBlock>();
 
             for (var i = 0; i < blockEntities.Length; i++) {
                 var blockEntity = blockEntities[i];

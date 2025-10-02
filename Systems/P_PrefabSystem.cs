@@ -39,6 +39,11 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
+        private static bool _prefabsAreInstalled;
+
+        /// <summary>
+        /// Todo.
+        /// </summary>
         private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
             { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
             { "road", new PrefabID("RoadPrefab", "Alley") },
@@ -48,40 +53,16 @@ namespace Platter.Systems {
         };
 
         /// <summary>
-        /// Todo.
-        /// </summary>
-        private static bool PrefabsAreInstalled;
-
-        /// <summary>
         /// Cache for prefabs.
         /// </summary>
         private List<PrefabBase> m_PrefabBases;
         private Dictionary<PrefabBase, Entity> m_PrefabEntities;
 
         // Systems & References
-        private static Game.Prefabs.PrefabSystem m_PrefabSystem;
-        private static BuildingInitializeSystem m_BuildingInitializeSystem;
-
-        // Class State
-        private readonly bool m_Executed = false;
-
-        // Barriers & Buffers
-        private readonly EndFrameBarrier m_Barrier;
-        private readonly EndFrameBarrier m_EndFrameBarrier;
-        private EntityCommandBuffer m_CommandBuffer;
-        private EntityCommandBuffer m_BlockCommandBuffer;
+        private static PrefabSystem m_PrefabSystem;
 
         // Logger
         private PrefixedLogger m_Log;
-
-        // Queries
-        private EntityQuery m_BuildingQuery;
-        private EntityQuery m_UpdatedEdgesQuery;
-
-        // Entities
-        private Entity m_CachedBuildingEntity;
-        private Entity m_CachedEdgeEntity;
-        private EntityArchetype m_DefinitionArchetype;
 
         /// <summary>
         /// Data to define our prefabs.
@@ -109,45 +90,7 @@ namespace Platter.Systems {
             m_PrefabEntities = new Dictionary<PrefabBase, Entity>();
 
             // Systems
-            m_BuildingInitializeSystem = World.GetOrCreateSystemManaged<BuildingInitializeSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
-
-            // Override base system
-            //var originalQuery = (EntityQuery)m_BuildingInitializeSystem.GetMemberValue("m_PrefabQuery");
-            //var originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            //var componentType = ComponentType.ReadOnly<Parcel>();
-            //var getQueryMethod = typeof(ComponentSystemBase).GetMethod(
-            //    "GetEntityQuery",
-            //    BindingFlags.Instance | BindingFlags.NonPublic,
-            //    null,
-            //    CallingConventions.Any,
-            //    new Type[] { typeof(EntityQueryDesc[]) },
-            //    Array.Empty<ParameterModifier>()
-            //);
-
-            //m_Log.Debug($"OnCreate() -- Patching BuildingInitializeSystem m_PrefabQuery.");
-
-            //for (var i = 0; i < originalQueryDescs.Length; i++) {
-            //    var originalQueryDesc = originalQueryDescs[i];
-
-            //    if (originalQueryDesc.None.Contains(componentType)) {
-            //        continue;
-            //    }
-
-            //    // add Parcel to force vanilla skip all entities with the Parcel component
-            //    originalQueryDesc.None = originalQueryDesc.None.Append(componentType).ToArray();
-
-            //    // generate EntityQuery
-            //    var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(
-            //        m_BuildingInitializeSystem,
-            //        new object[] { new EntityQueryDesc[] { originalQueryDesc } }
-            //    );
-
-            //    // add modified EntityQuery to update check
-            //    m_BuildingInitializeSystem.RequireForUpdate(modifiedQuery);
-
-            //    m_Log.Debug($"OnCreate() -- Patched building query {i + 1}/{originalQueryDescs.Length}.");
-            //}
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
         }
 
         protected override void OnUpdate() {}
@@ -158,8 +101,8 @@ namespace Platter.Systems {
 
             var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
 
-            if (PrefabsAreInstalled) {
-                m_Log.Debug($"{logMethodPrefix} PrefabsAreInstalled = true, skipping");
+            if (_prefabsAreInstalled) {
+                m_Log.Debug($"{logMethodPrefix} _prefabsAreInstalled = true, skipping");
                 return;
             }
 
@@ -194,8 +137,8 @@ namespace Platter.Systems {
                 }
             }
 
-            // Mark the Install as already PrefabsAreInstalled
-            PrefabsAreInstalled = true;
+            // Mark the Install as already _prefabsAreInstalled
+            _prefabsAreInstalled = true;
 
             m_Log.Debug($"{logMethodPrefix} Completed.");
         }

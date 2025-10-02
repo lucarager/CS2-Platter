@@ -71,13 +71,6 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        private void HandleAllowSpawningToggleEvent() {
-            m_Log.Debug($"HandleAllowSpawningToggleEvent()");
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
         /// <returns>Whether the component is eligible for Platter infoview additions.</returns>
         private bool CheckEntityEligibility() {
             var isParcelCOmponent = EntityManager.HasComponent<Parcel>(selectedEntity);

@@ -1,5 +1,30 @@
-
-[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,jsproj,lsproj,njsproj,nuspec,proj,props,resw,resx,StyleCop,targets,tasks,vbproj,xml,xsd}]
+[
+  "*.",
+  {
+    "appxmanifest",
+    "axml",
+    "build",
+    "config",
+    "csproj",
+    "dbml",
+    "discomap",
+    "dtd",
+    "jsproj",
+    "lsproj",
+    "njsproj",
+    "nuspec",
+    "proj",
+    "props",
+    "resw",
+    "resx",
+    "StyleCop",
+    "targets",
+    "tasks",
+    "vbproj",
+    "xml",
+    "xsd"
+  }
+]
 indent_style = tab
 indent_size = tab
 tab_width = 4
@@ -8,6 +33,9 @@ tab_width = 4
 indent_style = space
 indent_size = 4
 tab_width = 4
+
+[*.{cs,vb}]
+dotnet_diagnostic.IDE0051.severity = warning
 
 [*]
 
@@ -125,3 +153,41 @@ resharper_redundant_base_qualifier_highlighting = warning
 resharper_suggest_var_or_type_built_in_types_highlighting = hint
 resharper_suggest_var_or_type_elsewhere_highlighting = hint
 resharper_suggest_var_or_type_simple_types_highlighting = hint
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_auto_properties = true:silent
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_prefer_conditional_expression_over_return = true:silent
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
+csharp_using_directive_placement = inside_namespace:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_braces = true:silent
+csharp_style_namespace_declarations = file_scoped:silent
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_system_threading_lock = true:suggestion
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_operators = false:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+csharp_style_expression_bodied_lambdas = true:silent
+csharp_style_expression_bodied_local_functions = false:silent
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+end_of_line = crlf
+csharp_indent_labels = one_less_than_current
+dotnet_style_namespace_match_folder = true:suggestion
+csharp_style_prefer_readonly_struct_member = true:suggestion
+dotnet_code_quality_unused_parameters = all:suggestion
+csharp_style_unused_value_assignment_preference = discard_variable:suggestion

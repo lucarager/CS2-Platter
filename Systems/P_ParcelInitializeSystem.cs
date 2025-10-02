@@ -25,7 +25,7 @@ namespace Platter.Systems {
         private EntityQuery m_PrefabQuery;
 
         // Systems & References
-        private Game.Prefabs.PrefabSystem m_PrefabSystem;
+        private PrefabSystem m_PrefabSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -36,7 +36,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
-            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             // Queries
             m_PrefabQuery = GetEntityQuery(

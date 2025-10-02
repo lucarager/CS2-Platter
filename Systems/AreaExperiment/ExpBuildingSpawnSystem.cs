@@ -29,9 +29,6 @@ namespace Platter.Systems {
         // Queries
         private EntityQuery m_Query;
 
-        // Systems & References
-        private Game.Prefabs.PrefabSystem m_PrefabSystem;
-
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();

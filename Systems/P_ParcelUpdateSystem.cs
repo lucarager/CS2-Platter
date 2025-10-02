@@ -32,7 +32,7 @@ namespace Platter.Systems {
         private EntityQuery m_ParcelQuery;
 
         // Systems & References
-        private Game.Prefabs.PrefabSystem m_PrefabSystem;
+        private PrefabSystem m_PrefabSystem;
         private ZoneSystem m_ZoneSystem;
         private P_UISystem m_PlatterUISystem;
 
@@ -46,7 +46,7 @@ namespace Platter.Systems {
 
             // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 

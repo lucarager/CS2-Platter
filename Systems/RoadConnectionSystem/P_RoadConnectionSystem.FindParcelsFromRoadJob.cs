@@ -32,7 +32,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            public NativeArray<P_RoadConnectionSystem.ConnectionUpdateDataJob> m_ConnectionUpdateDataList;
+            public NativeArray<P_RoadConnectionSystem.UpdateData> m_ConnectionUpdateDataList;
 
             /// <summary>
             /// todo.

@@ -37,7 +37,7 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            [ReadOnly] public NativeList<P_RoadConnectionSystem.ConnectionUpdateDataJob> m_ParcelEntitiesList;
+            [ReadOnly] public NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
 
             /// <summary>
             /// todo.
@@ -63,11 +63,6 @@ namespace Platter.Systems {
             /// todo.
             /// </summary>
             [ReadOnly] public ComponentLookup<Edge> m_EdgeComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            public ComponentLookup<Node> m_NodeComponentLookup;
 
             /// <summary>
             /// todo.

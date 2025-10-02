@@ -29,9 +29,9 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             var subBlockJob = default(SubBlockJob);
-            subBlockJob.m_EntityType = GetEntityTypeHandle();
-            subBlockJob.m_ParcelOwnerType = GetComponentTypeHandle<ParcelOwner>();
-            subBlockJob.m_SubBlocksBufferLookup = GetBufferLookup<SubBlock>();
+            subBlockJob.m_EntityType = SystemAPI.GetEntityTypeHandle();
+            subBlockJob.m_ParcelOwnerType = SystemAPI.GetComponentTypeHandle<ParcelOwner>();
+            subBlockJob.m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<SubBlock>();
             base.Dependency = subBlockJob.Schedule(m_Query, base.Dependency);
         }
 
@@ -43,7 +43,7 @@ namespace Platter.Systems {
             [ReadOnly] public ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
             public BufferLookup<SubBlock> m_SubBlocksBufferLookup;
 
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
+            public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
                 var parcelOwnerArray = chunk.GetNativeArray<ParcelOwner>(ref m_ParcelOwnerType);
                 for (var i = 0; i < parcelOwnerArray.Length; i++) {
@@ -54,7 +54,7 @@ namespace Platter.Systems {
             }
 
             void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
-                Execute(in chunk, unfilteredChunkIndex, useEnabledMask, in chunkEnabledMask);
+                Execute(in chunk);
             }
         }
     }

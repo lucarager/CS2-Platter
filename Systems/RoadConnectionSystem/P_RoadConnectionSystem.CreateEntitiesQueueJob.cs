@@ -37,11 +37,6 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            public NativeQueue<Entity>.ParallelWriter m_EdgeEntitiesQueue;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
             [ReadOnly] public EntityTypeHandle m_EntityTypeHandle;
 
             /// <summary>

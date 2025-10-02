@@ -14,7 +14,7 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
-        /// Convert the queue of parcels to a list of ConnectionUpdateDataJob structs.
+        /// Convert the queue of parcels to a list of UpdateData structs.
         /// </summary>
 #if USE_BURST
         [BurstCompile]
@@ -28,20 +28,20 @@ namespace Platter.Systems {
             /// <summary>
             /// todo.
             /// </summary>
-            public NativeList<P_RoadConnectionSystem.ConnectionUpdateDataJob> m_ParcelEntittiesList;
+            public NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntittiesList;
 
             /// <inheritdoc/>
             public void Execute() {
-                // Point a list of ConnectionUpdateDataJob structs from our quuee
+                // Point a list of UpdateData structs from our quuee
                 var parcels = m_ParcelEntitiesQueue.Count;
                 m_ParcelEntittiesList.ResizeUninitialized(parcels);
 
                 for (var i = 0; i < parcels; i++) {
-                    m_ParcelEntittiesList[i] = new P_RoadConnectionSystem.ConnectionUpdateDataJob(m_ParcelEntitiesQueue.Dequeue());
+                    m_ParcelEntittiesList[i] = new P_RoadConnectionSystem.UpdateData(m_ParcelEntitiesQueue.Dequeue());
                 }
 
                 // Sort the list (by parcel index) so that we can easily dedupe
-                m_ParcelEntittiesList.Sort<P_RoadConnectionSystem.ConnectionUpdateDataJob>();
+                m_ParcelEntittiesList.Sort<P_RoadConnectionSystem.UpdateData>();
 
                 // Deduplicate the list
                 var currentBuildingEntity = Entity.Null;

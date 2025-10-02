@@ -20,10 +20,6 @@ namespace Platter.Systems {
         private EntityQuery m_EnabledQuery;
         private EntityQuery m_DisabledQuery;
 
-        // Barriers & Buffers
-        private ModificationBarrier3 m_ModificationBarrier;
-        private EntityCommandBuffer m_CommandBuffer;
-
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -31,9 +27,6 @@ namespace Platter.Systems {
             // Logger
             m_Log = new PrefixedLogger(nameof(P_ParcelSpawnSystem));
             m_Log.Debug($"OnCreate()");
-
-            // Retrieve Systems
-            m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier3>();
 
             // Queries
             m_EnabledQuery = GetEntityQuery(new EntityQueryDesc[]

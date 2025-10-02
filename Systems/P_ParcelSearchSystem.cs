@@ -109,13 +109,13 @@ namespace Platter.Systems {
             }
 
             var updateSearchTreeJob = default(P_ParcelSearchSystem.UpdateSearchTreeJob);
-            updateSearchTreeJob.m_EntityType = GetEntityTypeHandle();
-            updateSearchTreeJob.m_OwnerType = GetComponentTypeHandle<Owner>();
-            updateSearchTreeJob.m_TransformType = GetComponentTypeHandle<Game.Objects.Transform>();
-            updateSearchTreeJob.m_PrefabRefType = GetComponentTypeHandle<PrefabRef>();
-            updateSearchTreeJob.m_CreatedType = GetComponentTypeHandle<Created>();
-            updateSearchTreeJob.m_DeletedType = GetComponentTypeHandle<Deleted>();
-            updateSearchTreeJob.m_OverriddenType = GetComponentTypeHandle<Overridden>();
+            updateSearchTreeJob.m_EntityType = SystemAPI.GetEntityTypeHandle();
+            updateSearchTreeJob.m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>();
+            updateSearchTreeJob.m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>();
+            updateSearchTreeJob.m_PrefabRefType = SystemAPI.GetComponentTypeHandle<PrefabRef>();
+            updateSearchTreeJob.m_CreatedType = SystemAPI.GetComponentTypeHandle<Created>();
+            updateSearchTreeJob.m_DeletedType = SystemAPI.GetComponentTypeHandle<Deleted>();
+            updateSearchTreeJob.m_OverriddenType = SystemAPI.GetComponentTypeHandle<Overridden>();
             updateSearchTreeJob.m_PrefabObjectGeometryData = SystemAPI.GetComponentLookup<ObjectGeometryData>();
             updateSearchTreeJob.m_EditorMode = m_ToolSystem.actionMode.IsEditor();
             updateSearchTreeJob.m_FirstLoad = firstLoad;
@@ -181,7 +181,7 @@ namespace Platter.Systems {
             [ReadOnly] public bool m_FirstLoad;
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
 
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
+            public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
 
                 if (chunk.Has<Deleted>(ref m_DeletedType)) {
@@ -226,7 +226,7 @@ namespace Platter.Systems {
             }
 
             void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
-                Execute(in chunk, unfilteredChunkIndex, useEnabledMask, in chunkEnabledMask);
+                Execute(in chunk);
             }
         }
     }

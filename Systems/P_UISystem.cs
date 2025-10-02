@@ -56,8 +56,6 @@ namespace Platter.Systems {
         private int2 m_SelectedParcelSize = new(2, 2);
         private List<ZoneUIData> m_ZoneData;
         private Dictionary<int, ZoneType> m_ZoneTypeData;
-        private bool loadZones = true;
-        private static readonly Dictionary<string, Entity> MAssetMenuDataDict = new();
         private List<Entity> m_SelectedThemes;
         private List<Entity> m_SelectedAssetPacks;
 
@@ -84,15 +82,15 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public readonly struct PrefabUIData : IJsonWritable {
-            private readonly string Name;
-            private readonly string Thumbnail;
+            private readonly string m_Name;
+            private readonly string m_Thumbnail;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="PrefabUIData"/> struct.
             /// </summary>
             public PrefabUIData(string name, string thumbnail) {
-                Name = name;
-                Thumbnail = thumbnail;
+                m_Name = name;
+                m_Thumbnail = thumbnail;
             }
 
             /// <inheritdoc/>
@@ -100,10 +98,10 @@ namespace Platter.Systems {
                 writer.TypeBegin(GetType().FullName);
 
                 writer.PropertyName("name");
-                writer.Write(Name);
+                writer.Write(m_Name);
 
                 writer.PropertyName("thumbnail");
-                writer.Write(Thumbnail);
+                writer.Write(m_Thumbnail);
 
                 writer.TypeEnd();
             }

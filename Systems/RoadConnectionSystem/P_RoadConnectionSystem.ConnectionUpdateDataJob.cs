@@ -1,4 +1,4 @@
-﻿// <copyright file="RoadConnectionSystem.ConnectionUpdateDataJob.cs" company="Luca Rager">
+﻿// <copyright file="RoadConnectionSystem.UpdateData.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -16,10 +16,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Struct containing data for a replacement job (building, road, etc.)
         /// </summary>
-#if USE_BURST
-        [BurstCompile]
-#endif
-        public struct ConnectionUpdateDataJob : IComparable<ConnectionUpdateDataJob> {
+        public struct UpdateData : IComparable<UpdateData> {
             /// <summary>
             /// Parcel to update.
             /// </summary>
@@ -46,10 +43,10 @@ namespace Platter.Systems {
             public bool m_Deleted;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ConnectionUpdateDataJob"/> struct.
+            /// Initializes a new instance of the <see cref="UpdateData"/> struct.
             /// </summary>
             /// <param name="parcel">A Parcel to update.</param>
-            public ConnectionUpdateDataJob(Entity parcel) {
+            public UpdateData(Entity parcel) {
                 m_Parcel = parcel;
                 m_NewRoad = Entity.Null;
                 m_FrontPos = default;
@@ -58,7 +55,7 @@ namespace Platter.Systems {
             }
 
             /// <inheritdoc/>
-            public int CompareTo(P_RoadConnectionSystem.ConnectionUpdateDataJob other) {
+            public int CompareTo(P_RoadConnectionSystem.UpdateData other) {
                 return m_Parcel.Index - other.m_Parcel.Index;
             }
         }

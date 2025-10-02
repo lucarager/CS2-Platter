@@ -34,7 +34,7 @@ namespace Platter.Systems {
 
         // Systems & References
         private OverlayRenderSystem m_OverlayRenderSystem;
-        private Game.Prefabs.PrefabSystem m_PrefabSystem;
+        private PrefabSystem m_PrefabSystem;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -94,7 +94,7 @@ namespace Platter.Systems {
 
             // Systems & References
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             // Color Data
             m_FillColors = new Dictionary<ZoneType, Color>();
@@ -150,14 +150,14 @@ namespace Platter.Systems {
                 }
 
                 // Todo split position calc, render calc, and render step, into separate jobs for perf
-                DrawOverlaysJob drawOverlaysJobData = new() {
+                var drawOverlaysJobData = new DrawOverlaysJob() {
                     m_OverlayRenderBuffer = buffer,
                     m_CameraPosition = (float3)Camera.main.transform.position,
                     m_ColorArray = colorsMap,
-                    m_EntityTypeHandle = GetEntityTypeHandle(),
-                    m_TransformComponentTypeHandle = GetComponentTypeHandle<Game.Objects.Transform>(),
-                    m_PrefabRefComponentTypeHandle = GetComponentTypeHandle<PrefabRef>(),
-                    m_ParcelComponentTypeHandle = GetComponentTypeHandle<Parcel>(),
+                    m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                    m_TransformComponentTypeHandle = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
+                    m_PrefabRefComponentTypeHandle = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                    m_ParcelComponentTypeHandle = SystemAPI.GetComponentTypeHandle<Parcel>(),
                     m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(),
                     m_ObjectGeometryComponentLookup = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
                     m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
