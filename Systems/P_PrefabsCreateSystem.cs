@@ -4,16 +4,18 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+    using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Common;
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Extensions;
     using Platter.Utils;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
@@ -21,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Todo.
     /// </summary>
-    public partial class P_PrefabSystem : GameSystemBase {
+    public partial class P_PrefabsCreateSystem : GameSystemBase {
         /// <summary>
         /// Range of block sizes we support.
         /// <para>x = min width.</para>
@@ -60,29 +62,17 @@ namespace Platter.Systems {
 
         // Systems & References
         private static PrefabSystem m_PrefabSystem;
-
+        private static BuildingInitializeSystem m_BuildingInitializeSystem;
+        
         // Logger
         private PrefixedLogger m_Log;
-
-        /// <summary>
-        /// Data to define our prefabs.
-        /// </summary>
-        private struct CustomPrefabData {
-            public int m_LotWidth;
-            public int m_LotDepth;
-
-            public CustomPrefabData(int w, int d) {
-                m_LotWidth = w;
-                m_LotDepth = d;
-            }
-        }
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_PrefabSystem));
+            m_Log = new PrefixedLogger(nameof(P_PrefabsCreateSystem));
             m_Log.Debug($"OnCreate()");
 
             // Storage
@@ -91,6 +81,7 @@ namespace Platter.Systems {
 
             // Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_BuildingInitializeSystem = World.GetOrCreateSystemManaged<BuildingInitializeSystem>();
         }
 
         /// <inheritdoc/>
@@ -101,8 +92,12 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
             base.OnGamePreload(purpose, mode);
-
             var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
+            m_Log.Debug($"{logMethodPrefix}");
+
+            if (mode != GameMode.Game) {
+                return;
+            }
 
             if (_prefabsAreInstalled) {
                 m_Log.Debug($"{logMethodPrefix} _prefabsAreInstalled = true, skipping");
@@ -170,7 +165,7 @@ namespace Platter.Systems {
 
             // (experimental) adding area data
             var objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
-            objectSubAreas.name = $"{name}-areas";
+            objectSubAreas.name = "ObjectSubAreas";
             objectSubAreas.m_SubAreas = new ObjectSubAreaInfo[1] { new () {
                     m_AreaPrefab = areaPrefabBase,
                     m_NodePositions = new float3[] {
@@ -188,14 +183,14 @@ namespace Platter.Systems {
                 },
             };
 
-            // parcelPrefabBase.AddComponentFrom(objectSubAreas);
+            // Experimental
+            //parcelPrefabBase.AddComponentFrom(objectSubAreas);
 
             // Point and populate the new UIObject for our cloned Prefab
             var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
             placeableLotPrefabUIObject.m_Icon = icon;
             placeableLotPrefabUIObject.name = PrefabNamePrefix;
             placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
-            placeableLotPrefabUIObject.m_Priority = zonePrefabUIObject.m_Priority;
             placeableLotPrefabUIObject.m_Priority = ((lotWidth - 2) * BlockSizes.z) + lotDepth - 1;
             placeableLotPrefabUIObject.m_Group = uiCategoryPrefab;
             placeableLotPrefabUIObject.active = zonePrefabUIObject.active;

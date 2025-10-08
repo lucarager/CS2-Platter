@@ -4,11 +4,14 @@
 // </copyright>
 
 namespace Game.Prefabs {
+    using Colossal.Entities;
     using Colossal.Logging;
+    using Game.Net;
     using Game.Objects;
     using Game.Zones;
     using Platter;
     using Platter.Components;
+    using Platter.Constants;
     using Platter.Systems;
     using Platter.Utils;
     using System.Collections.Generic;
@@ -33,11 +36,6 @@ namespace Game.Prefabs {
         /// Todo.
         /// </summary>
         public ZoneBlockPrefab m_ZoneBlock;
-
-        /// <summary>
-        /// todo.
-        /// </summary>
-        public ZoneType m_PreZoneType;
 
         /// <summary>
         /// todo.
@@ -79,8 +77,31 @@ namespace Game.Prefabs {
             base.GetArchetypeComponents(components);
 
             components.Add(ComponentType.ReadWrite<Parcel>());
+            //components.Add(ComponentType.ReadWrite<PrefabVersion>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<ParcelSubBlock>());
         }
-    }
+
+        public override void Initialize(EntityManager entityManager, Entity entity) {
+            base.Initialize(entityManager, entity);
+
+            //    PlatterMod.Instance.Log.Debug($"ParcelPrefab.Initialize() -- {name}");
+
+            //    if (!entityManager.TryGetComponent<PrefabVersion>(entity, out var version) || version.m_Version == 0) {
+            //        version.m_Version = ModConstants.LatestPrefabVersion;
+            //        entityManager.SetComponentData(entity, version);
+            //    }
+
+            //    entityManager.SetComponentData(entity, new PlaceableObjectData() {
+            //        m_Flags = Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround | Game.Objects.PlacementFlags.NetObject,
+            //        m_PlacementOffset = new float3(0, 0, 0),
+            //        m_ConstructionCost = 0,
+            //        m_XPReward = 0,
+            //    });
+
+            //entityManager.SetComponentData(entity, new ParcelData() {
+            //    m_LotSize = new int2(m_LotWidth, m_LotDepth),
+            //});
+        }
+}
 }

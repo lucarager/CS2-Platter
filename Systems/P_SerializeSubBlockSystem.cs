@@ -1,23 +1,29 @@
-﻿// <copyright file="P_SerializeSubBlockSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_SerializeParcelSubBlockSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using Colossal.Logging;
     using Game;
     using Game.Zones;
     using Platter.Components;
+    using Platter.Utils;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
 
-    internal partial class P_SerializeSubBlockSystem : GameSystemBase {
+    internal partial class P_SerializeParcelSubBlockSystem : GameSystemBase {
         private EntityQuery m_Query;
+        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
+            m_Log = new PrefixedLogger(nameof(P_SerializeParcelSubBlockSystem));
+            m_Log.Debug($"OnCreate()");
+
             m_Query = base.GetEntityQuery(new ComponentType[]
             {
                 ComponentType.ReadOnly<Block>(),
@@ -28,10 +34,12 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            m_Log.Debug($"OnUpdate()");
+
             var subBlockJob = new SerializeJob() {
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
-                m_ParcelOwnerType = SystemAPI.GetComponentTypeHandle<ParcelOwner>(),
-                m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(),
+                m_ParcelOwnerType = SystemAPI.GetComponentTypeHandle<ParcelOwner>(true),
+                m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
             }.Schedule(m_Query, base.Dependency);
 
             base.Dependency = subBlockJob;

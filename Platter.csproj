@@ -4,7 +4,7 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net472</TargetFramework>
 		<LangVersion>9.0</LangVersion>
-		<Configurations>Debug;Release</Configurations>
+		<Configurations>Debug;Release;I18N</Configurations>
 		<Title>Platter</Title>
 		<AssemblyTitle>$(Title)</AssemblyTitle>
 		<Description>A Cities: Skylines 2 mod.</Description>
@@ -27,6 +27,11 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>$(DefineConstants);ENABLE_PROFILER;IS_DEBUG;</DefineConstants>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='I18N|AnyCPU'">
+		<DefineConstants>$(DefineConstants);ENABLE_PROFILER;IS_DEBUG;EXPORT_EN_US;</DefineConstants>
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
 

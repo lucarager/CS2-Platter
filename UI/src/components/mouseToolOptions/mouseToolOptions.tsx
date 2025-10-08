@@ -1,12 +1,12 @@
 import React from "react";
 import { ModuleRegistryExtend } from "cs2/modding";
-import { VanillaComponents, VanillaThemes } from "components/vanilla/Components";
+import { VC, VT } from "components/vanilla/Components";
 import { useValue } from "cs2/api";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import styles from "./mouseToolOptions.module.scss";
-import { Dropdown, DropdownToggle, Icon, DropdownItem } from "cs2/ui";
+import { Dropdown, DropdownToggle, Icon, DropdownItem, Tooltip } from "cs2/ui";
 import { c } from "utils/classes";
-import { VanillaFocusKey } from "../vanilla/Components";
+import { VF } from "../vanilla/Components";
 import { FocusDisabled } from "cs2/input";
 import { useLocalization } from "cs2/l10n";
 
@@ -19,6 +19,8 @@ export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
         const zoneDataBinding = useValue(GAME_BINDINGS.ZONE_DATA.binding);
         const zoneBinding = useValue(GAME_BINDINGS.ZONE.binding);
         const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
+        const snapRoadsideBinding = useValue(GAME_BINDINGS.SNAP_ROADSIDE.binding);
+        const snapSpacingBinding = useValue(GAME_BINDINGS.SNAP_SPACING.binding);
         const { translate } = useLocalization();
 
         const dropDownList = (
@@ -27,7 +29,7 @@ export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
                     <DropdownItem<number>
                         key={idx}
                         className={styles.dropdownItem}
-                        focusKey={VanillaFocusKey.FOCUS_AUTO}
+                        focusKey={VF.FOCUS_AUTO}
                         value={zoneData.index}
                         closeOnSelect={true}
                         sounds={{ select: "select-item" }}
@@ -49,23 +51,19 @@ export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
                     </h1>
                 </div>
                 <FocusDisabled>
-                    <VanillaComponents.Section
-                        title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
+                    <VC.Section title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
                         <Dropdown
-                            focusKey={VanillaFocusKey.FOCUS_DISABLED}
+                            focusKey={VF.FOCUS_DISABLED}
                             initialFocused={"Test"}
                             alignment="left"
                             theme={{
-                                ...VanillaThemes.dropdown,
+                                ...VT.dropdown,
                                 dropdownMenu: styles.dropdownMenu,
                             }}
                             content={dropDownList}>
                             <DropdownToggle
                                 openIconComponent
-                                className={c(
-                                    VanillaThemes.dropdown.dropdownToggle,
-                                    styles.dropdownToggle,
-                                )}>
+                                className={c(VT.dropdown.dropdownToggle, styles.dropdownToggle)}>
                                 <div className={styles.dropdownToggleInner}>
                                     <Icon
                                         className={c(styles.dropdownZoneIcon, styles.dropdownIcon)}
@@ -89,85 +87,126 @@ export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
                                 </div>
                             </DropdownToggle>
                         </Dropdown>
-                    </VanillaComponents.Section>
+                    </VC.Section>
 
-                    <VanillaComponents.Section
-                        title={translate("PlatterMod.UI.SectionTitle.Lotsize")}>
-                        <div className={styles.controlsRow}>
-                            <VanillaComponents.ToolButton
+                    <VC.Section title={translate("PlatterMod.UI.SectionTitle.SnapMode")}>
+                        <VC.ToolButton
+                            className={VT.toolButton.button}
+                            src={"Media/Tools/Snap Options/NetSide.svg"}
+                            onSelect={() => GAME_BINDINGS.SNAP_ROADSIDE.set(!snapRoadsideBinding)}
+                            selected={snapRoadsideBinding}
+                            multiSelect={false}
+                            disabled={false}
+                            focusKey={VF.FOCUS_DISABLED}
+                            tooltip={translate("PlatterMod.UI.Tooltip.SnapModeRoadSide")}
+                        />
+                    </VC.Section>
+
+                    {snapRoadsideBinding ? (
+                        <VC.Section title={translate("PlatterMod.UI.SectionTitle.SnapSpacing")}>
+                            <VC.ToolButton
                                 onSelect={() =>
-                                    GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_DECREASE")
+                                    GAME_BINDINGS.SNAP_SPACING.set(snapSpacingBinding - 1)
                                 }
                                 src="Media/Glyphs/ThickStrokeArrowLeft.svg"
-                                focusKey={VanillaFocusKey.FOCUS_DISABLED}
-                                disabled={blockWidthBinding === 2}
-                                tooltip="Tooltip"
+                                focusKey={VF.FOCUS_DISABLED}
+                                disabled={snapSpacingBinding === 0}
+                                tooltip={translate("PlatterMod.UI.Tooltip.SnapSpacingDecrease")}
                                 className={c(
-                                    VanillaThemes.toolButton.button,
+                                    VT.toolButton.button,
                                     styles.button,
-                                    VanillaThemes.mouseToolOptions.startButton,
+                                    VT.mouseToolOptions.startButton,
                                 )}
                             />
-                            <div
-                                className={c(
-                                    VanillaThemes.mouseToolOptions.numberField,
-                                    styles.controlsRowValue,
-                                )}>
-                                {blockWidthBinding}
-                            </div>
-                            <VanillaComponents.ToolButton
+                            <Tooltip tooltip={translate("PlatterMod.UI.Tooltip.SnapSpacingAmount")}>
+                                <div className={c(VT.mouseToolOptions.numberField)}>
+                                    {snapSpacingBinding}m
+                                </div>
+                            </Tooltip>
+                            <VC.ToolButton
                                 onSelect={() =>
-                                    GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_INCREASE")
+                                    GAME_BINDINGS.SNAP_SPACING.set(snapSpacingBinding + 1)
                                 }
                                 src="Media/Glyphs/ThickStrokeArrowRight.svg"
-                                focusKey={VanillaFocusKey.FOCUS_DISABLED}
-                                disabled={blockWidthBinding === 6}
-                                tooltip="Tooltip"
+                                focusKey={VF.FOCUS_DISABLED}
+                                disabled={snapSpacingBinding === 15}
+                                tooltip={translate("PlatterMod.UI.Tooltip.SnapSpacingIncrease")}
                                 className={c(
-                                    VanillaThemes.toolButton.button,
+                                    VT.toolButton.button,
                                     styles.button,
-                                    VanillaThemes.mouseToolOptions.endButton,
+                                    VT.mouseToolOptions.endButton,
                                 )}
                             />
-                        </div>
-                        <div className={styles.controlsRow}>
-                            <VanillaComponents.ToolButton
-                                onSelect={() =>
-                                    GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_DECREASE")
-                                }
-                                src="Media/Glyphs/ThickStrokeArrowLeft.svg"
-                                focusKey={VanillaFocusKey.FOCUS_DISABLED}
-                                disabled={blockDepthBinding === 2}
-                                tooltip="Decrease Depth"
-                                className={c(
-                                    VanillaThemes.toolButton.button,
-                                    styles.button,
-                                    VanillaThemes.mouseToolOptions.startButton,
-                                )}
-                            />
-                            <div
-                                className={c(
-                                    VanillaThemes.mouseToolOptions.numberField,
-                                    styles.controlsRowValue,
-                                )}>
-                                {blockDepthBinding}
+                        </VC.Section>
+                    ) : null}
+
+                    <VC.Section title={translate("PlatterMod.UI.SectionTitle.ParcelWidth")}>
+                        <VC.ToolButton
+                            onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_DECREASE")}
+                            src="Media/Glyphs/ThickStrokeArrowLeft.svg"
+                            focusKey={VF.FOCUS_DISABLED}
+                            disabled={blockWidthBinding === 2}
+                            tooltip={translate("PlatterMod.UI.Tooltip.BlockWidthDecrease")}
+                            className={c(
+                                VT.toolButton.button,
+                                styles.button,
+                                VT.mouseToolOptions.startButton,
+                            )}
+                        />
+                        <Tooltip tooltip={translate("PlatterMod.UI.Tooltip.BlockWidthNumber")}>
+                            <div className={c(VT.mouseToolOptions.numberField)}>
+                                {blockWidthBinding +
+                                    " " +
+                                    translate("PlatterMod.UI.Label.ParcelSizeUnit")}
                             </div>
-                            <VanillaComponents.ToolButton
-                                onSelect={() =>
-                                    GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_INCREASE")
-                                }
-                                src="Media/Glyphs/ThickStrokeArrowRight.svg"
-                                focusKey={VanillaFocusKey.FOCUS_DISABLED}
-                                disabled={blockDepthBinding === 6}
-                                tooltip="Increase Depth"
-                                className={c(
-                                    VanillaThemes.toolButton.button,
-                                    styles.button,
-                                    VanillaThemes.mouseToolOptions.endButton,
-                                )}
-                            />
-                        </div>
-                    </VanillaComponents.Section>
+                        </Tooltip>
+                        <VC.ToolButton
+                            onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_INCREASE")}
+                            src="Media/Glyphs/ThickStrokeArrowRight.svg"
+                            focusKey={VF.FOCUS_DISABLED}
+                            disabled={blockWidthBinding === 6}
+                            tooltip={translate("PlatterMod.UI.Tooltip.BlockWidthIncrease")}
+                            className={c(
+                                VT.toolButton.button,
+                                styles.button,
+                                VT.mouseToolOptions.endButton,
+                            )}
+                        />
+                    </VC.Section>
+
+                    <VC.Section title={translate("PlatterMod.UI.SectionTitle.ParcelDepth")}>
+                        <VC.ToolButton
+                            onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_DECREASE")}
+                            src="Media/Glyphs/ThickStrokeArrowLeft.svg"
+                            focusKey={VF.FOCUS_DISABLED}
+                            disabled={blockDepthBinding === 2}
+                            tooltip={translate("PlatterMod.UI.Tooltip.BlockDepthDecrease")}
+                            className={c(
+                                VT.toolButton.button,
+                                styles.button,
+                                VT.mouseToolOptions.startButton,
+                            )}
+                        />
+                        <Tooltip tooltip={translate("PlatterMod.UI.Tooltip.BlockDepthNumber")}>
+                            <div className={c(VT.mouseToolOptions.numberField)}>
+                                {blockDepthBinding +
+                                    " " +
+                                    translate("PlatterMod.UI.Label.ParcelSizeUnit")}
+                            </div>
+                        </Tooltip>
+                        <VC.ToolButton
+                            onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_INCREASE")}
+                            src="Media/Glyphs/ThickStrokeArrowRight.svg"
+                            focusKey={VF.FOCUS_DISABLED}
+                            disabled={blockDepthBinding === 6}
+                            tooltip={translate("PlatterMod.UI.Tooltip.BlockDepthIncrease")}
+                            className={c(
+                                VT.toolButton.button,
+                                styles.button,
+                                VT.mouseToolOptions.endButton,
+                            )}
+                        />
+                    </VC.Section>
                 </FocusDisabled>
             </div>
         );

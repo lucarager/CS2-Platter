@@ -4,10 +4,13 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using Colossal.Logging;
     using Game;
     using Game.Buildings;
+    using Game.Net;
     using Game.Zones;
     using Platter.Components;
+    using Platter.Utils;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -15,10 +18,13 @@ namespace Platter.Systems {
 
     internal partial class P_SerializeConnectedParcelSystem : GameSystemBase {
         private EntityQuery m_Query;
+        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
+            m_Log = new PrefixedLogger(nameof(P_SerializeConnectedParcelSystem));
+            m_Log.Debug($"OnCreate()");
             m_Query = base.GetEntityQuery(new ComponentType[]
             {
                 ComponentType.ReadOnly<Parcel>(),
@@ -28,6 +34,8 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            m_Log.Debug($"OnUpdate()");
+
             var deserializeJob = default(DeserializeJob);
             deserializeJob.m_EntityType = SystemAPI.GetEntityTypeHandle();
             deserializeJob.m_ParcelType = SystemAPI.GetComponentTypeHandle<Parcel>();

@@ -51,20 +51,16 @@ namespace Platter.Systems {
             m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
-            m_ParcelQuery = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>(),
-                        ComponentType.ReadOnly<ParcelSubBlock>(),
-                    },
-                    Any = new ComponentType[] {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                });
+            m_ParcelQuery = SystemAPI.QueryBuilder()
+                .WithAllRW<Parcel>()
+                .WithAllRW<ParcelSubBlock>()
+                .WithAll<PrefabRef>()
+                .WithAll<ParcelComposition>()
+                .WithAll<Transform>()
+                .WithAny<Updated>()
+                .WithAny<Deleted>()
+                .WithNone<Temp>()
+                .Build();
 
             // Update Cycle
             RequireForUpdate(m_ParcelQuery);
@@ -77,9 +73,7 @@ namespace Platter.Systems {
             var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawning;
 
             foreach (var parcelEntity in entities) {
-                if (!EntityManager.TryGetBuffer<ParcelSubBlock>(parcelEntity, false, out var subBlockBuffer)) {
-                    return;
-                }
+                var subBlockBuffer = EntityManager.GetBuffer<ParcelSubBlock>(parcelEntity);
 
                 // DELETE state
                 if (EntityManager.HasComponent<Deleted>(parcelEntity)) {
@@ -134,9 +128,9 @@ namespace Platter.Systems {
                     m_CommandBuffer.AddComponent<ParcelSpawnable>(parcelEntity, default);
                 }
 
-                // Update prezoned type
-                parcel.m_PreZoneType = ZoneType.None;
-                m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
+                //// Update prezoned type
+                //parcel.m_PreZoneType = ZoneType.None;
+                //m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
 
                 // If this is a temp entity, exit.
                 if (EntityManager.HasComponent<Temp>(parcelEntity)) {

@@ -62,8 +62,8 @@ namespace Platter.Utils {
         /// <returns></returns>
         public static Bounds3 GetParcelBounds(float3 parcelSize) {
             return new Bounds3(
-                new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z + DimensionConstants.CellSize),
-                new float3(parcelSize.x / 2, parcelSize.y / 2, DimensionConstants.CellSize)
+                new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z),
+                new float3(parcelSize.x / 2, parcelSize.y / 2, 0)
             );
         }
 

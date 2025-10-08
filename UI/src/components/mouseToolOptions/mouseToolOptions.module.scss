@@ -33,23 +33,10 @@
     opacity: .5;
 }
 
-.controlsRow {
-    display: flex;
-    flex-direction: row;
-
-    &:first-child {
-        margin-right: 6rem;
-    }
-}
-
 .dropdownToggleInner {
     display: flex;
     align-items: center;
     flex-direction: row;
-}
-
-.controlsRowValue {
-    width: 24rem;
 }
 
 .controlsRowWidthDropdown {

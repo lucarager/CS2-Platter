@@ -8,8 +8,10 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
+    using Game.Tools;
     using Platter.Components;
     using Platter.Utils;
+    using System.Drawing;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -38,15 +40,13 @@ namespace Platter.Systems {
             // Retrieve Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
-            // Queries
-            m_PrefabQuery = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<PrefabData>(),
-                        ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadWrite<ParcelData>(),
-                    },
-                });
+            m_PrefabQuery = SystemAPI.QueryBuilder()
+                .WithAllRW<ParcelData>()
+                .WithAllRW<ObjectGeometryData>()
+                .WithAllRW<PlaceableObjectData>()
+                .WithAll<PrefabData>()
+                .WithAll<Created>()
+                .Build();
 
             // Update Cycle
             RequireForUpdate(m_PrefabQuery);
@@ -90,7 +90,7 @@ namespace Platter.Systems {
                 var oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
                 oGeoData.m_MinLod = 100;
                 oGeoData.m_Size = parcelGeo.Size;
-                oGeoData.m_Pivot = parcelGeo.Center;
+                oGeoData.m_Pivot = parcelGeo.Pivot;
                 oGeoData.m_LegSize = new float3(2f, 2f, 2f);
                 oGeoData.m_Bounds = parcelGeo.Bounds;
                 oGeoData.m_Layers = MeshLayer.First;
@@ -98,20 +98,10 @@ namespace Platter.Systems {
                 oGeoData.m_Flags |= GeometryFlags.WalkThrough;
                 EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
 
-                // Placeable data
-                var placeableData = EntityManager.GetComponentData<PlaceableObjectData>(currentEntity);
-                placeableData.m_Flags |= Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround | Game.Objects.PlacementFlags.NetObject;
-                placeableData.m_PlacementOffset = new float3(100f, 0, 100f);
-                EntityManager.SetComponentData<PlaceableObjectData>(currentEntity, placeableData);
-
-                // Building Data
-                //var buildingData = EntityManager.GetComponentData<BuildingData>(currentEntity);
-                //buildingData.m_LotSize = parcelData.m_LotSize;
-                //buildingData.m_Flags = BuildingFlags.RequireRoad;
-
-                // Finished
-                m_Log.Debug($"OnUpdate() -- Finished initializing {parcelPrefabRef} on entity {currentEntity.Index}");
+                m_Log.Debug($"OnUpdate() -- Initialized Parcel {parcelData.m_LotSize.x}x{parcelData.m_LotSize.y}.");
             }
+
+            EntityManager.AddComponent<Updated>(m_PrefabQuery);
         }
     }
 }

@@ -37,16 +37,13 @@ namespace Platter.Systems {
         // Systems
         private PrefabSystem m_PrefabSystem;
         private ToolSystem m_ToolSystem;
-        private ZoneSystem m_ZoneSystem;
         private ObjectToolSystem m_ObjectToolSystem;
-        private ImageSystem m_ImageSystem;
-        private CityConfigurationSystem m_CityConfigurationSystem;
         private P_OverlaySystem m_PlatterOverlaySystem;
         private P_ParcelSpawnSystem m_ParcelSpawnSystem;
+        private P_SnapSystem m_SnapSystem;
+        private P_ZoneCacheSystem m_ZoneCacheSystem;
 
         // Queries
-        private EntityQuery m_ZoneQuery;
-        private EntityQuery m_UIAssetCategoryDataQuery;
         private EntityQuery m_Query;
 
         // Logger
@@ -54,20 +51,17 @@ namespace Platter.Systems {
 
         // Data
         private int2 m_SelectedParcelSize = new (2, 2);
-        private List<ZoneUIData> m_ZoneData;
-        private Dictionary<int, ZoneType> m_ZoneTypeData;
-        private List<Entity> m_SelectedThemes;
-        private List<Entity> m_SelectedAssetPacks;
 
         // Bindings
         private ValueBindingHelper<bool> m_EnableToolButtonsBinding;
         private ValueBindingHelper<int> m_ZoneBinding;
-        private ValueBindingHelper<PrefabUIData> m_PrefabDataBinding;
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
         private ValueBindingHelper<int> m_BlockWidthBinding;
         private ValueBindingHelper<int> m_BlockDepthBinding;
         private ValueBindingHelper<bool> m_RenderParcelsBinding;
         private ValueBindingHelper<bool> m_AllowSpawningBinding;
+        private ValueBindingHelper<bool> m_SnapRoadSideBinding;
+        private ValueBindingHelper<float> m_SnapSpacingBinding;
 
         // Shortcuts
         private ProxyAction m_IncreaseBlockWidthAction;
@@ -80,40 +74,11 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        public readonly struct PrefabUIData : IJsonWritable {
-            private readonly string m_Name;
-            private readonly string m_Thumbnail;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="PrefabUIData"/> struct.
-            /// </summary>
-            public PrefabUIData(string name, string thumbnail) {
-                m_Name = name;
-                m_Thumbnail = thumbnail;
-            }
-
-            /// <inheritdoc/>
-            public readonly void Write(IJsonWriter writer) {
-                writer.TypeBegin(GetType().FullName);
-
-                writer.PropertyName("name");
-                writer.Write(m_Name);
-
-                writer.PropertyName("thumbnail");
-                writer.Write(m_Thumbnail);
-
-                writer.TypeEnd();
-            }
-        }
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
         public readonly struct ZoneUIData : IJsonWritable {
-            private readonly string Name;
-            private readonly string Thumbnail;
-            private readonly string Group;
-            private readonly ushort Index;
+            public readonly string Name;
+            public readonly string Thumbnail;
+            public readonly string Group;
+            public readonly ushort Index;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
@@ -152,54 +117,31 @@ namespace Platter.Systems {
             // Logger
             m_Log = new PrefixedLogger(nameof(P_UISystem));
             m_Log.Debug($"OnCreate()");
-            m_ZoneData = new ();
-            m_ZoneTypeData = new ();
 
             // Queries
-            m_ZoneQuery = GetEntityQuery(new ComponentType[]
-            {
-                ComponentType.ReadOnly<ZoneData>(),
-                ComponentType.ReadOnly<PrefabData>(),
-                ComponentType.Exclude<Deleted>(),
-            });
-
             m_Query = GetEntityQuery(new ComponentType[] {
                 ComponentType.ReadOnly<UIAssetMenuData>(),
             });
 
-            m_UIAssetCategoryDataQuery = GetEntityQuery(new ComponentType[] {
-                ComponentType.ReadOnly<ZoneData>(),
-                ComponentType.ReadOnly<UIObjectData>(),
-            });
-
-            // todo
-            // use
-            // m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
-
             // Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_ImageSystem = World.GetOrCreateSystemManaged<ImageSystem>();
-            m_CityConfigurationSystem = World.GetOrCreateSystemManaged<CityConfigurationSystem>();
             m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<P_OverlaySystem>();
             m_ParcelSpawnSystem = World.GetOrCreateSystemManaged<P_ParcelSpawnSystem>();
-
-            // Data
-            m_SelectedThemes = new List<Entity>();
-            m_SelectedAssetPacks = new List<Entity>();
+            m_SnapSystem = World.GetOrCreateSystemManaged<P_SnapSystem>();
+            m_ZoneCacheSystem = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
 
             // Bindings
             m_EnableToolButtonsBinding = CreateBinding<bool>("ENABLE_TOOL_BUTTONS", false);
             m_ZoneBinding = CreateBinding<int>("ZONE", 0, SetPreZone);
             m_BlockWidthBinding = CreateBinding<int>("BLOCK_WIDTH", 2);
             m_BlockDepthBinding = CreateBinding<int>("BLOCK_DEPTH", 2);
-            PrefabUIData defaultParcel = new ("Parcel 2x2", "coui://platter/Parcel_2x2.svg");
-            m_PrefabDataBinding = CreateBinding<PrefabUIData>("PREFAB_DATA", defaultParcel);
-            m_ZoneDataBinding = CreateBinding<ZoneUIData[]>("ZONE_DATA", m_ZoneData.ToArray());
+            m_ZoneDataBinding = CreateBinding<ZoneUIData[]>("ZONE_DATA", new ZoneUIData[] { });
             m_RenderParcelsBinding = CreateBinding<bool>("RENDER_PARCELS", true, SetRenderParcels);
             m_AllowSpawningBinding = CreateBinding<bool>("ALLOW_SPAWNING", true, SetAllowSpawning);
+            m_SnapRoadSideBinding = CreateBinding<bool>("SNAP_ROADSIDE", true, SetSnapRoadside);
+            m_SnapSpacingBinding = CreateBinding<float>("SNAP_SPACING", P_SnapSystem.DEFAULT_SNAP_DISTANCE, SetSnapSpacing);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
@@ -211,8 +153,6 @@ namespace Platter.Systems {
             m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
             m_ToggleRender = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
             m_ToggleSpawn = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
-
-            m_ToolSystem.EventToolChanged += OnToolChanged;
         }
 
         /// <inheritdoc/>
@@ -268,17 +208,10 @@ namespace Platter.Systems {
             // Send down zone data when ready
             // todo refresh!
             if (m_ZoneDataBinding.Value.Length == 0) {
-                m_ZoneDataBinding.Value = m_ZoneData.ToArray();
+                var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
+                Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
+                m_ZoneDataBinding.Value = zoneData;
             }
-
-            // Update selected Prefab binding
-            var prefabBase = m_ObjectToolSystem.prefab;
-            if (prefabBase != null) {
-                m_PrefabDataBinding.Value = new PrefabUIData(prefabBase.name, ImageSystem.GetThumbnail(prefabBase));
-            }
-        }
-
-        private void OnToolChanged(ToolBaseSystem tool) {
         }
 
         /// <inheritdoc/>
@@ -286,106 +219,8 @@ namespace Platter.Systems {
             base.OnGameLoadingComplete(purpose, mode);
             m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
 
-            if (mode == GameMode.Game) {
-                CollectData();
-            }
-
             m_ToggleRender.shouldBeEnabled = mode.IsGameOrEditor();
             m_ToggleSpawn.shouldBeEnabled = mode.IsGameOrEditor();
-        }
-
-        private readonly string[] m_ZoneUITags = {
-            "ZonesResidential",
-            "ZonesCommercial",
-            "ZonesIndustrial",
-            "ZonesOffice",
-            "ByLawZones",
-        };
-
-        private void CollectData() {
-            m_Log.Debug($"CollectData()");
-
-            var entities = m_Query.ToEntityArray(Allocator.Temp);
-
-            m_ZoneData.Clear();
-            m_ZoneTypeData.Clear();
-
-            if (m_PrefabSystem.TryGetPrefab(new PrefabID("ZonePrefab", "Unzoned"), out var unzonedPrefabBase) &&
-                m_PrefabSystem.TryGetEntity(unzonedPrefabBase, out var unzonedEntity)) {
-                var zoneData = EntityManager.GetComponentData<ZoneData>(unzonedEntity);
-
-                m_ZoneData.Add(new ZoneUIData(
-                    unzonedPrefabBase.name,
-                    ImageSystem.GetThumbnail(unzonedPrefabBase),
-                    "Unzoned",
-                    0
-                ));
-                m_ZoneTypeData.Add(zoneData.m_ZoneType.m_Index, zoneData.m_ZoneType);
-            } else {
-                m_Log.Error($"CollectData() -- Failed retrieving unzonedPrefabBase");
-            }
-
-            foreach (var assetMenuEntity in entities) {
-                EntityManager.TryGetBuffer<UIGroupElement>(assetMenuEntity, true, out var categoryBuffer);
-                var sortedCategories = GetCategories(categoryBuffer);
-
-                foreach (var category in sortedCategories) {
-                    var categoryEntity = category.entity;
-                    var categoryPrefab = m_PrefabSystem.GetPrefab<PrefabBase>(category.prefabData);
-                    m_Log.Debug($"CollectData -- {categoryPrefab.name}");
-
-                    if (EntityManager.TryGetBuffer<UIGroupElement>(categoryEntity, true, out var assetsBuffer)) {
-                        var assets = UIObjectInfo.GetObjects(EntityManager, assetsBuffer, Allocator.TempJob);
-                        FilterOutUpgrades(assets);
-                        assets.Sort<UIObjectInfo>();
-
-                        foreach (var asset in assets) {
-                            var assetEntity = asset.entity;
-                            if (!m_PrefabSystem.TryGetPrefab<ZonePrefab>(assetEntity, out var zonePrefab)) {
-                                return;
-                            }
-
-                            var zoneData = EntityManager.GetComponentData<ZoneData>(assetEntity);
-
-                            m_ZoneTypeData.Add(zoneData.m_ZoneType.m_Index, zoneData.m_ZoneType);
-                            m_ZoneData.Add(new ZoneUIData(
-                                zonePrefab.name,
-                                ImageSystem.GetThumbnail(zonePrefab),
-                                categoryPrefab.name,
-                                zoneData.m_ZoneType.m_Index
-                            ));
-
-                            m_Log.Debug($"CollectData -- {categoryPrefab.name} -> {zonePrefab.name}");
-                        }
-                    }
-                }
-
-                sortedCategories.Dispose();
-            }
-        }
-
-        private NativeList<UIObjectInfo> GetCategories(DynamicBuffer<UIGroupElement> elements) {
-            var objects = UIObjectInfo.GetObjects(EntityManager, elements, Allocator.TempJob);
-            for (var i = objects.Length - 1; i >= 0; i--) {
-                if (!m_PrefabSystem.TryGetPrefab<PrefabBase>(objects[i].prefabData, out var categoryPrefab) ||
-                    !m_ZoneUITags.Contains(categoryPrefab.name) ||
-                    !EntityManager.HasComponent<UIAssetCategoryData>(objects[i].entity) ||
-                    !EntityManager.TryGetBuffer<UIGroupElement>(objects[i].entity, true, out var dynamicBuffer) ||
-                    dynamicBuffer.Length == 0) {
-                    objects.RemoveAtSwapBack(i);
-                }
-            }
-
-            objects.Sort<UIObjectInfo>();
-            return objects;
-        }
-
-        private void FilterOutUpgrades(NativeList<UIObjectInfo> elementInfos) {
-            for (var i = elementInfos.Length - 1; i >= 0; i--) {
-                if (base.EntityManager.HasComponent<ServiceUpgradeData>(elementInfos[i].entity)) {
-                    elementInfos.RemoveAtSwapBack(i);
-                }
-            }
         }
 
         /// <summary>
@@ -454,16 +289,44 @@ namespace Platter.Systems {
         /// <summary>
         /// Called from the UI.
         /// </summary>
+        private void SetSnapRoadside(bool enabled) {
+            m_Log.Debug($"SetSnapRoadside(enabled = {enabled})");
+            if (enabled) {
+                m_SnapSystem.CurrentSnapMode |= P_SnapSystem.SnapMode.RoadSide;
+            } else {
+                m_SnapSystem.CurrentSnapMode &= ~P_SnapSystem.SnapMode.RoadSide;
+            }
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetSnapSpacing(float amount) {
+            m_Log.Debug($"SetSnapRoadside(enabled = {amount})");
+            if (amount < 1f) {
+                amount = 1f;
+            } else if (amount >= P_SnapSystem.MAX_SNAP_DISTANCE) {
+                amount = 100f;
+            }
+
+            m_SnapSystem.CurrentSnapOffset = amount;
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
         private void SetPreZone(int zoneIndex) {
             m_Log.Debug($"SetPreZone(modeIndex = {zoneIndex})");
-            PreZoneType = m_ZoneTypeData[zoneIndex];
+            var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[zoneIndex];
+            var zoneData = EntityManager.GetComponentData<ZoneData>(zonePrefab);
+            PreZoneType = zoneData.m_ZoneType;
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
         public void DecreaseBlockWidth() {
-            if (m_SelectedParcelSize.x > P_PrefabSystem.BlockSizes.x) {
+            if (m_SelectedParcelSize.x > P_PrefabsCreateSystem.BlockSizes.x) {
                 m_SelectedParcelSize.x -= 1;
             }
 
@@ -475,7 +338,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void IncreaseBlockWidth() {
-            if (m_SelectedParcelSize.x < P_PrefabSystem.BlockSizes.z) {
+            if (m_SelectedParcelSize.x < P_PrefabsCreateSystem.BlockSizes.z) {
                 m_SelectedParcelSize.x += 1;
             }
 
@@ -487,7 +350,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void DecreaseBlockDepth() {
-            if (m_SelectedParcelSize.y > P_PrefabSystem.BlockSizes.y) {
+            if (m_SelectedParcelSize.y > P_PrefabsCreateSystem.BlockSizes.y) {
                 m_SelectedParcelSize.y -= 1;
             }
 
@@ -499,7 +362,7 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         public void IncreaseBlockDepth() {
-            if (m_SelectedParcelSize.y < P_PrefabSystem.BlockSizes.w) {
+            if (m_SelectedParcelSize.y < P_PrefabsCreateSystem.BlockSizes.w) {
                 m_SelectedParcelSize.y += 1;
             }
 

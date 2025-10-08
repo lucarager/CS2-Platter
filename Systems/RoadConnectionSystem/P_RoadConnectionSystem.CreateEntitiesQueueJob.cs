@@ -74,7 +74,7 @@ namespace Platter.Systems {
             /// todo.
             /// </summary>
             [ReadOnly]
-            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ObjectSearchTree;
+            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelSearchTree;
 
             /// <summary>
             /// todo.
@@ -168,7 +168,7 @@ namespace Platter.Systems {
                         findParcelIterator.m_ParcelComponentLookup = m_ParcelComponentLookup;
                         findParcelIterator.m_TransformComponentLookup = m_TransformComponentLookup;
 
-                        m_ObjectSearchTree.Iterate<FindParcelNextToRoadIterator>(ref findParcelIterator, 0);
+                        m_ParcelSearchTree.Iterate<FindParcelNextToRoadIterator>(ref findParcelIterator, 0);
                     }
 
                     return;

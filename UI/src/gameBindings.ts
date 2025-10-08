@@ -15,9 +15,10 @@ export const GAME_BINDINGS = {
     ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
+    SNAP_ROADSIDE: new TwoWayBinding<boolean>("SNAP_ROADSIDE", true),
+    SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 10),
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ZONE: new TwoWayBinding<number>("ZONE", 0),
-    // TEST: new TwoWayBinding<any[]>("test", []),
 };
 
 export const GAME_TRIGGERS = {

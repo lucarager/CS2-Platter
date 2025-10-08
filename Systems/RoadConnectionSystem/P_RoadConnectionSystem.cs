@@ -147,7 +147,7 @@ namespace Platter.Systems {
                 m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(),
                 m_ParcelComponentLookup = SystemAPI.GetComponentLookup<Parcel>(),
                 m_TransformComponentLookup = SystemAPI.GetComponentLookup<Transform>(),
-                m_ObjectSearchTree = m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle),
+                m_ParcelSearchTree = m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle),
                 m_EdgeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<EdgeGeometry>(),
                 m_StartNodeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<StartNodeGeometry>(),
                 m_EndNodeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<EndNodeGeometry>(),

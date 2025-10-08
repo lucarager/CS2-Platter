@@ -4,28 +4,29 @@
 // </copyright>
 
 namespace Platter {
+    using Colossal;
+    using Colossal.IO.AssetDatabase;
+    using Colossal.Localization;
+    using Colossal.Logging;
+    using Colossal.Reflection;
+    using Colossal.TestFramework;
+    using Colossal.UI;
+    using Game;
+    using Game.Areas;
+    using Game.Modding;
+    using Game.Prefabs;
+    using Game.SceneFlow;
+    using Game.Serialization;
+    using Newtonsoft.Json;
+    using Platter.Components;
+    using Platter.Patches;
+    using Platter.Settings;
+    using Platter.Systems;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using Colossal;
-    using Colossal.IO.AssetDatabase;
-    using Colossal.Localization;
-    using Colossal.Logging;
-    using Colossal.UI;
-    using Game;
-    using Game.Modding;
-    using Game.Net;
-    using Game.Prefabs;
-    using Game.SceneFlow;
-    using Game.Serialization;
-    using Game.Zones;
-    using Platter.Components;
-    using Platter.Patches;
-    using Platter.Settings;
-    using Platter.Systems;
-    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using UnityEngine;
 
@@ -71,7 +72,7 @@ namespace Platter {
 
             // Initialize logger.
             Log = LogManager.GetLogger(ModName);
-#if DEBUG
+#if IS_DEBUG
             Log.Info("[Platter] Setting logging level to Debug");
             Log.effectivenessLevel = Level.Debug;
 #endif
@@ -87,7 +88,7 @@ namespace Platter {
             Log.Info($"[Platter] Loaded localization files.");
 
             // Generate i18n files
-#if DEBUG && EXPORT_EN_US
+#if IS_DEBUG && EXPORT_EN_US
             Log.Info($"[Platter] Exporting localization");
             var localeDict = new I18nConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
@@ -119,23 +120,36 @@ namespace Platter {
             Settings.RegisterKeyBindings();
 
             // Activate Systems
+            // Serializaztion/Deserializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAt<P_SerializeSubBlockSystem>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAt<P_SerializeConnectedParcelSystem>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAt<P_PrefabSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAfter<P_SerializeParcelSubBlockSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_SerializeConnectedParcelSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_ConnectedParcelLoadSystem>(SystemUpdatePhase.Deserialize);
+
+            // Prefabs
+            updateSystem.UpdateAfter<P_PrefabsCreateSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAfter<P_ZoneCacheSystem>(SystemUpdatePhase.PrefabUpdate);
+
+            // Parcels
             updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_ParcelSpawnSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<P_VanillaRoadInitializeSystem>(SystemUpdatePhase.Modification4);
+            updateSystem.UpdateAt<P_ConnectedParcelCreateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelBlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAfter<P_ParcelBlockUpdateSystem>(SystemUpdatePhase.Modification5); // Needs to run after CellCheckSystem
+
+            // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<P_SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<P_OverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<P_TooltipSystem>(SystemUpdatePhase.UITooltip);
-            updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
+
+            // Tools
+            updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
 
             // Experimental Systems
             // updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
@@ -143,8 +157,10 @@ namespace Platter {
             // updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
             // updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
 
+            // Add tests
+            AddTets();
+
             // Add mod UI resource directory to UI resource handler.
-            var assemblyName = Assembly.GetExecutingAssembly().FullName;
             if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
                 Log.Error($"Failed to get executable asset path. Exiting.");
                 return;
@@ -169,6 +185,39 @@ namespace Platter {
 
             // Revert harmony patches.
             Patcher.Instance?.UnPatchAll();
+        }
+
+        private static void AddTets() {
+            var log = LogManager.GetLogger(ModName);
+
+            var m_ScenariosField = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (m_ScenariosField == null) {
+                log.Error("AddTets() -- Could not find m_Scenarios");
+                return;
+            }
+
+            var m_Scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)m_ScenariosField.GetValue(TestScenarioSystem.instance);
+
+            foreach (var type in GetTests()) {
+                if (type.IsClass && !type.IsAbstract && !type.IsInterface && type.TryGetAttribute(out TestDescriptorAttribute testDescriptorAttribute, false)) {
+                    log.Debug($"AddTets() -- {testDescriptorAttribute.description}");
+
+                    m_Scenarios.Add(testDescriptorAttribute.description, new TestScenarioSystem.Scenario {
+                        category = testDescriptorAttribute.category,
+                        testPhase = testDescriptorAttribute.testPhase,
+                        test = type,
+                        disabled = testDescriptorAttribute.disabled,
+                    });
+                }
+            }
+
+            m_Scenarios = TestScenarioSystem.SortScenarios(m_Scenarios);
+        }
+
+        private static IEnumerable<Type> GetTests() {
+            return from t in Assembly.GetExecutingAssembly().GetTypes()
+                   where typeof(ITestStep).IsAssignableFrom(t) && t.Namespace == nameof(Platter.Tests)
+                   select t;
         }
 
         private static void ModifySubBlockSerializationSystem(ComponentSystemBase originalSystem) {
@@ -219,6 +268,7 @@ namespace Platter {
 
             log.Debug("ModifySubBlockSerializationSystem() -- Patching complete.");
         }
+
         private void LoadNonEnglishLocalizations() {
             var thisAssembly = Assembly.GetExecutingAssembly();
             var resourceNames = thisAssembly.GetManifestResourceNames();
@@ -234,7 +284,7 @@ namespace Platter {
                             Log.Debug($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
-                            using System.IO.StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
+                            using System.IO.StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
                             {
                                 var entireFile = reader.ReadToEnd();
                                 var varient = Colossal.Json.JSON.Load(entireFile);

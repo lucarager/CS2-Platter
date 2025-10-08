@@ -43,21 +43,21 @@ const themePaths = [
     },
 ];
 
-export const VanillaComponents = {} as IVanillaComponents;
-export const VanillaThemes = {} as IVanillaThemes;
-export const VanillaFocusKey = {} as IVanillaFocus;
+export const VC = {} as IVanillaComponents;
+export const VT = {} as IVanillaThemes;
+export const VF = {} as IVanillaFocus;
 
 export const initialize = (moduleRegistry: ModuleRegistry) => {
     modulePaths.forEach(({ path, components }) => {
         const module = moduleRegistry.registry.get(path);
-        components.forEach((component) => (VanillaComponents[component] = module?.[component]));
+        components.forEach((component) => (VC[component] = module?.[component]));
     });
     themePaths.forEach(({ path, name }) => {
         const module = moduleRegistry.registry.get(path)?.classes;
-        VanillaThemes[name] = module ?? {};
+        VT[name] = module ?? {};
     });
 
     const focusKey = moduleRegistry.registry.get("game-ui/common/focus/focus-key.ts");
-    VanillaFocusKey.FOCUS_DISABLED = focusKey?.FOCUS_DISABLED;
-    VanillaFocusKey.FOCUS_AUTO = focusKey?.FOCUS_AUTO;
+    VF.FOCUS_DISABLED = focusKey?.FOCUS_DISABLED;
+    VF.FOCUS_AUTO = focusKey?.FOCUS_AUTO;
 };
