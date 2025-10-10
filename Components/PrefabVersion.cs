@@ -9,6 +9,7 @@
     public struct PrefabVersion : IComponentData, IQueryTypeParameter, ISerializable {
         public uint m_Version;
 
+        /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter {
             writer.Write(m_Version);

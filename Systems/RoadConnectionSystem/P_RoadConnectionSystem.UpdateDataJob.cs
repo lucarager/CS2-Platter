@@ -95,6 +95,22 @@ namespace Platter.Systems {
             /// </summary>
             public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
+            public UpdateDataJob(ComponentLookup<Parcel> parcelComponentLookup, NativeList<UpdateData> parcelEntitiesList, ComponentLookup<Created> createdComponentLookup, ComponentLookup<Temp> tempComponentLookup, BufferLookup<ParcelSubBlock> subBlockBufferLookup, TrafficConfigurationData trafficConfigurationData, ComponentLookup<Edge> edgeComponentLookup, ComponentLookup<NodeGeometry> nodeGeoComponentLookup, ComponentLookup<Aggregated> aggregatedComponentLookup, EntityCommandBuffer commandBuffer, IconCommandBuffer iconCommandBuffer, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup) {
+                m_ParcelComponentLookup = parcelComponentLookup;
+                m_ParcelEntitiesList = parcelEntitiesList;
+                m_CreatedComponentLookup = createdComponentLookup;
+                m_TempComponentLookup = tempComponentLookup;
+                m_SubBlockBufferLookup = subBlockBufferLookup;
+                m_TrafficConfigurationData = trafficConfigurationData;
+                m_EdgeComponentLookup = edgeComponentLookup;
+                m_NodeGeoComponentLookup = nodeGeoComponentLookup;
+                m_AggregatedComponentLookup = aggregatedComponentLookup;
+                m_CommandBuffer = commandBuffer;
+                m_IconCommandBuffer = iconCommandBuffer;
+                m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
+            }
+
+
             /// <inheritdoc/>
             public void Execute() {
                 if (m_ParcelEntitiesList.Length == 0) {

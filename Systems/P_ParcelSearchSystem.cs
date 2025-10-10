@@ -108,18 +108,19 @@ namespace Platter.Systems {
                 return;
             }
 
-            var updateSearchTreeJob = default(P_ParcelSearchSystem.UpdateSearchTreeJob);
-            updateSearchTreeJob.m_EntityType = SystemAPI.GetEntityTypeHandle();
-            updateSearchTreeJob.m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>();
-            updateSearchTreeJob.m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>();
-            updateSearchTreeJob.m_PrefabRefType = SystemAPI.GetComponentTypeHandle<PrefabRef>();
-            updateSearchTreeJob.m_CreatedType = SystemAPI.GetComponentTypeHandle<Created>();
-            updateSearchTreeJob.m_DeletedType = SystemAPI.GetComponentTypeHandle<Deleted>();
-            updateSearchTreeJob.m_OverriddenType = SystemAPI.GetComponentTypeHandle<Overridden>();
-            updateSearchTreeJob.m_PrefabObjectGeometryData = SystemAPI.GetComponentLookup<ObjectGeometryData>();
-            updateSearchTreeJob.m_EditorMode = m_ToolSystem.actionMode.IsEditor();
-            updateSearchTreeJob.m_FirstLoad = firstLoad;
-            updateSearchTreeJob.m_SearchTree = GetStaticSearchTree(false, out var updateSearchTreeJobHandle);
+            var updateSearchTreeJob = new UpdateSearchTreeJob(
+                entityType: SystemAPI.GetEntityTypeHandle(),
+                ownerType: SystemAPI.GetComponentTypeHandle<Owner>(),
+                transformType: SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
+                prefabRefType: SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                createdType: SystemAPI.GetComponentTypeHandle<Created>(),
+                deletedType: SystemAPI.GetComponentTypeHandle<Deleted>(),
+                overriddenType: SystemAPI.GetComponentTypeHandle<Overridden>(),
+                prefabObjectGeometryData: SystemAPI.GetComponentLookup<ObjectGeometryData>(),
+                editorMode: m_ToolSystem.actionMode.IsEditor(),
+                firstLoad: firstLoad,
+                searchTree: GetStaticSearchTree(false, out var updateSearchTreeJobHandle)
+            );
 
             base.Dependency = updateSearchTreeJob.Schedule(entityQuery, JobHandle.CombineDependencies(base.Dependency, updateSearchTreeJobHandle));
 
@@ -190,6 +191,20 @@ namespace Platter.Systems {
             [ReadOnly]
             public bool m_FirstLoad;
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
+
+            public UpdateSearchTreeJob(EntityTypeHandle entityType, ComponentTypeHandle<Owner> ownerType, ComponentTypeHandle<Transform> transformType, ComponentTypeHandle<PrefabRef> prefabRefType, ComponentTypeHandle<Created> createdType, ComponentTypeHandle<Deleted> deletedType, ComponentTypeHandle<Overridden> overriddenType, ComponentLookup<ObjectGeometryData> prefabObjectGeometryData, bool editorMode, bool firstLoad, NativeQuadTree<Entity, QuadTreeBoundsXZ> searchTree) {
+                m_EntityType = entityType;
+                m_OwnerType = ownerType;
+                m_TransformType = transformType;
+                m_PrefabRefType = prefabRefType;
+                m_CreatedType = createdType;
+                m_DeletedType = deletedType;
+                m_OverriddenType = overriddenType;
+                m_PrefabObjectGeometryData = prefabObjectGeometryData;
+                m_EditorMode = editorMode;
+                m_FirstLoad = firstLoad;
+                m_SearchTree = searchTree;
+            }
 
             public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);

@@ -82,6 +82,7 @@ namespace Game.Prefabs {
             components.Add(ComponentType.ReadWrite<ParcelSubBlock>());
         }
 
+        /// <inheritdoc/>
         public override void Initialize(EntityManager entityManager, Entity entity) {
             base.Initialize(entityManager, entity);
 

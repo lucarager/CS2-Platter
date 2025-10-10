@@ -118,6 +118,24 @@ namespace Platter.Systems {
             [ReadOnly]
             public EntityTypeHandle m_EntityTypeHandle;
 
+            public FindRoadConnectionJob(NativeArray<UpdateData> parcelEntitiesList, ComponentLookup<Deleted> deletedDataComponentLookup, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Transform> transformComponentLookup, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, ComponentLookup<Curve> curveDataComponentLookup, ComponentLookup<Composition> compositionDataComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryDataComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryDataComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryDataComponentLookup, ComponentLookup<NetCompositionData> prefabNetCompositionDataComponentLookup, NativeQuadTree<Entity, QuadTreeBoundsXZ> netSearchTree, NativeList<ArchetypeChunk> updatedNetChunks, EntityTypeHandle entityTypeHandle) {
+                m_ParcelEntitiesList = parcelEntitiesList;
+                m_DeletedDataComponentLookup = deletedDataComponentLookup;
+                m_PrefabRefComponentLookup = prefabRefComponentLookup;
+                m_ParcelDataComponentLookup = parcelDataComponentLookup;
+                m_TransformComponentLookup = transformComponentLookup;
+                m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
+                m_CurveDataComponentLookup = curveDataComponentLookup;
+                m_CompositionDataComponentLookup = compositionDataComponentLookup;
+                m_EdgeGeometryDataComponentLookup = edgeGeometryDataComponentLookup;
+                m_StartNodeGeometryDataComponentLookup = startNodeGeometryDataComponentLookup;
+                m_EndNodeGeometryDataComponentLookup = endNodeGeometryDataComponentLookup;
+                m_PrefabNetCompositionDataComponentLookup = prefabNetCompositionDataComponentLookup;
+                m_NetSearchTree = netSearchTree;
+                m_UpdatedNetChunks = updatedNetChunks;
+                m_EntityTypeHandle = entityTypeHandle;
+            }
+
             /// <inheritdoc/>
             public void Execute(int index) {
 #if !USE_BURST
@@ -144,24 +162,25 @@ namespace Platter.Systems {
                 var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, parcelGeo.FrontNode);
 
                 // Initializes a FindRoadConnectionIterator, used to iterate through potential road connections.
-                FindRoadConnectionIterator findRoadConnectionIterator = default;
-                findRoadConnectionIterator.m_BestCurvePos = 0f;
-                findRoadConnectionIterator.m_BestRoad = Entity.Null;
-                findRoadConnectionIterator.m_CanBeOnRoad = true;
-                findRoadConnectionIterator.m_ConnectedParcelsBufferLookup = m_ConnectedParcelsBufferLookup;
-                findRoadConnectionIterator.m_CurveDataComponentLookup = m_CurveDataComponentLookup;
-                findRoadConnectionIterator.m_CompositionDataComponentLookup = m_CompositionDataComponentLookup;
-                findRoadConnectionIterator.m_EdgeGeometryDataComponentLookup = m_EdgeGeometryDataComponentLookup;
-                findRoadConnectionIterator.m_StartNodeGeometryDataComponentLookup = m_StartNodeGeometryDataComponentLookup;
-                findRoadConnectionIterator.m_EndNodeGeometryDataComponentLookup = m_EndNodeGeometryDataComponentLookup;
-                findRoadConnectionIterator.m_PrefabNetCompositionDataComponentLookup = m_PrefabNetCompositionDataComponentLookup;
-                findRoadConnectionIterator.m_DeletedDataComponentLookup = m_DeletedDataComponentLookup;
-                findRoadConnectionIterator.m_Bounds = new Bounds3(
-                    frontPosition - P_RoadConnectionSystem.MaxDistance,
-                    frontPosition + P_RoadConnectionSystem.MaxDistance
+                var findRoadConnectionIterator = new FindRoadConnectionIterator(
+                    bestCurvePos: 0f,
+                    bestRoad: Entity.Null,
+                    canBeOnRoad: true,
+                    connectedParcelsBufferLookup: m_ConnectedParcelsBufferLookup,
+                    curveDataComponentLookup: m_CurveDataComponentLookup,
+                    compositionDataComponentLookup: m_CompositionDataComponentLookup,
+                    edgeGeometryDataComponentLookup: m_EdgeGeometryDataComponentLookup,
+                    startNodeGeometryDataComponentLookup: m_StartNodeGeometryDataComponentLookup,
+                    endNodeGeometryDataComponentLookup: m_EndNodeGeometryDataComponentLookup,
+                    prefabNetCompositionDataComponentLookup: m_PrefabNetCompositionDataComponentLookup,
+                    deletedDataComponentLookup: m_DeletedDataComponentLookup,
+                    bounds: new Bounds3 (
+                        frontPosition - P_RoadConnectionSystem.MaxDistance,
+                        frontPosition + P_RoadConnectionSystem.MaxDistance
+                    ),
+                    minDistance: P_RoadConnectionSystem.MaxDistance,
+                    frontPosition: frontPosition
                 );
-                findRoadConnectionIterator.m_MinDistance = P_RoadConnectionSystem.MaxDistance;
-                findRoadConnectionIterator.m_FrontPosition = frontPosition;
 
                 // Find suitable roads, iterate over roads and check which is best
                 m_NetSearchTree.Iterate<FindRoadConnectionIterator>(ref findRoadConnectionIterator, 0);
@@ -258,6 +277,23 @@ namespace Platter.Systems {
                 /// todo.
                 /// </summary>
                 public ComponentLookup<Deleted> m_DeletedDataComponentLookup;
+
+                public FindRoadConnectionIterator(Bounds3 bounds, float minDistance, float bestCurvePos, Entity bestRoad, float3 frontPosition, bool canBeOnRoad, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, ComponentLookup<Curve> curveDataComponentLookup, ComponentLookup<Composition> compositionDataComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryDataComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryDataComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryDataComponentLookup, ComponentLookup<NetCompositionData> prefabNetCompositionDataComponentLookup, ComponentLookup<Deleted> deletedDataComponentLookup) {
+                    m_Bounds = bounds;
+                    m_MinDistance = minDistance;
+                    m_BestCurvePos = bestCurvePos;
+                    m_BestRoad = bestRoad;
+                    m_FrontPosition = frontPosition;
+                    m_CanBeOnRoad = canBeOnRoad;
+                    m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
+                    m_CurveDataComponentLookup = curveDataComponentLookup;
+                    m_CompositionDataComponentLookup = compositionDataComponentLookup;
+                    m_EdgeGeometryDataComponentLookup = edgeGeometryDataComponentLookup;
+                    m_StartNodeGeometryDataComponentLookup = startNodeGeometryDataComponentLookup;
+                    m_EndNodeGeometryDataComponentLookup = endNodeGeometryDataComponentLookup;
+                    m_PrefabNetCompositionDataComponentLookup = prefabNetCompositionDataComponentLookup;
+                    m_DeletedDataComponentLookup = deletedDataComponentLookup;
+                }
 
                 /// <inheritdoc/>
                 public bool Intersect(QuadTreeBoundsXZ bounds) {

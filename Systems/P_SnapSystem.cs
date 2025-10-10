@@ -123,17 +123,17 @@ namespace Platter.Systems {
             }
 
             // Schedule our snapping job
-            var parcelSnapJobHandle = new ParcelSnapJob {
-                m_Tree = m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
-                m_ControlPoints = controlPoints,
-                m_ObjectDefinitionTypeHandle = SystemAPI.GetComponentTypeHandle<ObjectDefinition>(false),
-                m_CreationDefinitionTypeHandle = SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
-                m_BlockComponentLookup = SystemAPI.GetComponentLookup<Block>(true),
-                m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(true),
-                m_TerrainHeightData = m_TerrainSystem.GetHeightData(false),
-                m_SnapOffset = m_SnapOffset,
-                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
-            }.ScheduleParallel(
+            var parcelSnapJobHandle = new ParcelSnapJob (
+                tree: m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
+                controlPoints: controlPoints,
+                objectDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<ObjectDefinition>(false),
+                creationDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
+                blockComponentLookup: SystemAPI.GetComponentLookup<Block>(true),
+                parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(true),
+                terrainHeightData: m_TerrainSystem.GetHeightData(false),
+                snapOffset: m_SnapOffset,
+                entityTypeHandle: SystemAPI.GetEntityTypeHandle()
+            ).ScheduleParallel(
                 m_Query,
                 JobHandle.CombineDependencies(base.Dependency, zoneTreeJobHandle)
             );
@@ -170,15 +170,33 @@ namespace Platter.Systems {
             public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
 
             [ReadOnly]
-            public NativeReference<Rotation> m_Rotation;
-
-            [ReadOnly]
             public float m_SnapOffset;
 
             [ReadOnly]
             public EntityTypeHandle m_EntityTypeHandle;
 
             public ComponentTypeHandle<ObjectDefinition> m_ObjectDefinitionTypeHandle;
+
+            public ParcelSnapJob(
+                NativeQuadTree<Entity, Bounds2> tree,
+                TerrainHeightData terrainHeightData,
+                NativeList<ControlPoint> controlPoints,
+                ComponentTypeHandle<CreationDefinition> creationDefinitionTypeHandle,
+                ComponentLookup<Block> blockComponentLookup,
+                ComponentLookup<ParcelData> parcelDataComponentLookup,
+                float snapOffset,
+                EntityTypeHandle entityTypeHandle,
+                ComponentTypeHandle<ObjectDefinition> objectDefinitionTypeHandle) {
+                m_Tree = tree;
+                m_TerrainHeightData = terrainHeightData;
+                m_ControlPoints = controlPoints;
+                m_CreationDefinitionTypeHandle = creationDefinitionTypeHandle;
+                m_BlockComponentLookup = blockComponentLookup;
+                m_ParcelDataComponentLookup = parcelDataComponentLookup;
+                m_SnapOffset = snapOffset;
+                m_EntityTypeHandle = entityTypeHandle;
+                m_ObjectDefinitionTypeHandle = objectDefinitionTypeHandle;
+            }
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
                 var entityArray = chunk.GetNativeArray(m_EntityTypeHandle);
@@ -209,16 +227,16 @@ namespace Platter.Systems {
                     var bestSnapPosition = controlPoint;
 
                     // Iterate over zones to find a snapping point
-                    var iterator = new Iterator() {
-                        m_ControlPoint = controlPoint,
-                        m_BestSnapPosition = bestSnapPosition,
-                        m_Bounds = bounds.xz,
-                        m_BlockComponentLookup = m_BlockComponentLookup,
-                        m_BestDistance = minDistance,
-                        m_LotSize = parcelData.m_LotSize,
-                        m_SnapOffset = m_SnapOffset,
-                    };
-                    m_Tree.Iterate<Iterator>(ref iterator, 0);
+                    var iterator = new BlockSnapIterator(
+                        controlPoint: controlPoint,
+                        bestSnapPosition: bestSnapPosition,
+                        bounds: bounds.xz,
+                        blockComponentLookup: m_BlockComponentLookup,
+                        bestDistance: minDistance,
+                        lotSize: parcelData.m_LotSize,
+                        snapOffset: m_SnapOffset
+                    );
+                    m_Tree.Iterate<BlockSnapIterator>(ref iterator, 0);
 
                     // Retrieve best found point
                     bestSnapPosition = iterator.m_BestSnapPosition;
@@ -248,15 +266,24 @@ namespace Platter.Systems {
         /// <summary>
         /// QuadTree iterator.
         /// </summary>
-        public struct Iterator : INativeQuadTreeIterator<Entity, Bounds2>, IUnsafeQuadTreeIterator<Entity, Bounds2> {
+        public struct BlockSnapIterator : INativeQuadTreeIterator<Entity, Bounds2>, IUnsafeQuadTreeIterator<Entity, Bounds2> {
             public ComponentLookup<Block> m_BlockComponentLookup;
             public ControlPoint m_ControlPoint;
             public int2 m_LotSize;
             public Bounds2 m_Bounds;
-            public float2 m_Direction;
             public ControlPoint m_BestSnapPosition;
             public float m_BestDistance;
             public float m_SnapOffset;
+
+            public BlockSnapIterator(ComponentLookup<Block> blockComponentLookup, ControlPoint controlPoint, int2 lotSize, Bounds2 bounds, ControlPoint bestSnapPosition, float bestDistance, float snapOffset) {
+                m_BlockComponentLookup = blockComponentLookup;
+                m_ControlPoint = controlPoint;
+                m_LotSize = lotSize;
+                m_Bounds = bounds;
+                m_BestSnapPosition = bestSnapPosition;
+                m_BestDistance = bestDistance;
+                m_SnapOffset = snapOffset;
+            }
 
             /// <summary>
             /// Tests whether XZ bounds intersect.
@@ -268,7 +295,7 @@ namespace Platter.Systems {
             }
 
             /// <summary>
-            /// Iterator.
+            /// BlockSnapIterator.
             /// </summary>
             /// <param name="bounds">Bounds blockCorners tree to check for intersection.</param>
             /// <param name="blockEntity">Entity to enqueue if bounds intersect.</param>
@@ -289,7 +316,7 @@ namespace Platter.Systems {
 
                 // Extend the search line based on lot depth vs width difference
                 var lotDepthDifference = math.max(0f, m_LotSize.y - m_LotSize.x) * 4f;
-                var extensionVector = m_Direction * lotDepthDifference;
+                var extensionVector = lotDepthDifference;
                 searchLine.a -= extensionVector;
                 searchLine.b += extensionVector;
 

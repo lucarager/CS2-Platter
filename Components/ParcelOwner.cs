@@ -8,6 +8,8 @@ namespace Platter.Components {
     using Unity.Entities;
 
     public struct ParcelOwner : IComponentData, IQueryTypeParameter, ISerializable {
+        public Entity m_Owner;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelOwner"/> struct.
         /// </summary>
@@ -27,7 +29,5 @@ namespace Platter.Components {
             where TReader : IReader {
             reader.Read(out m_Owner);
         }
-
-        public Entity m_Owner;
     }
 }

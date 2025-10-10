@@ -9,6 +9,9 @@ namespace Platter.Components {
     using Unity.Mathematics;
 
     public struct ParcelData : IComponentData, IQueryTypeParameter, ISerializable {
+        public int2 m_LotSize;
+        public Entity m_ZoneBlockPrefab;
+
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter {
@@ -22,8 +25,5 @@ namespace Platter.Components {
             reader.Read(out m_LotSize);
             reader.Read(out m_ZoneBlockPrefab);
         }
-
-        public int2 m_LotSize;
-        public Entity m_ZoneBlockPrefab;
     }
 }

@@ -136,53 +136,54 @@ namespace Platter.Systems {
             var parcelEntitiesList = new NativeList<UpdateData>(Allocator.TempJob);
 
             // [CreateEntitiesQueueJob] Populate a queue with parcels to update
-            var createEntitiesQueueJobHandle = new CreateEntitiesQueueJob() {
-                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
-                m_ParcelEntitiesQueue = parcelEntitiesQueue.AsParallelWriter(),
-                m_ConnectedParcelBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ConnectedParcel>(),
-                m_PrefabRefComponentLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
-                m_EdgeGeometryComponentLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(),
-                m_StartNodeGeometryComponentLookup = SystemAPI.GetComponentLookup<StartNodeGeometry>(),
-                m_EndNodeGeometryComponentLookup = SystemAPI.GetComponentLookup<EndNodeGeometry>(),
-                m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(),
-                m_ParcelComponentLookup = SystemAPI.GetComponentLookup<Parcel>(),
-                m_TransformComponentLookup = SystemAPI.GetComponentLookup<Transform>(),
-                m_ParcelSearchTree = m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle),
-                m_EdgeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<EdgeGeometry>(),
-                m_StartNodeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<StartNodeGeometry>(),
-                m_EndNodeGeometryTypeHandle = SystemAPI.GetComponentTypeHandle<EndNodeGeometry>(),
-                m_DeletedTypeHandle = SystemAPI.GetComponentTypeHandle<Deleted>(),
-            }.ScheduleParallel(
+            var createEntitiesQueueJobHandle = new CreateEntitiesQueueJob(
+                entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
+                parcelEntitiesQueue: parcelEntitiesQueue.AsParallelWriter(),
+                connectedParcelBufferTypeHandle: SystemAPI.GetBufferTypeHandle<ConnectedParcel>(),
+                prefabRefComponentLookup: SystemAPI.GetComponentLookup<PrefabRef>(),
+                edgeGeometryComponentLookup: SystemAPI.GetComponentLookup<EdgeGeometry>(),
+                startNodeGeometryComponentLookup: SystemAPI.GetComponentLookup<StartNodeGeometry>(),
+                endNodeGeometryComponentLookup: SystemAPI.GetComponentLookup<EndNodeGeometry>(),
+                parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(),
+                parcelComponentLookup: SystemAPI.GetComponentLookup<Parcel>(),
+                transformComponentLookup: SystemAPI.GetComponentLookup<Transform>(),
+                parcelSearchTree: m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle),
+                edgeGeometryTypeHandle: SystemAPI.GetComponentTypeHandle<EdgeGeometry>(),
+                startNodeGeometryTypeHandle: SystemAPI.GetComponentTypeHandle<StartNodeGeometry>(),
+                endNodeGeometryTypeHandle: SystemAPI.GetComponentTypeHandle<EndNodeGeometry>(),
+                deletedTypeHandle: SystemAPI.GetComponentTypeHandle<Deleted>()
+            ).ScheduleParallel(
                 m_ModificationQuery,
                 JobHandle.CombineDependencies(base.Dependency, objectSearchTreeJobHandle)
             );
 
             // [CreateUniqueEntitiesListJob] Dedupe the list
-            var createUniqueParcelListJobHandle = new CreateUniqueEntitiesListJob() {
-                m_ParcelEntitiesQueue = parcelEntitiesQueue,
-                m_ParcelEntittiesList = parcelEntitiesList,
-            }.Schedule(
+            var createUniqueParcelListJobHandle = new CreateUniqueEntitiesListJob(
+                parcelEntitiesQueue: parcelEntitiesQueue,
+                parcelEntittiesList: parcelEntitiesList
+            ).Schedule(
                 createEntitiesQueueJobHandle
             );
 
             // [FindRoadConnectionJob] Find road connections for each parcel
             var updatedNetChunks = m_UpdatedNetQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var netQueryChunkListJob);
-            var findRoadConnectionJobHandle = new FindRoadConnectionJob() {
-                m_DeletedDataComponentLookup = SystemAPI.GetComponentLookup<Deleted>(),
-                m_PrefabRefComponentLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
-                m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(),
-                m_TransformComponentLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(),
-                m_ConnectedParcelsBufferLookup = SystemAPI.GetBufferLookup<ConnectedParcel>(),
-                m_CurveDataComponentLookup = SystemAPI.GetComponentLookup<Curve>(),
-                m_CompositionDataComponentLookup = SystemAPI.GetComponentLookup<Composition>(),
-                m_EdgeGeometryDataComponentLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(),
-                m_StartNodeGeometryDataComponentLookup = SystemAPI.GetComponentLookup<StartNodeGeometry>(),
-                m_EndNodeGeometryDataComponentLookup = SystemAPI.GetComponentLookup<EndNodeGeometry>(),
-                m_PrefabNetCompositionDataComponentLookup = SystemAPI.GetComponentLookup<NetCompositionData>(),
-                m_UpdatedNetChunks = updatedNetChunks,
-                m_NetSearchTree = m_NetSearchSystem.GetNetSearchTree(true, out var netSearchTreeJobHandle),
-                m_ParcelEntitiesList = parcelEntitiesList.AsDeferredJobArray(),
-            }.Schedule(
+            var findRoadConnectionJobHandle = new FindRoadConnectionJob(
+                entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
+                deletedDataComponentLookup: SystemAPI.GetComponentLookup<Deleted>(),
+                prefabRefComponentLookup: SystemAPI.GetComponentLookup<PrefabRef>(),
+                parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(),
+                transformComponentLookup: SystemAPI.GetComponentLookup<Game.Objects.Transform>(),
+                connectedParcelsBufferLookup: SystemAPI.GetBufferLookup<ConnectedParcel>(),
+                curveDataComponentLookup: SystemAPI.GetComponentLookup<Curve>(),
+                compositionDataComponentLookup: SystemAPI.GetComponentLookup<Composition>(),
+                edgeGeometryDataComponentLookup: SystemAPI.GetComponentLookup<EdgeGeometry>(),
+                startNodeGeometryDataComponentLookup: SystemAPI.GetComponentLookup<StartNodeGeometry>(),
+                endNodeGeometryDataComponentLookup: SystemAPI.GetComponentLookup<EndNodeGeometry>(),
+                prefabNetCompositionDataComponentLookup: SystemAPI.GetComponentLookup<NetCompositionData>(),
+                updatedNetChunks: updatedNetChunks,
+                netSearchTree: m_NetSearchSystem.GetNetSearchTree(true, out var netSearchTreeJobHandle),
+                parcelEntitiesList: parcelEntitiesList.AsDeferredJobArray()
+            ).Schedule(
                 parcelEntitiesList,
                 1,
                 JobHandle.CombineDependencies(
@@ -194,20 +195,20 @@ namespace Platter.Systems {
             m_NetSearchSystem.AddNetSearchTreeReader(findRoadConnectionJobHandle);
 
             // [UpdateDataJob] Update parcel and road data.
-            var replaceRoadConnectionJobHandle = new UpdateDataJob() {
-                m_EdgeComponentLookup = SystemAPI.GetComponentLookup<Edge>(false),
-                m_NodeGeoComponentLookup = SystemAPI.GetComponentLookup<NodeGeometry>(true),
-                m_AggregatedComponentLookup = SystemAPI.GetComponentLookup<Aggregated>(true),
-                m_ParcelComponentLookup = SystemAPI.GetComponentLookup<Parcel>(false),
-                m_CreatedComponentLookup = SystemAPI.GetComponentLookup<Created>(true),
-                m_TempComponentLookup = SystemAPI.GetComponentLookup<Temp>(true),
-                m_SubBlockBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
-                m_ConnectedParcelsBufferLookup = SystemAPI.GetBufferLookup<ConnectedParcel>(),
-                m_ParcelEntitiesList = parcelEntitiesList,
-                m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer(),
-                m_IconCommandBuffer = m_IconCommandSystem.CreateCommandBuffer(),
-                m_TrafficConfigurationData = m_TrafficConfigQuery.GetSingleton<TrafficConfigurationData>(),
-            }.Schedule(findRoadConnectionJobHandle);
+            var replaceRoadConnectionJobHandle = new UpdateDataJob(
+                edgeComponentLookup:  SystemAPI.GetComponentLookup<Edge>(false),
+                nodeGeoComponentLookup:  SystemAPI.GetComponentLookup<NodeGeometry>(true),
+                aggregatedComponentLookup:  SystemAPI.GetComponentLookup<Aggregated>(true),
+                parcelComponentLookup:  SystemAPI.GetComponentLookup<Parcel>(false),
+                createdComponentLookup:  SystemAPI.GetComponentLookup<Created>(true),
+                tempComponentLookup:  SystemAPI.GetComponentLookup<Temp>(true),
+                subBlockBufferLookup:  SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
+                connectedParcelsBufferLookup:  SystemAPI.GetBufferLookup<ConnectedParcel>(),
+                parcelEntitiesList:  parcelEntitiesList,
+                commandBuffer:  m_ModificationBarrier.CreateCommandBuffer(),
+                iconCommandBuffer:  m_IconCommandSystem.CreateCommandBuffer(),
+                trafficConfigurationData:  m_TrafficConfigQuery.GetSingleton<TrafficConfigurationData>()
+            ).Schedule(findRoadConnectionJobHandle);
 
             // Dispose of data
             parcelEntitiesQueue.Dispose(createUniqueParcelListJobHandle);

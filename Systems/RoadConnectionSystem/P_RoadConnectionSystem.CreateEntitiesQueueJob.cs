@@ -118,6 +118,24 @@ namespace Platter.Systems {
             [ReadOnly]
             public ComponentLookup<Transform> m_TransformComponentLookup;
 
+            public CreateEntitiesQueueJob(NativeQueue<Entity>.ParallelWriter parcelEntitiesQueue, EntityTypeHandle entityTypeHandle, BufferTypeHandle<ConnectedParcel> connectedParcelBufferTypeHandle, ComponentTypeHandle<Deleted> deletedTypeHandle, ComponentTypeHandle<EdgeGeometry> edgeGeometryTypeHandle, ComponentTypeHandle<StartNodeGeometry> startNodeGeometryTypeHandle, ComponentTypeHandle<EndNodeGeometry> endNodeGeometryTypeHandle, NativeQuadTree<Entity, QuadTreeBoundsXZ> parcelSearchTree, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Parcel> parcelComponentLookup, ComponentLookup<Transform> transformComponentLookup) {
+                m_ParcelEntitiesQueue = parcelEntitiesQueue;
+                m_EntityTypeHandle = entityTypeHandle;
+                m_ConnectedParcelBufferTypeHandle = connectedParcelBufferTypeHandle;
+                m_DeletedTypeHandle = deletedTypeHandle;
+                m_EdgeGeometryTypeHandle = edgeGeometryTypeHandle;
+                m_StartNodeGeometryTypeHandle = startNodeGeometryTypeHandle;
+                m_EndNodeGeometryTypeHandle = endNodeGeometryTypeHandle;
+                m_ParcelSearchTree = parcelSearchTree;
+                m_PrefabRefComponentLookup = prefabRefComponentLookup;
+                m_EdgeGeometryComponentLookup = edgeGeometryComponentLookup;
+                m_StartNodeGeometryComponentLookup = startNodeGeometryComponentLookup;
+                m_EndNodeGeometryComponentLookup = endNodeGeometryComponentLookup;
+                m_ParcelDataComponentLookup = parcelDataComponentLookup;
+                m_ParcelComponentLookup = parcelComponentLookup;
+                m_TransformComponentLookup = transformComponentLookup;
+            }
+
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
                 var connectedParcelBufferAccessor = chunk.GetBufferAccessor<ConnectedParcel>(ref m_ConnectedParcelBufferTypeHandle);
@@ -243,6 +261,22 @@ namespace Platter.Systems {
                 /// todo.
                 /// </summary>
                 public float m_MinDistance;
+
+                public FindParcelNextToRoadIterator(Bounds3 bounds, EdgeGeometry edgeGeometry, EdgeNodeGeometry startGeometry, EdgeNodeGeometry endGeometry, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryComponentLookup, ComponentLookup<Parcel> parcelComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Transform> transformComponentLookup, float minDistance, NativeQueue<Entity>.ParallelWriter parcelEntitiesQueue) {
+                    m_Bounds = bounds;
+                    m_EdgeGeometry = edgeGeometry;
+                    m_StartGeometry = startGeometry;
+                    m_EndGeometry = endGeometry;
+                    m_PrefabRefComponentLookup = prefabRefComponentLookup;
+                    m_EdgeGeometryComponentLookup = edgeGeometryComponentLookup;
+                    m_StartNodeGeometryComponentLookup = startNodeGeometryComponentLookup;
+                    m_EndNodeGeometryComponentLookup = endNodeGeometryComponentLookup;
+                    m_ParcelComponentLookup = parcelComponentLookup;
+                    m_ParcelDataComponentLookup = parcelDataComponentLookup;
+                    m_TransformComponentLookup = transformComponentLookup;
+                    m_MinDistance = minDistance;
+                    m_ParcelEntitiesQueue = parcelEntitiesQueue;
+                }
 
                 /// <summary>
                 /// todo.

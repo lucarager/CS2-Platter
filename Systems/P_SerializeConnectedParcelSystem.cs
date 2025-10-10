@@ -36,11 +36,13 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_Log.Debug($"OnUpdate()");
 
-            var deserializeJob = default(DeserializeJob);
-            deserializeJob.m_EntityType = SystemAPI.GetEntityTypeHandle();
-            deserializeJob.m_ParcelType = SystemAPI.GetComponentTypeHandle<Parcel>();
-            deserializeJob.m_ConnectedParcelsBufferLookup = SystemAPI.GetBufferLookup<ConnectedParcel>();
-            base.Dependency = deserializeJob.Schedule(m_Query, base.Dependency);
+            var deserializeJobHandle = new DeserializeJob(
+                entityType: SystemAPI.GetEntityTypeHandle(),
+                parcelType: SystemAPI.GetComponentTypeHandle<Parcel>(),
+                connectedParcelsBufferLookup: SystemAPI.GetBufferLookup<ConnectedParcel>()
+            ).Schedule(m_Query, base.Dependency);
+
+            base.Dependency = deserializeJobHandle;
         }
 
 #if USE_BURST
@@ -52,6 +54,12 @@ namespace Platter.Systems {
             [ReadOnly]
             public ComponentTypeHandle<Parcel> m_ParcelType;
             public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
+
+            public DeserializeJob(EntityTypeHandle entityType, ComponentTypeHandle<Parcel> parcelType, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup) {
+                m_EntityType = entityType;
+                m_ParcelType = parcelType;
+                m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
+            }
 
             public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);

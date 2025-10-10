@@ -14,12 +14,14 @@ using UnityEngine;
 namespace Platter.Tests {
     [TestDescriptor("Test Platter", Category.General, false, TestPhase.Default, false)]
     public class TestScenarioExample : TestScenario {
+        /// <inheritdoc/>
         protected override async Task OnPrepare() {
             TestScenario.log.Info("OnPrepare");
             //GameTestUtility.SetDefaultTestConditions();
             await Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         protected override async Task OnCleanup() {
             TestScenario.log.Info("OnCleanup");
             await Task.CompletedTask;

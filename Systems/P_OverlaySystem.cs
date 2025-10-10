@@ -102,19 +102,19 @@ namespace Platter.Systems {
                 }
 
                 // Todo split position calc, render calc, and render step, into separate jobs for perf
-                var drawOverlaysJobData = new DrawOverlaysJob() {
-                    m_OverlayRenderBuffer = buffer,
-                    m_CameraPosition = (float3)Camera.main.transform.position,
-                    m_ColorArray = colorsMap,
-                    m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
-                    m_TransformComponentTypeHandle = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
-                    m_PrefabRefComponentTypeHandle = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                    m_ParcelComponentTypeHandle = SystemAPI.GetComponentTypeHandle<Parcel>(),
-                    m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(),
-                    m_ObjectGeometryComponentLookup = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
-                    m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
-                    m_TempComponentLookup = SystemAPI.GetComponentLookup<Temp>(),
-                };
+                var drawOverlaysJobData = new DrawOverlaysJob(
+                    overlayRenderBuffer: buffer,
+                    cameraPosition: (float3)Camera.main.transform.position,
+                    colorArray: colorsMap,
+                    entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
+                    transformComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
+                    prefabRefComponentTypeHandle: SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                    parcelComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Parcel>(),
+                    parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(),
+                    objectGeometryComponentLookup: SystemAPI.GetComponentLookup<ObjectGeometryData>(),
+                    parcelSpawnableComponentLookup: SystemAPI.GetComponentLookup<ParcelSpawnable>(),
+                    tempComponentLookup: SystemAPI.GetComponentLookup<Temp>()
+                );
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, overlayRenderBufferHandle);
 
                 m_OverlayRenderSystem.AddBufferWriter(drawOverlaysJob);
@@ -149,6 +149,20 @@ namespace Platter.Systems {
             public ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
             [ReadOnly]
             public ComponentLookup<Temp> m_TempComponentLookup;
+
+            public DrawOverlaysJob(OverlayRenderSystem.Buffer overlayRenderBuffer, float3 cameraPosition, NativeHashMap<ZoneType, Color> colorArray, EntityTypeHandle entityTypeHandle, ComponentTypeHandle<Game.Objects.Transform> transformComponentTypeHandle, ComponentTypeHandle<PrefabRef> prefabRefComponentTypeHandle, ComponentTypeHandle<Parcel> parcelComponentTypeHandle, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<ObjectGeometryData> objectGeometryComponentLookup, ComponentLookup<ParcelSpawnable> parcelSpawnableComponentLookup, ComponentLookup<Temp> tempComponentLookup) {
+                m_OverlayRenderBuffer = overlayRenderBuffer;
+                m_CameraPosition = cameraPosition;
+                m_ColorArray = colorArray;
+                m_EntityTypeHandle = entityTypeHandle;
+                m_TransformComponentTypeHandle = transformComponentTypeHandle;
+                m_PrefabRefComponentTypeHandle = prefabRefComponentTypeHandle;
+                m_ParcelComponentTypeHandle = parcelComponentTypeHandle;
+                m_ParcelDataComponentLookup = parcelDataComponentLookup;
+                m_ObjectGeometryComponentLookup = objectGeometryComponentLookup;
+                m_ParcelSpawnableComponentLookup = parcelSpawnableComponentLookup;
+                m_TempComponentLookup = tempComponentLookup;
+            }
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {

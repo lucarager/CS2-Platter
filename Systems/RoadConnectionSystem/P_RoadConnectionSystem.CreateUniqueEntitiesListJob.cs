@@ -30,6 +30,11 @@ namespace Platter.Systems {
             /// </summary>
             public NativeList<UpdateData> m_ParcelEntittiesList;
 
+            public CreateUniqueEntitiesListJob(NativeQueue<Entity> parcelEntitiesQueue, NativeList<UpdateData> parcelEntittiesList) {
+                m_ParcelEntitiesQueue = parcelEntitiesQueue;
+                m_ParcelEntittiesList = parcelEntittiesList;
+            }
+
             /// <inheritdoc/>
             public void Execute() {
                 // Point a list of UpdateData structs from our quuee
