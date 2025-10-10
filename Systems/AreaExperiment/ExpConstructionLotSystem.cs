@@ -151,6 +151,9 @@ namespace Platter.Systems {
                     }
                 }
             }
+
+            entities.Dispose();
+            parcels.Dispose();
         }
     }
 }

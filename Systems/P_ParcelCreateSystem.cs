@@ -79,6 +79,8 @@ namespace Platter.Systems {
                 parcel.m_PreZoneType = currentDefaultPreZone;
                 m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
             }
+
+            entities.Dispose();
         }
     }
 }

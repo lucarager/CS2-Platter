@@ -150,6 +150,9 @@ namespace Platter.Systems {
             public bool m_IsSnapped;
         }
 
+#if USE_BURST
+        [BurstCompile]
+#endif
         private struct ParcelSnapJob : IJobChunk {
             [ReadOnly]
             public NativeQuadTree<Entity, Bounds2> m_Tree;

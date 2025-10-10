@@ -189,6 +189,8 @@ namespace Platter.Systems {
                     }
                 }
             }
+
+            entities.Dispose();
         }
     }
 }

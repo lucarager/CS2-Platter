@@ -52,11 +52,11 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var blockEntities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
+            var entities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
             var subBlockBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>();
 
-            for (var i = 0; i < blockEntities.Length; i++) {
-                var blockEntity = blockEntities[i];
+            for (var i = 0; i < entities.Length; i++) {
+                var blockEntity = entities[i];
 
                 m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity}");
 
@@ -85,6 +85,8 @@ namespace Platter.Systems {
 
                 CollectionUtils.RemoveValue<ParcelSubBlock>(subBlockBuffer, new ParcelSubBlock(blockEntity));
             }
+
+            entities.Dispose();
         }
     }
 }

@@ -28,8 +28,7 @@ namespace Platter.Systems {
         private ToolSystem m_ToolSystem;
         private EntityQuery m_UpdatedQuery;
         private EntityQuery m_AllQuery;
-        private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_StaticSearchTree;
-        private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_MovingSearchTree;
+        private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
         private JobHandle m_StaticReadDependencies;
         private JobHandle m_StaticWriteDependencies;
         private JobHandle m_MovingReadDependencies;
@@ -70,18 +69,16 @@ namespace Platter.Systems {
                 ComponentType.ReadOnly<Parcel>(),
                 ComponentType.Exclude<Temp>(),
             });
-            m_StaticSearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
-            m_MovingSearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
+            m_SearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
         }
 
         /// <inheritdoc/>
         protected override void OnDestroy() {
             m_StaticReadDependencies.Complete();
             m_StaticWriteDependencies.Complete();
-            m_StaticSearchTree.Dispose();
+            m_SearchTree.Dispose();
             m_MovingReadDependencies.Complete();
             m_MovingWriteDependencies.Complete();
-            m_MovingSearchTree.Dispose();
             base.OnDestroy();
         }
 
@@ -124,45 +121,29 @@ namespace Platter.Systems {
 
             base.Dependency = updateSearchTreeJob.Schedule(entityQuery, JobHandle.CombineDependencies(base.Dependency, updateSearchTreeJobHandle));
 
-            AddStaticSearchTreeWriter(base.Dependency);
+            AddSearchTreeWriter(base.Dependency);
         }
 
         public NativeQuadTree<Entity, QuadTreeBoundsXZ> GetStaticSearchTree(bool readOnly, out JobHandle dependencies) {
             dependencies = readOnly ? m_StaticWriteDependencies : JobHandle.CombineDependencies(m_StaticReadDependencies, m_StaticWriteDependencies);
-            return m_StaticSearchTree;
+            return m_SearchTree;
         }
 
-        public NativeQuadTree<Entity, QuadTreeBoundsXZ> GetMovingSearchTree(bool readOnly, out JobHandle dependencies) {
-            dependencies = readOnly ? m_MovingWriteDependencies : JobHandle.CombineDependencies(m_MovingReadDependencies, m_MovingWriteDependencies);
-            return m_MovingSearchTree;
-        }
-
-        public void AddStaticSearchTreeReader(JobHandle jobHandle) {
+        public void AddSearchTreeReader(JobHandle jobHandle) {
             m_StaticReadDependencies = JobHandle.CombineDependencies(m_StaticReadDependencies, jobHandle);
         }
 
-        public void AddStaticSearchTreeWriter(JobHandle jobHandle) {
+        public void AddSearchTreeWriter(JobHandle jobHandle) {
             m_StaticWriteDependencies = jobHandle;
-        }
-
-        public void AddMovingSearchTreeReader(JobHandle jobHandle) {
-            m_MovingReadDependencies = JobHandle.CombineDependencies(m_MovingReadDependencies, jobHandle);
-        }
-
-        public void AddMovingSearchTreeWriter(JobHandle jobHandle) {
-            m_MovingWriteDependencies = jobHandle;
         }
 
         /// <inheritdoc/>
         public void PreDeserialize(Context context) {
             m_Log.Debug($"PreDeserialize()");
 
-            var staticSearchTree = GetStaticSearchTree(false, out var jobHandle);
-            var movingSearchTree = GetMovingSearchTree(false, out var jobHandle2);
-            jobHandle.Complete();
-            jobHandle2.Complete();
+            var staticSearchTree = GetStaticSearchTree(false, out var searchTreeJobHandle);
+            searchTreeJobHandle.Complete();
             staticSearchTree.Clear();
-            movingSearchTree.Clear();
             m_NeedFirstLoad = true;
         }
 

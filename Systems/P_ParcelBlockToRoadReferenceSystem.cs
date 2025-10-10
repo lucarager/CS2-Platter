@@ -59,10 +59,10 @@ namespace Platter.Systems {
 
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
 
-            var parcelEntities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
+            var entities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
 
-            for (var i = 0; i < parcelEntities.Length; i++) {
-                var parcelEntity = parcelEntities[i];
+            for (var i = 0; i < entities.Length; i++) {
+                var parcelEntity = entities[i];
                 var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
                 var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
 
@@ -104,6 +104,8 @@ namespace Platter.Systems {
                     }
                 }
             }
+
+            entities.Dispose();
         }
     }
 }

@@ -66,6 +66,8 @@ namespace Platter.Systems {
             foreach (var entity in entities) {
                 m_Log.Debug($"Building was updated {entity}");
             }
+
+            entities.Dispose();
         }
     }
 }

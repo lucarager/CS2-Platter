@@ -102,6 +102,8 @@ namespace Platter.Systems {
             }
 
             EntityManager.AddComponent<Updated>(m_PrefabQuery);
+
+            entities.Dispose();
         }
     }
 }

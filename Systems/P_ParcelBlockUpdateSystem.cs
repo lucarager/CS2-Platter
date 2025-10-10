@@ -91,6 +91,8 @@ namespace Platter.Systems {
                     // todo
                 }
             }
+
+            entities.Dispose();
         }
     }
 }

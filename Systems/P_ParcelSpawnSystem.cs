@@ -82,6 +82,8 @@ namespace Platter.Systems {
 
                 EntityManager.AddComponent<Updated>(entity);
             }
+
+            entities.Dispose();
         }
     }
 }
