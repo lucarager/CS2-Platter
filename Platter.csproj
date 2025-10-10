@@ -19,7 +19,11 @@
 		<DebugSymbols>true</DebugSymbols>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 	</PropertyGroup>
-
+	
+	<PropertyGroup>
+		<DefaultItemExcludes>obj/;node_modules/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+	</PropertyGroup>
+	
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DefineConstants>$(DefineConstants);USE_BURST</DefineConstants>
 		<WarningLevel>4</WarningLevel>
