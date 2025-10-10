@@ -36,6 +36,7 @@ namespace Platter.Systems {
         private OverlayRenderSystem m_OverlayRenderSystem;
         private PrefabSystem m_PrefabSystem;
         private P_ZoneCacheSystem m_ZoneCacheSystem;
+        private PreCullingSystem m_PreCullingSystem;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -80,6 +81,7 @@ namespace Platter.Systems {
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ZoneCacheSystem = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
+            m_PreCullingSystem = World.GetOrCreateSystemManaged<PreCullingSystem>();
         }
 
         /// <inheritdoc/>
@@ -93,7 +95,6 @@ namespace Platter.Systems {
                     throw new NullReferenceException("Camera.main is null");
                 }
 
-                var buffer = m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferHandle);
                 var edgeColors = m_ZoneCacheSystem.EdgeColors;
                 var colorsMap = new NativeHashMap<ZoneType, Color>(edgeColors.Count, Allocator.TempJob);
 
@@ -101,26 +102,31 @@ namespace Platter.Systems {
                     colorsMap.Add(entry.Key, entry.Value);
                 }
 
-                // Todo split position calc, render calc, and render step, into separate jobs for perf
+                // Todo split position calc, culling/render calc, and render step, into separate jobs for perf
                 var drawOverlaysJobData = new DrawOverlaysJob(
-                    overlayRenderBuffer: buffer,
+                    overlayRenderBuffer: m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferJobHandle),
                     cameraPosition: (float3)Camera.main.transform.position,
                     colorArray: colorsMap,
                     entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
                     transformComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
                     prefabRefComponentTypeHandle: SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                    cullingInfoComponentTypeHandle: SystemAPI.GetComponentTypeHandle<CullingInfo>(),
                     parcelComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Parcel>(),
                     parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(),
                     objectGeometryComponentLookup: SystemAPI.GetComponentLookup<ObjectGeometryData>(),
                     parcelSpawnableComponentLookup: SystemAPI.GetComponentLookup<ParcelSpawnable>(),
-                    tempComponentLookup: SystemAPI.GetComponentLookup<Temp>()
+                    tempComponentLookup: SystemAPI.GetComponentLookup<Temp>(),
+                    cullingData: m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle)
                 );
-                var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, overlayRenderBufferHandle);
+                var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, JobHandle.CombineDependencies(base.Dependency, overlayRenderBufferJobHandle, cullingDataJobHandle));
 
                 m_OverlayRenderSystem.AddBufferWriter(drawOverlaysJob);
+                m_PreCullingSystem.AddCullingDataReader(drawOverlaysJob);
+
                 drawOverlaysJob.Complete();
                 colorsMap.Dispose();
-                Dependency = drawOverlaysJob;
+
+                base.Dependency = drawOverlaysJob;
             } catch (Exception ex) {
                 m_Log.Error($"Failed on DrawOverlaysJob:\n{ex}");
             }
@@ -149,8 +155,25 @@ namespace Platter.Systems {
             public ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
             [ReadOnly]
             public ComponentLookup<Temp> m_TempComponentLookup;
+            [ReadOnly]
+            public NativeList<PreCullingData> m_CullingData;
+            [ReadOnly]
+            public ComponentTypeHandle<CullingInfo> m_CullingInfoComponentTypeHandle;
 
-            public DrawOverlaysJob(OverlayRenderSystem.Buffer overlayRenderBuffer, float3 cameraPosition, NativeHashMap<ZoneType, Color> colorArray, EntityTypeHandle entityTypeHandle, ComponentTypeHandle<Game.Objects.Transform> transformComponentTypeHandle, ComponentTypeHandle<PrefabRef> prefabRefComponentTypeHandle, ComponentTypeHandle<Parcel> parcelComponentTypeHandle, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<ObjectGeometryData> objectGeometryComponentLookup, ComponentLookup<ParcelSpawnable> parcelSpawnableComponentLookup, ComponentLookup<Temp> tempComponentLookup) {
+            public DrawOverlaysJob(
+                OverlayRenderSystem.Buffer overlayRenderBuffer,
+                float3 cameraPosition,
+                NativeHashMap<ZoneType, Color> colorArray,
+                EntityTypeHandle entityTypeHandle,
+                ComponentTypeHandle<Game.Objects.Transform> transformComponentTypeHandle,
+                ComponentTypeHandle<PrefabRef> prefabRefComponentTypeHandle,
+                ComponentTypeHandle<Parcel> parcelComponentTypeHandle,
+                ComponentLookup<ParcelData> parcelDataComponentLookup,
+                ComponentLookup<ObjectGeometryData> objectGeometryComponentLookup,
+                ComponentLookup<ParcelSpawnable> parcelSpawnableComponentLookup,
+                ComponentLookup<Temp> tempComponentLookup,
+                NativeList<PreCullingData> cullingData,
+                ComponentTypeHandle<CullingInfo> cullingInfoComponentTypeHandle) {
                 m_OverlayRenderBuffer = overlayRenderBuffer;
                 m_CameraPosition = cameraPosition;
                 m_ColorArray = colorArray;
@@ -162,6 +185,8 @@ namespace Platter.Systems {
                 m_ObjectGeometryComponentLookup = objectGeometryComponentLookup;
                 m_ParcelSpawnableComponentLookup = parcelSpawnableComponentLookup;
                 m_TempComponentLookup = tempComponentLookup;
+                m_CullingData = cullingData;
+                m_CullingInfoComponentTypeHandle = cullingInfoComponentTypeHandle;
             }
 
             /// <inheritdoc/>
@@ -171,19 +196,25 @@ namespace Platter.Systems {
                 var transformsArray = chunk.GetNativeArray(ref m_TransformComponentTypeHandle);
                 var prefabRefsArray = chunk.GetNativeArray(ref m_PrefabRefComponentTypeHandle);
                 var parcelsArray = chunk.GetNativeArray(ref m_ParcelComponentTypeHandle);
+                var cullingInfoArray = chunk.GetNativeArray<CullingInfo>(ref m_CullingInfoComponentTypeHandle);
 
                 while (enumerator.NextEntityIndex(out var i)) {
                     var entity = entitiesArray[i];
+                    var cullingInfo = cullingInfoArray[i];
+
+                    if (!IsNearCamera(cullingInfo)) {
+                        continue;
+                    }
+
                     var transform = transformsArray[i];
                     var prefabRef = prefabRefsArray[i];
                     var parcel = parcelsArray[i];
                     var trs = ParcelUtils.GetTransformMatrix(transform);
 
                     if (!m_ParcelDataComponentLookup.TryGetComponent(prefabRef, out var parcelData)) {
-                        return;
+                        continue;
                     }
 
-                    var isTemp = m_TempComponentLookup.HasComponent(entity);
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local center to calculate the cube's world position.
@@ -193,6 +224,10 @@ namespace Platter.Systems {
                         DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, spawnable);
                     }
                 }
+            }
+
+            private bool IsNearCamera(CullingInfo cullingInfo) {
+                return cullingInfo.m_CullingIndex != 0 && (m_CullingData[cullingInfo.m_CullingIndex].m_Flags & PreCullingFlags.NearCamera) > (PreCullingFlags)0U;
             }
         }
     }
