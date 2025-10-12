@@ -5,10 +5,8 @@ interface InfoSectionComponent {
 }
 
 export const SelectedInfoPanelComponent = (componentList: any) => {
-    componentList["Platter.Systems.SelectedInfoPanelSystem"] = (e: InfoSectionComponent) => {
-        return (
-            <></>
-        );
+    componentList["Platter.Systems.P_SelectedInfoPanelSystem"] = (e: InfoSectionComponent) => {
+        return <></>;
     };
 
     return componentList as any;
