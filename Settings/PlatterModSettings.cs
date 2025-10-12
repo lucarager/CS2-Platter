@@ -4,12 +4,17 @@
 // </copyright>
 
 namespace Platter.Settings {
+    using System;
     using Colossal.IO.AssetDatabase;
     using Game;
     using Game.Input;
     using Game.Modding;
     using Game.SceneFlow;
     using Game.Settings;
+    using Platter.Systems;
+    using Unity.Entities;
+    using UnityEngine;
+    using static Game.Prefabs.CompositionFlags;
 
     /// <summary>
     /// The mod's settings.
@@ -20,36 +25,20 @@ namespace Platter.Settings {
     [SettingsUIMouseAction(IncreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
     [SettingsUIMouseAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
     [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
+    [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
-        /// <summary>
-        /// Tool's apply action name.
-        /// </summary>
-        public const string ToggleRenderActionName = "ToggleParcelRendering";
-
-        /// <summary>
-        /// Tool's apply action name.
-        /// </summary>
-        public const string ToggleSpawnActionName = "ToggleParcelSpawning";
-
-        /// <summary>
-        /// Tool's apply action name.
-        /// </summary>
-        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidth";
-
-        /// <summary>
-        /// Tool's apply action name.
-        /// </summary>
-        public const string DecreaseParcelWidthActionName = "DecreaseParcelWidth";
-
-        /// <summary>
-        /// Tool's apply action name.
-        /// </summary>
-        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepth";
-
-        /// <summary>
-        /// Tool's apply action name.
-        /// </summary>
-        public const string DecreaseParcelDepthActionName = "DecreaseParcelDepth";
+        public const string KeybindingsGroup = "KeybindingsGroup";
+        public const string UninstallGroup = "UninstallGroup";
+        public const string AboutGroup = "AboutGroup";
+        public const string UninstallGroupDescription = "UninstallGroupDescription";
+        public const string ToggleRenderActionName = "ToggleRenderActionName";
+        public const string ToggleSpawnActionName = "ToggleSpawnActionName";
+        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
+        public const string DecreaseParcelWidthActionName = "DecreaseParcelWidthActionName";
+        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
+        public const string DecreaseParcelDepthActionName = "DecreaseParcelDepthActionName";
+        public const string Credit = "Made with <3 by Luca.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -62,6 +51,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
+        [SettingsUISection(KeybindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.P, actionName: ToggleRenderActionName, ctrl: true)]
         public ProxyBinding PlatterToggleRender {
             get; set;
@@ -70,6 +60,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
+        [SettingsUISection(KeybindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.L, actionName: ToggleSpawnActionName, ctrl: true)]
         public ProxyBinding PlatterToggleSpawn {
             get; set;
@@ -78,6 +69,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
+        [SettingsUISection(KeybindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.Z, actionName: IncreaseParcelWidthActionName, ctrl: true)]
         public ProxyBinding PlatterIncreaseParcelWidth {
             get; set;
@@ -86,6 +78,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
+        [SettingsUISection(KeybindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.X, actionName: DecreaseParcelWidthActionName, ctrl: true)]
         public ProxyBinding PlatterDecreaseParcelWidth {
             get; set;
@@ -94,6 +87,7 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
+        [SettingsUISection(KeybindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.Z, actionName: IncreaseParcelDepthActionName, alt: true)]
         public ProxyBinding PlatterIncreaseParcelDepth {
             get; set;
@@ -102,9 +96,51 @@ namespace Platter.Settings {
         /// <summary>
         /// Gets or sets ...
         /// </summary>
+        [SettingsUISection(KeybindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.X, actionName: DecreaseParcelDepthActionName, alt: true)]
         public ProxyBinding PlatterDecreaseParcelDepth {
             get; set;
+        }
+
+        [SettingsUISection(UninstallGroup)]
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        public bool RemoveParcels {
+            set {
+                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
+                uninstallSystem.UninstallPlatter();
+            }
+        }
+
+        [SettingsUISection(AboutGroup)]
+        public string Version => PlatterMod.Version;
+
+        [SettingsUISection(AboutGroup)]
+        public string InformationalVersion => PlatterMod.InformationalVersion;
+
+        [SettingsUISection(AboutGroup)]
+        public string Credits => Credit;
+
+        [SettingsUISection(AboutGroup)]
+        public bool Github {
+            set {
+                try {
+                    Application.OpenURL($"https://github.com/lucarager/CS2-Platter");
+                } catch (Exception e) {
+                    UnityEngine.Debug.LogException(e);
+                }
+            }
+        }
+
+        [SettingsUISection(AboutGroup)]
+        public bool Discord {
+            set {
+                try {
+                    Application.OpenURL($"https://discord.gg/QFxmPa2wCa");
+                } catch (Exception e) {
+                    UnityEngine.Debug.LogException(e);
+                }
+            }
         }
 
         /// <summary>

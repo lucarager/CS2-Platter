@@ -6,6 +6,7 @@
 namespace Platter.Settings {
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
 
     /// <summary>
     /// Todo.
@@ -23,6 +24,18 @@ namespace Platter.Settings {
 
             m_Localization = new Dictionary<string, string>() {
                 { m_Setting.GetSettingsLocaleID(), PlatterMod.Id },
+
+                // Sections
+
+                // Groups
+                { m_Setting.GetOptionGroupLocaleID(nameof(PlatterModSettings.KeybindingsGroup)), "Key Bindings" },
+                { m_Setting.GetOptionGroupLocaleID(nameof(PlatterModSettings.UninstallGroup)), "Uninstall" },
+                { m_Setting.GetOptionGroupLocaleID(nameof(PlatterModSettings.AboutGroup)), "About" },
+
+                // Uninstaller
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Delete all Parcels" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Removes all parcels from the map, permanently. Buildings that are not on a vanilla zone grid will despawn, unless you have a mod that prevents that." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Permanently remove all parcels from this save?" },
 
                 // ToggleRenderActionName
                 { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.ToggleRenderActionName), "Toggle \"Parcel Overlay\"" },
@@ -57,6 +70,15 @@ namespace Platter.Settings {
                 { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelDepth)), "Decrease Parcel depth" },
                 { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelDepth)), "Shortcut to decrease Parcel depth while plopping Parcels" },
                 { m_Setting.GetBindingKeyHintLocaleID(PlatterModSettings.DecreaseParcelDepthActionName), "Decrease Parcel depth" },
+
+                // About
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Version)), "Version" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.InformationalVersion)), "Informational Version" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Credits)), string.Empty },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Github)), "GitHub" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.Github)), "Opens a browser window to https://github.com/lucarager/CS2-Platter" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Discord)), "Discord" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.Discord)), "Opens link to join the CS:2 Modding Discord" },
 
                 // UI
                 { "PlatterMod.UI.SectionTitle.Prezoning", "Pre-Zone" },
