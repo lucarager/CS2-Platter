@@ -39,6 +39,22 @@ namespace Platter.Utils {
             }
         }
 
+        public struct PathDef {
+            public string[] path;
+            public Color color;
+        }
+
+        public struct IconDefinition {
+            public PathDef[] paths;
+        }
+
+        public static void DrawLineIcon(
+            OverlayRenderSystem.Buffer buffer,
+            IconDefinition iconDefinition
+        ) {
+
+        }
+
         public static void DrawParcel(
             OverlayRenderSystem.Buffer buffer,
             int2 lotSize,
@@ -70,6 +86,9 @@ namespace Platter.Utils {
             linesToDraw.Add(new LineDef(parcelCorners.c1, parcelCorners.c2, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
             linesToDraw.Add(new LineDef(parcelCorners.c2, parcelCorners.c3, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
             linesToDraw.Add(new LineDef(parcelCorners.c3, parcelCorners.c0, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
+
+            // Ensure background opacity
+            backgroundColor.a = ColorConstants.OpacityLow;
 
             // Add background
             linesToDraw.Add(new LineDef(parcelFront, parcelBack, backgroundColor, parcelGeo.Size.x));
