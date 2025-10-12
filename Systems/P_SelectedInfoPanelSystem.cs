@@ -17,7 +17,6 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_SelectedInfoPanelSystem : InfoSectionBase {
         private PrefixedLogger m_Log;
-        private ValueBinding<bool> m_AllowSpawningBinding;
         private ToolSystem m_ToolSystem;
 
         /// <inheritdoc/>
@@ -48,11 +47,6 @@ namespace Platter.Systems {
 
             // Systems & References
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
-
-            // Bindings
-            AddBinding(m_AllowSpawningBinding = new ValueBinding<bool>(PlatterMod.Id, "BINDING:ALLOW_SPAWNING_INFO_SECTION", false));
-
-            // AddBinding(new TriggerBinding(PlatterMod.Id, "EVENT:ALLOW_SPAWNING_TOGGLED", HandleAllowSpawningToggleEvent));
         }
 
         /// <inheritdoc/>
@@ -60,10 +54,6 @@ namespace Platter.Systems {
             base.OnUpdate();
 
             visible = CheckEntityEligibility();
-
-            if (visible && EntityManager.TryGetComponent<Parcel>(selectedEntity, out var parcel)) {
-                // m_AllowSpawningBinding.Update(parcel.m_AllowSpawning);
-            }
 
             RequestUpdate();
         }

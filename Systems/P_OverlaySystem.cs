@@ -95,8 +95,8 @@ namespace Platter.Systems {
                     throw new NullReferenceException("Camera.main is null");
                 }
 
-                var edgeColors = m_ZoneCacheSystem.EdgeColors;
-                var colorsMap = new NativeHashMap<ZoneType, Color>(edgeColors.Count, Allocator.TempJob);
+                var edgeColors = m_ZoneCacheSystem.FillColors;
+                var colorsMap = new NativeHashMap<ushort, Color>(edgeColors.Count, Allocator.TempJob);
 
                 foreach (var entry in edgeColors) {
                     colorsMap.Add(entry.Key, entry.Value);
@@ -106,17 +106,17 @@ namespace Platter.Systems {
                 var drawOverlaysJobData = new DrawOverlaysJob(
                     overlayRenderBuffer: m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferJobHandle),
                     cameraPosition: (float3)Camera.main.transform.position,
-                    colorArray: colorsMap,
+                    colorsMap: colorsMap,
                     entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
                     transformComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
                     prefabRefComponentTypeHandle: SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                    cullingInfoComponentTypeHandle: SystemAPI.GetComponentTypeHandle<CullingInfo>(),
                     parcelComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Parcel>(),
                     parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(),
                     objectGeometryComponentLookup: SystemAPI.GetComponentLookup<ObjectGeometryData>(),
                     parcelSpawnableComponentLookup: SystemAPI.GetComponentLookup<ParcelSpawnable>(),
                     tempComponentLookup: SystemAPI.GetComponentLookup<Temp>(),
-                    cullingData: m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle)
+                    cullingData: m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle),
+                    cullingInfoComponentTypeHandle: SystemAPI.GetComponentTypeHandle<CullingInfo>()
                 );
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(m_ParcelQuery, JobHandle.CombineDependencies(base.Dependency, overlayRenderBufferJobHandle, cullingDataJobHandle));
 
@@ -138,7 +138,7 @@ namespace Platter.Systems {
             [ReadOnly]
             public float3 m_CameraPosition;
             [ReadOnly]
-            public NativeHashMap<ZoneType, Color> m_ColorArray;
+            public NativeHashMap<ushort, Color> m_ColorsMap;
             [ReadOnly]
             public EntityTypeHandle m_EntityTypeHandle;
             [ReadOnly]
@@ -163,7 +163,7 @@ namespace Platter.Systems {
             public DrawOverlaysJob(
                 OverlayRenderSystem.Buffer overlayRenderBuffer,
                 float3 cameraPosition,
-                NativeHashMap<ZoneType, Color> colorArray,
+                NativeHashMap<ushort, Color> colorsMap,
                 EntityTypeHandle entityTypeHandle,
                 ComponentTypeHandle<Game.Objects.Transform> transformComponentTypeHandle,
                 ComponentTypeHandle<PrefabRef> prefabRefComponentTypeHandle,
@@ -176,7 +176,7 @@ namespace Platter.Systems {
                 ComponentTypeHandle<CullingInfo> cullingInfoComponentTypeHandle) {
                 m_OverlayRenderBuffer = overlayRenderBuffer;
                 m_CameraPosition = cameraPosition;
-                m_ColorArray = colorArray;
+                m_ColorsMap = colorsMap;
                 m_EntityTypeHandle = entityTypeHandle;
                 m_TransformComponentTypeHandle = transformComponentTypeHandle;
                 m_PrefabRefComponentTypeHandle = prefabRefComponentTypeHandle;
@@ -196,7 +196,7 @@ namespace Platter.Systems {
                 var transformsArray = chunk.GetNativeArray(ref m_TransformComponentTypeHandle);
                 var prefabRefsArray = chunk.GetNativeArray(ref m_PrefabRefComponentTypeHandle);
                 var parcelsArray = chunk.GetNativeArray(ref m_ParcelComponentTypeHandle);
-                var cullingInfoArray = chunk.GetNativeArray<CullingInfo>(ref m_CullingInfoComponentTypeHandle);
+                var cullingInfoArray = chunk.GetNativeArray(ref m_CullingInfoComponentTypeHandle);
 
                 while (enumerator.NextEntityIndex(out var i)) {
                     var entity = entitiesArray[i];
@@ -218,8 +218,8 @@ namespace Platter.Systems {
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local center to calculate the cube's world position.
-                    if (m_ColorArray[parcel.m_PreZoneType] != null) {
-                        DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, m_ColorArray[parcel.m_PreZoneType], spawnable);
+                    if (m_ColorsMap[parcel.m_PreZoneType.m_Index] != null) {
+                        DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, m_ColorsMap[parcel.m_PreZoneType.m_Index], spawnable);
                     } else {
                         DrawingUtils.DrawParcel(m_OverlayRenderBuffer, parcelData.m_LotSize, trs, spawnable);
                     }

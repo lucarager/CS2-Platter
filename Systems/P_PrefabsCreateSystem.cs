@@ -1,9 +1,13 @@
-﻿// <copyright file="P_PrefabSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_PrefabsCreateSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
@@ -12,10 +16,6 @@ namespace Platter.Systems {
     using Platter.Components;
     using Platter.Extensions;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
@@ -31,7 +31,7 @@ namespace Platter.Systems {
         /// <para>z = max width.</para>
         /// <para>w = max width.</para>
         /// </summary>
-        public static readonly int4 BlockSizes = new (2, 2, 6, 6);
+        public static readonly int4 BlockSizes = new(2, 2, 6, 6);
 
         /// <summary>
         /// Todo.
@@ -46,7 +46,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new () {
+        private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
             { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
             { "road", new PrefabID("RoadPrefab", "Alley") },
             { "uiAssetCategory", new PrefabID("UIAssetCategoryPrefab", "ZonesOffice") },
@@ -63,7 +63,7 @@ namespace Platter.Systems {
         // Systems & References
         private static PrefabSystem m_PrefabSystem;
         private static BuildingInitializeSystem m_BuildingInitializeSystem;
-        
+
         // Logger
         private PrefixedLogger m_Log;
 
@@ -85,8 +85,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate()
-        {
+        protected override void OnUpdate() {
         }
 
         /// <inheritdoc/>
@@ -184,7 +183,7 @@ namespace Platter.Systems {
             };
 
             // Experimental
-            //parcelPrefabBase.AddComponentFrom(objectSubAreas);
+            // parcelPrefabBase.AddComponentFrom(objectSubAreas);
 
             // Point and populate the new UIObject for our cloned Prefab
             var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();

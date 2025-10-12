@@ -63,7 +63,7 @@ namespace Platter.Patches {
         public void UnPatchAll() {
             if (!string.IsNullOrEmpty(_harmonyID)) {
                 Log.Info("[Patcher]  Reverting all applied patches for " + _harmonyID);
-                Harmony harmonyInstance = new (_harmonyID);
+                Harmony harmonyInstance = new(_harmonyID);
 
                 try {
                     harmonyInstance.UnpatchAll("_harmonyID");
@@ -82,7 +82,7 @@ namespace Platter.Patches {
         /// </summary>
         private void PatchAnnotations() {
             Log.Info("[Patcher] Applying annotated Harmony patches for " + _harmonyID);
-            Harmony harmonyInstance = new (_harmonyID);
+            Harmony harmonyInstance = new(_harmonyID);
 
             try {
                 harmonyInstance.PatchAll();

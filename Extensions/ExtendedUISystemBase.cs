@@ -10,7 +10,7 @@ namespace Platter.Extensions {
 
     public abstract partial class ExtendedUISystemBase : UISystemBase {
         public ValueBindingHelper<T> CreateBinding<T>(string key, T initialValue) {
-            var helper = new ValueBindingHelper<T>(new (PlatterMod.Id, $"BINDING:{key}", initialValue, new GenericUIWriter<T>()));
+            var helper = new ValueBindingHelper<T>(new(PlatterMod.Id, $"BINDING:{key}", initialValue, new GenericUIWriter<T>()));
 
             AddBinding(helper.Binding);
 
@@ -18,7 +18,7 @@ namespace Platter.Extensions {
         }
 
         public ValueBindingHelper<T> CreateBinding<T>(string key, T initialValue, Action<T> updateCallBack = null) {
-            var helper = new ValueBindingHelper<T>(new (PlatterMod.Id, $"BINDING:{key}", initialValue, new GenericUIWriter<T>()), updateCallBack);
+            var helper = new ValueBindingHelper<T>(new(PlatterMod.Id, $"BINDING:{key}", initialValue, new GenericUIWriter<T>()), updateCallBack);
             var trigger = new TriggerBinding<T>(PlatterMod.Id, $"TRIGGER:{key}", helper.UpdateCallback, new GenericUIReader<T>());
 
             AddBinding(helper.Binding);
@@ -28,7 +28,7 @@ namespace Platter.Extensions {
         }
 
         public ValueBindingHelper<T> CreateBinding<T>(string key, string setterKey, T initialValue, Action<T> updateCallBack = null) {
-            var helper = new ValueBindingHelper<T>(new (PlatterMod.Id, $"BINDING:{key}", initialValue, new GenericUIWriter<T>()), updateCallBack);
+            var helper = new ValueBindingHelper<T>(new(PlatterMod.Id, $"BINDING:{key}", initialValue, new GenericUIWriter<T>()), updateCallBack);
             var trigger = new TriggerBinding<T>(PlatterMod.Id, $"TRIGGER:{setterKey}", helper.UpdateCallback, new GenericUIReader<T>());
 
             AddBinding(helper.Binding);

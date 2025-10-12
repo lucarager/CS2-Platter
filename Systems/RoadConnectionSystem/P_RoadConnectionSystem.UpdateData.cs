@@ -1,4 +1,4 @@
-﻿// <copyright file="P_RoadConnectionSystem.ConnectionUpdateDataJob.cs" company="Luca Rager">
+﻿// <copyright file="P_RoadConnectionSystem.UpdateData.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -14,7 +14,7 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
-        /// Struct containing data for a replacement job 
+        /// Struct containing data for a replacement job.
         /// </summary>
         public struct UpdateData : IComparable<UpdateData> {
             /// <summary>

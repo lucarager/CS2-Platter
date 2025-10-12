@@ -30,6 +30,11 @@ namespace Platter.Systems {
             /// </summary>
             public NativeList<UpdateData> m_ParcelEntittiesList;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CreateUniqueEntitiesListJob"/> struct.
+            /// </summary>
+            /// <param name="parcelEntitiesQueue"></param>
+            /// <param name="parcelEntittiesList"></param>
             public CreateUniqueEntitiesListJob(NativeQueue<Entity> parcelEntitiesQueue, NativeList<UpdateData> parcelEntittiesList) {
                 m_ParcelEntitiesQueue = parcelEntitiesQueue;
                 m_ParcelEntittiesList = parcelEntittiesList;

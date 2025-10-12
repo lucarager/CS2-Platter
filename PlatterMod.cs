@@ -4,6 +4,11 @@
 // </copyright>
 
 namespace Platter {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
     using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
@@ -22,11 +27,6 @@ namespace Platter {
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
     using Unity.Entities;
     using UnityEngine;
 
@@ -45,25 +45,35 @@ namespace Platter {
         public static readonly string Id = "Platter";
 
         /// <summary>
-        /// Gets the active instance reference.
+        /// Gets the instance reference.
         /// </summary>
         public static PlatterMod Instance {
             get; private set;
         }
 
         /// <summary>
-        /// Gets the mod's active settings configuration.
+        /// Gets the mod's settings configuration.
         /// </summary>
         internal PlatterModSettings Settings {
             get; private set;
         }
 
         /// <summary>
-        /// Gets the mod's active log.
+        /// Gets the mod's logger.
         /// </summary>
         internal ILog Log {
             get; private set;
         }
+
+        /// <summary>
+        /// Gets the mod's version
+        /// </summary>
+        public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
+
+        /// <summary>
+        /// Gets the mod's informational version
+        /// </summary>
+        public static string InformationalVersion => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem) {
@@ -158,7 +168,7 @@ namespace Platter {
             // updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
 
             // Add tests
-            AddTets();
+            AddTests();
 
             // Add mod UI resource directory to UI resource handler.
             if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
@@ -187,12 +197,12 @@ namespace Platter {
             Patcher.Instance?.UnPatchAll();
         }
 
-        private static void AddTets() {
+        private static void AddTests() {
             var log = LogManager.GetLogger(ModName);
 
             var m_ScenariosField = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
             if (m_ScenariosField == null) {
-                log.Error("AddTets() -- Could not find m_Scenarios");
+                log.Error("AddTests() -- Could not find m_Scenarios");
                 return;
             }
 
@@ -200,7 +210,7 @@ namespace Platter {
 
             foreach (var type in GetTests()) {
                 if (type.IsClass && !type.IsAbstract && !type.IsInterface && type.TryGetAttribute(out TestDescriptorAttribute testDescriptorAttribute, false)) {
-                    log.Debug($"AddTets() -- {testDescriptorAttribute.description}");
+                    log.Debug($"AddTests() -- {testDescriptorAttribute.description}");
 
                     m_Scenarios.Add(testDescriptorAttribute.description, new TestScenarioSystem.Scenario {
                         category = testDescriptorAttribute.category,
@@ -284,7 +294,7 @@ namespace Platter {
                             Log.Debug($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
-                            using System.IO.StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
+                            using System.IO.StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
                             {
                                 var entireFile = reader.ReadToEnd();
                                 var varient = Colossal.Json.JSON.Load(entireFile);

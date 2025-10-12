@@ -131,7 +131,7 @@ namespace Platter.Systems {
         /// 5. [UpdateDataJob] Update parcel and road data.
         /// </summary>
         protected override void OnUpdate() {
-            // Data structures 
+            // Data structures
             var parcelEntitiesQueue = new NativeQueue<Entity>(Allocator.TempJob);
             var parcelEntitiesList = new NativeList<UpdateData>(Allocator.TempJob);
 
@@ -196,18 +196,18 @@ namespace Platter.Systems {
 
             // [UpdateDataJob] Update parcel and road data.
             var replaceRoadConnectionJobHandle = new UpdateDataJob(
-                edgeComponentLookup:  SystemAPI.GetComponentLookup<Edge>(false),
-                nodeGeoComponentLookup:  SystemAPI.GetComponentLookup<NodeGeometry>(true),
-                aggregatedComponentLookup:  SystemAPI.GetComponentLookup<Aggregated>(true),
-                parcelComponentLookup:  SystemAPI.GetComponentLookup<Parcel>(false),
-                createdComponentLookup:  SystemAPI.GetComponentLookup<Created>(true),
-                tempComponentLookup:  SystemAPI.GetComponentLookup<Temp>(true),
-                subBlockBufferLookup:  SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
-                connectedParcelsBufferLookup:  SystemAPI.GetBufferLookup<ConnectedParcel>(),
-                parcelEntitiesList:  parcelEntitiesList,
-                commandBuffer:  m_ModificationBarrier.CreateCommandBuffer(),
-                iconCommandBuffer:  m_IconCommandSystem.CreateCommandBuffer(),
-                trafficConfigurationData:  m_TrafficConfigQuery.GetSingleton<TrafficConfigurationData>()
+                edgeComponentLookup: SystemAPI.GetComponentLookup<Edge>(false),
+                nodeGeoComponentLookup: SystemAPI.GetComponentLookup<NodeGeometry>(true),
+                aggregatedComponentLookup: SystemAPI.GetComponentLookup<Aggregated>(true),
+                parcelComponentLookup: SystemAPI.GetComponentLookup<Parcel>(false),
+                createdComponentLookup: SystemAPI.GetComponentLookup<Created>(true),
+                tempComponentLookup: SystemAPI.GetComponentLookup<Temp>(true),
+                subBlockBufferLookup: SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
+                connectedParcelsBufferLookup: SystemAPI.GetBufferLookup<ConnectedParcel>(),
+                parcelEntitiesList: parcelEntitiesList,
+                commandBuffer: m_ModificationBarrier.CreateCommandBuffer(),
+                iconCommandBuffer: m_IconCommandSystem.CreateCommandBuffer(),
+                trafficConfigurationData: m_TrafficConfigQuery.GetSingleton<TrafficConfigurationData>()
             ).Schedule(findRoadConnectionJobHandle);
 
             // Dispose of data

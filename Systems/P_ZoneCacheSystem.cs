@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System.Collections.Generic;
     using Colossal.IO.AssetDatabase.Internal;
     using Game.Common;
     using Game.Prefabs;
@@ -12,7 +13,6 @@ namespace Platter.Systems {
     using Game.UI.Tooltip;
     using Game.Zones;
     using Platter.Utils;
-    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
@@ -23,21 +23,14 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_ZoneCacheSystem : TooltipSystemBase {
         public NativeList<Entity> ZonePrefabs => m_ZonePrefabs;
-        
-        public Dictionary<ZoneType, Color> FillColors => m_FillColors;
-        
-        public Dictionary<ZoneType, Color> EdgeColors => m_EdgeColors;
 
-        public Dictionary<ZoneType, ZoneUIData> ZoneUIData => m_ZoneUIData;
+        public Dictionary<ushort, Color> FillColors => m_FillColors;
 
-        public bool TryGetEdgeColor(ZoneType zoneType, out Color value) {
-            var valid = m_EdgeColors.TryGetValue(zoneType, out var color);
-            value = color;
-            return valid;
-        }
+        public Dictionary<ushort, Color> EdgeColors => m_EdgeColors;
+
+        public Dictionary<ushort, ZoneUIData> ZoneUIData => m_ZoneUIData;
 
         // Systems
-        private ZoneSystem m_ZoneSystem;
         private PrefabSystem m_PrefabSystem;
 
         // Logger
@@ -48,9 +41,9 @@ namespace Platter.Systems {
 
         // Data
         private NativeList<Entity> m_ZonePrefabs;
-        private Dictionary<ZoneType, Color> m_FillColors;
-        private Dictionary<ZoneType, Color> m_EdgeColors;
-        private Dictionary<ZoneType, ZoneUIData> m_ZoneUIData;
+        private Dictionary<ushort, Color> m_FillColors;
+        private Dictionary<ushort, Color> m_EdgeColors;
+        private Dictionary<ushort, ZoneUIData> m_ZoneUIData;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -60,7 +53,6 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(P_ZoneCacheSystem));
             m_Log.Debug($"OnCreate()");
 
-            m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             m_CreatedQuery = SystemAPI.QueryBuilder()
@@ -71,9 +63,9 @@ namespace Platter.Systems {
                 .Build();
 
             m_ZonePrefabs = new NativeList<Entity>(Allocator.Persistent);
-            m_FillColors = new Dictionary<ZoneType, Color>();
-            m_EdgeColors = new Dictionary<ZoneType, Color>();
-            m_ZoneUIData = new Dictionary<ZoneType, ZoneUIData>();
+            m_FillColors = new Dictionary<ushort, Color>();
+            m_EdgeColors = new Dictionary<ushort, Color>();
+            m_ZoneUIData = new Dictionary<ushort, ZoneUIData>();
         }
 
         /// <inheritdoc/>
@@ -115,17 +107,18 @@ namespace Platter.Systems {
                     }
 
                     if (archetypeChunk.Has(ref deletedTH)) {
-                        if (zoneData.m_ZoneType.m_Index < m_ZonePrefabs.Length && 
+                        if (zoneData.m_ZoneType.m_Index < m_ZonePrefabs.Length &&
                             m_ZonePrefabs[zoneData.m_ZoneType.m_Index] == entity) {
                             m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Deleting from cache.");
                             m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = Entity.Null;
-                            m_FillColors.Remove(zoneData.m_ZoneType);
-                            m_EdgeColors.Remove(zoneData.m_ZoneType);
-                            m_ZoneUIData.Remove(zoneData.m_ZoneType);
+                            m_FillColors.Remove(zoneData.m_ZoneType.m_Index);
+                            m_EdgeColors.Remove(zoneData.m_ZoneType.m_Index);
+                            m_ZoneUIData.Remove(zoneData.m_ZoneType.m_Index);
                         }
                     } else {
                         // Cache Zone
                         m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Adding to cache.");
+
                         if (zoneData.m_ZoneType.m_Index < m_ZonePrefabs.Length) {
                             m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
                         } else {
@@ -140,13 +133,13 @@ namespace Platter.Systems {
 
                         // Cache Colors
                         m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Adding fill color {zonePrefab.m_Color}");
-                        m_FillColors.Add(zoneData.m_ZoneType, zonePrefab.m_Color);
+                        m_FillColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Color);
                         m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Adding edge color {zonePrefab.m_Edge}");
-                        m_EdgeColors.Add(zoneData.m_ZoneType, zonePrefab.m_Edge);
+                        m_EdgeColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Edge);
 
                         // Cache Data
                         m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Adding UI Data");
-                        m_ZoneUIData.Add(zoneData.m_ZoneType, new ZoneUIData(
+                        m_ZoneUIData.Add(zoneData.m_ZoneType.m_Index, new ZoneUIData(
                             zonePrefab.name,
                             ImageSystem.GetThumbnail(zonePrefab),
                             "todo category",

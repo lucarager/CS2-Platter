@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
     using Colossal.Collections;
     using Colossal.Mathematics;
     using Game;
@@ -17,7 +18,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using System;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -123,13 +123,14 @@ namespace Platter.Systems {
             }
 
             // Schedule our snapping job
-            var parcelSnapJobHandle = new ParcelSnapJob (
+            var parcelSnapJobHandle = new ParcelSnapJob(
                 tree: m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
                 controlPoints: controlPoints,
                 objectDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<ObjectDefinition>(false),
                 creationDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
                 blockComponentLookup: SystemAPI.GetComponentLookup<Block>(true),
                 parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(true),
+                parcelOwnerComponentLookup: SystemAPI.GetComponentLookup<ParcelOwner>(true),
                 terrainHeightData: m_TerrainSystem.GetHeightData(false),
                 snapOffset: m_SnapOffset,
                 entityTypeHandle: SystemAPI.GetEntityTypeHandle()
@@ -170,6 +171,9 @@ namespace Platter.Systems {
             public ComponentLookup<Block> m_BlockComponentLookup;
 
             [ReadOnly]
+            public ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
+            
+            [ReadOnly]
             public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
 
             [ReadOnly]
@@ -187,6 +191,7 @@ namespace Platter.Systems {
                 ComponentTypeHandle<CreationDefinition> creationDefinitionTypeHandle,
                 ComponentLookup<Block> blockComponentLookup,
                 ComponentLookup<ParcelData> parcelDataComponentLookup,
+                ComponentLookup<ParcelOwner> parcelOwnerComponentLookup,
                 float snapOffset,
                 EntityTypeHandle entityTypeHandle,
                 ComponentTypeHandle<ObjectDefinition> objectDefinitionTypeHandle) {
@@ -195,6 +200,7 @@ namespace Platter.Systems {
                 m_ControlPoints = controlPoints;
                 m_CreationDefinitionTypeHandle = creationDefinitionTypeHandle;
                 m_BlockComponentLookup = blockComponentLookup;
+                m_ParcelOwnerComponentLookup = parcelOwnerComponentLookup;
                 m_ParcelDataComponentLookup = parcelDataComponentLookup;
                 m_SnapOffset = snapOffset;
                 m_EntityTypeHandle = entityTypeHandle;
@@ -235,6 +241,7 @@ namespace Platter.Systems {
                         bestSnapPosition: bestSnapPosition,
                         bounds: bounds.xz,
                         blockComponentLookup: m_BlockComponentLookup,
+                        parcelOwnerComponentLookup: m_ParcelOwnerComponentLookup,
                         bestDistance: minDistance,
                         lotSize: parcelData.m_LotSize,
                         snapOffset: m_SnapOffset
@@ -271,6 +278,7 @@ namespace Platter.Systems {
         /// </summary>
         public struct BlockSnapIterator : INativeQuadTreeIterator<Entity, Bounds2>, IUnsafeQuadTreeIterator<Entity, Bounds2> {
             public ComponentLookup<Block> m_BlockComponentLookup;
+            public ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
             public ControlPoint m_ControlPoint;
             public int2 m_LotSize;
             public Bounds2 m_Bounds;
@@ -278,7 +286,15 @@ namespace Platter.Systems {
             public float m_BestDistance;
             public float m_SnapOffset;
 
-            public BlockSnapIterator(ComponentLookup<Block> blockComponentLookup, ControlPoint controlPoint, int2 lotSize, Bounds2 bounds, ControlPoint bestSnapPosition, float bestDistance, float snapOffset) {
+            public BlockSnapIterator(ComponentLookup<ParcelOwner> parcelOwnerComponentLookup,
+                                     ComponentLookup<Block> blockComponentLookup,
+                                     ControlPoint controlPoint,
+                                     int2 lotSize,
+                                     Bounds2 bounds,
+                                     ControlPoint bestSnapPosition,
+                                     float bestDistance,
+                                     float snapOffset) {
+                m_ParcelOwnerComponentLookup = parcelOwnerComponentLookup;
                 m_BlockComponentLookup = blockComponentLookup;
                 m_ControlPoint = controlPoint;
                 m_LotSize = lotSize;
@@ -308,11 +324,15 @@ namespace Platter.Systems {
                     return;
                 }
 
+                // Discard if this is a parcel block
+                if (m_ParcelOwnerComponentLookup.HasComponent(blockEntity)) {
+                    return;
+                }
+
                 // Get the block's geometry
                 var block = m_BlockComponentLookup[blockEntity];
                 var blockCorners = ZoneUtils.CalculateCorners(block);
                 var blockFrontEdge = new Line2.Segment(blockCorners.a, blockCorners.b);
-
 
                 // Create a search line at the cursor position
                 var searchLine = new Line2.Segment(m_ControlPoint.m_HitPosition.xz, m_ControlPoint.m_HitPosition.xz);

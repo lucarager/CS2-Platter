@@ -129,8 +129,8 @@ namespace Platter.Systems {
                 }
 
                 //// Update prezoned type
-                //parcel.m_PreZoneType = ZoneType.None;
-                //m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
+                // parcel.m_PreZoneType = ZoneType.None;
+                // m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
 
                 // If this is a temp entity, exit.
                 if (EntityManager.HasComponent<Temp>(parcelEntity)) {

@@ -118,6 +118,24 @@ namespace Platter.Systems {
             [ReadOnly]
             public ComponentLookup<Transform> m_TransformComponentLookup;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CreateEntitiesQueueJob"/> struct.
+            /// </summary>
+            /// <param name="parcelEntitiesQueue"></param>
+            /// <param name="entityTypeHandle"></param>
+            /// <param name="connectedParcelBufferTypeHandle"></param>
+            /// <param name="deletedTypeHandle"></param>
+            /// <param name="edgeGeometryTypeHandle"></param>
+            /// <param name="startNodeGeometryTypeHandle"></param>
+            /// <param name="endNodeGeometryTypeHandle"></param>
+            /// <param name="parcelSearchTree"></param>
+            /// <param name="prefabRefComponentLookup"></param>
+            /// <param name="edgeGeometryComponentLookup"></param>
+            /// <param name="startNodeGeometryComponentLookup"></param>
+            /// <param name="endNodeGeometryComponentLookup"></param>
+            /// <param name="parcelDataComponentLookup"></param>
+            /// <param name="parcelComponentLookup"></param>
+            /// <param name="transformComponentLookup"></param>
             public CreateEntitiesQueueJob(NativeQueue<Entity>.ParallelWriter parcelEntitiesQueue, EntityTypeHandle entityTypeHandle, BufferTypeHandle<ConnectedParcel> connectedParcelBufferTypeHandle, ComponentTypeHandle<Deleted> deletedTypeHandle, ComponentTypeHandle<EdgeGeometry> edgeGeometryTypeHandle, ComponentTypeHandle<StartNodeGeometry> startNodeGeometryTypeHandle, ComponentTypeHandle<EndNodeGeometry> endNodeGeometryTypeHandle, NativeQuadTree<Entity, QuadTreeBoundsXZ> parcelSearchTree, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Parcel> parcelComponentLookup, ComponentLookup<Transform> transformComponentLookup) {
                 m_ParcelEntitiesQueue = parcelEntitiesQueue;
                 m_EntityTypeHandle = entityTypeHandle;

@@ -1,9 +1,12 @@
-﻿// <copyright file="P_ZoningUpdateSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_ParcelBlockUpdateSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Colossal.Entities;
     using Game;
     using Game.Common;
@@ -13,9 +16,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -42,7 +42,8 @@ namespace Platter.Systems {
             m_Query = SystemAPI.QueryBuilder()
                 .WithAll<Block>()
                 .WithAll<Cell>()
-                //.WithAllRW<VacantLot>()
+
+                // .WithAllRW<VacantLot>()
                 .WithAll<ParcelOwner>()
                 .WithAll<Updated>()
                 .WithNone<Temp>()
@@ -79,13 +80,13 @@ namespace Platter.Systems {
                     parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
                     EntityManager.SetComponentData<Parcel>(parcelOwner.m_Owner, parcel);
 
-                    //Also, set the VacantLot min so that nothing spawns that's smaller than the parcel
-                    //var vacantLotBuffer = EntityManager.GetBuffer<VacantLot>(entity, false);
-                    //if (vacantLotBuffer.Length == 1) {
+                    // Also, set the VacantLot min so that nothing spawns that's smaller than the parcel
+                    // var vacantLotBuffer = EntityManager.GetBuffer<VacantLot>(entity, false);
+                    // if (vacantLotBuffer.Length == 1) {
                     //    var lot = vacantLotBuffer[0];
                     //    lot.m_Area = new int4(lot.m_Area.y, lot.m_Area.y, lot.m_Area.w, lot.m_Area.w);
                     //    vacantLotBuffer[0] = lot;
-                    //}
+                    // }
                 } else {
                     // Otherwise, set it to a "mix"
                     // todo

@@ -50,7 +50,7 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Data
-        private int2 m_SelectedParcelSize = new (2, 2);
+        private int2 m_SelectedParcelSize = new(2, 2);
 
         // Bindings
         private ValueBindingHelper<bool> m_EnableToolButtonsBinding;
@@ -374,8 +374,6 @@ namespace Platter.Systems {
         /// Todo.
         /// </summary>
         private void UpdateSelectedPrefab() {
-            m_Log.Debug($"UpdateSelectedPrefab() -- {m_SelectedParcelSize.x}x{m_SelectedParcelSize.y}");
-
             // Todo abstract this
             var id = new PrefabID("ParcelPrefab", $"Parcel {m_SelectedParcelSize.x}x{m_SelectedParcelSize.y}");
 
@@ -388,9 +386,7 @@ namespace Platter.Systems {
 
             m_Log.Debug($"UpdateSelectedPrefab() -- Found ${prefabBase}!");
 
-            var result = m_ObjectToolSystem.TrySetPrefab(prefabBase);
-
-            m_Log.Debug($"UpdateSelectedPrefab() -- Result {result}");
+            m_ToolSystem.ActivatePrefabTool((StaticObjectPrefab)prefabBase);
         }
     }
 }

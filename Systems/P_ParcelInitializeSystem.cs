@@ -4,6 +4,7 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System.Drawing;
     using Game;
     using Game.Common;
     using Game.Objects;
@@ -11,7 +12,6 @@ namespace Platter.Systems {
     using Game.Tools;
     using Platter.Components;
     using Platter.Utils;
-    using System.Drawing;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;

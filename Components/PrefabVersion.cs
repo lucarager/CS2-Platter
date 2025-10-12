@@ -1,4 +1,9 @@
-﻿namespace Platter.Components {
+﻿// <copyright file="PrefabVersion.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
+
+namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Game.Zones;
     using Unity.Entities;

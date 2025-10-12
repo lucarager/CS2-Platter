@@ -95,6 +95,21 @@ namespace Platter.Systems {
             /// </summary>
             public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="UpdateDataJob"/> struct.
+            /// </summary>
+            /// <param name="parcelComponentLookup"></param>
+            /// <param name="parcelEntitiesList"></param>
+            /// <param name="createdComponentLookup"></param>
+            /// <param name="tempComponentLookup"></param>
+            /// <param name="subBlockBufferLookup"></param>
+            /// <param name="trafficConfigurationData"></param>
+            /// <param name="edgeComponentLookup"></param>
+            /// <param name="nodeGeoComponentLookup"></param>
+            /// <param name="aggregatedComponentLookup"></param>
+            /// <param name="commandBuffer"></param>
+            /// <param name="iconCommandBuffer"></param>
+            /// <param name="connectedParcelsBufferLookup"></param>
             public UpdateDataJob(ComponentLookup<Parcel> parcelComponentLookup, NativeList<UpdateData> parcelEntitiesList, ComponentLookup<Created> createdComponentLookup, ComponentLookup<Temp> tempComponentLookup, BufferLookup<ParcelSubBlock> subBlockBufferLookup, TrafficConfigurationData trafficConfigurationData, ComponentLookup<Edge> edgeComponentLookup, ComponentLookup<NodeGeometry> nodeGeoComponentLookup, ComponentLookup<Aggregated> aggregatedComponentLookup, EntityCommandBuffer commandBuffer, IconCommandBuffer iconCommandBuffer, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup) {
                 m_ParcelComponentLookup = parcelComponentLookup;
                 m_ParcelEntitiesList = parcelEntitiesList;
@@ -109,7 +124,6 @@ namespace Platter.Systems {
                 m_IconCommandBuffer = iconCommandBuffer;
                 m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
             }
-
 
             /// <inheritdoc/>
             public void Execute() {
@@ -196,7 +210,7 @@ namespace Platter.Systems {
                             parcel.m_CurvePosition = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
-                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new ());
+                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
 
                             if (parcelHasNewRoad) {
 #if !USE_BURST
@@ -219,12 +233,12 @@ namespace Platter.Systems {
                         parcel.m_CurvePosition = updateData.m_CurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
-                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new ());
+                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
                     }
 
                     if (noRoad && !updateData.m_Deleted) {
                         // Mark parcel as updated
-                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new ());
+                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
 
                         // Make sure we have the icons pop up when no roads are present
                         m_IconCommandBuffer.Add(

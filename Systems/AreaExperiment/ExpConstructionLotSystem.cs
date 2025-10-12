@@ -63,7 +63,7 @@ namespace Platter.Systems {
                     None = new ComponentType[] {
                         ComponentType.ReadOnly<Temp>(),
                     },
-            });
+                });
 
             // Update Cycle
             RequireForUpdate(m_Query);

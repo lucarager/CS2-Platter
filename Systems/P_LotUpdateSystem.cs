@@ -4,6 +4,9 @@
 // </copyright>
 
 namespace Platter.Systems {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Colossal.Entities;
     using Game;
     using Game.Common;
@@ -13,9 +16,6 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -96,7 +96,6 @@ namespace Platter.Systems {
                     // Otherwise, set it to a "mix"
                     // todo
                 }
-
             }
 
             entities.Dispose();
