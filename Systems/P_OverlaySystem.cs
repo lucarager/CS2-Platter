@@ -7,7 +7,6 @@ namespace Platter.Systems {
     using System;
     using Game;
     using Game.Common;
-    using Game.Modding.Toolchain.Dependencies;
     using Game.Prefabs;
     using Game.Rendering;
     using Platter.Components;

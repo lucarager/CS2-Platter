@@ -5,13 +5,12 @@
 
 namespace Platter.Components {
     using Colossal.Serialization.Entities;
-    using Game.Zones;
     using Unity.Entities;
 
     /// <summary>
     /// todo.
     /// </summary>
-    public struct ParcelComposition : IComponentData, IQueryTypeParameter, ISerializable {
+    public struct ParcelComposition : IComponentData, ISerializable {
         /// <summary>
         /// todo.
         /// </summary>

@@ -18,7 +18,7 @@ namespace Platter.Systems {
     using Unity.Mathematics;
 
     /// <summary>
-    /// todo.
+    /// System responsible for updating Parcel and Cell data when a parcel is placed, moved, or deleted.
     /// </summary>
     public partial class P_ParcelUpdateSystem : GameSystemBase {
         // Logger
@@ -32,8 +32,6 @@ namespace Platter.Systems {
         private EntityQuery m_ParcelQuery;
 
         // Systems & References
-        private PrefabSystem m_PrefabSystem;
-        private ZoneSystem m_ZoneSystem;
         private P_UISystem m_PlatterUISystem;
 
         /// <inheritdoc/>
@@ -46,8 +44,6 @@ namespace Platter.Systems {
 
             // Retrieve Systems
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ZoneSystem = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
@@ -81,14 +77,6 @@ namespace Platter.Systems {
 
                     for (var j = 0; j < subBlockBuffer.Length; j++) {
                         var subBlockEntity = subBlockBuffer[j].m_SubBlock;
-
-                        // Manually unzone so that we clear underlying vanilla zoning
-                        // var cellBuffer = EntityManager.GetBuffer<Cell>(subBlockEntity);
-                        // for (var k = 0; k < subBlockBuffer.Length; k++) {
-                        //    var cell = cellBuffer[k];
-                        //    cell.m_Zone = ZoneType.None;
-                        //    cellBuffer[k] = cell;
-                        // }
 
                         // Mark Blocks for deletion
                         m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);
@@ -127,10 +115,6 @@ namespace Platter.Systems {
                 if (currentDefaultAllowSpawn) {
                     m_CommandBuffer.AddComponent<ParcelSpawnable>(parcelEntity, default);
                 }
-
-                //// Update prezoned type
-                // parcel.m_PreZoneType = ZoneType.None;
-                // m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
 
                 // If this is a temp entity, exit.
                 if (EntityManager.HasComponent<Temp>(parcelEntity)) {

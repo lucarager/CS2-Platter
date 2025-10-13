@@ -4,20 +4,16 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Logging;
     using Game;
     using Game.Common;
-    using Game.Notifications;
-    using Game.Prefabs;
-    using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using Unity.Burst;
-    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using static Platter.Systems.P_RoadConnectionSystem;
 
+    /// <summary>
+    /// System responsible for safely uninstalling Platter.
+    /// </summary>
     internal partial class P_UninstallSystem : GameSystemBase {
         private PrefixedLogger m_Log;
         private EntityQuery m_ParcelQuery;

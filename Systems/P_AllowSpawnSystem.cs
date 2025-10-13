@@ -12,7 +12,10 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    public partial class P_ParcelSpawnSystem : GameSystemBase {
+    /// <summary>
+    /// System responsible for adding/removing the AllowSpawn component.
+    /// </summary>
+    public partial class P_AllowSpawnSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -25,41 +28,19 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_ParcelSpawnSystem));
+            m_Log = new PrefixedLogger(nameof(P_AllowSpawnSystem));
             m_Log.Debug($"OnCreate()");
 
             // Queries
-            m_EnabledQuery = GetEntityQuery(new EntityQueryDesc[]
-            {
-                new () {
-                    All = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Parcel>(),
-                        ComponentType.ReadOnly<ParcelSpawnable>(),
-                    },
-                    None = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Deleted>(),
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                },
-            });
-
-            m_DisabledQuery = GetEntityQuery(new EntityQueryDesc[]
-            {
-                new () {
-                    All = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Parcel>(),
-                    },
-                    None = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<ParcelSpawnable>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                },
-            });
+            m_EnabledQuery = SystemAPI.QueryBuilder()
+                                      .WithAll<Parcel, ParcelSpawnable>()
+                                      .WithNone<Deleted, Temp>()
+                                      .Build();
+            m_DisabledQuery = SystemAPI.QueryBuilder()
+                                       .WithAll<Parcel>()
+                                       .WithNone<ParcelSpawnable, Deleted, Temp>()
+                                       .Build();
+            
         }
 
         /// <inheritdoc/>

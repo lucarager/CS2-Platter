@@ -9,26 +9,26 @@ namespace Platter.Components {
     using Unity.Entities;
 
     /// <summary>
-    /// todo.
+    /// A Parcel's primary data.
     /// </summary>
-    public struct Parcel : IComponentData, IQueryTypeParameter, ISerializable {
+    public struct Parcel : IComponentData, ISerializable {
         /// <summary>
-        /// todo.
+        /// Road this parcel is connected to (null if unconnected).
         /// </summary>
         public Entity m_RoadEdge;
 
         /// <summary>
-        /// todo.
+        /// Building this parcel is connected to (null if unconnected).
         /// </summary>
         public Entity m_Building;
 
         /// <summary>
-        /// todo.
+        /// Position of this parcel on the road edge.
         /// </summary>
         public float m_CurvePosition;
 
         /// <summary>
-        /// todo.
+        /// Zoning on this parcel.
         /// </summary>
         public ZoneType m_PreZoneType;
 

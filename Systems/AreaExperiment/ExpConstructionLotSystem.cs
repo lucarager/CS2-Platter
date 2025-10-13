@@ -4,7 +4,6 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Collections;
     using Colossal.Entities;
     using Game;
     using Game.Areas;
@@ -13,12 +12,10 @@ namespace Platter.Systems {
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
-    using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
 
     /// <summary>
     /// todo.
@@ -46,24 +43,14 @@ namespace Platter.Systems {
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             // Queries
-            m_Query = GetEntityQuery(new ComponentType[]
-            {
-                ComponentType.ReadOnly<Building>(),
-                ComponentType.ReadOnly<UnderConstruction>(),
-                ComponentType.Exclude<Destroyed>(),
-                ComponentType.Exclude<Deleted>(),
-                ComponentType.Exclude<Temp>(),
-            });
-
-            m_ParcelQuery = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                });
+            m_Query = SystemAPI.QueryBuilder()
+                               .WithAll<Building, UnderConstruction>()
+                               .WithNone<Destroyed, Deleted, Temp>()
+                               .Build();
+            m_ParcelQuery = SystemAPI.QueryBuilder()
+                                     .WithAll<Parcel>()
+                                     .WithNone<Deleted, Temp>()
+                                     .Build();
 
             // Update Cycle
             RequireForUpdate(m_Query);
@@ -120,34 +107,36 @@ namespace Platter.Systems {
                     return;
                 }
 
-                for (var i = 0; i < subAreaBuffer.Length; i++) {
-                    var subArea = subAreaBuffer[i];
-
+                foreach (var subArea in subAreaBuffer) {
                     // Area
-                    if (EntityManager.TryGetComponent<PrefabRef>(subArea.m_Area, out var prefabRef) &&
-                        m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var subAreaPrefab)) {
-                        m_Log.Debug($"OnUpdate() -- Building has the following Area: {subAreaPrefab.name}");
+                    if (!EntityManager.TryGetComponent<PrefabRef>(subArea.m_Area, out var prefabRef) ||
+                        !m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabRef, out var subAreaPrefab)) {
+                        continue;
+                    }
 
-                        if (subAreaPrefab.name.StartsWith("Sand") &&
-                            EntityManager.TryGetBuffer<Node>(subArea.m_Area, false, out var nodeBuffer) &&
-                            EntityManager.TryGetBuffer<Expand>(subArea.m_Area, false, out var expandBuffer) &&
-                            EntityManager.TryGetBuffer<Triangle>(subArea.m_Area, false, out var triangleBuffer)) {
-                            nodeBuffer.Clear();
-                            expandBuffer.Clear();
-                            triangleBuffer.Clear();
+                    m_Log.Debug($"OnUpdate() -- Building has the following Area: {subAreaPrefab.name}");
 
-                            for (var j = 0; j < parcelAreaNodeBuffer.Length; j++) {
-                                nodeBuffer.Add(parcelAreaNodeBuffer[j]);
-                            }
+                    if (!subAreaPrefab.name.StartsWith("Sand")                                           ||
+                        !EntityManager.TryGetBuffer<Node>(subArea.m_Area, false, out var nodeBuffer)     ||
+                        !EntityManager.TryGetBuffer<Expand>(subArea.m_Area, false, out var expandBuffer) ||
+                        !EntityManager.TryGetBuffer<Triangle>(subArea.m_Area, false, out var triangleBuffer)) {
+                        continue;
+                    }
 
-                            for (var j = 0; j < parcelAreaExpandBuffer.Length; j++) {
-                                expandBuffer.Add(parcelAreaExpandBuffer[j]);
-                            }
+                    nodeBuffer.Clear();
+                    expandBuffer.Clear();
+                    triangleBuffer.Clear();
 
-                            for (var j = 0; j < parcelAreaTriangleBuffer.Length; j++) {
-                                triangleBuffer.Add(parcelAreaTriangleBuffer[j]);
-                            }
-                        }
+                    foreach (var el in parcelAreaNodeBuffer) {
+                        nodeBuffer.Add(el);
+                    }
+
+                    foreach (var el in parcelAreaExpandBuffer) {
+                        expandBuffer.Add(el);
+                    }
+
+                    foreach (var el in parcelAreaTriangleBuffer) {
+                        triangleBuffer.Add(el);
                     }
                 }
             }

@@ -9,7 +9,6 @@ namespace Platter.Systems {
     using Game.Tools;
     using Game.UI.Tooltip;
     using Platter.Settings;
-    using Unity.Entities;
 
     /// <summary>
     /// Tooltip System.

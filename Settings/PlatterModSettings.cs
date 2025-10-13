@@ -14,7 +14,6 @@ namespace Platter.Settings {
     using Platter.Systems;
     using Unity.Entities;
     using UnityEngine;
-    using static Game.Prefabs.CompositionFlags;
 
     /// <summary>
     /// The mod's settings.
@@ -31,14 +30,13 @@ namespace Platter.Settings {
         public const string KeybindingsGroup = "KeybindingsGroup";
         public const string UninstallGroup = "UninstallGroup";
         public const string AboutGroup = "AboutGroup";
-        public const string UninstallGroupDescription = "UninstallGroupDescription";
         public const string ToggleRenderActionName = "ToggleRenderActionName";
         public const string ToggleSpawnActionName = "ToggleSpawnActionName";
         public const string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
         public const string DecreaseParcelWidthActionName = "DecreaseParcelWidthActionName";
         public const string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
         public const string DecreaseParcelDepthActionName = "DecreaseParcelDepthActionName";
-        public const string Credit = "Made with <3 by Luca.";
+        private const string Credit = "Made with <3 by Luca.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -105,6 +103,7 @@ namespace Platter.Settings {
         [SettingsUISection(UninstallGroup)]
         [SettingsUIButton]
         [SettingsUIConfirmation]
+        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
         public bool RemoveParcels {
             set {
                 var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();

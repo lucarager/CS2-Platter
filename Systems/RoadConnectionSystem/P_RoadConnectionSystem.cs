@@ -6,31 +6,25 @@
 namespace Platter.Systems {
     using Colossal.Mathematics;
     using Game;
-    using Game.Audio;
     using Game.Common;
     using Game.Net;
     using Game.Notifications;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
-    using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
-    using UnityEngine.PlayerLoop;
     using UnityEngine.Scripting;
 
     /// <summary>
-    /// todo.
+    /// System responsible for connecting parcels to roads.
     /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
-        /// <summary>
-        /// todo.
-        /// </summary>
-        private static readonly float MaxDistance = 8.4f;
+        private const float MaxDistance = 8.4f;
 
         // Logger
         private PrefixedLogger m_Log;

@@ -6,7 +6,6 @@
 namespace Platter.Settings {
     using System.Collections.Generic;
     using Colossal;
-    using Colossal.IO.AssetDatabase.Internal;
 
     /// <summary>
     /// Todo.
@@ -35,7 +34,7 @@ namespace Platter.Settings {
                 // Uninstaller
                 { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Delete all Parcels" },
                 { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Removes all parcels from the map, permanently. Buildings that are not on a vanilla zone grid will despawn, unless you have a mod that prevents that." },
-                { m_Setting.GetOptionWarningLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Permanently remove all parcels from this save?" },
+                { m_Setting.GetOptionWarningLocaleID(nameof(PlatterModSettings.RemoveParcels)), "WARNING: Permanently remove all parcels from this save?" },
 
                 // ToggleRenderActionName
                 { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.ToggleRenderActionName), "Toggle \"Parcel Overlay\"" },

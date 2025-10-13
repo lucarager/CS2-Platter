@@ -4,13 +4,11 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Entities;
     using Colossal.UI.Binding;
     using Game.Tools;
     using Game.UI.InGame;
     using Platter.Components;
     using Platter.Utils;
-    using Unity.Entities;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.

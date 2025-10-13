@@ -4,24 +4,19 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Colossal.Entities;
     using Game;
     using Game.Common;
-    using Game.Objects;
-    using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Mathematics;
 
     /// <summary>
-    /// todo.
+    /// Updates parcel data whenever block data updates.
     /// </summary>
     public partial class P_ParcelBlockUpdateSystem : GameSystemBase {
         // Logger
@@ -42,8 +37,6 @@ namespace Platter.Systems {
             m_Query = SystemAPI.QueryBuilder()
                 .WithAll<Block>()
                 .WithAll<Cell>()
-
-                // .WithAllRW<VacantLot>()
                 .WithAll<ParcelOwner>()
                 .WithAll<Updated>()
                 .WithNone<Temp>()
@@ -63,9 +56,7 @@ namespace Platter.Systems {
                 var containedZones = new Dictionary<ZoneType, int>();
 
                 // Check zone types
-                for (var i = 0; i < cellBuffer.Length; i++) {
-                    var cell = cellBuffer[i];
-
+                foreach (var cell in cellBuffer) {
                     if (containedZones.TryGetValue(cell.m_Zone, out var current)) {
                         containedZones[cell.m_Zone] = current + 1;
                     } else {
@@ -79,14 +70,6 @@ namespace Platter.Systems {
                     var parcel = EntityManager.GetComponentData<Parcel>(parcelOwner.m_Owner);
                     parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
                     EntityManager.SetComponentData<Parcel>(parcelOwner.m_Owner, parcel);
-
-                    // Also, set the VacantLot min so that nothing spawns that's smaller than the parcel
-                    // var vacantLotBuffer = EntityManager.GetBuffer<VacantLot>(entity, false);
-                    // if (vacantLotBuffer.Length == 1) {
-                    //    var lot = vacantLotBuffer[0];
-                    //    lot.m_Area = new int4(lot.m_Area.y, lot.m_Area.y, lot.m_Area.w, lot.m_Area.w);
-                    //    vacantLotBuffer[0] = lot;
-                    // }
                 } else {
                     // Otherwise, set it to a "mix"
                     // todo

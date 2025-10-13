@@ -6,7 +6,6 @@
 namespace Platter.Components {
     using System;
     using Colossal.Serialization.Entities;
-    using Game.Prefabs;
     using Unity.Entities;
 
     public struct ConnectedParcel : IBufferElementData, IEquatable<ConnectedParcel>, IEmptySerializable, ISerializable {

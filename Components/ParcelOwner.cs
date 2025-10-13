@@ -7,7 +7,7 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
-    public struct ParcelOwner : IComponentData, IQueryTypeParameter, ISerializable {
+    public struct ParcelOwner : IComponentData, ISerializable {
         public Entity m_Owner;
 
         /// <summary>

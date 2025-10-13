@@ -4,27 +4,21 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Entities;
     using Game;
     using Game.Buildings;
     using Game.Common;
-    using Game.Objects;
-    using Game.Prefabs;
     using Game.Tools;
-    using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
 
     /// <summary>
-    /// todo.
+    /// System responsible for connecting buildings to their parcels.
     /// </summary>
     public partial class P_BuildingConnectionSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
-
-        // Barriers & Buffers
 
         // Queries
         private EntityQuery m_Query;

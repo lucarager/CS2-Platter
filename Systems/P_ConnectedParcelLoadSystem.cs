@@ -4,16 +4,17 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Serialization.Entities;
     using Game;
     using Game.Buildings;
     using Game.Net;
-    using Game.Serialization;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
 
+    /// <summary>
+    /// System responsible for adding the ConnectedParcel buffer to roads and buildings that don't have it on load.
+    /// </summary>
     public partial class P_ConnectedParcelLoadSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
@@ -49,14 +50,17 @@ namespace Platter.Systems {
             var chunkArray = m_RoadQuery.ToArchetypeChunkArray(Allocator.TempJob);
             foreach (var archetypeChunk in chunkArray) {
                 var entityArray = archetypeChunk.GetNativeArray(entityTypeHandle);
-                if (entityArray.Length != 0) {
-                    for (var i = 0; i < entityArray.Length; i++) {
-                        var entity = entityArray[i];
-                        if (EntityManager.HasComponent<ConnectedBuilding>(entity)) {
-                            m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to road entity");
-                            EntityManager.AddBuffer<ConnectedParcel>(entity);
-                        }
+                if (entityArray.Length == 0) {
+                    continue;
+                }
+
+                foreach (var entity in entityArray) {
+                    if (!EntityManager.HasComponent<ConnectedBuilding>(entity)) {
+                        continue;
                     }
+
+                    m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to road entity");
+                    EntityManager.AddBuffer<ConnectedParcel>(entity);
                 }
             }
         }

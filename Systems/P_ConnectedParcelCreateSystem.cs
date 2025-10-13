@@ -15,6 +15,9 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
+    /// <summary>
+    /// System responsible for adding the ConnectedParcel buffer to roads and buildings.
+    /// </summary>
     public partial class P_ConnectedParcelCreateSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
@@ -49,14 +52,16 @@ namespace Platter.Systems {
             var entityTypeHandle = SystemAPI.GetEntityTypeHandle();
 
             var chunkArray = m_PrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
+
             foreach (var archetypeChunk in chunkArray) {
                 var entityArray = archetypeChunk.GetNativeArray(entityTypeHandle);
-                if (entityArray.Length != 0) {
-                    for (var i = 0; i < entityArray.Length; i++) {
-                        var entity = entityArray[i];
-                        m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to entity");
-                        EntityManager.AddBuffer<ConnectedParcel>(entity);
-                    }
+                if (entityArray.Length == 0) {
+                    continue;
+                }
+
+                foreach (var entity in entityArray) {
+                    m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to entity");
+                    EntityManager.AddBuffer<ConnectedParcel>(entity);
                 }
             }
         }

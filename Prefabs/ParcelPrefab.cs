@@ -5,18 +5,8 @@
 
 namespace Game.Prefabs {
     using System.Collections.Generic;
-    using Colossal.Entities;
-    using Colossal.Logging;
-    using Game.Net;
-    using Game.Objects;
-    using Game.Zones;
-    using Platter;
     using Platter.Components;
-    using Platter.Constants;
-    using Platter.Systems;
-    using Platter.Utils;
     using Unity.Entities;
-    using Unity.Mathematics;
 
     /// <summary>
     /// Todo.

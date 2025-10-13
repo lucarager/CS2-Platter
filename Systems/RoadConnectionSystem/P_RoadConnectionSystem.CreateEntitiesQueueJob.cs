@@ -16,7 +16,6 @@ namespace Platter.Systems {
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using UnityEngine.Rendering;
 
     /// <summary>
     /// todo.

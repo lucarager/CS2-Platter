@@ -8,7 +8,7 @@ namespace Platter.Components {
     using Unity.Entities;
     using Unity.Mathematics;
 
-    public struct ParcelData : IComponentData, IQueryTypeParameter, ISerializable {
+    public struct ParcelData : IComponentData, ISerializable {
         public int2 m_LotSize;
         public Entity m_ZoneBlockPrefab;
 

@@ -5,29 +5,21 @@
 
 namespace Platter.Systems {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using Colossal.Entities;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
     using Game;
-    using Game.City;
-    using Game.Common;
     using Game.Input;
     using Game.Prefabs;
-    using Game.Prefabs.Modes;
     using Game.Tools;
-    using Game.UI;
     using Game.Zones;
     using Platter.Extensions;
     using Platter.Settings;
     using Platter.Utils;
-    using Unity.Collections;
-    using Unity.Entities;
     using Unity.Mathematics;
 
     /// <summary>
-    /// todo.
+    /// System responsible for UI Bindings & Data Handling.
     /// </summary>
     public partial class P_UISystem : ExtendedUISystemBase {
         public ZoneType PreZoneType { get; private set; } = ZoneType.None;
@@ -35,16 +27,13 @@ namespace Platter.Systems {
         public bool AllowSpawning { get; private set; } = true;
 
         // Systems
-        private PrefabSystem m_PrefabSystem;
-        private ToolSystem m_ToolSystem;
-        private ObjectToolSystem m_ObjectToolSystem;
-        private P_OverlaySystem m_PlatterOverlaySystem;
-        private P_ParcelSpawnSystem m_ParcelSpawnSystem;
-        private P_SnapSystem m_SnapSystem;
-        private P_ZoneCacheSystem m_ZoneCacheSystem;
-
-        // Queries
-        private EntityQuery m_Query;
+        private PrefabSystem        m_PrefabSystem;
+        private ToolSystem          m_ToolSystem;
+        private ObjectToolSystem    m_ObjectToolSystem;
+        private P_OverlaySystem     m_PlatterOverlaySystem;
+        private P_AllowSpawnSystem m_AllowSpawnSystem;
+        private P_SnapSystem        m_SnapSystem;
+        private P_ZoneCacheSystem   m_ZoneCacheSystem;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -53,15 +42,15 @@ namespace Platter.Systems {
         private int2 m_SelectedParcelSize = new(2, 2);
 
         // Bindings
-        private ValueBindingHelper<bool> m_EnableToolButtonsBinding;
-        private ValueBindingHelper<int> m_ZoneBinding;
+        private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
+        private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
-        private ValueBindingHelper<int> m_BlockWidthBinding;
-        private ValueBindingHelper<int> m_BlockDepthBinding;
-        private ValueBindingHelper<bool> m_RenderParcelsBinding;
-        private ValueBindingHelper<bool> m_AllowSpawningBinding;
-        private ValueBindingHelper<bool> m_SnapRoadSideBinding;
-        private ValueBindingHelper<float> m_SnapSpacingBinding;
+        private ValueBindingHelper<int>          m_BlockWidthBinding;
+        private ValueBindingHelper<int>          m_BlockDepthBinding;
+        private ValueBindingHelper<bool>         m_RenderParcelsBinding;
+        private ValueBindingHelper<bool>         m_AllowSpawningBinding;
+        private ValueBindingHelper<bool>         m_SnapRoadSideBinding;
+        private ValueBindingHelper<float>        m_SnapSpacingBinding;
 
         // Shortcuts
         private ProxyAction m_IncreaseBlockWidthAction;
@@ -83,11 +72,14 @@ namespace Platter.Systems {
             /// <summary>
             /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
             /// </summary>
-            public ZoneUIData(string name, string thumbnail, string group, ushort index) {
-                Name = name;
+            public ZoneUIData(string name,
+                              string thumbnail,
+                              string group,
+                              ushort index) {
+                Name      = name;
                 Thumbnail = thumbnail;
-                Group = group;
-                Index = index;
+                Group     = group;
+                Index     = index;
             }
 
             /// <inheritdoc/>
@@ -116,32 +108,27 @@ namespace Platter.Systems {
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_UISystem));
-            m_Log.Debug($"OnCreate()");
-
-            // Queries
-            m_Query = GetEntityQuery(new ComponentType[] {
-                ComponentType.ReadOnly<UIAssetMenuData>(),
-            });
+            m_Log.Debug("OnCreate()");
 
             // Systems
-            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
+            m_ToolSystem           = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_PrefabSystem         = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ObjectToolSystem     = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<P_OverlaySystem>();
-            m_ParcelSpawnSystem = World.GetOrCreateSystemManaged<P_ParcelSpawnSystem>();
-            m_SnapSystem = World.GetOrCreateSystemManaged<P_SnapSystem>();
-            m_ZoneCacheSystem = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
+            m_AllowSpawnSystem    = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
+            m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
+            m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
 
             // Bindings
-            m_EnableToolButtonsBinding = CreateBinding<bool>("ENABLE_TOOL_BUTTONS", false);
-            m_ZoneBinding = CreateBinding<int>("ZONE", 0, SetPreZone);
-            m_BlockWidthBinding = CreateBinding<int>("BLOCK_WIDTH", 2);
-            m_BlockDepthBinding = CreateBinding<int>("BLOCK_DEPTH", 2);
-            m_ZoneDataBinding = CreateBinding<ZoneUIData[]>("ZONE_DATA", new ZoneUIData[] { });
-            m_RenderParcelsBinding = CreateBinding<bool>("RENDER_PARCELS", true, SetRenderParcels);
-            m_AllowSpawningBinding = CreateBinding<bool>("ALLOW_SPAWNING", true, SetAllowSpawning);
-            m_SnapRoadSideBinding = CreateBinding<bool>("SNAP_ROADSIDE", true, SetSnapRoadside);
-            m_SnapSpacingBinding = CreateBinding<float>("SNAP_SPACING", P_SnapSystem.DefaultSnapDistance, SetSnapSpacing);
+            m_EnableToolButtonsBinding = CreateBinding("ENABLE_TOOL_BUTTONS", false);
+            m_ZoneBinding              = CreateBinding("ZONE", 0, SetPreZone);
+            m_BlockWidthBinding        = CreateBinding("BLOCK_WIDTH", 2);
+            m_BlockDepthBinding        = CreateBinding("BLOCK_DEPTH", 2);
+            m_ZoneDataBinding          = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
+            m_RenderParcelsBinding     = CreateBinding("RENDER_PARCELS", true, SetRenderParcels);
+            m_AllowSpawningBinding     = CreateBinding("ALLOW_SPAWNING", true, SetAllowSpawning);
+            m_SnapRoadSideBinding      = CreateBinding("SNAP_ROADSIDE", true, SetSnapRoadside);
+            m_SnapSpacingBinding       = CreateBinding("SNAP_SPACING", P_SnapSystem.DefaultSnapDistance, SetSnapSpacing);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
@@ -151,8 +138,8 @@ namespace Platter.Systems {
             m_IncreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
             m_DecreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
             m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
-            m_ToggleRender = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
-            m_ToggleSpawn = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
+            m_ToggleRender             = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
+            m_ToggleSpawn              = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
         }
 
         /// <inheritdoc/>
@@ -200,27 +187,25 @@ namespace Platter.Systems {
             m_PlatterOverlaySystem.RenderParcelsOverride = currentlyUsingParcelsInObjectTool;
 
             // Update Bindings
-            m_RenderParcelsBinding.Value = m_PlatterOverlaySystem.RenderParcels;
-            m_BlockWidthBinding.Value = m_SelectedParcelSize.x;
-            m_BlockDepthBinding.Value = m_SelectedParcelSize.y;
+            m_RenderParcelsBinding.Value     = m_PlatterOverlaySystem.RenderParcels;
+            m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
+            m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
             m_EnableToolButtonsBinding.Value = currentlyUsingParcelsInObjectTool;
 
-            // Send down zone data when ready
-            // todo refresh!
-            if (m_ZoneDataBinding.Value.Length == 0) {
-                var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
-                Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
-                m_ZoneDataBinding.Value = zoneData;
-            }
+            // Send down zone data
+            var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
+            Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
+            m_ZoneDataBinding.Value = zoneData;
         }
 
         /// <inheritdoc/>
-        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode) {
+        protected override void OnGameLoadingComplete(Purpose  purpose,
+                                                      GameMode mode) {
             base.OnGameLoadingComplete(purpose, mode);
             m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
 
             m_ToggleRender.shouldBeEnabled = mode.IsGameOrEditor();
-            m_ToggleSpawn.shouldBeEnabled = mode.IsGameOrEditor();
+            m_ToggleSpawn.shouldBeEnabled  = mode.IsGameOrEditor();
         }
 
         /// <summary>
@@ -255,7 +240,7 @@ namespace Platter.Systems {
         /// Called from the UI.
         /// </summary>
         private void ToggleRenderParcels() {
-            m_Log.Debug($"ToggleRenderParcels()");
+            m_Log.Debug("ToggleRenderParcels()");
             SetRenderParcels(!m_PlatterOverlaySystem.RenderParcels);
         }
 
@@ -271,7 +256,7 @@ namespace Platter.Systems {
         /// Called from the UI.
         /// </summary>
         private void ToggleAllowSpawning() {
-            m_Log.Debug($"ToggleAllowSpawning()");
+            m_Log.Debug("ToggleAllowSpawning()");
             SetAllowSpawning(!AllowSpawning);
         }
 
@@ -281,7 +266,7 @@ namespace Platter.Systems {
         private void SetAllowSpawning(bool enabled) {
             m_Log.Debug($"SetAllowSpawning(enabled = {enabled})");
             AllowSpawning = enabled;
-            m_ParcelSpawnSystem.UpdateSpawning(enabled);
+            m_AllowSpawnSystem.UpdateSpawning(enabled);
         }
 
         /// <summary>
@@ -316,14 +301,14 @@ namespace Platter.Systems {
         private void SetPreZone(int zoneIndex) {
             m_Log.Debug($"SetPreZone(modeIndex = {zoneIndex})");
             var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[zoneIndex];
-            var zoneData = EntityManager.GetComponentData<ZoneData>(zonePrefab);
+            var zoneData   = EntityManager.GetComponentData<ZoneData>(zonePrefab);
             PreZoneType = zoneData.m_ZoneType;
         }
 
         /// <summary>
         /// Todo.
         /// </summary>
-        public void DecreaseBlockWidth() {
+        private void DecreaseBlockWidth() {
             if (m_SelectedParcelSize.x > P_PrefabsCreateSystem.BlockSizes.x) {
                 m_SelectedParcelSize.x -= 1;
             }
@@ -335,7 +320,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        public void IncreaseBlockWidth() {
+        private void IncreaseBlockWidth() {
             if (m_SelectedParcelSize.x < P_PrefabsCreateSystem.BlockSizes.z) {
                 m_SelectedParcelSize.x += 1;
             }
@@ -347,7 +332,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        public void DecreaseBlockDepth() {
+        private void DecreaseBlockDepth() {
             if (m_SelectedParcelSize.y > P_PrefabsCreateSystem.BlockSizes.y) {
                 m_SelectedParcelSize.y -= 1;
             }
@@ -359,7 +344,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Todo.
         /// </summary>
-        public void IncreaseBlockDepth() {
+        private void IncreaseBlockDepth() {
             if (m_SelectedParcelSize.y < P_PrefabsCreateSystem.BlockSizes.w) {
                 m_SelectedParcelSize.y += 1;
             }
@@ -378,7 +363,7 @@ namespace Platter.Systems {
             m_Log.Debug($"UpdateSelectedPrefab() -- Attempting to get Prefab with id {id}");
 
             if (!m_PrefabSystem.TryGetPrefab(id, out var prefabBase)) {
-                m_Log.Debug($"UpdateSelectedPrefab() -- Couldn't find prefabBase!");
+                m_Log.Debug("UpdateSelectedPrefab() -- Couldn't find prefabBase!");
                 return;
             }
 

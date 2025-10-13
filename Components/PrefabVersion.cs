@@ -5,13 +5,12 @@
 
 namespace Platter.Components {
     using Colossal.Serialization.Entities;
-    using Game.Zones;
     using Unity.Entities;
 
     /// <summary>
     /// todo.
     /// </summary>
-    public struct PrefabVersion : IComponentData, IQueryTypeParameter, ISerializable {
+    public struct PrefabVersion : IComponentData, ISerializable {
         public uint m_Version;
 
         /// <inheritdoc/>

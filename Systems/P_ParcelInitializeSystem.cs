@@ -15,7 +15,8 @@ namespace Platter.Systems {
     using Unity.Mathematics;
 
     /// <summary>
-    /// todo.
+    /// System responsible for initializing ParcelPrefab data.
+    /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
     /// </summary>
     public partial class P_ParcelInitializeSystem : GameSystemBase {
         // Logger

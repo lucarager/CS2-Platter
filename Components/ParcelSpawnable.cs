@@ -7,6 +7,6 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
-    public struct ParcelSpawnable : IComponentData, IQueryTypeParameter, IEmptySerializable {
+    public struct ParcelSpawnable : IComponentData, IEmptySerializable {
     }
 }

@@ -9,7 +9,6 @@ namespace Platter {
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
     using Colossal.Logging;
@@ -17,12 +16,10 @@ namespace Platter {
     using Colossal.TestFramework;
     using Colossal.UI;
     using Game;
-    using Game.Areas;
     using Game.Modding;
     using Game.Prefabs;
     using Game.SceneFlow;
     using Game.Serialization;
-    using Newtonsoft.Json;
     using Platter.Components;
     using Platter.Patches;
     using Platter.Settings;
@@ -115,6 +112,7 @@ namespace Platter {
 #endif
 
             // Apply harmony patches.
+            // ReSharper disable once ObjectCreationAsStatement
             new Patcher("lucachoo-Platter", Log);
 
             // Apply inflection patches.
@@ -143,7 +141,7 @@ namespace Platter {
 
             // Parcels
             updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<P_ParcelSpawnSystem>(SystemUpdatePhase.Modification3);
+            updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_ConnectedParcelCreateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);

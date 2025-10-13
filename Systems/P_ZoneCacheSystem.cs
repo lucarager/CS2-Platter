@@ -5,13 +5,10 @@
 
 namespace Platter.Systems {
     using System.Collections.Generic;
-    using Colossal.IO.AssetDatabase.Internal;
     using Game.Common;
     using Game.Prefabs;
-    using Game.Prefabs.Modes;
     using Game.UI;
     using Game.UI.Tooltip;
-    using Game.Zones;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
@@ -19,7 +16,7 @@ namespace Platter.Systems {
     using static Platter.Systems.P_UISystem;
 
     /// <summary>
-    /// Tooltip System.
+    /// System responsible for caching Zone Information for other systems.
     /// </summary>
     public partial class P_ZoneCacheSystem : TooltipSystemBase {
         public NativeList<Entity> ZonePrefabs => m_ZonePrefabs;

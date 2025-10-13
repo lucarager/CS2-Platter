@@ -10,7 +10,6 @@ namespace Platter.Systems {
     using Game;
     using Game.Buildings;
     using Game.Common;
-    using Game.Net;
     using Game.Prefabs;
     using Game.Simulation;
     using Game.Tools;

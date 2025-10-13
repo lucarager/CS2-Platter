@@ -4,17 +4,10 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
-    using Game.Common;
     using Game.Prefabs;
-    using Platter.Components;
-    using Platter.Extensions;
     using Platter.Utils;
     using Unity.Entities;
     using Unity.Mathematics;

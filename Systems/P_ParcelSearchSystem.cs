@@ -5,7 +5,6 @@
 
 namespace Platter.Systems {
     using Colossal.Collections;
-    using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
@@ -21,6 +20,9 @@ namespace Platter.Systems {
     using Unity.Jobs;
     using GeometryFlags = Game.Objects.GeometryFlags;
 
+    /// <summary>
+    /// System responsible for maintaing a QuadSearchTree for parcels.
+    /// </summary>
     public partial class P_ParcelSearchSystem : GameSystemBase, IPreDeserialize {
         // Logger
         private PrefixedLogger m_Log;
@@ -47,28 +49,16 @@ namespace Platter.Systems {
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
 
             // Queries
-            m_UpdatedQuery = GetEntityQuery(new EntityQueryDesc[]
-            {
-                new () {
-                    All = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Parcel>(),
-                    },
-                    Any = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                },
-            });
-            m_AllQuery = GetEntityQuery(new ComponentType[]
-            {
-                ComponentType.ReadOnly<Parcel>(),
-                ComponentType.Exclude<Temp>(),
-            });
+            m_UpdatedQuery = SystemAPI.QueryBuilder()
+                                      .WithAll<Parcel>()
+                                      .WithAny<Updated, Deleted>()
+                                      .WithNone<Temp>()
+                                      .Build();
+            m_AllQuery = SystemAPI.QueryBuilder()
+                                  .WithAll<Parcel>()
+                                  .WithNone<Temp>()
+                                  .Build();
+            
             m_SearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
         }
 

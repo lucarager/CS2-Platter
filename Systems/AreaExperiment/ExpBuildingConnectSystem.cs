@@ -4,14 +4,11 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Entities;
     using Game;
     using Game.Buildings;
     using Game.Common;
     using Game.Objects;
-    using Game.Prefabs;
     using Game.Tools;
-    using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
@@ -40,23 +37,11 @@ namespace Platter.Systems {
             // Retrieve Systems
 
             // Queries
-            m_Query = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Building>(),
-                        ComponentType.ReadOnly<UnderConstruction>(),
-                    },
-                    Any = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<BatchesUpdated>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<ConnectedParcel>(),
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                });
+            m_Query = SystemAPI.QueryBuilder()
+                               .WithAll<Building, UnderConstruction>()
+                               .WithAny<Created, Updated, BatchesUpdated>()
+                               .WithNone<ConnectedParcel, Temp>()
+                               .Build();
 
             // Update Cycle
             RequireForUpdate(m_Query);

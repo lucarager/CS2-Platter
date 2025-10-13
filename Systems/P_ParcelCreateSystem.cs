@@ -14,7 +14,7 @@ namespace Platter.Systems {
     using Unity.Entities;
 
     /// <summary>
-    /// todo.
+    /// System responsible for setting data when a parcel entity is created (likely by a tool).
     /// </summary>
     public partial class P_ParcelCreateSystem : GameSystemBase {
         // Logger
@@ -43,20 +43,11 @@ namespace Platter.Systems {
             m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
-            m_ParcelCreatedQuery = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>(),
-                    },
-                    Any = new ComponentType[] {
-                        ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                });
+            m_ParcelCreatedQuery = SystemAPI.QueryBuilder()
+                                            .WithAll<Parcel>()
+                                            .WithAny<Created, Temp>()
+                                            .WithNone<Updated, Deleted>()
+                                            .Build();
 
             // Update Cycle
             RequireForUpdate(m_ParcelCreatedQuery);

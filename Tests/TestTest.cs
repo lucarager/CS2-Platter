@@ -4,18 +4,8 @@
 // </copyright>
 
 namespace Platter.Tests {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
     using System.Threading.Tasks;
-    using Colossal;
-    using Colossal.Assertions;
-    using Colossal.AssetPipeline;
-    using Colossal.Json;
-    using Colossal.Logging;
     using Colossal.TestFramework;
-    using Unity.Mathematics;
-    using UnityEngine;
 
     [TestDescriptor("Test Platter", Category.General, false, TestPhase.Default, false)]
     public class TestScenarioExample : TestScenario {

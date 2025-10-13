@@ -4,12 +4,10 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Logging;
     using Game;
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
-    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;

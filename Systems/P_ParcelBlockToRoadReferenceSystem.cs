@@ -15,7 +15,8 @@ namespace Platter.Systems {
     using Unity.Entities;
 
     /// <summary>
-    /// todo.
+    /// System responsible for adding the "Owner" component to a block when a parcel and road get connected.
+    /// This is what marks a block as a valid spawn location to the vanilla ZoneSpawnSystem.
     /// </summary>
     public partial class P_ParcelBlockToRoadReferenceSystem : GameSystemBase {
         // Logger
@@ -37,20 +38,13 @@ namespace Platter.Systems {
 
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
-            m_ParcelUpdatedQuery = GetEntityQuery(
-                new EntityQueryDesc {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>(),
-                    },
-                    Any = new ComponentType[] {
-                        ComponentType.ReadOnly<Updated>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                });
+            m_ParcelUpdatedQuery = SystemAPI.QueryBuilder()
+                                            .WithAll<Parcel>()
+                                            .WithAny<Updated>()
+                                            .WithNone<Temp>()
+                                            .Build();
 
-            base.RequireForUpdate(m_ParcelUpdatedQuery);
+            RequireForUpdate(m_ParcelUpdatedQuery);
         }
 
         /// <inheritdoc/>
@@ -61,9 +55,8 @@ namespace Platter.Systems {
 
             var entities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
 
-            for (var i = 0; i < entities.Length; i++) {
-                var parcelEntity = entities[i];
-                var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
+            foreach (var parcelEntity in entities) {
+                var parcel        = EntityManager.GetComponentData<Parcel>(parcelEntity);
                 var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
 
                 if (!EntityManager.TryGetBuffer<ParcelSubBlock>(parcelEntity, false, out var subBlockBuffer)) {
@@ -71,9 +64,8 @@ namespace Platter.Systems {
                     return;
                 }
 
-                for (var j = 0; j < subBlockBuffer.Length; j++) {
-                    var subBlock = subBlockBuffer[j];
-                    var blockEntity = subBlock.m_SubBlock;
+                foreach (var subBlock in subBlockBuffer) {
+                    var blockEntity   = subBlock.m_SubBlock;
                     var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
 
                     curvePosition.m_CurvePosition = parcel.m_CurvePosition;
@@ -81,7 +73,6 @@ namespace Platter.Systems {
 
                     m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating Block's Owner ({parcel.m_RoadEdge})");
 
-                    // Todo this is a stopgap, we'll need to have a better solution to update roads and zones. Maybe blocking zones is the way to go after all
                     if (parcel.m_RoadEdge != Entity.Null) {
                         m_CommandBuffer.AddComponent<Updated>(parcel.m_RoadEdge, default);
                     }
