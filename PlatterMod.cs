@@ -132,8 +132,8 @@ namespace Platter {
             // Activate Systems
             // Serializaztion/Deserializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAfter<P_SerializeParcelSubBlockSystem>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAfter<P_SerializeConnectedParcelSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_ParcelSubBlockDeserializeSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_ConnectedParcelDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ConnectedParcelLoadSystem>(SystemUpdatePhase.Deserialize);
 
             // Prefabs

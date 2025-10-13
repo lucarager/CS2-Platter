@@ -30,9 +30,9 @@ namespace Platter.Systems {
     /// todo.
     /// </summary>
     public partial class P_UISystem : ExtendedUISystemBase {
-        public ZoneType PreZoneType { get; set; } = ZoneType.None;
+        public ZoneType PreZoneType { get; private set; } = ZoneType.None;
 
-        public bool AllowSpawning { get; set; } = true;
+        public bool AllowSpawning { get; private set; } = true;
 
         // Systems
         private PrefabSystem m_PrefabSystem;
@@ -72,7 +72,7 @@ namespace Platter.Systems {
         private ProxyAction m_ToggleSpawn;
 
         /// <summary>
-        /// Todo.
+        /// Struct to store and send Zone Data and to the React UI.
         /// </summary>
         public readonly struct ZoneUIData : IJsonWritable {
             public readonly string Name;
@@ -91,7 +91,7 @@ namespace Platter.Systems {
             }
 
             /// <inheritdoc/>
-            public readonly void Write(IJsonWriter writer) {
+            public void Write(IJsonWriter writer) {
                 writer.TypeBegin(GetType().FullName);
 
                 writer.PropertyName("name");
@@ -141,7 +141,7 @@ namespace Platter.Systems {
             m_RenderParcelsBinding = CreateBinding<bool>("RENDER_PARCELS", true, SetRenderParcels);
             m_AllowSpawningBinding = CreateBinding<bool>("ALLOW_SPAWNING", true, SetAllowSpawning);
             m_SnapRoadSideBinding = CreateBinding<bool>("SNAP_ROADSIDE", true, SetSnapRoadside);
-            m_SnapSpacingBinding = CreateBinding<float>("SNAP_SPACING", P_SnapSystem.DEFAULT_SNAP_DISTANCE, SetSnapSpacing);
+            m_SnapSpacingBinding = CreateBinding<float>("SNAP_SPACING", P_SnapSystem.DefaultSnapDistance, SetSnapSpacing);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
@@ -248,8 +248,6 @@ namespace Platter.Systems {
                 case "BLOCK_DEPTH_DECREASE":
                     DecreaseBlockDepth();
                     break;
-                default:
-                    break;
             }
         }
 
@@ -305,7 +303,7 @@ namespace Platter.Systems {
             m_Log.Debug($"SetSnapRoadside(enabled = {amount})");
             if (amount < 1f) {
                 amount = 1f;
-            } else if (amount >= P_SnapSystem.MAX_SNAP_DISTANCE) {
+            } else if (amount >= P_SnapSystem.MaxSnapDistance) {
                 amount = 100f;
             }
 

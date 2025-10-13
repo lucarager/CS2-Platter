@@ -1,4 +1,4 @@
-﻿// <copyright file="P_SerializeConnectedParcelSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_ConnectedParcelDeserializeSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -16,14 +16,14 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    internal partial class P_SerializeConnectedParcelSystem : GameSystemBase {
+    internal partial class P_ConnectedParcelDeserializeSystem : GameSystemBase {
         private EntityQuery m_Query;
         private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_Log = new PrefixedLogger(nameof(P_SerializeConnectedParcelSystem));
+            m_Log = new PrefixedLogger(nameof(P_ConnectedParcelDeserializeSystem));
             m_Log.Debug($"OnCreate()");
             m_Query = base.GetEntityQuery(new ComponentType[]
             {
@@ -69,6 +69,10 @@ namespace Platter.Systems {
                     var parcel = parcelArray[i];
                     if (parcel.m_RoadEdge != Entity.Null) {
                         m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge].Add(new ConnectedParcel(parcelEntity));
+                    }
+
+                    if (parcel.m_Building != Entity.Null) {
+                        m_ConnectedParcelsBufferLookup[parcel.m_Building].Add(new ConnectedParcel(parcelEntity));
                     }
                 }
             }

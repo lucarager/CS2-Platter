@@ -12,7 +12,6 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Net;
     using Game.Prefabs;
-    using Game.Rendering;
     using Game.Simulation;
     using Game.Tools;
     using Game.Zones;
@@ -23,17 +22,14 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
-    using UnityEngine;
-    using static Game.Rendering.OverlayRenderSystem;
-    using static Platter.Utils.DrawingUtils;
 
     /// <summary>
     /// Overlay Rendering System.
     /// <todo>Add culling and burst</todo>
     /// </summary>
     public partial class P_SnapSystem : GameSystemBase {
-        public static float MAX_SNAP_DISTANCE = 16f;
-        public static float DEFAULT_SNAP_DISTANCE = 4f;
+        public static float MaxSnapDistance     { get; } = 16f;
+        public static float DefaultSnapDistance { get; } = 0f;
 
         // Props
         public SnapMode CurrentSnapMode {
@@ -93,7 +89,7 @@ namespace Platter.Systems {
                 .Build();
 
             // Data
-            m_SnapOffset = P_SnapSystem.DEFAULT_SNAP_DISTANCE;
+            m_SnapOffset = P_SnapSystem.DefaultSnapDistance;
             m_SnapMode = SnapMode.RoadSide;
 
             RequireForUpdate(m_Query);
@@ -145,44 +141,20 @@ namespace Platter.Systems {
             base.Dependency = JobHandle.CombineDependencies(base.Dependency, parcelSnapJobHandle);
         }
 
-        private struct Rotation {
-            public quaternion m_Rotation;
-            public bool m_IsAligned;
-            public bool m_IsSnapped;
-        }
-
 #if USE_BURST
         [BurstCompile]
 #endif
         private struct ParcelSnapJob : IJobChunk {
-            [ReadOnly]
-            public NativeQuadTree<Entity, Bounds2> m_Tree;
-
-            [ReadOnly]
-            public TerrainHeightData m_TerrainHeightData;
-
-            [ReadOnly]
-            public NativeList<ControlPoint> m_ControlPoints;
-
-            [ReadOnly]
-            public ComponentTypeHandle<CreationDefinition> m_CreationDefinitionTypeHandle;
-
-            [ReadOnly]
-            public ComponentLookup<Block> m_BlockComponentLookup;
-
-            [ReadOnly]
-            public ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
-            
-            [ReadOnly]
-            public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-
-            [ReadOnly]
-            public float m_SnapOffset;
-
-            [ReadOnly]
-            public EntityTypeHandle m_EntityTypeHandle;
-
-            public ComponentTypeHandle<ObjectDefinition> m_ObjectDefinitionTypeHandle;
+            [ReadOnly] private NativeQuadTree<Entity, Bounds2> m_Tree;
+            [ReadOnly] private TerrainHeightData m_TerrainHeightData;
+            [ReadOnly] private NativeList<ControlPoint> m_ControlPoints;
+            [ReadOnly] private ComponentTypeHandle<CreationDefinition> m_CreationDefinitionTypeHandle;
+            [ReadOnly] private ComponentLookup<Block> m_BlockComponentLookup;
+            [ReadOnly] private ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
+            [ReadOnly] private ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly] private float m_SnapOffset;
+            [ReadOnly] private EntityTypeHandle m_EntityTypeHandle;
+            private ComponentTypeHandle<ObjectDefinition> m_ObjectDefinitionTypeHandle;
 
             public ParcelSnapJob(
                 NativeQuadTree<Entity, Bounds2> tree,
@@ -249,20 +221,22 @@ namespace Platter.Systems {
                     m_Tree.Iterate<BlockSnapIterator>(ref iterator, 0);
 
                     // Retrieve best found point
-                    bestSnapPosition = iterator.m_BestSnapPosition;
+                    bestSnapPosition = iterator.BestSnapPosition;
                     var hasSnap = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position);
 
                     // Height Calc
                     CalculateHeight(ref bestSnapPosition, parcelData, minValue);
 
                     // If we found a snapping point, modify the object definition
-                    if (hasSnap) {
-                        objectDefinition.m_Position = bestSnapPosition.m_Position;
-                        objectDefinition.m_LocalPosition = bestSnapPosition.m_Position;
-                        objectDefinition.m_Rotation = bestSnapPosition.m_Rotation;
-                        objectDefinition.m_LocalRotation = bestSnapPosition.m_Rotation;
-                        objectDefinitionArray[i] = objectDefinition;
+                    if (!hasSnap) {
+                        continue;
                     }
+
+                    objectDefinition.m_Position      = bestSnapPosition.m_Position;
+                    objectDefinition.m_LocalPosition = bestSnapPosition.m_Position;
+                    objectDefinition.m_Rotation      = bestSnapPosition.m_Rotation;
+                    objectDefinition.m_LocalRotation = bestSnapPosition.m_Rotation;
+                    objectDefinitionArray[i]         = objectDefinition;
                 }
             }
 
@@ -277,16 +251,18 @@ namespace Platter.Systems {
         /// QuadTree iterator.
         /// </summary>
         public struct BlockSnapIterator : INativeQuadTreeIterator<Entity, Bounds2>, IUnsafeQuadTreeIterator<Entity, Bounds2> {
-            public ComponentLookup<Block> m_BlockComponentLookup;
-            public ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
-            public ControlPoint m_ControlPoint;
-            public int2 m_LotSize;
-            public Bounds2 m_Bounds;
-            public ControlPoint m_BestSnapPosition;
-            public float m_BestDistance;
-            public float m_SnapOffset;
+            public  ControlPoint                 BestSnapPosition => m_BestSnapPosition;
+            private ComponentLookup<Block>       m_BlockComponentLookup;
+            private ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
+            private ControlPoint                 m_ControlPoint;
+            private int2                         m_LotSize;
+            private Bounds2                      m_Bounds;
+            private ControlPoint                 m_BestSnapPosition;
+            private float                        m_BestDistance;
+            private float                        m_SnapOffset;
 
-            public BlockSnapIterator(ComponentLookup<ParcelOwner> parcelOwnerComponentLookup,
+            public BlockSnapIterator(
+                ComponentLookup<ParcelOwner> parcelOwnerComponentLookup,
                                      ComponentLookup<Block> blockComponentLookup,
                                      ControlPoint controlPoint,
                                      int2 lotSize,
@@ -339,9 +315,8 @@ namespace Platter.Systems {
 
                 // Extend the search line based on lot depth vs width difference
                 var lotDepthDifference = math.max(0f, m_LotSize.y - m_LotSize.x) * 4f;
-                var extensionVector = lotDepthDifference;
-                searchLine.a -= extensionVector;
-                searchLine.b += extensionVector;
+                searchLine.a -= lotDepthDifference;
+                searchLine.b += lotDepthDifference;
 
                 // Calculate distance between the block's front edge and our search line
                 var distanceToBlock = MathUtils.Distance(blockFrontEdge, searchLine, out var intersectionParams);
@@ -367,9 +342,8 @@ namespace Platter.Systems {
                 var blockForwardDirection = block.m_Direction;
                 var blockLeftDirection = MathUtils.Left(block.m_Direction);
 
-                // Calculate depths (multiplied by 4 for grid units)
+                // Calculate depths 
                 var blockDepth = block.m_Size.y * 4f;
-                var parcelLotDepth = m_LotSize.y * 4f;
 
                 // Project cursor offset onto block's forward and lateral axes
                 var forwardOffset = math.dot(blockForwardDirection, cursorOffsetFromBlock);
@@ -378,7 +352,7 @@ namespace Platter.Systems {
                 // Snap lateral position to 8-unit grid, accounting for odd/even width differences
                 var hasDifferentParity = ((block.m_Size.x ^ m_LotSize.x) & 1) != 0;
                 var parityOffset = hasDifferentParity ? 0.5f : 0f;
-                lateralOffset -= (math.round((lateralOffset / 4f) - parityOffset) + parityOffset) * 4f;
+                lateralOffset -= (math.round((lateralOffset / 8f) - parityOffset) + parityOffset) * 8f;
 
                 // Build the snapped position
                 m_BestSnapPosition = m_ControlPoint;

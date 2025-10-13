@@ -1,7 +1,7 @@
 .moddedSection {
     border-top: 1px solid  rgba(255, 255, 255, .2);
     padding: 8rem 0;
-    background-color: rgba(82, 174, 255, 0.15);
+    background: rgba(82, 174, 255, 0.15);
     margin-bottom: -6px;
 
     &_Header {
@@ -111,4 +111,6 @@
     margin-left: 4rem;
     color: rgba(217, 217, 217, 1);
     font-weight: 600;
+    max-width: 174rem;
+    overflow: hidden;
 }

@@ -21,3 +21,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Cause I prefer it this way")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1111:Closing parenthesis should be on line of last parameter", Justification = "Cause I prefer it this way")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:Parameter should not span multiple lines", Justification = "Cause I prefer it this way")]
+[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1025", Justification = "Cause I prefer it this way")]
+[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101", Justification = "Cause I prefer it this way")]

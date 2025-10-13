@@ -20,6 +20,11 @@ namespace Platter.Components {
         /// <summary>
         /// todo.
         /// </summary>
+        public Entity m_Building;
+
+        /// <summary>
+        /// todo.
+        /// </summary>
         public float m_CurvePosition;
 
         /// <summary>

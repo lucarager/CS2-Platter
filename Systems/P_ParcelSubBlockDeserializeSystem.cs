@@ -1,4 +1,4 @@
-﻿// <copyright file="P_SerializeSubBlockSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_ParcelSubBlockDeserializeSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -14,14 +14,14 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    internal partial class P_SerializeParcelSubBlockSystem : GameSystemBase {
+    internal partial class P_ParcelSubBlockDeserializeSystem : GameSystemBase {
         private EntityQuery m_Query;
         private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_Log = new PrefixedLogger(nameof(P_SerializeParcelSubBlockSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelSubBlockDeserializeSystem));
             m_Log.Debug($"OnCreate()");
 
             m_Query = base.GetEntityQuery(new ComponentType[]

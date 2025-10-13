@@ -8,6 +8,7 @@ namespace Platter.Systems {
     using Game.Buildings;
     using Game.Common;
     using Game.Net;
+    using Game.Objects;
     using Game.Tools;
     using Platter.Components;
     using Platter.Utils;
@@ -19,7 +20,7 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Queries
-        private EntityQuery m_RoadPrefabCreatedQuery;
+        private EntityQuery m_PrefabCreatedQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -30,17 +31,16 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Queries
-            m_RoadPrefabCreatedQuery = SystemAPI.QueryBuilder()
-                .WithAll<Edge>()
-                .WithAll<Created>()
-                .WithAll<ConnectedBuilding>() // Only roads that allow connections will have this component
-                .WithNone<ConnectedParcel>()
-                .WithNone<Temp>()
-                .WithNone<Deleted>()
+            m_PrefabCreatedQuery = SystemAPI.QueryBuilder()
+                .WithAll<Edge, Created, ConnectedBuilding>() // Only roads that allow connections will have ConnectedBuilding component
+                .WithNone<ConnectedParcel, Temp, Deleted>()
+                .AddAdditionalQuery()
+                .WithAll<Building, UnderConstruction>()
+                .WithNone<ConnectedParcel, Temp>()
                 .Build();
 
             // Update Cycle
-            RequireForUpdate(m_RoadPrefabCreatedQuery);
+            RequireForUpdate(m_PrefabCreatedQuery);
         }
 
         /// <inheritdoc/>
@@ -48,13 +48,13 @@ namespace Platter.Systems {
             var logMethodPrefix = $"OnUpdate() --";
             var entityTypeHandle = SystemAPI.GetEntityTypeHandle();
 
-            var chunkArray = m_RoadPrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
+            var chunkArray = m_PrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
             foreach (var archetypeChunk in chunkArray) {
                 var entityArray = archetypeChunk.GetNativeArray(entityTypeHandle);
                 if (entityArray.Length != 0) {
                     for (var i = 0; i < entityArray.Length; i++) {
                         var entity = entityArray[i];
-                        m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to road entity");
+                        m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to entity");
                         EntityManager.AddBuffer<ConnectedParcel>(entity);
                     }
                 }

@@ -4,12 +4,10 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System.Drawing;
     using Game;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
-    using Game.Tools;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
@@ -58,12 +56,12 @@ namespace Platter.Systems {
             m_Log.Debug($"OnUpdate() -- Found {entities.Length} prefabs to initialize.");
 
             for (var i = 0; i < entities.Length; i++) {
-                var currentEntity = entities[i];
+                var entity = entities[i];
 
                 // @todo
                 // Looking at game code, I think its cleaner to get PrefabRef, which then can get prefab data directly
                 // with m_prefab
-                var prefabData = EntityManager.GetComponentData<PrefabData>(currentEntity);
+                var prefabData = EntityManager.GetComponentData<PrefabData>(entity);
 
                 // Get prefab data
                 if (!m_PrefabSystem.TryGetPrefab<PrefabBase>(prefabData, out var prefabBase)) {
@@ -78,16 +76,16 @@ namespace Platter.Systems {
                 }
 
                 // Parceldata
-                var parcelData = EntityManager.GetComponentData<ParcelData>(currentEntity);
+                var parcelData = EntityManager.GetComponentData<ParcelData>(entity);
                 parcelData.m_ZoneBlockPrefab = zoneBlockPrefab;
                 parcelData.m_LotSize = new int2(parcelPrefabRef.m_LotWidth, parcelPrefabRef.m_LotDepth);
-                EntityManager.SetComponentData<ParcelData>(currentEntity, parcelData);
+                EntityManager.SetComponentData<ParcelData>(entity, parcelData);
 
                 // Some dimensions.
                 var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
 
                 // Geometry data
-                var oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(currentEntity);
+                var oGeoData = EntityManager.GetComponentData<ObjectGeometryData>(entity);
                 oGeoData.m_MinLod = 100;
                 oGeoData.m_Size = parcelGeo.Size;
                 oGeoData.m_Pivot = parcelGeo.Pivot;
@@ -95,8 +93,16 @@ namespace Platter.Systems {
                 oGeoData.m_Bounds = parcelGeo.Bounds;
                 oGeoData.m_Layers = MeshLayer.First;
                 oGeoData.m_Flags &= ~GeometryFlags.Overridable;
-                oGeoData.m_Flags |= GeometryFlags.WalkThrough;
-                EntityManager.SetComponentData<ObjectGeometryData>(currentEntity, oGeoData);
+                oGeoData.m_Flags |= GeometryFlags.WalkThrough | GeometryFlags.ExclusiveGround;
+                EntityManager.SetComponentData<ObjectGeometryData>(entity, oGeoData);
+
+                // Geometry data
+                EntityManager.SetComponentData(entity, new PlaceableObjectData() {
+                    m_Flags = Game.Objects.PlacementFlags.OwnerSide, // Ownerside added to make sure EDT doesn't pick up parcels. Temporary fix until we can patch EDT or Platter accordingly
+                    m_PlacementOffset = new float3(0, 0, 0),
+                    m_ConstructionCost = 0,
+                    m_XPReward = 0,
+                });
 
                 m_Log.Debug($"OnUpdate() -- Initialized Parcel {parcelData.m_LotSize.x}x{parcelData.m_LotSize.y}.");
             }
