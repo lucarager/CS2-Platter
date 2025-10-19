@@ -6,6 +6,7 @@
 namespace Platter.Settings {
     using System.Collections.Generic;
     using Colossal;
+    using Platter;
 
     /// <summary>
     /// Todo.

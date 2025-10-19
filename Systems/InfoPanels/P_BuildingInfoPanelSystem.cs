@@ -13,7 +13,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
     /// </summary>
-    public partial class P_SelectedInfoPanelSystem : InfoSectionBase {
+    public partial class P_BuildingInfoPanelSystem : InfoSectionBase {
         private PrefixedLogger m_Log;
         private ToolSystem m_ToolSystem;
 
@@ -37,7 +37,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_SelectedInfoPanelSystem));
+            m_Log = new PrefixedLogger(nameof(P_BuildingInfoPanelSystem));
             m_Log.Debug($"OnCreate()");
 
             // Add section to UI System
@@ -61,8 +61,7 @@ namespace Platter.Systems {
         /// </summary>
         /// <returns>Whether the component is eligible for Platter infoview additions.</returns>
         private bool CheckEntityEligibility() {
-            var isParcelCOmponent = EntityManager.HasComponent<Parcel>(selectedEntity);
-            return isParcelCOmponent;
+            return EntityManager.HasComponent<LinkedParcel>(selectedEntity);
         }
     }
 }

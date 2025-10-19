@@ -2,7 +2,8 @@ import { ModRegistrar, ModuleRegistry } from "cs2/modding";
 import { GAME_BINDINGS } from "gameBindings";
 import { PlatterMouseToolOptions } from "components/mouseToolOptions/mouseToolOptions";
 import { initialize } from "components/vanilla/Components";
-import { SelectedInfoPanelComponent } from "components/infoview/infoview";
+import { ParcelInfoPanelComponent } from "components/infoview/parcel";
+import { BuildingInfoPanelComponent } from "components/infoview/building";
 import { ToolButton } from "components/toolButton/toolButton";
 
 // Register bindings
@@ -22,7 +23,13 @@ const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     moduleRegistry.extend(
         "game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx",
         "selectedInfoSectionComponents",
-        SelectedInfoPanelComponent,
+        ParcelInfoPanelComponent,
+    );
+
+    moduleRegistry.extend(
+        "game-ui/game/components/selected-info-panel/selected-info-sections/selected-info-sections.tsx",
+        "selectedInfoSectionComponents",
+        BuildingInfoPanelComponent,
     );
 };
 

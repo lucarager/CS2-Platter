@@ -48,13 +48,9 @@ namespace Platter.Systems {
 
             // Queries
             m_ParcelQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<Parcel>()
-                .WithAllRW<ParcelSubBlock>()
-                .WithAll<PrefabRef>()
-                .WithAll<ParcelComposition>()
-                .WithAll<Transform>()
-                .WithAny<Updated>()
-                .WithAny<Deleted>()
+                .WithAllRW<Parcel, ParcelSubBlock>()
+                .WithAll<PrefabRef, ParcelComposition, Transform>()
+                .WithAny<Updated, Deleted>()
                 .WithNone<Temp>()
                 .Build();
 
@@ -89,15 +85,11 @@ namespace Platter.Systems {
                 m_Log.Debug($"OnUpdate() -- Running UPDATE logic");
 
                 // Retrieve components
-                if (!EntityManager.TryGetComponent<Parcel>(parcelEntity, out var parcel) ||
-                    !EntityManager.TryGetComponent<PrefabRef>(parcelEntity, out var prefabRef) ||
-                    !EntityManager.TryGetComponent<ParcelData>(prefabRef, out var parcelData) ||
-                    !EntityManager.TryGetComponent<ParcelComposition>(parcelEntity, out var parcelComposition) ||
-                    !EntityManager.TryGetComponent<Transform>(parcelEntity, out var transform)) {
-                    m_Log.Error($"OnUpdate() -- Couldn't find all required components");
-                    return;
-                }
-
+                var parcel = EntityManager.GetComponentData<Parcel>(parcelEntity);
+                var prefabRef = EntityManager.GetComponentData<PrefabRef>(parcelEntity);
+                var parcelData = EntityManager.GetComponentData<ParcelData>(prefabRef);
+                var parcelComposition = EntityManager.GetComponentData<ParcelComposition>(parcelEntity);
+                var transform = EntityManager.GetComponentData<Transform>(parcelEntity);
                 var parcelGeo = new ParcelGeometry(parcelData.m_LotSize);
 
                 // Store Zoneblock
@@ -139,7 +131,6 @@ namespace Platter.Systems {
 
                 // For now, we know there's only going to be one block per component
                 if (subBlockBuffer.Length > 0) {
-                    m_Log.Debug($"OnUpdate() -- Updating the old block...");
                     var subBlockEntity = subBlockBuffer[0].m_SubBlock;
                     m_CommandBuffer.SetComponent<PrefabRef>(subBlockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(subBlockEntity, block);
@@ -147,9 +138,7 @@ namespace Platter.Systems {
                     m_CommandBuffer.SetComponent<BuildOrder>(subBlockEntity, buildOder);
                     m_CommandBuffer.AddComponent<Updated>(subBlockEntity, default);
                 } else {
-                    m_Log.Debug($"OnUpdate() -- Creating a new block...");
                     var blockEntity = m_CommandBuffer.CreateEntity(zoneBlockData.m_Archetype);
-                    m_Log.Debug($"OnUpdate() -- blockEntity {blockEntity} created");
                     m_CommandBuffer.SetComponent<PrefabRef>(blockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(blockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);

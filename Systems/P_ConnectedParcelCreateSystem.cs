@@ -16,7 +16,7 @@ namespace Platter.Systems {
     using Unity.Entities;
 
     /// <summary>
-    /// System responsible for adding the ConnectedParcel buffer to roads and buildings.
+    /// System responsible for adding the ConnectedParcel buffer to roads.
     /// </summary>
     public partial class P_ConnectedParcelCreateSystem : GameSystemBase {
         // Logger
@@ -37,9 +37,6 @@ namespace Platter.Systems {
             m_PrefabCreatedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Edge, Created, ConnectedBuilding>() // Only roads that allow connections will have ConnectedBuilding component
                 .WithNone<ConnectedParcel, Temp, Deleted>()
-                .AddAdditionalQuery()
-                .WithAll<Building, UnderConstruction>()
-                .WithNone<ConnectedParcel, Temp>()
                 .Build();
 
             // Update Cycle
@@ -48,19 +45,9 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var logMethodPrefix = $"OnUpdate() --";
-            var entityTypeHandle = SystemAPI.GetEntityTypeHandle();
-
-            var chunkArray = m_PrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
-
-            foreach (var archetypeChunk in chunkArray) {
-                var entityArray = archetypeChunk.GetNativeArray(entityTypeHandle);
-                if (entityArray.Length == 0) {
-                    continue;
-                }
-
-                foreach (var entity in entityArray) {
-                    m_Log.Debug($"{logMethodPrefix} Added ConnectedParcel buffer to entity");
+            foreach (var chunk in m_PrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob)) {
+                foreach (var entity in chunk.GetNativeArray(SystemAPI.GetEntityTypeHandle())) {
+                    m_Log.Debug($"OnUpdate() -- Added ConnectedParcel buffer to entity");
                     EntityManager.AddBuffer<ConnectedParcel>(entity);
                 }
             }

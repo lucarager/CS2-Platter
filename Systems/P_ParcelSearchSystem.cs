@@ -24,12 +24,19 @@ namespace Platter.Systems {
     /// System responsible for maintaing a QuadSearchTree for parcels.
     /// </summary>
     public partial class P_ParcelSearchSystem : GameSystemBase, IPreDeserialize {
+        public bool Loaded => !m_NeedFirstLoad;
+
         // Logger
         private PrefixedLogger m_Log;
 
+        // Systems
         private ToolSystem m_ToolSystem;
+
+        // Queries
         private EntityQuery m_UpdatedQuery;
         private EntityQuery m_AllQuery;
+
+        // Data & Jobs
         private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
         private JobHandle m_StaticReadDependencies;
         private JobHandle m_StaticWriteDependencies;

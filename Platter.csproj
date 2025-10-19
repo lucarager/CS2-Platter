@@ -97,6 +97,13 @@
 	  <Folder Include="UI\src\lang\" />
 	  <Folder Include="UI\src\utils\" />
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <Reference Include="Unity.RenderPipelines.Core.Runtime">
+	    <HintPath>D:\SteamLibrary\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+		  <Private>false</Private>
+	  </Reference>
+	</ItemGroup>
 
 	<!--Additional Build Steps-->
 	<Target Name="BuildUI" AfterTargets="AfterBuild">

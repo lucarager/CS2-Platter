@@ -58,6 +58,9 @@
 		<Reference Include="UnityEngine.CoreModule">
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="UnityEngine.Rendering">
+			<Private>false</Private>
+		</Reference>
 		<Reference Include="Newtonsoft.Json">
 			<Private>false</Private>
 		</Reference>

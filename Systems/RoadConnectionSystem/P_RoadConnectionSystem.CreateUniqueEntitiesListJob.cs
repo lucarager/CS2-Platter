@@ -9,9 +9,6 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Jobs;
 
-    /// <summary>
-    /// todo.
-    /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Convert the queue of parcels to a list of UpdateData structs.
@@ -20,21 +17,9 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct CreateUniqueEntitiesListJob : IJob {
-            /// <summary>
-            /// todo.
-            /// </summary>
-            public NativeQueue<Entity> m_ParcelEntitiesQueue;
+            private NativeQueue<Entity> m_ParcelEntitiesQueue;
+            private NativeList<UpdateData> m_ParcelEntittiesList;
 
-            /// <summary>
-            /// todo.
-            /// </summary>
-            public NativeList<UpdateData> m_ParcelEntittiesList;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CreateUniqueEntitiesListJob"/> struct.
-            /// </summary>
-            /// <param name="parcelEntitiesQueue"></param>
-            /// <param name="parcelEntittiesList"></param>
             public CreateUniqueEntitiesListJob(NativeQueue<Entity> parcelEntitiesQueue, NativeList<UpdateData> parcelEntittiesList) {
                 m_ParcelEntitiesQueue = parcelEntitiesQueue;
                 m_ParcelEntittiesList = parcelEntittiesList;
@@ -62,10 +47,12 @@ namespace Platter.Systems {
 
                     // If the current data's parcel entity is not what we have stored previously,
                     // we can store it back into the list at the current valid write index
-                    if (currentBuildingData.m_Parcel != currentBuildingEntity) {
-                        m_ParcelEntittiesList[writeIndex++] = currentBuildingData;
-                        currentBuildingEntity = currentBuildingData.m_Parcel;
+                    if (currentBuildingData.m_Parcel == currentBuildingEntity) {
+                        continue;
                     }
+
+                    m_ParcelEntittiesList[writeIndex++] = currentBuildingData;
+                    currentBuildingEntity               = currentBuildingData.m_Parcel;
                 }
 
                 // If the deduplication mechanism reduced our list, shorten it

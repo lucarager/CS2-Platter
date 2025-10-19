@@ -13,110 +13,35 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Platter.Components;
     using Platter.Utils;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
 
-    /// <summary>
-    /// todo.
-    /// </summary>
-#if USE_BURST
-    [BurstCompile]
-#endif
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Find the best and eligible road for a given parcel.
         /// </summary>
+#if USE_BURST
+    [BurstCompile]
+#endif
         public struct FindRoadConnectionJob : IJobParallelForDefer {
-            /// <summary>
-            /// todo.
-            /// </summary>
-            public NativeArray<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Deleted> m_DeletedDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Transform> m_TransformComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Curve> m_CurveDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Composition> m_CompositionDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public NativeList<ArchetypeChunk> m_UpdatedNetChunks;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public EntityTypeHandle m_EntityTypeHandle;
+            private NativeArray<UpdateData> m_ParcelEntitiesList;
+            [ReadOnly] private ComponentLookup<Deleted> m_DeletedDataComponentLookup;
+            [ReadOnly] private ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
+            [ReadOnly] private ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly] private ComponentLookup<Transform> m_TransformComponentLookup;
+            [ReadOnly] private BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
+            [ReadOnly] private ComponentLookup<Curve> m_CurveDataComponentLookup;
+            [ReadOnly] private ComponentLookup<Composition> m_CompositionDataComponentLookup;
+            [ReadOnly] private ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
+            [ReadOnly] private ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
+            [ReadOnly] private ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
+            [ReadOnly] private ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
+            [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
+            [ReadOnly] private NativeList<ArchetypeChunk> m_UpdatedNetChunks;
+            [ReadOnly] private EntityTypeHandle m_EntityTypeHandle;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="FindRoadConnectionJob"/> struct.
@@ -156,10 +81,6 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute(int index) {
-#if !USE_BURST
-                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob(index: {index})");
-#endif
-
                 // Retrieve the data
                 var currentEntityData = m_ParcelEntitiesList[index];
 
@@ -211,114 +132,36 @@ namespace Platter.Systems {
                 }
 
                 // Update our BuildingRoadUpdateData struct with the new info
-                currentEntityData.m_NewRoad = findRoadConnectionIterator.m_BestRoad;
-                currentEntityData.m_FrontPos = findRoadConnectionIterator.m_FrontPosition;
-                currentEntityData.m_CurvePos = findRoadConnectionIterator.m_BestCurvePos;
+                currentEntityData.m_NewRoad = findRoadConnectionIterator.BestRoad;
+                currentEntityData.m_FrontPos = findRoadConnectionIterator.FrontPosition;
+                currentEntityData.m_CurvePos = findRoadConnectionIterator.BestCurvePos;
 
                 // Update the data in the list with what we found
                 m_ParcelEntitiesList[index] = currentEntityData;
-#if !USE_BURST
-                PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindRoadConnectionJob() -- Updated list with eligible roads.");
-#endif
             }
 
-            /// <summary>
-            /// todo.
-            /// </summary>
-            public struct FindRoadConnectionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>, IUnsafeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public Bounds3 m_Bounds;
+            public struct FindRoadConnectionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
+                public  float                               BestCurvePos;
+                public  Entity                              BestRoad;
+                public  float3                              FrontPosition;
+                private Bounds3                             m_Bounds;
+                private float                               m_MinDistance;
+                private bool                                m_CanBeOnRoad;
+                private BufferLookup<ConnectedParcel>       m_ConnectedParcelsBufferLookup;
+                private ComponentLookup<Curve>              m_CurveDataComponentLookup;
+                private ComponentLookup<Composition>        m_CompositionDataComponentLookup;
+                private ComponentLookup<EdgeGeometry>       m_EdgeGeometryDataComponentLookup;
+                private ComponentLookup<StartNodeGeometry>  m_StartNodeGeometryDataComponentLookup;
+                private ComponentLookup<EndNodeGeometry>    m_EndNodeGeometryDataComponentLookup;
+                private ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
+                private ComponentLookup<Deleted>            m_DeletedDataComponentLookup;
 
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public float m_MinDistance;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public float m_BestCurvePos;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public Entity m_BestRoad;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public float3 m_FrontPosition;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public bool m_CanBeOnRoad;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<Curve> m_CurveDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<Composition> m_CompositionDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<Deleted> m_DeletedDataComponentLookup;
-
-                /// <summary>
-                /// Initializes a new instance of the <see cref="FindRoadConnectionIterator"/> struct.
-                /// </summary>
-                /// <param name="bounds"></param>
-                /// <param name="minDistance"></param>
-                /// <param name="bestCurvePos"></param>
-                /// <param name="bestRoad"></param>
-                /// <param name="frontPosition"></param>
-                /// <param name="canBeOnRoad"></param>
-                /// <param name="connectedParcelsBufferLookup"></param>
-                /// <param name="curveDataComponentLookup"></param>
-                /// <param name="compositionDataComponentLookup"></param>
-                /// <param name="edgeGeometryDataComponentLookup"></param>
-                /// <param name="startNodeGeometryDataComponentLookup"></param>
-                /// <param name="endNodeGeometryDataComponentLookup"></param>
-                /// <param name="prefabNetCompositionDataComponentLookup"></param>
-                /// <param name="deletedDataComponentLookup"></param>
                 public FindRoadConnectionIterator(Bounds3 bounds, float minDistance, float bestCurvePos, Entity bestRoad, float3 frontPosition, bool canBeOnRoad, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, ComponentLookup<Curve> curveDataComponentLookup, ComponentLookup<Composition> compositionDataComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryDataComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryDataComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryDataComponentLookup, ComponentLookup<NetCompositionData> prefabNetCompositionDataComponentLookup, ComponentLookup<Deleted> deletedDataComponentLookup) {
                     m_Bounds = bounds;
                     m_MinDistance = minDistance;
-                    m_BestCurvePos = bestCurvePos;
-                    m_BestRoad = bestRoad;
-                    m_FrontPosition = frontPosition;
+                    BestCurvePos = bestCurvePos;
+                    BestRoad = bestRoad;
+                    FrontPosition = frontPosition;
                     m_CanBeOnRoad = canBeOnRoad;
                     m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
                     m_CurveDataComponentLookup = curveDataComponentLookup;
@@ -348,9 +191,6 @@ namespace Platter.Systems {
                     CheckEdge(edgeEntity);
                 }
 
-                /// <summary>
-                /// todo.
-                /// </summary>
                 /// <param name="edgeEntity">Todo.</param>
                 public void CheckEdge(Entity edgeEntity) {
                     // Exit early if the edge doesn't have a "Connected Parcels" buffer
@@ -374,38 +214,40 @@ namespace Platter.Systems {
                     var startNodeGeo = m_StartNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
                     var endNodeGeo = m_EndNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
                     var distanceToFront = m_MinDistance;
-                    P_RoadConnectionSystem.CheckDistance(edgeGeo, startNodeGeo, endNodeGeo, m_FrontPosition, m_CanBeOnRoad, ref distanceToFront);
+                    P_RoadConnectionSystem.CheckDistance(edgeGeo, startNodeGeo, endNodeGeo, FrontPosition, m_CanBeOnRoad, ref distanceToFront);
 
                     // If the distanceToFront is less than the max
-                    if (distanceToFront < m_MinDistance) {
-                        // Retrieves the SelectedCurve data for the road edge, which represents the road's shape as a Bezier curve.
-                        var curve = m_CurveDataComponentLookup[edgeEntity];
-
-                        // Finds the nearest point on the curve to the entity's front position.
-                        MathUtils.Distance(curve.m_Bezier.xz, m_FrontPosition.xz, out var nearestPointToFront);
-                        var positionOfNearestPointToBuildingFront = MathUtils.Position(curve.m_Bezier, nearestPointToFront);
-
-                        // Compute the tangent vector and determine the side of the curve (right or left)
-                        var tangent = MathUtils.Tangent(curve.m_Bezier, nearestPointToFront).xz;
-                        var toFront = m_FrontPosition.xz - positionOfNearestPointToBuildingFront.xz;
-                        var isRightSide = math.dot(MathUtils.Right(tangent), toFront) >= 0f;
-
-                        // Determine the relevant flags based on the side
-                        var relevantFlags = isRightSide ? netCompositionData.m_Flags.m_Right : netCompositionData.m_Flags.m_Left;
-
-                        // Check if the edge is raised or lowered
-                        var isRaisedOrLowered = (relevantFlags & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) != 0U;
-
-                        if (isRaisedOrLowered) {
-                            return;
-                        }
-
-                        // If we got here, we found a valid best road entity, so store it
-                        m_Bounds = new Bounds3(m_FrontPosition - distanceToFront, m_FrontPosition + distanceToFront);
-                        m_MinDistance = distanceToFront;
-                        m_BestCurvePos = nearestPointToFront;
-                        m_BestRoad = edgeEntity;
+                    if (!(distanceToFront < m_MinDistance)) {
+                        return;
                     }
+
+                    // Retrieves the SelectedCurve data for the road edge, which represents the road's shape as a Bezier curve.
+                    var curve = m_CurveDataComponentLookup[edgeEntity];
+
+                    // Finds the nearest point on the curve to the entity's front position.
+                    MathUtils.Distance(curve.m_Bezier.xz, FrontPosition.xz, out var nearestPointToFront);
+                    var positionOfNearestPointToBuildingFront = MathUtils.Position(curve.m_Bezier, nearestPointToFront);
+
+                    // Compute the tangent vector and determine the side of the curve (right or left)
+                    var tangent     = MathUtils.Tangent(curve.m_Bezier, nearestPointToFront).xz;
+                    var toFront     = FrontPosition.xz - positionOfNearestPointToBuildingFront.xz;
+                    var isRightSide = math.dot(MathUtils.Right(tangent), toFront) >= 0f;
+
+                    // Determine the relevant flags based on the side
+                    var relevantFlags = isRightSide ? netCompositionData.m_Flags.m_Right : netCompositionData.m_Flags.m_Left;
+
+                    // Check if the edge is raised or lowered
+                    var isRaisedOrLowered = (relevantFlags & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) != 0U;
+
+                    if (isRaisedOrLowered) {
+                        return;
+                    }
+
+                    // If we got here, we found a valid best road entity, so store it
+                    m_Bounds      = new Bounds3(FrontPosition - distanceToFront, FrontPosition + distanceToFront);
+                    m_MinDistance = distanceToFront;
+                    BestCurvePos  = nearestPointToFront;
+                    BestRoad      = edgeEntity;
                 }
             }
         }

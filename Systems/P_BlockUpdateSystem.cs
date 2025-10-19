@@ -18,7 +18,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
-    public partial class P_ParcelBlockUpdateSystem : GameSystemBase {
+    public partial class P_BlockUpdateSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -30,7 +30,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_ParcelBlockUpdateSystem));
+            m_Log = new PrefixedLogger(nameof(P_BlockUpdateSystem));
             m_Log.Debug($"OnCreate()");
 
             // Queries

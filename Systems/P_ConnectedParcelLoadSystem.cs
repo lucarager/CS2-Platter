@@ -13,7 +13,7 @@ namespace Platter.Systems {
     using Unity.Entities;
 
     /// <summary>
-    /// System responsible for adding the ConnectedParcel buffer to roads and buildings that don't have it on load.
+    /// System responsible for adding the ConnectedParcel buffer to roads that don't have it on load.
     /// </summary>
     public partial class P_ConnectedParcelLoadSystem : GameSystemBase {
         // Logger

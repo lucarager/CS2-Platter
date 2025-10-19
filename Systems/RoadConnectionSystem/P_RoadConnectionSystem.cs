@@ -62,56 +62,23 @@ namespace Platter.Systems {
             m_IconCommandSystem = World.GetOrCreateSystemManaged<IconCommandSystem>();
 
             // Define Queries
-            m_ModificationQuery = GetEntityQuery(new EntityQueryDesc[] {
-                new () {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Parcel>(),
-                    },
-                    Any = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                },
-                new () {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Game.Net.Edge>(),
-                        ComponentType.ReadOnly<ConnectedParcel>(),
-                    },
-                    Any = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                },
-            });
-
-            m_UpdatedNetQuery = GetEntityQuery(new EntityQueryDesc[] {
-                new () {
-                    All = new ComponentType[] {
-                        ComponentType.ReadOnly<Game.Net.Edge>(),
-                        ComponentType.ReadOnly<ConnectedParcel>(),
-                    },
-                    Any = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadOnly<Updated>(),
-                    },
-                    None = new ComponentType[] {
-                        ComponentType.ReadOnly<Temp>(),
-                    },
-                },
-            });
-
-            m_TrafficConfigQuery = base.GetEntityQuery(new ComponentType[] {
-                ComponentType.ReadOnly<TrafficConfigurationData>(),
-            });
+            m_ModificationQuery = SystemAPI.QueryBuilder()
+                                           .WithAll<Parcel>()
+                                           .WithAny<Updated, Deleted>()
+                                           .WithNone<Temp>()
+                                           .AddAdditionalQuery()
+                                           .WithAll<Edge, ConnectedParcel>()
+                                           .WithAny<Updated, Deleted>()
+                                           .WithNone<Temp>()
+                                           .Build();
+            m_UpdatedNetQuery = SystemAPI.QueryBuilder()
+                                         .WithAll<Edge, ConnectedParcel>()
+                                         .WithAny<Created, Updated>()
+                                         .WithNone<Temp>()
+                                         .Build();
+            m_TrafficConfigQuery = SystemAPI.QueryBuilder()
+                                            .WithAll<TrafficConfigurationData>()
+                                            .Build();
 
             RequireForUpdate(m_ModificationQuery);
         }
@@ -141,15 +108,17 @@ namespace Platter.Systems {
                 parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(),
                 parcelComponentLookup: SystemAPI.GetComponentLookup<Parcel>(),
                 transformComponentLookup: SystemAPI.GetComponentLookup<Transform>(),
-                parcelSearchTree: m_ParcelSearchSystem.GetStaticSearchTree(true, out var objectSearchTreeJobHandle),
+                parcelSearchTree: m_ParcelSearchSystem.GetStaticSearchTree(true, out var parcelSearchJobHandle),
                 edgeGeometryTypeHandle: SystemAPI.GetComponentTypeHandle<EdgeGeometry>(),
                 startNodeGeometryTypeHandle: SystemAPI.GetComponentTypeHandle<StartNodeGeometry>(),
                 endNodeGeometryTypeHandle: SystemAPI.GetComponentTypeHandle<EndNodeGeometry>(),
                 deletedTypeHandle: SystemAPI.GetComponentTypeHandle<Deleted>()
             ).ScheduleParallel(
                 m_ModificationQuery,
-                JobHandle.CombineDependencies(base.Dependency, objectSearchTreeJobHandle)
+                JobHandle.CombineDependencies(base.Dependency, parcelSearchJobHandle)
             );
+
+            m_ParcelSearchSystem.AddSearchTreeReader(parcelSearchJobHandle);
 
             // [CreateUniqueEntitiesListJob] Dedupe the list
             var createUniqueParcelListJobHandle = new CreateUniqueEntitiesListJob(
@@ -190,13 +159,9 @@ namespace Platter.Systems {
 
             // [UpdateDataJob] Update parcel and road data.
             var replaceRoadConnectionJobHandle = new UpdateDataJob(
-                edgeComponentLookup: SystemAPI.GetComponentLookup<Edge>(false),
-                nodeGeoComponentLookup: SystemAPI.GetComponentLookup<NodeGeometry>(true),
-                aggregatedComponentLookup: SystemAPI.GetComponentLookup<Aggregated>(true),
                 parcelComponentLookup: SystemAPI.GetComponentLookup<Parcel>(false),
                 createdComponentLookup: SystemAPI.GetComponentLookup<Created>(true),
                 tempComponentLookup: SystemAPI.GetComponentLookup<Temp>(true),
-                subBlockBufferLookup: SystemAPI.GetBufferLookup<ParcelSubBlock>(false),
                 connectedParcelsBufferLookup: SystemAPI.GetBufferLookup<ConnectedParcel>(),
                 parcelEntitiesList: parcelEntitiesList,
                 commandBuffer: m_ModificationBarrier.CreateCommandBuffer(),

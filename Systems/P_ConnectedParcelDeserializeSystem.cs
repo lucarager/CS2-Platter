@@ -70,10 +70,6 @@ namespace Platter.Systems {
                     if (parcel.m_RoadEdge != Entity.Null) {
                         m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge].Add(new ConnectedParcel(parcelEntity));
                     }
-
-                    if (parcel.m_Building != Entity.Null) {
-                        m_ConnectedParcelsBufferLookup[parcel.m_Building].Add(new ConnectedParcel(parcelEntity));
-                    }
                 }
             }
         }

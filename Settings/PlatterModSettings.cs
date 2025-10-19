@@ -11,6 +11,7 @@ namespace Platter.Settings {
     using Game.Modding;
     using Game.SceneFlow;
     using Game.Settings;
+    using Platter;
     using Platter.Systems;
     using Unity.Entities;
     using UnityEngine;
@@ -126,7 +127,7 @@ namespace Platter.Settings {
                 try {
                     Application.OpenURL($"https://github.com/lucarager/CS2-Platter");
                 } catch (Exception e) {
-                    UnityEngine.Debug.LogException(e);
+                    Debug.LogException(e);
                 }
             }
         }
@@ -137,7 +138,7 @@ namespace Platter.Settings {
                 try {
                     Application.OpenURL($"https://discord.gg/QFxmPa2wCa");
                 } catch (Exception e) {
-                    UnityEngine.Debug.LogException(e);
+                    Debug.LogException(e);
                 }
             }
         }

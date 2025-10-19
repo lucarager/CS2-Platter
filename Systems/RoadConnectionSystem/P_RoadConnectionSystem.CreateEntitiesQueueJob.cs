@@ -17,9 +17,6 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
 
-    /// <summary>
-    /// todo.
-    /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Find eligible entities and add them to a queue.
@@ -28,94 +25,21 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct CreateEntitiesQueueJob : IJobChunk {
-            /// <summary>
-            /// todo.
-            /// </summary>
-            public NativeQueue<Entity>.ParallelWriter m_ParcelEntitiesQueue;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public EntityTypeHandle m_EntityTypeHandle;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public BufferTypeHandle<ConnectedParcel> m_ConnectedParcelBufferTypeHandle;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentTypeHandle<EdgeGeometry> m_EdgeGeometryTypeHandle;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentTypeHandle<StartNodeGeometry> m_StartNodeGeometryTypeHandle;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentTypeHandle<EndNodeGeometry> m_EndNodeGeometryTypeHandle;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelSearchTree;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<EdgeGeometry> m_EdgeGeometryComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Parcel> m_ParcelComponentLookup;
-
-            /// <summary>
-            /// todo.
-            /// </summary>
-            [ReadOnly]
-            public ComponentLookup<Transform> m_TransformComponentLookup;
+            [ReadOnly] private EntityTypeHandle                         m_EntityTypeHandle;
+            [ReadOnly] private BufferTypeHandle<ConnectedParcel>        m_ConnectedParcelBufferTypeHandle;
+            [ReadOnly] private ComponentTypeHandle<Deleted>             m_DeletedTypeHandle;
+            [ReadOnly] private ComponentTypeHandle<EdgeGeometry>        m_EdgeGeometryTypeHandle;
+            [ReadOnly] private ComponentTypeHandle<StartNodeGeometry>   m_StartNodeGeometryTypeHandle;
+            [ReadOnly] private ComponentTypeHandle<EndNodeGeometry>     m_EndNodeGeometryTypeHandle;
+            [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelSearchTree;
+            [ReadOnly] private ComponentLookup<PrefabRef>               m_PrefabRefComponentLookup;
+            [ReadOnly] private ComponentLookup<EdgeGeometry>            m_EdgeGeometryComponentLookup;
+            [ReadOnly] private ComponentLookup<StartNodeGeometry>       m_StartNodeGeometryComponentLookup;
+            [ReadOnly] private ComponentLookup<EndNodeGeometry>         m_EndNodeGeometryComponentLookup;
+            [ReadOnly] private ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
+            [ReadOnly] private ComponentLookup<Parcel>                  m_ParcelComponentLookup;
+            [ReadOnly] private ComponentLookup<Transform>               m_TransformComponentLookup;
+            private            NativeQueue<Entity>.ParallelWriter       m_ParcelEntitiesQueue;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="CreateEntitiesQueueJob"/> struct.
@@ -159,7 +83,7 @@ namespace Platter.Systems {
 
                 if (connectedParcelBufferAccessor.Length != 0) {
 #if !USE_BURST
-                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] CreateEntitiesQueueJob() -- connectedParcelBufferAccessor {connectedParcelBufferAccessor.Length} entries. Deleted: {chunk.Has<Deleted>(ref m_DeletedTypeHandle)}");
+                    PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] CreateEntitiesQueueJob() -- connectedParcelBufferAccessor {connectedParcelBufferAccessor.Length} entries. Deleted: {chunk.Has<Deleted>(ref m_DeletedTypeHandle)}");
 #endif
 
                     // Handle edge delete
@@ -182,102 +106,54 @@ namespace Platter.Systems {
                     var startNodeGeoArray = chunk.GetNativeArray<StartNodeGeometry>(ref m_StartNodeGeometryTypeHandle);
                     var endNodeGeoArray = chunk.GetNativeArray<EndNodeGeometry>(ref m_EndNodeGeometryTypeHandle);
 
+                    // Todo don't run this when not needed (roads update a LOT)
                     for (var k = 0; k < edgeGeoArray.Length; k++) {
                         var edgeGeometry = edgeGeoArray[k];
                         var startNodeGeo = startNodeGeoArray[k].m_Geometry;
                         var endNodeGeo = endNodeGeoArray[k].m_Geometry;
 
-                        FindParcelNextToRoadIterator findParcelIterator = default;
-
-                        findParcelIterator.m_Bounds = MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, P_RoadConnectionSystem.MaxDistance);
-                        findParcelIterator.m_EdgeGeometry = edgeGeometry;
-                        findParcelIterator.m_StartGeometry = startNodeGeo;
-                        findParcelIterator.m_EndGeometry = endNodeGeo;
-                        findParcelIterator.m_MinDistance = P_RoadConnectionSystem.MaxDistance;
-                        findParcelIterator.m_ParcelEntitiesQueue = m_ParcelEntitiesQueue;
-                        findParcelIterator.m_PrefabRefComponentLookup = m_PrefabRefComponentLookup;
-                        findParcelIterator.m_EdgeGeometryComponentLookup = m_EdgeGeometryComponentLookup;
-                        findParcelIterator.m_StartNodeGeometryComponentLookup = m_StartNodeGeometryComponentLookup;
-                        findParcelIterator.m_EndNodeGeometryComponentLookup = m_EndNodeGeometryComponentLookup;
-                        findParcelIterator.m_ParcelDataComponentLookup = m_ParcelDataComponentLookup;
-                        findParcelIterator.m_ParcelComponentLookup = m_ParcelComponentLookup;
-                        findParcelIterator.m_TransformComponentLookup = m_TransformComponentLookup;
+                        var findParcelIterator = new FindParcelNextToRoadIterator(
+                            bounds: MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, P_RoadConnectionSystem.MaxDistance),
+                            edgeGeometry: edgeGeometry,
+                            startGeometry: startNodeGeo,
+                            endGeometry: endNodeGeo,
+                            minDistance: P_RoadConnectionSystem.MaxDistance,
+                            parcelEntitiesQueue: m_ParcelEntitiesQueue,
+                            prefabRefComponentLookup: m_PrefabRefComponentLookup,
+                            edgeGeometryComponentLookup: m_EdgeGeometryComponentLookup,
+                            startNodeGeometryComponentLookup: m_StartNodeGeometryComponentLookup,
+                            endNodeGeometryComponentLookup: m_EndNodeGeometryComponentLookup,
+                            parcelDataComponentLookup: m_ParcelDataComponentLookup,
+                            parcelComponentLookup: m_ParcelComponentLookup,
+                            transformComponentLookup: m_TransformComponentLookup
+                        );
 
                         m_ParcelSearchTree.Iterate<FindParcelNextToRoadIterator>(ref findParcelIterator, 0);
                     }
 
                     return;
-                } else {
-                    var parcelEntityArray = chunk.GetNativeArray(m_EntityTypeHandle);
-#if !USE_BURST
-                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] CreateEntitiesQueueJob() -- parcelEntityArray {parcelEntityArray.Length} entries.");
-#endif
-                    for (var m = 0; m < parcelEntityArray.Length; m++) {
-                        m_ParcelEntitiesQueue.Enqueue(parcelEntityArray[m]);
-                    }
                 }
+
+                foreach (var entity in chunk.GetNativeArray(m_EntityTypeHandle)) {
+                    m_ParcelEntitiesQueue.Enqueue(entity);
+                }
+                
             }
 
-            private struct FindParcelNextToRoadIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>, IUnsafeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public Bounds3 m_Bounds;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public EdgeGeometry m_EdgeGeometry;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public EdgeNodeGeometry m_StartGeometry;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public EdgeNodeGeometry m_EndGeometry;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<EdgeGeometry> m_EdgeGeometryComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<Parcel> m_ParcelComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public ComponentLookup<Transform> m_TransformComponentLookup;
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public float m_MinDistance;
+           private struct FindParcelNextToRoadIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
+                private NativeQueue<Entity>.ParallelWriter m_EntitiesQueue;
+                private Bounds3                            m_Bounds;
+                private EdgeGeometry                       m_EdgeGeometry;
+                private EdgeNodeGeometry                   m_StartGeometry;
+                private EdgeNodeGeometry                   m_EndGeometry;
+                private ComponentLookup<PrefabRef>         m_PrefabRefComponentLookup;
+                private ComponentLookup<EdgeGeometry>      m_EdgeGeometryComponentLookup;
+                private ComponentLookup<StartNodeGeometry> m_StartNodeGeometryComponentLookup;
+                private ComponentLookup<EndNodeGeometry>   m_EndNodeGeometryComponentLookup;
+                private ComponentLookup<Parcel>            m_ParcelComponentLookup;
+                private ComponentLookup<ParcelData>        m_ParcelDataComponentLookup;
+                private ComponentLookup<Transform>         m_TransformComponentLookup;
+                private float                              m_MinDistance;
 
                 public FindParcelNextToRoadIterator(Bounds3 bounds, EdgeGeometry edgeGeometry, EdgeNodeGeometry startGeometry, EdgeNodeGeometry endGeometry, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryComponentLookup, ComponentLookup<Parcel> parcelComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Transform> transformComponentLookup, float minDistance, NativeQueue<Entity>.ParallelWriter parcelEntitiesQueue) {
                     m_Bounds = bounds;
@@ -292,13 +168,8 @@ namespace Platter.Systems {
                     m_ParcelDataComponentLookup = parcelDataComponentLookup;
                     m_TransformComponentLookup = transformComponentLookup;
                     m_MinDistance = minDistance;
-                    m_ParcelEntitiesQueue = parcelEntitiesQueue;
+                    m_EntitiesQueue = parcelEntitiesQueue;
                 }
-
-                /// <summary>
-                /// todo.
-                /// </summary>
-                public NativeQueue<Entity>.ParallelWriter m_ParcelEntitiesQueue;
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) {
                     return MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz);
@@ -312,10 +183,6 @@ namespace Platter.Systems {
                     if (!m_ParcelComponentLookup.HasComponent(parcelEntity)) {
                         return;
                     }
-
-#if !USE_BURST
-                    PlatterMod.Instance.Log.Debug($"[RoadConnectionSystem] FindParcelNextToRoadIterator.Iterate() -- parcelEntity {parcelEntity}.");
-#endif
 
                     var parcelPrefabRef = m_PrefabRefComponentLookup[parcelEntity];
                     var parcelData = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
@@ -335,26 +202,27 @@ namespace Platter.Systems {
                     P_RoadConnectionSystem.CheckDistance(m_EdgeGeometry, m_StartGeometry, m_EndGeometry, frontPosition, true, ref distance);
 
                     // If valid...
-                    if (distance < m_MinDistance) {
-                        var parcel = m_ParcelComponentLookup[parcelEntity];
+                    if (distance > m_MinDistance) {
+                        return;
+                    }
 
-                        // Check if we need to compare to an already connected road aka "Are we closer?"
-                        if (parcel.m_RoadEdge != Entity.Null) {
-                            var curEdgeGeo = m_EdgeGeometryComponentLookup[parcel.m_RoadEdge];
-                            var curStartNodeGeo = m_StartNodeGeometryComponentLookup[parcel.m_RoadEdge].m_Geometry;
-                            var curEndNodeGeo = m_EndNodeGeometryComponentLookup[parcel.m_RoadEdge].m_Geometry;
-                            var curDistance = m_MinDistance;
-                            P_RoadConnectionSystem.CheckDistance(curEdgeGeo, curStartNodeGeo, curEndNodeGeo, frontPosition, true, ref curDistance);
+                    var parcel = m_ParcelComponentLookup[parcelEntity];
 
-                            // If new road is closer, add parcel to queue
-                            if (distance < curDistance) {
-                                m_ParcelEntitiesQueue.Enqueue(parcelEntity);
-                                return;
-                            }
-                        } else {
-                            // New road just dropped! Add parcel to queue
-                            m_ParcelEntitiesQueue.Enqueue(parcelEntity);
+                    // Check if we need to compare to an already connected road aka "Are we closer?"
+                    if (parcel.m_RoadEdge != Entity.Null) {
+                        var curEdgeGeo      = m_EdgeGeometryComponentLookup[parcel.m_RoadEdge];
+                        var curStartNodeGeo = m_StartNodeGeometryComponentLookup[parcel.m_RoadEdge].m_Geometry;
+                        var curEndNodeGeo   = m_EndNodeGeometryComponentLookup[parcel.m_RoadEdge].m_Geometry;
+                        var curDistance     = m_MinDistance;
+                        P_RoadConnectionSystem.CheckDistance(curEdgeGeo, curStartNodeGeo, curEndNodeGeo, frontPosition, true, ref curDistance);
+
+                        // If new road is closer, add parcel to queue
+                        if (distance < curDistance) {
+                            m_EntitiesQueue.Enqueue(parcelEntity);
                         }
+                    } else {
+                        // New road just dropped! Add parcel to queue
+                        m_EntitiesQueue.Enqueue(parcelEntity);
                     }
                 }
             }

@@ -21,7 +21,7 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Barriers & Buffers
-        private ModificationBarrier3 m_ModificationBarrier;
+        private ModificationBarrier1 m_ModificationBarrier1;
         private EntityCommandBuffer m_CommandBuffer;
 
         // Queries
@@ -39,7 +39,7 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
-            m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier3>();
+            m_ModificationBarrier1 = World.GetOrCreateSystemManaged<ModificationBarrier1>();
             m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
@@ -55,7 +55,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
+            m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer();
             var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
             var currentDefaultPreZone = m_PlatterUISystem.PreZoneType;
 

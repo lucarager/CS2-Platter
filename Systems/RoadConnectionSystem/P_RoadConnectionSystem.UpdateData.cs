@@ -9,9 +9,6 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Mathematics;
 
-    /// <summary>
-    /// todo.
-    /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
         /// Struct containing data for a replacement job.

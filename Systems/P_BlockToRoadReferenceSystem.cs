@@ -18,7 +18,7 @@ namespace Platter.Systems {
     /// System responsible for adding the "Owner" component to a block when a parcel and road get connected.
     /// This is what marks a block as a valid spawn location to the vanilla ZoneSpawnSystem.
     /// </summary>
-    public partial class P_ParcelBlockToRoadReferenceSystem : GameSystemBase {
+    public partial class P_BlockToRoadReferenceSystem : GameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 
@@ -33,7 +33,7 @@ namespace Platter.Systems {
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = new PrefixedLogger(nameof(P_ParcelBlockToRoadReferenceSystem));
+            m_Log = new PrefixedLogger(nameof(P_BlockToRoadReferenceSystem));
             m_Log.Debug($"OnCreate()");
 
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();

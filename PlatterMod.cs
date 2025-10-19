@@ -20,10 +20,12 @@ namespace Platter {
     using Game.Prefabs;
     using Game.SceneFlow;
     using Game.Serialization;
+    using Game.Simulation;
     using Platter.Components;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
+    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using UnityEngine;
 
@@ -86,7 +88,7 @@ namespace Platter {
             Log.Info($"[Platter] Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
             // Initialize Settings
-            Settings = new (this);
+            Settings = new PlatterModSettings(this);
 
             // Load i18n
             GameManager.instance.localizationManager.AddSource("en-US", new I18nConfig(Settings));
@@ -116,7 +118,7 @@ namespace Platter {
             new Patcher("lucachoo-Platter", Log);
 
             // Apply inflection patches.
-            ModifySubBlockSerializationSystem(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
+            ModifyVabillaSubBlockSerialization(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
 
             // Register mod settings to game options UI.
             Settings.RegisterInOptionsUI();
@@ -139,31 +141,39 @@ namespace Platter {
             updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ZoneCacheSystem>(SystemUpdatePhase.PrefabUpdate);
 
+            // Buildings
+            updateSystem.UpdateAfter<P_BuildingInitializeSystem, BuildingConstructionSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<P_BuildingTransformCheckSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_BuildingToParcelReferenceSystem>(SystemUpdatePhase.Modification2);
+
             // Parcels
-            updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification3);
+            updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_ConnectedParcelCreateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateAt<P_ParcelBlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateAfter<P_ParcelBlockUpdateSystem>(SystemUpdatePhase.Modification5); // Needs to run after CellCheckSystem
+            updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.Modification5); // Needs to run after CellCheckSystem
 
             // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<P_SelectedInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<P_ParcelInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<P_BuildingInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<P_OverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<P_TooltipSystem>(SystemUpdatePhase.UITooltip);
 
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
 
             // Experimental Systems
             // updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
             // updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
             // updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
             // updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
+            // updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.PrefabUpdate);
 
             // Add tests
             AddTests();
@@ -197,6 +207,7 @@ namespace Platter {
 
         private static void AddTests() {
             var log = LogManager.GetLogger(ModName);
+            log.Debug($"AddTests()");
 
             var m_ScenariosField = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
             if (m_ScenariosField == null) {
@@ -207,42 +218,47 @@ namespace Platter {
             var m_Scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)m_ScenariosField.GetValue(TestScenarioSystem.instance);
 
             foreach (var type in GetTests()) {
-                if (type.IsClass && !type.IsAbstract && !type.IsInterface && type.TryGetAttribute(out TestDescriptorAttribute testDescriptorAttribute, false)) {
-                    log.Debug($"AddTests() -- {testDescriptorAttribute.description}");
-
-                    m_Scenarios.Add(testDescriptorAttribute.description, new TestScenarioSystem.Scenario {
-                        category = testDescriptorAttribute.category,
-                        testPhase = testDescriptorAttribute.testPhase,
-                        test = type,
-                        disabled = testDescriptorAttribute.disabled,
-                    });
+                if (!type.IsClass || type.IsAbstract || type.IsInterface || !type.TryGetAttribute(
+                        out TestDescriptorAttribute testDescriptorAttribute, false)) {
+                    continue;
                 }
+
+                log.Debug($"AddTests() -- {testDescriptorAttribute.description}");
+
+                m_Scenarios.Add(testDescriptorAttribute.description, new TestScenarioSystem.Scenario {
+                    category  = testDescriptorAttribute.category,
+                    testPhase = testDescriptorAttribute.testPhase,
+                    test      = type,
+                    disabled  = testDescriptorAttribute.disabled,
+                });
             }
 
             m_Scenarios = TestScenarioSystem.SortScenarios(m_Scenarios);
+
+            m_ScenariosField.SetValue(TestScenarioSystem.instance, m_Scenarios);
         }
 
         private static IEnumerable<Type> GetTests() {
             return from t in Assembly.GetExecutingAssembly().GetTypes()
-                   where typeof(ITestStep).IsAssignableFrom(t) && t.Namespace == nameof(Platter.Tests)
+                   where typeof(TestScenario).IsAssignableFrom(t)
                    select t;
         }
 
-        private static void ModifySubBlockSerializationSystem(ComponentSystemBase originalSystem) {
+        private static void ModifyVabillaSubBlockSerialization(ComponentSystemBase originalSystem) {
             var log = LogManager.GetLogger(ModName);
-            log.Debug("ModifySubBlockSerializationSystem()");
+            log.Debug("ModifyVabillaSubBlockSerialization()");
 
             // get original system's EntityQuery
             var queryField = typeof(SubBlockSystem).GetField("m_Query", BindingFlags.Instance | BindingFlags.NonPublic);
             if (queryField == null) {
-                log.Error("ModifySubBlockSerializationSystem() -- Could not find m_Query for compatibility patching");
+                log.Error("ModifyVabillaSubBlockSerialization() -- Could not find m_Query for compatibility patching");
                 return;
             }
 
             var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
 
             if (originalQuery.GetHashCode() == 0) {
-                log.Error("ModifySubBlockSerializationSystem() -- SubBlockSystem was not initialized!");
+                log.Error("ModifyVabillaSubBlockSerialization() -- SubBlockSystem was not initialized!");
             }
 
             var originalQueryDescs = originalQuery.GetEntityQueryDescs();
@@ -274,7 +290,7 @@ namespace Platter {
                 originalSystem.RequireForUpdate(modifiedQuery);
             }
 
-            log.Debug("ModifySubBlockSerializationSystem() -- Patching complete.");
+            log.Debug("ModifyVabillaSubBlockSerialization() -- Patching complete.");
         }
 
         private void LoadNonEnglishLocalizations() {
