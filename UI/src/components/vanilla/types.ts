@@ -1,6 +1,7 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import { UniqueFocusKey } from "cs2/bindings";
 import { HTMLAttributes } from "react";
+import { InfoRowProps, InfoSectionProps } from "cs2/ui";
 
 export interface IVanillaComponents {
     Section: React.FC<VanillaSectionProps>;
@@ -8,6 +9,9 @@ export interface IVanillaComponents {
     TabBar: React.FC<VanillaTabBarProps>;
     Checkbox: React.FC<VanillaCheckboxProps>;
     ToolButton: React.FC<VanillaToolButtonProps>;
+    InfoSection: React.FC<PropsWithChildren<InfoSectionProps>>;
+    InfoRow: React.FC<PropsWithChildren<InfoRowProps>>;
+    InfoLink: React.FC<PropsWithChildren<VanillaInfoLinkProps>>;
     [key: string]: React.FC<any>;
 }
 
@@ -63,4 +67,11 @@ export type VanillaCheckboxProps = {
     theme?: any;
     className?: string;
     [key: string]: any;
+};
+
+export type VanillaInfoLinkProps = {
+    icon?: string;
+    tooltip: string;
+    uppercase?: boolean;
+    onSelect?: (x: any) => any;
 };

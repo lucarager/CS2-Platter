@@ -34,7 +34,7 @@ namespace Platter.Systems {
 
             // Queries
             m_SpawnedBuildingQuery = SystemAPI.QueryBuilder()
-                .WithAll<Building, UnderConstruction>() 
+                .WithAll<Building>() 
                 .WithAny<ResidentialProperty, IndustrialProperty, CommercialProperty>()
                 .WithNone<Temp, Deleted, Signature, LinkedParcel, GrowableBuilding>()
                 .Build();
@@ -46,7 +46,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             m_Log.Debug($"OnUpdate()");
-            EntityManager.AddComponent(m_SpawnedBuildingQuery, new ComponentTypeSet(typeof(GrowableBuilding), typeof(LinkedParcel)));
+            EntityManager.AddComponent(m_SpawnedBuildingQuery, new ComponentTypeSet(typeof(GrowableBuilding), typeof(LinkedParcel), typeof(Updated)));
         }
     }
 }

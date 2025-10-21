@@ -13,7 +13,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
-    using static Platter.Systems.P_UISystem;
+    using Platter.Systems;
 
     /// <summary>
     /// System responsible for caching Zone Information for other systems.
@@ -25,7 +25,7 @@ namespace Platter.Systems {
 
         public Dictionary<ushort, Color> EdgeColors => m_EdgeColors;
 
-        public Dictionary<ushort, ZoneUIData> ZoneUIData => m_ZoneUIData;
+        public Dictionary<ushort, P_UISystem.ZoneUIData> ZoneUIData => m_ZoneUIData;
 
         // Systems
         private PrefabSystem m_PrefabSystem;
@@ -37,10 +37,10 @@ namespace Platter.Systems {
         private EntityQuery m_CreatedQuery;
 
         // Data
-        private NativeList<Entity> m_ZonePrefabs;
-        private Dictionary<ushort, Color> m_FillColors;
-        private Dictionary<ushort, Color> m_EdgeColors;
-        private Dictionary<ushort, ZoneUIData> m_ZoneUIData;
+        private NativeList<Entity>                        m_ZonePrefabs;
+        private Dictionary<ushort, Color>                 m_FillColors;
+        private Dictionary<ushort, Color>                 m_EdgeColors;
+        private Dictionary<ushort, P_UISystem.ZoneUIData> m_ZoneUIData;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -62,7 +62,7 @@ namespace Platter.Systems {
             m_ZonePrefabs = new NativeList<Entity>(Allocator.Persistent);
             m_FillColors = new Dictionary<ushort, Color>();
             m_EdgeColors = new Dictionary<ushort, Color>();
-            m_ZoneUIData = new Dictionary<ushort, ZoneUIData>();
+            m_ZoneUIData = new Dictionary<ushort, P_UISystem.ZoneUIData>();
         }
 
         /// <inheritdoc/>
@@ -136,7 +136,7 @@ namespace Platter.Systems {
                         m_EdgeColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Edge);
                         m_ZoneUIData.Add(
                             zoneData.m_ZoneType.m_Index, 
-                            new ZoneUIData(
+                            new P_UISystem.ZoneUIData(
                                 zonePrefab.name,
                                 ImageSystem.GetThumbnail(zonePrefab),
                                 "todo category",

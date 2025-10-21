@@ -14,6 +14,18 @@ const modulePaths = [
         path: "game-ui/common/input/toggle/checkbox/checkbox.tsx",
         components: ["Checkbox"],
     },
+    {
+        path: "game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.tsx",
+        components: ["InfoSection"],
+    },
+    {
+        path: "game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.tsx",
+        components: ["InfoRow"],
+    },
+    {
+        path: "game-ui/game/components/selected-info-panel/shared-components/info-link/info-link.tsx",
+        components: ["InfoLink"],
+    },
 ];
 
 const themePaths = [
@@ -40,6 +52,10 @@ const themePaths = [
     {
         path: "game-ui/game/components/toolbar/components/feature-button/toolbar-feature-button.module.scss",
         name: "toolbarFeatureButton",
+    },
+    {
+        path: "game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
+        name: "infoRow",
     },
 ];
 

@@ -8,12 +8,13 @@ namespace Platter.Systems {
     using Game.Tools;
     using Game.UI.InGame;
     using Platter.Components;
+    using Platter.Extensions;
     using Platter.Utils;
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
     /// </summary>
-    public partial class P_ParcelInfoPanelSystem : InfoSectionBase {
+    public partial class P_ParcelInfoPanelSystem : ExtendedInfoSectionBase {
         private PrefixedLogger m_Log;
         private ToolSystem m_ToolSystem;
 

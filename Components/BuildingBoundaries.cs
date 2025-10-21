@@ -18,21 +18,32 @@ namespace Platter.Components {
     using Unity.Entities;
 
     public struct BoundarySubObjectData : IBufferElementData {
-        public float3       m_Position;
-        public quaternion   m_Rotation;
-        public Hash128 m_Id;
-        public int m_ParentMesh;
-        public int m_GroupIndex;
+        public int      index;
+        public bool4    projectionFilter;
+        public float2x4 projectionConfig;
     }
 
-    public struct BoundarySubAreaData : IBufferElementData {
-        public float3 m_NodePosition;
-        public int    m_ParentMesh;
+    public struct BoundarySubAreaNodeData : IBufferElementData {
+        public int      absIndex;
+        public int      relIndex;
+        public int      areaIndex;
+        public bool4    projectionFilter;
+        public float2x4 projectionConfig;
     }
 
     public struct BoundarySubLaneData : IBufferElementData {
-        public Bezier4x3 m_BezierCurve;
-        public int2      m_NodeIndex;
-        public int2      m_ParentMesh;
+        public int      index;
+        public float2x4 projectionConfig0;
+        public float2x4 projectionConfig1;
+        public float2x4 projectionConfig2;
+        public float2x4 projectionConfig3;
+    }
+
+    public struct BoundarySubNetData : IBufferElementData {
+        public int      index;
+        public float2x4 projectionConfig0;
+        public float2x4 projectionConfig1;
+        public float2x4 projectionConfig2;
+        public float2x4 projectionConfig3;
     }
 }

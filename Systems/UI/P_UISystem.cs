@@ -13,8 +13,10 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
+    using Platter;
     using Platter.Extensions;
     using Platter.Settings;
+    using Platter.Systems;
     using Platter.Utils;
     using Unity.Mathematics;
 
@@ -31,7 +33,7 @@ namespace Platter.Systems {
         private ToolSystem          m_ToolSystem;
         private ObjectToolSystem    m_ObjectToolSystem;
         private P_OverlaySystem     m_PlatterOverlaySystem;
-        private P_AllowSpawnSystem m_AllowSpawnSystem;
+        private P_AllowSpawnSystem  m_AllowSpawnSystem;
         private P_SnapSystem        m_SnapSystem;
         private P_ZoneCacheSystem   m_ZoneCacheSystem;
 

@@ -19,7 +19,6 @@ using Game.SceneFlow;
 using Game.Simulation;
 using Game.Tools;
 using Platter.Components;
-using Platter.Systems;
 using Platter.Tests;
 using Platter.Utils;
 using Unity.Collections;
@@ -81,9 +80,6 @@ namespace Platter.Tests {
 
             m_EM = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-            // Write Queries
-
-
             // Get Systems
             m_TestToolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_TestToolSystem>();
             m_PrefabSystem   = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
@@ -134,6 +130,9 @@ namespace Platter.Tests {
             }
             await WaitFrames();
 
+            // Activate tool
+            m_TestToolSystem.Enable();
+
             // Retrieve prefabs
             if (!m_PrefabSystem.TryGetPrefab(new PrefabID("ParcelPrefab", "Parcel 2x2"), out var parcelPrefabBase)) {
                 throw new Exception("Parcel prefab not found");
@@ -141,7 +140,7 @@ namespace Platter.Tests {
 
             var prefabEntity = m_PrefabSystem.GetEntity(parcelPrefabBase);
 
-            m_TestToolSystem.PlaceObjectPrefab(prefabEntity, ParcelTransform1);
+            m_TestToolSystem.Place(prefabEntity, ParcelTransform1);
 
             // # [B] Verify Parcel behavior
             // # ######################################################

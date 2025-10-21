@@ -34,16 +34,16 @@ namespace Platter.Systems {
 
         private PrefixedLogger m_Log;
         private PrefabBase     m_SelectedPrefab;
-
-        // Barriers & Buffers
+        private Entity      m_PlacePrefabEntity;
+        private Transform   m_PlaceTransform;
+        private EntityQuery m_TempQuery;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private EntityCommandBuffer  m_CommandBuffer;
 
         protected override void OnCreate() {
             base.OnCreate();
-            m_Log = new PrefixedLogger(nameof(P_AllowSpawnSystem));
-            m_Log.Debug($"OnCreate()");
-
+            m_Log = new PrefixedLogger(nameof(P_TestToolSystem));
+            m_TempQuery = SystemAPI.QueryBuilder().WithAll<Temp>().Build();
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             var toolList        = World.GetOrCreateSystemManaged<ToolSystem>().tools;
             ToolBaseSystem thisSystem      = null;
@@ -92,11 +92,32 @@ namespace Platter.Systems {
         protected override JobHandle OnUpdate(JobHandle inputDeps) {
             m_Log.Debug($"OnUpdate(JobHandle inputDeps)");
             m_CommandBuffer = m_ToolOutputBarrier.CreateCommandBuffer();
+            applyMode       = ApplyMode.Clear;
+
+            if (m_PlacePrefabEntity != Entity.Null) {
+                applyMode = ApplyMode.None;
+                PlaceObjectPrefab(m_PlacePrefabEntity, m_PlaceTransform);
+            }
+
+            if (m_TempQuery.IsEmpty) {
+                return inputDeps;
+            }
+
+            // Apply
+            applyMode           = ApplyMode.Apply;
+            m_PlacePrefabEntity = Entity.Null;
+            m_PlaceTransform    = default;
+
             return inputDeps;
         }
 
         public override PrefabBase GetPrefab() {
             return m_SelectedPrefab;
+        }
+
+        public void Place(Entity prefab, Transform transform) {
+            m_PlacePrefabEntity = prefab;
+            m_PlaceTransform    = transform;
         }
 
         public void Enable() {
@@ -106,8 +127,6 @@ namespace Platter.Systems {
         }
 
         public override bool TrySetPrefab(PrefabBase prefab) {
-            m_Log.Debug($"TrySetPrefab(prefab {prefab})");
-
             if (m_ToolSystem.activeTool != this) {
                 return false;
             }

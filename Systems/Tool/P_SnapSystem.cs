@@ -21,6 +21,8 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
+    using static Unity.Collections.AllocatorManager;
+    using Block = Game.Zones.Block;
 
     /// <summary>
     /// Overlay Rendering System.
@@ -235,6 +237,7 @@ namespace Platter.Systems {
                     objectDefinition.m_LocalPosition = bestSnapPosition.m_Position;
                     objectDefinition.m_Rotation      = bestSnapPosition.m_Rotation;
                     objectDefinition.m_LocalRotation = bestSnapPosition.m_Rotation;
+
                     objectDefinitionArray[i]         = objectDefinition;
                 }
             }

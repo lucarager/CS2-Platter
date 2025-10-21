@@ -21,6 +21,7 @@ namespace Platter {
     using Game.SceneFlow;
     using Game.Serialization;
     using Game.Simulation;
+    using Game.Tools;
     using Platter.Components;
     using Platter.Patches;
     using Platter.Settings;
@@ -166,14 +167,12 @@ namespace Platter {
 
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
-            updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
+            //updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
 
             // Experimental Systems
-            // updateSystem.UpdateAt<ExpConstructionLotSystem>(SystemUpdatePhase.Modification3);
-            // updateSystem.UpdateAt<ExpBuildingConnectSystem>(SystemUpdatePhase.Modification3);
-            // updateSystem.UpdateAt<ExpBuildingSpawnSystem>(SystemUpdatePhase.Modification3);
-            // updateSystem.UpdateAt<ExpParcelAreaSystem>(SystemUpdatePhase.Modification3);
-            // updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.PrefabUpdate);
+            //updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.Modification1);
+            //updateSystem.UpdateAfter<P_BuildingSpawnSystem>(SystemUpdatePhase.GameSimulation);
 
             // Add tests
             AddTests();
