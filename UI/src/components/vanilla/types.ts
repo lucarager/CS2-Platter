@@ -21,6 +21,7 @@ export interface IVanillaThemes {
     dropdownTheme: Record<"dropdownItem" | "dropdownToggle", string>;
     checkboxTheme: Record<"label", string>;
     toolbarFeatureButton: Record<"toolbarFeatureButton" | "button", string>;
+    panel: Record<string, string>;
     [key: string]: Record<string, string>;
 }
 

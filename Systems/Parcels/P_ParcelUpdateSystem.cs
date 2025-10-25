@@ -73,6 +73,15 @@ namespace Platter.Systems {
 
                     for (var j = 0; j < subBlockBuffer.Length; j++) {
                         var subBlockEntity = subBlockBuffer[j].m_SubBlock;
+                        var cellBuffer     = EntityManager.GetBuffer<Cell>(subBlockEntity);
+
+                        // Clear cell zoning before deleting
+                        // This prevents shenanigans from the vanilla system that may try to re-zone underlying vanilla cells
+                        for (var i = 0; i < cellBuffer.Length; i++) {
+                            var cell = cellBuffer[i];
+                            cell.m_Zone = ZoneType.None;
+                            cellBuffer[i] = cell;
+                        }
 
                         // Mark Blocks for deletion
                         m_CommandBuffer.AddComponent<Deleted>(subBlockEntity, default);

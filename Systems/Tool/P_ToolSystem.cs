@@ -27,6 +27,10 @@ namespace Platter.Systems {
     using NetSearchSystem = Game.Net.SearchSystem;
     using ZonesSearchSystem = Game.Zones.SearchSystem;
 
+    /// <summary>
+    /// New in-progress system to handle plopping parcels directly.
+    /// Currently not enabled.
+    /// </summary>
     public partial class P_ToolSystem : ObjectToolBaseSystem {
         /// <summary>
         /// Instance.

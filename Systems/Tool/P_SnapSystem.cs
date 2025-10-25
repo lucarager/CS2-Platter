@@ -25,8 +25,7 @@ namespace Platter.Systems {
     using Block = Game.Zones.Block;
 
     /// <summary>
-    /// Overlay Rendering System.
-    /// <todo>Add culling and burst</todo>
+    /// Snap System. Ovverides object placement to snap parcels to road sides.
     /// </summary>
     public partial class P_SnapSystem : GameSystemBase {
         public static float MaxSnapDistance     { get; } = 16f;

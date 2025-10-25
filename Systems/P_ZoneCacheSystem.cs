@@ -3,6 +3,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Colossal.Serialization.Entities;
+using Game;
+
 namespace Platter.Systems {
     using System.Collections.Generic;
     using Game.Common;
@@ -18,7 +21,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for caching Zone Information for other systems.
     /// </summary>
-    public partial class P_ZoneCacheSystem : TooltipSystemBase {
+    public partial class P_ZoneCacheSystem : GameSystemBase {
         public NativeList<Entity> ZonePrefabs => m_ZonePrefabs;
 
         public Dictionary<ushort, Color> FillColors => m_FillColors;
@@ -81,6 +84,15 @@ namespace Platter.Systems {
             CacheZonePrefabs();
         }
 
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose  purpose,
+                                                      GameMode mode) {
+            base.OnGameLoadingComplete(purpose, mode);
+            m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
+
+            CacheZonePrefabs();
+        }
+
         private void CacheZonePrefabs() {
             var chunkArray = m_CreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
             var prefabDataTh = SystemAPI.GetComponentTypeHandle<PrefabData>();
@@ -94,6 +106,8 @@ namespace Platter.Systems {
                 var entityArray     = archetypeChunk.GetNativeArray(SystemAPI.GetEntityTypeHandle());
                 var prefabDataArray = archetypeChunk.GetNativeArray(ref prefabDataTh);
                 var zoneDataArray   = archetypeChunk.GetNativeArray(ref zoneDataTh);
+
+                m_Log.Debug($"CacheZonePrefabs() -- {entityArray.Length}");
 
                 for (var k = 0; k < zoneDataArray.Length; k++) {
                     var entity     = entityArray[k];

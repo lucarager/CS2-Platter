@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 		<LangVersion>9.0</LangVersion>
 		<Configurations>Debug;Release;I18N</Configurations>
 		<Title>Platter</Title>

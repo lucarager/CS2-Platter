@@ -57,6 +57,10 @@ const themePaths = [
         path: "game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",
         name: "infoRow",
     },
+    {
+        path: "game-ui/common/panel/themes/default.module.scss",
+        name: "panel",
+    },
 ];
 
 export const VC = {} as IVanillaComponents;

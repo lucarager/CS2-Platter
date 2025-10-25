@@ -8,9 +8,9 @@ import { c } from "utils/classes";
 import { useLocalization } from "cs2/l10n";
 
 export const buttonId = "platterToolButton";
+const iconSrc = "coui://platter/logo.svg";
 
 export const ToolButton = () => {
-    const iconSrc = "coui://platter/logo.svg";
     const [enabled, setIsEnabled] = React.useState(false);
     const { translate } = useLocalization();
 
@@ -20,9 +20,9 @@ export const ToolButton = () => {
             <Button
                 variant="floating"
                 onSelect={() => setIsEnabled(!enabled)}
-                tooltipLabel={translate("Options.SECTION[Platter.Platter.PlatterMod]")}>
-                <img src={iconSrc} style={{ width: "100%", height: "100%" }} />
-            </Button>
+                src={iconSrc}
+                tooltipLabel={translate("Options.SECTION[Platter.Platter.PlatterMod]")}
+            />
         </>
     );
 };

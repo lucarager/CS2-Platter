@@ -9,6 +9,7 @@ namespace Platter {
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
     using Colossal.Logging;
@@ -22,11 +23,12 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
+    using Game.Zones;
+    using Newtonsoft.Json;
     using Platter.Components;
     using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
-    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using UnityEngine;
 
@@ -99,19 +101,7 @@ namespace Platter {
 
             // Generate i18n files
 #if IS_DEBUG && EXPORT_EN_US
-            Log.Info($"[Platter] Exporting localization");
-            var localeDict = new I18nConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
-            var str = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
-            try {
-                var path = "C:\\Users\\lucar\\source\\repos\\Platter\\lang\\en-US.json";
-                Log.Info($"[Platter] Exporting to {path}");
-                File.WriteAllText(path, str);
-                path = "C:\\Users\\lucar\\source\\repos\\Platter\\UI\\src\\lang\\en-US.json";
-                Log.Info($"[Platter] Exporting to {path}");
-                File.WriteAllText(path, str);
-            } catch (Exception ex) {
-                Log.Error(ex.ToString());
-            }
+            GenerateLanguageFile();
 #endif
 
             // Apply harmony patches.
@@ -167,9 +157,10 @@ namespace Platter {
 
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
-            //updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
-
+            updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
+            //updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
+            
             // Experimental Systems
             //updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.Modification1);
             //updateSystem.UpdateAfter<P_BuildingSpawnSystem>(SystemUpdatePhase.GameSimulation);
@@ -187,6 +178,22 @@ namespace Platter {
             UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
 
             Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
+        }
+
+        private void GenerateLanguageFile() {
+            Log.Info($"[Platter] Exporting localization");
+            var localeDict = new I18nConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
+            var str        = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
+            try {
+                var path = "C:\\Users\\lucar\\source\\repos\\Platter\\lang\\en-US.json";
+                Log.Info($"[Platter] Exporting to {path}");
+                File.WriteAllText(path, str);
+                path = "C:\\Users\\lucar\\source\\repos\\Platter\\UI\\src\\lang\\en-US.json";
+                Log.Info($"[Platter] Exporting to {path}");
+                File.WriteAllText(path, str);
+            } catch (Exception ex) {
+                Log.Error(ex.ToString());
+            }
         }
 
         /// <inheritdoc/>

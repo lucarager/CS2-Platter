@@ -53,6 +53,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
         private ValueBindingHelper<bool>         m_SnapRoadSideBinding;
         private ValueBindingHelper<float>        m_SnapSpacingBinding;
+        private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
 
         // Shortcuts
         private ProxyAction m_IncreaseBlockWidthAction;
@@ -117,7 +118,7 @@ namespace Platter.Systems {
             m_PrefabSystem         = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ObjectToolSystem     = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<P_OverlaySystem>();
-            m_AllowSpawnSystem    = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
+            m_AllowSpawnSystem     = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
             m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
 
@@ -131,9 +132,11 @@ namespace Platter.Systems {
             m_AllowSpawningBinding     = CreateBinding("ALLOW_SPAWNING", true, SetAllowSpawning);
             m_SnapRoadSideBinding      = CreateBinding("SNAP_ROADSIDE", true, SetSnapRoadside);
             m_SnapSpacingBinding       = CreateBinding("SNAP_SPACING", P_SnapSystem.DefaultSnapDistance, SetSnapSpacing);
+            m_ModalFirstLaunchBinding  = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.ModalFirstLaunch);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
+            CreateTrigger<string>("MODAL_DISMISS", HandleModalDismiss);
 
             // Shortcuts
             m_IncreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
@@ -193,6 +196,7 @@ namespace Platter.Systems {
             m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
             m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
             m_EnableToolButtonsBinding.Value = currentlyUsingParcelsInObjectTool;
+            m_ModalFirstLaunchBinding.Value  = PlatterMod.Instance.Settings.ModalFirstLaunch;
 
             // Send down zone data
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
@@ -214,6 +218,14 @@ namespace Platter.Systems {
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
             return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
+        }
+
+        /// <summary>
+        /// Open the panel.
+        /// </summary>
+        private void HandleModalDismiss(string modal) {
+            m_Log.Debug($"HandleModalDismiss(modal: {modal})");
+            PlatterMod.Instance.Settings.ModalFirstLaunch = true;
         }
 
         /// <summary>

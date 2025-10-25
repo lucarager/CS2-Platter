@@ -19,6 +19,7 @@ export const GAME_BINDINGS = {
     SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 0),
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ZONE: new TwoWayBinding<number>("ZONE", 0),
+    MODAL__FIRST_LAUNCH: new TwoWayBinding<boolean>("MODAL__FIRST_LAUNCH", false),
 };
 
 export const GAME_TRIGGERS = {
@@ -26,7 +27,7 @@ export const GAME_TRIGGERS = {
         console.log("ADJUST_BLOCK_SIZE", action);
         trigger(mod.id, "TRIGGER:ADJUST_BLOCK_SIZE", action);
     },
-    REQUEST_APPLY: () => {
-        trigger(mod.id, "TRIGGER:REQUEST_APPLY");
+    MODAL_DISMISS: (modal: string) => {
+        trigger(mod.id, "TRIGGER:MODAL_DISMISS", modal);
     },
 };

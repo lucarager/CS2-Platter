@@ -143,6 +143,10 @@ namespace Platter.Settings {
             }
         }
 
+        public bool ModalFirstLaunch {
+            get; set;
+        }
+
         /// <summary>
         /// Restores mod settings to default.
         /// </summary>
