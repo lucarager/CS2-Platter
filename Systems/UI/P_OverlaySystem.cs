@@ -92,8 +92,7 @@ namespace Platter.Systems {
                     colorsMap.Add(entry.Key, entry.Value);
                 }
 
-                // Todo split position calc, culling/render calc, and render step, into separate
-                // jobs for perf
+                // Todo split position calc, culling/render calc, and render step, into separate jobs for perf
                 var drawOverlaysJobData = new DrawOverlaysJob(
                     m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferJobHandle),
                     colorsMap,

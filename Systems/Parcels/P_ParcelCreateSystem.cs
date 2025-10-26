@@ -54,6 +54,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
+        // Todo convert to job for perf
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer();
             var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);

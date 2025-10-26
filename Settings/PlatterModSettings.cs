@@ -28,16 +28,16 @@ namespace Platter.Settings {
     [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
-        public const string KeybindingsGroup = "KeybindingsGroup";
-        public const string UninstallGroup = "UninstallGroup";
-        public const string AboutGroup = "AboutGroup";
-        public const string ToggleRenderActionName = "ToggleRenderActionName";
-        public const string ToggleSpawnActionName = "ToggleSpawnActionName";
-        public const string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
-        public const string DecreaseParcelWidthActionName = "DecreaseParcelWidthActionName";
-        public const string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
-        public const string DecreaseParcelDepthActionName = "DecreaseParcelDepthActionName";
-        private const string Credit = "Made with <3 by Luca.";
+        public const  string KeybindingsGroup              = "KeybindingsGroup";
+        public const  string UninstallGroup                = "UninstallGroup";
+        public const  string AboutGroup                    = "AboutGroup";
+        public const  string ToggleRenderActionName        = "ToggleRenderActionName";
+        public const  string ToggleSpawnActionName         = "ToggleSpawnActionName";
+        public const  string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
+        public const  string DecreaseParcelWidthActionName = "DecreaseParcelWidthActionName";
+        public const  string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
+        public const  string DecreaseParcelDepthActionName = "DecreaseParcelDepthActionName";
+        private const string Credit                        = "Made with <3 by Luca.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -143,14 +143,13 @@ namespace Platter.Settings {
             }
         }
 
-        public bool ModalFirstLaunch {
-            get; set;
-        }
+        public bool ModalFirstLaunch { get; set; }
 
         /// <summary>
         /// Restores mod settings to default.
         /// </summary>
         public override void SetDefaults() {
+            ModalFirstLaunch = false;
         }
 
         /// <summary>

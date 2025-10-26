@@ -9,39 +9,18 @@ namespace Game.Prefabs {
     using Unity.Entities;
 
     /// <summary>
-    /// Todo.
+    /// Prefab base of a parcel.
     /// </summary>
     public class ParcelPrefab : StaticObjectPrefab {
-        /// <summary>
-        /// Todo.
-        /// </summary>
         public int m_LotWidth = 2;
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
         public int m_LotDepth = 2;
-
-        /// <summary>
-        /// Todo.
-        /// </summary>
         public ZoneBlockPrefab m_ZoneBlock;
-
-        /// <summary>
-        /// todo.
-        /// </summary>
-        public bool m_AllowSpawning;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelPrefab"/> class.
         /// </summary>
         public ParcelPrefab() {
         }
-
-        /// <summary>
-        /// Gets the parcel's LotSize.
-        /// </summary>
-        public int LotSize => m_LotWidth * m_LotDepth;
 
         /// <inheritdoc/>
         public override void GetDependencies(List<PrefabBase> prefabs) {
@@ -71,29 +50,6 @@ namespace Game.Prefabs {
             // components.Add(ComponentType.ReadWrite<PrefabVersion>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<ParcelSubBlock>());
-        }
-
-        /// <inheritdoc/>
-        public override void Initialize(EntityManager entityManager, Entity entity) {
-            base.Initialize(entityManager, entity);
-
-            // PlatterMod.Instance.Log.Debug($"ParcelPrefab.Initialize() -- {name}");
-
-            // if (!entityManager.TryGetComponent<PrefabVersion>(entity, out var version) || version.m_Version == 0) {
-            //        version.m_Version = ModConstants.LatestPrefabVersion;
-            //        entityManager.SetComponentData(entity, version);
-            //    }
-
-            // entityManager.SetComponentData(entity, new PlaceableObjectData() {
-            //        m_Flags = Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.SubNetSnap | Game.Objects.PlacementFlags.OnGround | Game.Objects.PlacementFlags.NetObject,
-            //        m_PlacementOffset = new float3(0, 0, 0),
-            //        m_ConstructionCost = 0,
-            //        m_XPReward = 0,
-            //    });
-
-            // entityManager.SetComponentData(entity, new ParcelData() {
-            //    m_LotSize = new int2(m_LotWidth, m_LotDepth),
-            // });
         }
     }
 }

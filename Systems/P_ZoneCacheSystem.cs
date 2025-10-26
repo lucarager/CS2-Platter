@@ -37,7 +37,8 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Queries
-        private EntityQuery m_CreatedQuery;
+        private EntityQuery m_ModifiedQuery;
+        private EntityQuery m_AllQuery;
 
         // Data
         private NativeList<Entity>                        m_ZonePrefabs;
@@ -55,17 +56,21 @@ namespace Platter.Systems {
 
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
-            m_CreatedQuery = SystemAPI.QueryBuilder()
-                .WithAll<ZoneData>()
-                .WithAll<PrefabData>()
-                .WithAny<Created>()
-                .WithAny<Deleted>()
+            m_ModifiedQuery = SystemAPI.QueryBuilder()
+                .WithAll<ZoneData, PrefabData>()
+                .WithAny<Created, Updated, Deleted>()
                 .Build();
+
+            m_AllQuery = SystemAPI.QueryBuilder()
+                                   .WithAll<ZoneData, PrefabData>()
+                                   .Build();
 
             m_ZonePrefabs = new NativeList<Entity>(Allocator.Persistent);
             m_FillColors = new Dictionary<ushort, Color>();
             m_EdgeColors = new Dictionary<ushort, Color>();
             m_ZoneUIData = new Dictionary<ushort, P_UISystem.ZoneUIData>();
+
+            RequireForUpdate(m_ModifiedQuery);
         }
 
         /// <inheritdoc/>
@@ -76,28 +81,28 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            if (m_CreatedQuery.IsEmptyIgnoreFilter) {
+            m_Log.Debug($"OnUpdate()");
+
+            if (m_ModifiedQuery.IsEmptyIgnoreFilter) {
                 return;
             }
 
-            m_Log.Debug($"OnUpdate()");
-            CacheZonePrefabs();
+            CacheZonePrefabs(m_ModifiedQuery);
         }
 
         /// <inheritdoc/>
-        protected override void OnGameLoadingComplete(Purpose  purpose,
-                                                      GameMode mode) {
-            base.OnGameLoadingComplete(purpose, mode);
-            m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
+        protected override void OnGameLoaded(Context context) {
+            base.OnGameLoaded(context);
+            m_Log.Debug($"OnGameLoaded(context={context})");
 
-            CacheZonePrefabs();
+            CacheZonePrefabs(m_AllQuery);
         }
 
-        private void CacheZonePrefabs() {
-            var chunkArray = m_CreatedQuery.ToArchetypeChunkArray(Allocator.TempJob);
-            var prefabDataTh = SystemAPI.GetComponentTypeHandle<PrefabData>();
-            var zoneDataTh = SystemAPI.GetComponentTypeHandle<ZoneData>();
-            var deletedTh = SystemAPI.GetComponentTypeHandle<Deleted>();
+        private void CacheZonePrefabs(EntityQuery query) {
+            var chunkArray     = query.ToArchetypeChunkArray(Allocator.TempJob);
+            var prefabDataTh   = SystemAPI.GetComponentTypeHandle<PrefabData>();
+            var zoneDataTh     = SystemAPI.GetComponentTypeHandle<ZoneData>();
+            var deletedTh      = SystemAPI.GetComponentTypeHandle<Deleted>();
             var uIObjectDataTh = SystemAPI.GetComponentTypeHandle<UIObjectData>();
 
             CompleteDependency();
@@ -106,8 +111,6 @@ namespace Platter.Systems {
                 var entityArray     = archetypeChunk.GetNativeArray(SystemAPI.GetEntityTypeHandle());
                 var prefabDataArray = archetypeChunk.GetNativeArray(ref prefabDataTh);
                 var zoneDataArray   = archetypeChunk.GetNativeArray(ref zoneDataTh);
-
-                m_Log.Debug($"CacheZonePrefabs() -- {entityArray.Length}");
 
                 for (var k = 0; k < zoneDataArray.Length; k++) {
                     var entity     = entityArray[k];
@@ -124,14 +127,14 @@ namespace Platter.Systems {
                             continue;
                         }
 
-                        m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Deleting from cache.");
+                        m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Deleting from cache.");
                         m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = Entity.Null;
                         m_FillColors.Remove(zoneData.m_ZoneType.m_Index);
                         m_EdgeColors.Remove(zoneData.m_ZoneType.m_Index);
                         m_ZoneUIData.Remove(zoneData.m_ZoneType.m_Index);
                     } else {
                         // Cache Zone
-                        m_Log.Debug($"OnUpdate() -- {zonePrefab.name} -- Adding to cache.");
+                        m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Adding to cache.");
 
                         if (zoneData.m_ZoneType.m_Index < m_ZonePrefabs.Length) {
                             m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
@@ -145,16 +148,18 @@ namespace Platter.Systems {
                             m_ZonePrefabs.Add(in entity);
                         }
 
+                        var category = zonePrefab.m_Office ? "Office" : zonePrefab.m_AreaType.ToString();
+
                         // Cache
                         m_FillColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Color);
                         m_EdgeColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Edge);
                         m_ZoneUIData.Add(
                             zoneData.m_ZoneType.m_Index, 
                             new P_UISystem.ZoneUIData(
-                                zonePrefab.name,
-                                ImageSystem.GetThumbnail(zonePrefab),
-                                "todo category",
-                                zoneData.m_ZoneType.m_Index
+                                name: zonePrefab.name,
+                                thumbnail: ImageSystem.GetThumbnail(zonePrefab),
+                                category: category,
+                                index: zoneData.m_ZoneType.m_Index
                             ));
                     }
                 }

@@ -15,7 +15,7 @@ namespace Platter.Systems {
     using Unity.Entities;
 
     /// <summary>
-    /// todo.
+    /// System responsible for linking parcels to their blocks.
     /// </summary>
     public partial class P_ParcelToBlockReferenceSystem : GameSystemBase {
         // Logger
@@ -31,33 +31,21 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(P_ParcelToBlockReferenceSystem));
             m_Log.Debug($"OnCreate()");
 
-            m_ParcelBlockQuery = GetEntityQuery(new EntityQueryDesc[]
-            {
-                new () {
-                    All = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Block>(),
-                        ComponentType.ReadOnly<ParcelOwner>(),
-                    },
-                    Any = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Created>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                },
-            });
-
+            m_ParcelBlockQuery = SystemAPI.QueryBuilder()
+                                          .WithAll<Block, ParcelOwner>()
+                                          .WithAny<Created, Deleted>()
+                                          .Build();
+            
             RequireForUpdate(m_ParcelBlockQuery);
         }
 
         /// <inheritdoc/>
+        // Todo convert to job for perf
         protected override void OnUpdate() {
             var entities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
             var subBlockBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>();
 
-            for (var i = 0; i < entities.Length; i++) {
-                var blockEntity = entities[i];
-
+            foreach (var blockEntity in entities) {
                 m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity}");
 
                 if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out var parcelOwner)) {
@@ -80,7 +68,6 @@ namespace Platter.Systems {
                     return;
                 }
 
-                // Todo is this needed? The parcel will be destroyed, too.
                 m_Log.Debug($"OnUpdate() -- Block was DELETED. Removing block from parcel buffer");
 
                 CollectionUtils.RemoveValue<ParcelSubBlock>(subBlockBuffer, new ParcelSubBlock(blockEntity));

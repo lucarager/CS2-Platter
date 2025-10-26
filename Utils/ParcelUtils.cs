@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Game.Prefabs;
+
 namespace Platter.Utils {
     using Game.Objects;
     using Platter.Components;
@@ -10,6 +12,10 @@ namespace Platter.Utils {
     using Unity.Mathematics;
 
     public static class ParcelUtils {
+        public static PrefabID CreatePrefabID(int2 size) {
+            return new PrefabID("ParcelPrefab", $"Parcel {size.x}x{size.y}");
+        }
+
         public enum ParcelNode {
             CornerLeftFront,
             CornerLeftBack,

@@ -94,7 +94,7 @@ namespace Platter {
             Settings = new PlatterModSettings(this);
 
             // Load i18n
-            GameManager.instance.localizationManager.AddSource("en-US", new I18nConfig(Settings));
+            GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
             Log.Info($"[Platter] Loaded en-US.");
             LoadNonEnglishLocalizations();
             Log.Info($"[Platter] Loaded localization files.");
@@ -182,7 +182,7 @@ namespace Platter {
 
         private void GenerateLanguageFile() {
             Log.Info($"[Platter] Exporting localization");
-            var localeDict = new I18nConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
+            var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
             var str        = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
             try {
                 var path = "C:\\Users\\lucar\\source\\repos\\Platter\\lang\\en-US.json";

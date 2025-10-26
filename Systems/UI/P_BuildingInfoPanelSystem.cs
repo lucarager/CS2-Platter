@@ -66,9 +66,8 @@ namespace Platter.Systems {
         }
 
         /// <summary>
-        /// Todo.
+        /// Returns whether the component is eligible for Platter infoview additions.
         /// </summary>
-        /// <returns>Whether the component is eligible for Platter infoview additions.</returns>
         private bool CheckEntityEligibility() {
             return EntityManager.HasComponent<LinkedParcel>(selectedEntity);
         }

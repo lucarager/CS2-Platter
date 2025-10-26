@@ -52,6 +52,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
+        // Todo convert to job for perf
         protected override void OnUpdate() {
             var prefabEntities = m_PrefabQuery.ToEntityArray(Allocator.Temp);
             m_Log.Debug($"OnUpdate() -- Found {prefabEntities.Length} prefabs to initialize.");

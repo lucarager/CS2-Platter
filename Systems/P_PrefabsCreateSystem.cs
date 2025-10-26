@@ -14,7 +14,7 @@ namespace Platter.Systems {
     using UnityEngine;
 
     /// <summary>
-    /// Todo.
+    /// System responsible for generating our parcel prefabs on game load.
     /// </summary>
     public partial class P_PrefabsCreateSystem : GameSystemBase {
         /// <summary>
@@ -27,17 +27,17 @@ namespace Platter.Systems {
         public static readonly int4 BlockSizes = new(2, 2, 6, 6);
 
         /// <summary>
-        /// Todo.
+        /// Common prefix to add to parcel prefab names.
         /// </summary>
         public static readonly string PrefabNamePrefix = "Parcel";
 
         /// <summary>
-        /// Todo.
+        /// Stateful value to only run installation once.
         /// </summary>
-        private static bool _prefabsAreInstalled;
+        private static bool m_PrefabsAreInstalled;
 
         /// <summary>
-        /// Todo.
+        /// Configuration for vanilla prefabas to load for further processing.
         /// </summary>
         private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
             { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
@@ -91,7 +91,7 @@ namespace Platter.Systems {
                 return;
             }
 
-            if (_prefabsAreInstalled) {
+            if (m_PrefabsAreInstalled) {
                 m_Log.Debug($"{logMethodPrefix} _prefabsAreInstalled = true, skipping");
                 return;
             }
@@ -128,7 +128,7 @@ namespace Platter.Systems {
             }
 
             // Mark the Install as already _prefabsAreInstalled
-            _prefabsAreInstalled = true;
+            m_PrefabsAreInstalled = true;
 
             m_Log.Debug($"{logMethodPrefix} Completed.");
         }

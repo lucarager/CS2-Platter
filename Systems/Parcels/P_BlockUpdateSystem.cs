@@ -47,6 +47,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
+        // Todo convert to job for perf
         protected override void OnUpdate() {
             var entities = m_Query.ToEntityArray(Allocator.Temp);
 

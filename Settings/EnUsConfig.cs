@@ -9,17 +9,17 @@ namespace Platter.Settings {
     using Platter;
 
     /// <summary>
-    /// Todo.
+    /// Configures the English (US) localization for Platter Mod.
     /// </summary>
-    public class I18nConfig : IDictionarySource {
+    public class EnUsConfig : IDictionarySource {
         private readonly PlatterModSettings m_Setting;
         private readonly Dictionary<string, string> m_Localization;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="I18nConfig"/> class.
+        /// Initializes a new instance of the <see cref="EnUsConfig"/> class.
         /// </summary>
         /// <param name="setting">PlatterModSettings.</param>
-        public I18nConfig(PlatterModSettings setting) {
+        public EnUsConfig(PlatterModSettings setting) {
             m_Setting = setting;
 
             m_Localization = new Dictionary<string, string>() {

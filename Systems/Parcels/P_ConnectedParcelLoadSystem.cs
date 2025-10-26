@@ -42,6 +42,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
+        // Todo convert to job for perf
         protected override void OnUpdate() {
             var logMethodPrefix = $"OnUpdate() --";
             var entityTypeHandle = SystemAPI.GetEntityTypeHandle();

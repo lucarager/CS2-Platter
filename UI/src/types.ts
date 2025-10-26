@@ -6,5 +6,6 @@ export type PrefabData = {
 export type ZoneData = {
     name: string;
     thumbnail: string;
+    category: string;
     index: number;
 };

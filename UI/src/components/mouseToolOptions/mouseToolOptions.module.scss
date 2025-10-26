@@ -93,8 +93,8 @@
     color: rgba(217, 217, 217, 1);
 }
 
-.dropdownItem {
-
+.dropdownContent {
+    width: 400rem;
 }
 
 .dropdownIcon {
@@ -113,4 +113,16 @@
     font-weight: 600;
     max-width: 174rem;
     overflow: hidden;
+}
+
+.dropdownCategory {
+    padding-top: 10rem;
+    padding-left: 10rem;
+    padding-right: 10rem;
+    padding-bottom: 4rem;
+    text-align: left;
+    color: rgba(217, 217, 217, .75);
+    align-items: center;
+    display: flex;
+    flex-direction: row;
 }

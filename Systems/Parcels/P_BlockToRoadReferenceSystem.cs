@@ -48,6 +48,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
+        // Todo convert to job for perf
         protected override void OnUpdate() {
             m_Log.Debug($"OnUpdate() -- Updating Percel->Block->Road ownership references");
 

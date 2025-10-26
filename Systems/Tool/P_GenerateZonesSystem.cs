@@ -20,7 +20,6 @@ namespace Platter.Systems {
     using Unity.Mathematics;
     using Block = Game.Zones.Block;
 
-    // todo: ZoneAndOccupyCellsJob/CheckBlockOverlapJob still runs, need to prevent underlying zoning logic from vanilla
     public partial class P_GenerateZonesSystem : GameSystemBase {
         private EntityQuery          m_DefinitionQuery;
         private ModificationBarrier1 m_ModificationBarrier;

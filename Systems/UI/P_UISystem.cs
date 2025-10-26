@@ -69,7 +69,7 @@ namespace Platter.Systems {
         public readonly struct ZoneUIData : IJsonWritable {
             public readonly string Name;
             public readonly string Thumbnail;
-            public readonly string Group;
+            public readonly string Category;
             public readonly ushort Index;
 
             /// <summary>
@@ -77,11 +77,11 @@ namespace Platter.Systems {
             /// </summary>
             public ZoneUIData(string name,
                               string thumbnail,
-                              string group,
+                              string category,
                               ushort index) {
                 Name      = name;
                 Thumbnail = thumbnail;
-                Group     = group;
+                Category  = category;
                 Index     = index;
             }
 
@@ -95,8 +95,8 @@ namespace Platter.Systems {
                 writer.PropertyName("thumbnail");
                 writer.Write(Thumbnail);
 
-                writer.PropertyName("group");
-                writer.Write(Thumbnail);
+                writer.PropertyName("category");
+                writer.Write(Category);
 
                 writer.PropertyName("index");
                 writer.Write(Index);
@@ -320,7 +320,7 @@ namespace Platter.Systems {
         }
 
         /// <summary>
-        /// Todo.
+        /// Called from the UI.
         /// </summary>
         private void DecreaseBlockWidth() {
             if (m_SelectedParcelSize.x > P_PrefabsCreateSystem.BlockSizes.x) {
@@ -332,7 +332,7 @@ namespace Platter.Systems {
         }
 
         /// <summary>
-        /// Todo.
+        ///  Called from the UI.
         /// </summary>
         private void IncreaseBlockWidth() {
             if (m_SelectedParcelSize.x < P_PrefabsCreateSystem.BlockSizes.z) {
@@ -344,7 +344,7 @@ namespace Platter.Systems {
         }
 
         /// <summary>
-        /// Todo.
+        ///  Called from the UI.
         /// </summary>
         private void DecreaseBlockDepth() {
             if (m_SelectedParcelSize.y > P_PrefabsCreateSystem.BlockSizes.y) {
@@ -356,7 +356,7 @@ namespace Platter.Systems {
         }
 
         /// <summary>
-        /// Todo.
+        ///  Called from the UI.
         /// </summary>
         private void IncreaseBlockDepth() {
             if (m_SelectedParcelSize.y < P_PrefabsCreateSystem.BlockSizes.w) {
@@ -368,11 +368,10 @@ namespace Platter.Systems {
         }
 
         /// <summary>
-        /// Todo.
+        ///  Called from the UI.
         /// </summary>
         private void UpdateSelectedPrefab() {
-            // Todo abstract this
-            var id = new PrefabID("ParcelPrefab", $"Parcel {m_SelectedParcelSize.x}x{m_SelectedParcelSize.y}");
+            var id = ParcelUtils.CreatePrefabID(m_SelectedParcelSize);
 
             m_Log.Debug($"UpdateSelectedPrefab() -- Attempting to get Prefab with id {id}");
 

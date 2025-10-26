@@ -8,12 +8,10 @@ namespace Platter.Components {
     using Unity.Entities;
 
     /// <summary>
-    /// todo.
+    /// Parcel Composition, contains the prefab block entity.
+    /// Copied from how Edges work, probably can be improved later.
     /// </summary>
     public struct ParcelComposition : IComponentData, ISerializable {
-        /// <summary>
-        /// todo.
-        /// </summary>
         public Entity m_ZoneBlockPrefab;
 
         /// <inheritdoc/>
