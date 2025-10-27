@@ -1,7 +1,8 @@
 import { trigger } from "cs2/api";
 import mod from "../mod.json";
 import { TwoWayBinding } from "utils/bidirectionalBinding";
-import { PrefabData, ZoneData } from "types";
+import { ParcelUIData, PrefabData, ZoneData } from "types";
+import { Entity } from "cs2/bindings";
 
 export const GAME_BINDINGS = {
     TOOL_ENABLED: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
@@ -20,14 +21,23 @@ export const GAME_BINDINGS = {
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ZONE: new TwoWayBinding<number>("ZONE", 0),
     MODAL__FIRST_LAUNCH: new TwoWayBinding<boolean>("MODAL__FIRST_LAUNCH", false),
+    INFOPANEL_BUILDING_PARCEL_ENTITY: new TwoWayBinding<Entity>("INFOPANEL_BUILDING_PARCEL_ENTITY"),
+    INFOPANEL_PARCEL_DATA: new TwoWayBinding<ParcelUIData>("INFOPANEL_PARCEL_DATA"),
+    INFOPANEL_PARCEL_DATA_BUILDING: new TwoWayBinding<Entity>("INFOPANEL_PARCEL_DATA_BUILDING"),
+    INFOPANEL_PARCEL_DATA_ROAD: new TwoWayBinding<Entity>("INFOPANEL_PARCEL_DATA_ROAD"),
 };
 
 export const GAME_TRIGGERS = {
     ADJUST_BLOCK_SIZE: (action: string) => {
-        console.log("ADJUST_BLOCK_SIZE", action);
         trigger(mod.id, "TRIGGER:ADJUST_BLOCK_SIZE", action);
     },
     MODAL_DISMISS: (modal: string) => {
         trigger(mod.id, "TRIGGER:MODAL_DISMISS", modal);
+    },
+    INFOPANEL_SELECT_PARCEL_ENTITY: (entity: Entity) => {
+        trigger(mod.id, "TRIGGER:INFOPANEL_SELECT_PARCEL_ENTITY", entity);
+    },
+    INFOPANEL_PARCEL_RELOCATE: (entity: Entity) => {
+        trigger(mod.id, "TRIGGER:INFOPANEL_PARCEL_RELOCATE", entity);
     },
 };

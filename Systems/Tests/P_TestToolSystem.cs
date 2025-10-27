@@ -90,18 +90,20 @@ namespace Platter.Systems {
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps) {
-            m_Log.Debug($"OnUpdate(JobHandle inputDeps)");
             m_CommandBuffer = m_ToolOutputBarrier.CreateCommandBuffer();
             applyMode       = ApplyMode.Clear;
 
             if (m_PlacePrefabEntity != Entity.Null) {
                 applyMode = ApplyMode.None;
+                m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- PlaceObjectPrefab");
                 PlaceObjectPrefab(m_PlacePrefabEntity, m_PlaceTransform);
             }
 
             if (m_TempQuery.IsEmpty) {
                 return inputDeps;
             }
+
+            m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- Apply");
 
             // Apply
             applyMode           = ApplyMode.Apply;
@@ -122,11 +124,12 @@ namespace Platter.Systems {
 
         public void Enable() {
             m_Log.Debug($"RequestEnable()");
-            m_ToolSystem.selected   = Entity.Null;
             m_ToolSystem.activeTool = this;
         }
 
         public override bool TrySetPrefab(PrefabBase prefab) {
+            m_Log.Debug($"TrySetPrefab({prefab})");
+
             if (m_ToolSystem.activeTool != this) {
                 return false;
             }

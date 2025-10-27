@@ -142,7 +142,7 @@ namespace Platter.Tests {
             });
 
             TR.Describe("2. Zones", () => {
-                TR.It("2.1. ZoneCacheSystem should have a minimum of 10 cached zones", () => Assert.IsTrue(m_P_ZoneCacheSystem.ZonePrefabs.Length >= 10));
+                TR.It("2.1. ZoneCacheSystem should have a minimum of 10 cached zones", () => Assert.IsTrue(m_P_ZoneCacheSystem.ZonePrefabs.Count >= 10));
             });
 
             TR.Describe("3. Growables", () => {

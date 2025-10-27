@@ -3,6 +3,11 @@ export type PrefabData = {
     thumbnail: string | undefined;
 };
 
+export type ParcelUIData = {
+    name: string | undefined;
+    zoning: string | undefined;
+};
+
 export type ZoneData = {
     name: string;
     thumbnail: string;

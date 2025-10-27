@@ -314,7 +314,7 @@ namespace Platter.Systems {
         /// </summary>
         private void SetPreZone(int zoneIndex) {
             m_Log.Debug($"SetPreZone(modeIndex = {zoneIndex})");
-            var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[zoneIndex];
+            var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[(ushort)zoneIndex];
             var zoneData   = EntityManager.GetComponentData<ZoneData>(zonePrefab);
             PreZoneType = zoneData.m_ZoneType;
         }

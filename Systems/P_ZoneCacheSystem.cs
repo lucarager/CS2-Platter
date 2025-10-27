@@ -22,7 +22,7 @@ namespace Platter.Systems {
     /// System responsible for caching Zone Information for other systems.
     /// </summary>
     public partial class P_ZoneCacheSystem : GameSystemBase {
-        public NativeList<Entity> ZonePrefabs => m_ZonePrefabs;
+        public NativeHashMap<ushort, Entity> ZonePrefabs => m_ZonePrefabs;
 
         public Dictionary<ushort, Color> FillColors => m_FillColors;
 
@@ -41,7 +41,7 @@ namespace Platter.Systems {
         private EntityQuery m_AllQuery;
 
         // Data
-        private NativeList<Entity>                        m_ZonePrefabs;
+        private NativeHashMap<ushort, Entity>    m_ZonePrefabs;
         private Dictionary<ushort, Color>                 m_FillColors;
         private Dictionary<ushort, Color>                 m_EdgeColors;
         private Dictionary<ushort, P_UISystem.ZoneUIData> m_ZoneUIData;
@@ -65,10 +65,10 @@ namespace Platter.Systems {
                                    .WithAll<ZoneData, PrefabData>()
                                    .Build();
 
-            m_ZonePrefabs = new NativeList<Entity>(Allocator.Persistent);
-            m_FillColors = new Dictionary<ushort, Color>();
-            m_EdgeColors = new Dictionary<ushort, Color>();
-            m_ZoneUIData = new Dictionary<ushort, P_UISystem.ZoneUIData>();
+            m_ZonePrefabs = new NativeHashMap<ushort, Entity>(256, Allocator.Persistent);
+            m_FillColors  = new Dictionary<ushort, Color>();
+            m_EdgeColors  = new Dictionary<ushort, Color>();
+            m_ZoneUIData  = new Dictionary<ushort, P_UISystem.ZoneUIData>();
 
             RequireForUpdate(m_ModifiedQuery);
         }
@@ -122,13 +122,7 @@ namespace Platter.Systems {
                     }
 
                     if (archetypeChunk.Has(ref deletedTh)) {
-                        if (zoneData.m_ZoneType.m_Index                >= m_ZonePrefabs.Length ||
-                            m_ZonePrefabs[zoneData.m_ZoneType.m_Index] != entity) {
-                            continue;
-                        }
-
-                        m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Deleting from cache.");
-                        m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = Entity.Null;
+                        m_ZonePrefabs.Remove(zoneData.m_ZoneType.m_Index);
                         m_FillColors.Remove(zoneData.m_ZoneType.m_Index);
                         m_EdgeColors.Remove(zoneData.m_ZoneType.m_Index);
                         m_ZoneUIData.Remove(zoneData.m_ZoneType.m_Index);
@@ -136,31 +130,18 @@ namespace Platter.Systems {
                         // Cache Zone
                         m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Adding to cache.");
 
-                        if (zoneData.m_ZoneType.m_Index < m_ZonePrefabs.Length) {
-                            m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
-                        } else {
-                            while (zoneData.m_ZoneType.m_Index > m_ZonePrefabs.Length) {
-                                ref var zonePrefabs = ref m_ZonePrefabs;
-                                var     nullEntity  = Entity.Null;
-                                zonePrefabs.Add(in nullEntity);
-                            }
-
-                            m_ZonePrefabs.Add(in entity);
-                        }
-
                         var category = zonePrefab.m_Office ? "Office" : zonePrefab.m_AreaType.ToString();
 
                         // Cache
-                        m_FillColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Color);
-                        m_EdgeColors.Add(zoneData.m_ZoneType.m_Index, zonePrefab.m_Edge);
-                        m_ZoneUIData.Add(
-                            zoneData.m_ZoneType.m_Index, 
-                            new P_UISystem.ZoneUIData(
-                                name: zonePrefab.name,
-                                thumbnail: ImageSystem.GetThumbnail(zonePrefab),
-                                category: category,
-                                index: zoneData.m_ZoneType.m_Index
-                            ));
+                        m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
+                        m_FillColors[zoneData.m_ZoneType.m_Index]  = zonePrefab.m_Color;
+                        m_EdgeColors[zoneData.m_ZoneType.m_Index]  = zonePrefab.m_Edge;
+                        m_ZoneUIData[zoneData.m_ZoneType.m_Index] = new P_UISystem.ZoneUIData(
+                            zonePrefab.name,
+                            ImageSystem.GetThumbnail(zonePrefab),
+                            category,
+                            zoneData.m_ZoneType.m_Index
+                        );
                     }
                 }
             }

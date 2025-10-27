@@ -17,6 +17,7 @@ using Unity.Entities;
 namespace Platter.Tests {
     public static class TestUtils {
         public static void SetDefaultTestConditions() {
+            return;
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DebugUISystem>().Hide();
 
             var instance = GameManager.instance;

@@ -11,27 +11,43 @@
 }
 
 .panel {
-    width: 1000rem;
+    width: 900rem;
     max-width: 80vw;
-    height: 50vw;
+    border-radius: 20rem;
+
+    p, li {
+        font-size: 1.1em;
+    }
 }
 
 .header {
     background-image: url("coui://platter/header.png");
-    height: 200rem;
     display: flex;
     flex-direction: column;
     background-size: cover;
     border-top-left-radius: 20rem 20rem;
     border-top-right-radius: 20rem 20rem;
 
+    & > * > * {
+        max-height: auto;
+    }
+
     &__inner {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         width: 100%;
-        padding: 0 16rem;
+        align-items: center;
+        padding-top: 16rem;
+        padding-left: 16rem;
+        padding-bottom: 20rem;
     }
+}
+
+.intro {
+    text-align: left;
+    text-transform: initial;
+    padding-right: 100rem;
 }
 
 .headerText {
@@ -39,19 +55,22 @@
 }
 
 .content {
-    padding: 48rem 24rem;
+    padding: 36rem 16rem;
 }
 
-.row {
+.cards {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     padding: 16rem 0;
     gap: 16rem;
 }
 
 .card {
-    flex: 1;
-    padding: 8rem;
+    width: 50%;
+    padding-left: 16rem;
+    padding-right: 16rem;
+    padding-bottom: 16rem;
 
     &__inner {
     }
@@ -62,7 +81,43 @@
         height: 200rem;
     }
 
-    &__text {
+    &__text_container {
         margin-top: 8rem;
+        display: flex;
+        flex-direction: column;
     }
+
+    &__text {
+        flex-wrap: wrap;
+
+        span {
+            color:  var(--accentColorLight);
+        }
+    }
+}
+
+.card:first-child {
+    // padding-left: 0;
+}
+
+.list {
+    display: list-item;
+    margin: 6rem 0;
+}
+
+.list small {
+    opacity: 0.3;
+}
+
+.list ol,
+.list ul {
+    display: list-item;
+}
+
+.list li {
+    margin-bottom: 1rem;
+}
+
+.list > li {
+    position: relative;
 }

@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Colossal.Entities;
 using Unity.Entities;
 
 namespace Platter.Systems {
@@ -17,9 +18,9 @@ namespace Platter.Systems {
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
     /// </summary>
     public partial class P_BuildingInfoPanelSystem : ExtendedInfoSectionBase {
-        private PrefixedLogger           m_Log;
-        private ToolSystem               m_ToolSystem;
-        private ValueBindingHelper<int> m_EntityBinding;
+        private PrefixedLogger             m_Log;
+        private SelectedInfoUISystem m_SelectedInfoUISystem;
+        private ValueBindingHelper<Entity> m_EntityBinding;
 
         /// <inheritdoc/>
         protected override string group => "Platter";
@@ -50,26 +51,30 @@ namespace Platter.Systems {
             m_InfoUISystem.AddMiddleSection(this);
 
             // Systems & References
-            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_SelectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
 
             // Binding
-            m_EntityBinding = CreateBinding("SELECTED_INFOPANEL_BUILDING_PARCEL_ENTITY", 0);
+            m_EntityBinding = CreateBinding("INFOPANEL_BUILDING_PARCEL_ENTITY", Entity.Null);
+            CreateTrigger<Entity>("INFOPANEL_SELECT_PARCEL_ENTITY", SelectEntity);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
             base.OnUpdate();
 
-            visible = CheckEntityEligibility();
+            if (EntityManager.TryGetComponent<LinkedParcel>(selectedEntity, out var linkedParcel)) {
+                visible = true;
+                m_EntityBinding.Value = linkedParcel.m_Parcel;
+            } else {
+                m_EntityBinding.Value = Entity.Null;
+                visible               = false;
+            }
 
             RequestUpdate();
         }
 
-        /// <summary>
-        /// Returns whether the component is eligible for Platter infoview additions.
-        /// </summary>
-        private bool CheckEntityEligibility() {
-            return EntityManager.HasComponent<LinkedParcel>(selectedEntity);
+        private void SelectEntity(Entity entity) {
+            m_SelectedInfoUISystem.SetSelection(entity);
         }
     }
 }
