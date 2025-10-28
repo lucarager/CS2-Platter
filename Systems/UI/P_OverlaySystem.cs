@@ -35,16 +35,8 @@ namespace Platter.Systems {
         private EntityQuery m_ParcelQuery;
 
         // Data
-        private bool m_ShouldRenderParcels = true;
         private bool m_ShouldRenderParcelsOverride;
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to render parcels.
-        /// </summary>
-        public bool RenderParcels {
-            get => m_ShouldRenderParcels;
-            set => m_ShouldRenderParcels = value;
-        }
 
         /// <summary>
         /// Gets or sets a value indicating whether to override render parcels (i.e. for tool).
@@ -76,7 +68,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            if (!m_ShouldRenderParcels && !m_ShouldRenderParcelsOverride) {
+            if (!PlatterMod.Instance.Settings.RenderParcels && !m_ShouldRenderParcelsOverride) {
                 return;
             }
 

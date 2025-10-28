@@ -15,6 +15,8 @@
     max-width: 80vw;
     border-radius: 20rem;
 
+    --panelRadius: 20rem;
+
     p, li {
         font-size: 1.1em;
     }
@@ -28,6 +30,10 @@
     border-top-left-radius: 20rem 20rem;
     border-top-right-radius: 20rem 20rem;
 
+    h2 {
+        margin: 0;
+    }
+
     & > * > * {
         max-height: auto;
     }
@@ -35,27 +41,27 @@
     &__inner {
         display: flex;
         flex-direction: row;
+        align-items: center;
         justify-content: space-between;
         width: 100%;
-        align-items: center;
         padding-top: 16rem;
         padding-left: 16rem;
-        padding-bottom: 20rem;
+        padding-right: 16rem;
+        padding-bottom: 16rem;
     }
 }
 
 .intro {
     text-align: left;
     text-transform: initial;
+    padding-top: 24rem;
+    padding-bottom: 24rem;
     padding-right: 100rem;
-}
-
-.headerText {
-    margin-left: -5rem;
+    font-weight: 600;
 }
 
 .content {
-    padding: 36rem 16rem;
+    padding: 16rem 8rem 0;
 }
 
 .cards {
@@ -89,6 +95,7 @@
 
     &__text {
         flex-wrap: wrap;
+        word-break: break-all;
 
         span {
             color:  var(--accentColorLight);

@@ -19,14 +19,13 @@ namespace Platter.Systems {
     using Platter.Systems;
     using Platter.Utils;
     using Unity.Mathematics;
+    using static Platter.Systems.P_SnapSystem;
 
     /// <summary>
     /// System responsible for UI Bindings & Data Handling.
     /// </summary>
     public partial class P_UISystem : ExtendedUISystemBase {
         public ZoneType PreZoneType { get; private set; } = ZoneType.None;
-
-        public bool AllowSpawning { get; private set; } = true;
 
         // Systems
         private PrefabSystem        m_PrefabSystem;
@@ -51,7 +50,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_BlockDepthBinding;
         private ValueBindingHelper<bool>         m_RenderParcelsBinding;
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
-        private ValueBindingHelper<bool>         m_SnapRoadSideBinding;
+        private ValueBindingHelper<int>          m_SnapModeBinding;
         private ValueBindingHelper<float>        m_SnapSpacingBinding;
         private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
 
@@ -128,9 +127,9 @@ namespace Platter.Systems {
             m_BlockWidthBinding        = CreateBinding("BLOCK_WIDTH", 2);
             m_BlockDepthBinding        = CreateBinding("BLOCK_DEPTH", 2);
             m_ZoneDataBinding          = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
-            m_RenderParcelsBinding     = CreateBinding("RENDER_PARCELS", true, SetRenderParcels);
-            m_AllowSpawningBinding     = CreateBinding("ALLOW_SPAWNING", true, SetAllowSpawning);
-            m_SnapRoadSideBinding      = CreateBinding("SNAP_ROADSIDE", true, SetSnapRoadside);
+            m_RenderParcelsBinding     = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
+            m_AllowSpawningBinding     = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
+            m_SnapModeBinding          = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
             m_SnapSpacingBinding       = CreateBinding("SNAP_SPACING", P_SnapSystem.DefaultSnapDistance, SetSnapSpacing);
             m_ModalFirstLaunchBinding  = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.ModalFirstLaunch);
 
@@ -192,7 +191,8 @@ namespace Platter.Systems {
             m_PlatterOverlaySystem.RenderParcelsOverride = currentlyUsingParcelsInObjectTool;
 
             // Update Bindings
-            m_RenderParcelsBinding.Value     = m_PlatterOverlaySystem.RenderParcels;
+            m_RenderParcelsBinding.Value     = PlatterMod.Instance.Settings.RenderParcels;
+            m_AllowSpawningBinding.Value     = PlatterMod.Instance.Settings.AllowSpawn;
             m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
             m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
             m_EnableToolButtonsBinding.Value = currentlyUsingParcelsInObjectTool;
@@ -255,7 +255,7 @@ namespace Platter.Systems {
         /// </summary>
         private void ToggleRenderParcels() {
             m_Log.Debug("ToggleRenderParcels()");
-            SetRenderParcels(!m_PlatterOverlaySystem.RenderParcels);
+            SetRenderParcels(!PlatterMod.Instance.Settings.RenderParcels);
         }
 
         /// <summary>
@@ -263,7 +263,7 @@ namespace Platter.Systems {
         /// </summary>
         private void SetRenderParcels(bool enabled) {
             m_Log.Debug($"SetRenderParcels(enabled = {enabled})");
-            m_PlatterOverlaySystem.RenderParcels = enabled;
+            PlatterMod.Instance.Settings.RenderParcels = enabled;
         }
 
         /// <summary>
@@ -271,7 +271,7 @@ namespace Platter.Systems {
         /// </summary>
         private void ToggleAllowSpawning() {
             m_Log.Debug("ToggleAllowSpawning()");
-            SetAllowSpawning(!AllowSpawning);
+            SetAllowSpawning(!PlatterMod.Instance.Settings.AllowSpawn);
         }
 
         /// <summary>
@@ -279,8 +279,16 @@ namespace Platter.Systems {
         /// </summary>
         private void SetAllowSpawning(bool enabled) {
             m_Log.Debug($"SetAllowSpawning(enabled = {enabled})");
-            AllowSpawning = enabled;
+            PlatterMod.Instance.Settings.AllowSpawn = enabled;
             m_AllowSpawnSystem.UpdateSpawning(enabled);
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetSnapMode(int snapMode) {
+            m_Log.Debug($"SetSnapZoneside(snapMode = {snapMode})");
+            m_SnapSystem.CurrentSnapMode = (SnapMode)snapMode;
         }
 
         /// <summary>
@@ -306,7 +314,7 @@ namespace Platter.Systems {
                 amount = 100f;
             }
 
-            m_SnapSystem.CurrentSnapOffset = amount;
+            m_SnapSystem.CurrentSnapSetback = amount;
         }
 
         /// <summary>

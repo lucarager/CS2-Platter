@@ -5,7 +5,9 @@
 
 namespace Platter.Settings {
     using System.Collections.Generic;
+    using System.Security.Policy;
     using Colossal;
+    using Game.Tools;
     using Platter;
 
     /// <summary>
@@ -90,7 +92,9 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.SectionTitle.ParcelWidth", "Parcel Width" },
                 { "PlatterMod.UI.SectionTitle.ParcelDepth", "Parcel Depth" },
                 { "PlatterMod.UI.Label.ParcelSizeUnit", "cells" },
-                { "PlatterMod.UI.Tooltip.SnapModeRoadSide", "Snap to sides of a road" },
+                { "PlatterMod.UI.Tooltip.SnapModeNone", "No Snapping" },
+                { "PlatterMod.UI.Tooltip.SnapModeZoneSide", "Snap to sides of a road" },
+                { "PlatterMod.UI.Tooltip.SnapModeRoadSide", "Snap to sides of the vanilla zone grid" },
                 { "PlatterMod.UI.Tooltip.SnapSpacingIncrease", "Increase spacing" },
                 { "PlatterMod.UI.Tooltip.SnapSpacingDecrease", "Decrease spacing" },
                 { "PlatterMod.UI.Tooltip.SnapSpacingAmount", "Spacing between road and parcel" },

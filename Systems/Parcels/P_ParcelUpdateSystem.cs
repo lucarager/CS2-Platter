@@ -63,7 +63,7 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
             var entities = m_ParcelQuery.ToEntityArray(Allocator.Temp);
-            var currentDefaultAllowSpawn = m_PlatterUISystem.AllowSpawning;
+            var currentDefaultAllowSpawn = PlatterMod.Instance.Settings.AllowSpawn;
 
             foreach (var parcelEntity in entities) {
                 var subBlockBuffer = EntityManager.GetBuffer<ParcelSubBlock>(parcelEntity);

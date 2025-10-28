@@ -33,7 +33,8 @@ namespace Platter.Tests {
                 action();
                 m_Log.Info($"   [PASSED] {title}");
             } catch (Exception e) {
-                m_Log.Error($"   [FAILED] {title}");
+                m_Log.Info(e);
+                m_Log.Info($"   [FAILED] {title}");
             }
         }
     }

@@ -68,6 +68,14 @@ namespace Platter {
         }
 
         /// <summary>
+        /// Sets mod to test mode
+        /// </summary>
+        internal bool IsTestMode {
+            get;
+            set;
+        } = false;
+
+        /// <summary>
         /// Gets the mod's version
         /// </summary>
         public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);

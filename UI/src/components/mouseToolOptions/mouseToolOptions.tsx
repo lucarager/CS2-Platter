@@ -9,6 +9,7 @@ import { c } from "utils/classes";
 import { VF } from "../vanilla/Components";
 import { FocusDisabled } from "cs2/input";
 import { useLocalization } from "cs2/l10n";
+import { SnapMode } from "types";
 
 export type BlockControlProps = Record<string, never>;
 
@@ -84,20 +85,41 @@ const PrezoningSection = () => {
 };
 
 const SnapModeSection = () => {
-    const snapRoadsideBinding = useValue(GAME_BINDINGS.SNAP_ROADSIDE.binding);
+    const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
+
     const { translate } = useLocalization();
 
     return (
         <VC.Section title={translate("PlatterMod.UI.SectionTitle.SnapMode")}>
             <VC.ToolButton
                 className={VT.toolButton.button}
-                src={"Media/Tools/Snap Options/NetSide.svg"}
-                onSelect={() => GAME_BINDINGS.SNAP_ROADSIDE.set(!snapRoadsideBinding)}
-                selected={snapRoadsideBinding}
+                src={"Media/Glyphs/Close.svg"}
+                onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.None)}
+                selected={snapModeBinding == SnapMode.None}
+                multiSelect={false}
+                disabled={false}
+                focusKey={VF.FOCUS_DISABLED}
+                tooltip={translate("PlatterMod.UI.Tooltip.SnapModeNone")}
+            />
+            <VC.ToolButton
+                className={VT.toolButton.button}
+                src={"Media/Tools/Snap Options/ZoneGrid.svg"}
+                onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.ZoneSide)}
+                selected={snapModeBinding == SnapMode.ZoneSide}
                 multiSelect={false}
                 disabled={false}
                 focusKey={VF.FOCUS_DISABLED}
                 tooltip={translate("PlatterMod.UI.Tooltip.SnapModeRoadSide")}
+            />
+            <VC.ToolButton
+                className={VT.toolButton.button}
+                src={"Media/Tools/Snap Options/NetSide.svg"}
+                onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.RoadSide)}
+                selected={snapModeBinding == SnapMode.RoadSide}
+                multiSelect={false}
+                disabled={false}
+                focusKey={VF.FOCUS_DISABLED}
+                tooltip={translate("PlatterMod.UI.Tooltip.SnapModeZoneSide")}
             />
         </VC.Section>
     );
@@ -198,7 +220,8 @@ const ParcelDepthSection = () => {
 export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
     const PlatterMouseToolOptionsComponent = (props: any) => {
         const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
-        const snapRoadsideBinding = useValue(GAME_BINDINGS.SNAP_ROADSIDE.binding);
+        const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
+
         const { translate } = useLocalization();
         const { children, ...otherProps } = props || {};
 
@@ -212,7 +235,7 @@ export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
                 <FocusDisabled>
                     <PrezoningSection />
                     <SnapModeSection />
-                    {snapRoadsideBinding ? <SnapRoadsideSection /> : null}
+                    {snapModeBinding != SnapMode.None ? <SnapRoadsideSection /> : null}
                     <ParcelWidthSection />
                     <ParcelDepthSection />
                 </FocusDisabled>

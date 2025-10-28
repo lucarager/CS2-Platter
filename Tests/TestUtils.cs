@@ -17,15 +17,12 @@ using Unity.Entities;
 namespace Platter.Tests {
     public static class TestUtils {
         public static void SetDefaultTestConditions() {
-            return;
+            PlatterMod.Instance.IsTestMode = true;
+
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<DebugUISystem>().Hide();
 
             var instance = GameManager.instance;
-            if (instance != null) {
-                instance.settings.Reset();
-            }
 
-            instance = GameManager.instance;
             var gameplaySettings = instance == null ? null : instance.settings?.gameplay;
 
             if (gameplaySettings != null) {

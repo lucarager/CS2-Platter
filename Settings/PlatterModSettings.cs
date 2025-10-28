@@ -144,12 +144,16 @@ namespace Platter.Settings {
         }
 
         public bool ModalFirstLaunch { get; set; }
+        public bool RenderParcels { get; set; }
+        public bool AllowSpawn { get; set; }
 
         /// <summary>
         /// Restores mod settings to default.
         /// </summary>
         public override void SetDefaults() {
             ModalFirstLaunch = false;
+            RenderParcels    = false;
+            AllowSpawn       = true;
         }
 
         /// <summary>

@@ -1,7 +1,7 @@
 import { trigger } from "cs2/api";
 import mod from "../mod.json";
 import { TwoWayBinding } from "utils/bidirectionalBinding";
-import { ParcelUIData, PrefabData, ZoneData } from "types";
+import { ParcelUIData, PrefabData, SnapMode, ZoneData } from "types";
 import { Entity } from "cs2/bindings";
 
 export const GAME_BINDINGS = {
@@ -16,7 +16,7 @@ export const GAME_BINDINGS = {
     ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
-    SNAP_ROADSIDE: new TwoWayBinding<boolean>("SNAP_ROADSIDE", true),
+    SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
     SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 0),
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ZONE: new TwoWayBinding<number>("ZONE", 0),

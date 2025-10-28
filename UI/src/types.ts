@@ -14,3 +14,9 @@ export type ZoneData = {
     category: string;
     index: number;
 };
+
+export enum SnapMode {
+    None,
+    ZoneSide,
+    RoadSide,
+}
