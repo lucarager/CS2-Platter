@@ -1,9 +1,9 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
-  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Wiązania klawiszy",
-  "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Odinstaluj",
-  "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "O programie",
-  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Usuń wszystkie paczki",
+  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Sterowanie",
+  "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Odinstalowywanie",
+  "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "O modyfikacji",
+  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Usuń wszystkie Parcele",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Trwale usuwa wszystkie paczki z mapy. Budynki, które nie znajdują się w siatce stref wanilii znikną, chyba że masz modyfikację, która temu zapobiega.",
   "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "OSTRZEŻENIE: trwale usunąć wszystkie paczki z tego zapisu?",
   "Options.OPTION[Platter.Platter.PlatterMod/ToggleRenderActionName/binding]": "Przełącz \"Nakładka paczka\"",
