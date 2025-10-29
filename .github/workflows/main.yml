@@ -1,0 +1,32 @@
+    name: .NET CI
+
+    on:
+      push:
+        branches: [ main ]
+      pull_request:
+        branches: [ main ]
+
+    jobs:
+      build:
+        runs-on: windows-latest # Or ubuntu-latest, macos-latest
+        steps:
+        - uses: actions/checkout@v4 # Checks out the repository
+        
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '4.8.x' # Specify the .NET SDK version
+            
+        - name: Setup MSBuild and add to PATH
+          uses: microsoft/setup-msbuild@v1.0.0
+          id: setup_msbuild
+          
+        - name: Restore dependencies
+          run: dotnet restore
+          
+        - name: Run MSBuild
+          id: run_msbuild
+          run: |
+            msbuild .\gitactionstest.sln  /t:clean /p:Configuration=Debug
+            nuget restore .\gitactionstest.sln
+            msbuild .\gitactionstest.sln  /t:build /p:Configuration=Debug
