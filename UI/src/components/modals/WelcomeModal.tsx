@@ -14,9 +14,9 @@ export const WelcomeModal = () => {
         GAME_TRIGGERS.MODAL_DISMISS("first_launch");
     }, []);
 
-    // if (modalBinding) {
-    //     return <></>;
-    // }
+    if (modalBinding) {
+        return <></>;
+    }
 
     return (
         <div className={styles.wrapper}>
@@ -62,11 +62,10 @@ export const WelcomeModal = () => {
                         </div>
                         <div className={styles.card}>
                             <div className={styles.card__inner}>
-                                <video
-                                    src="coui://platter/v1.webm"
-                                    autoPlay={true}
-                                    loop={true}
-                                    className={styles.card__image}></video>
+                                <img
+                                    src="coui://platter/placeholder.png"
+                                    className={styles.card__image}
+                                />
                                 <div className={styles.card__text_container}>
                                     {/* eslint-disable-next-line react/no-unknown-property */}
                                     <p className={styles.card__text} cohinline="true">
@@ -82,11 +81,10 @@ export const WelcomeModal = () => {
                         </div>
                         <div className={styles.card}>
                             <div className={styles.card__inner}>
-                                <video
-                                    src="coui://platter/v1.webm"
-                                    autoPlay={true}
-                                    loop={true}
-                                    className={styles.card__image}></video>
+                                <img
+                                    src="coui://platter/placeholder.png"
+                                    className={styles.card__image}
+                                />
                                 <div className={styles.card__text_container}>
                                     {/* eslint-disable-next-line react/no-unknown-property */}
                                     <p className={styles.card__text} cohinline="true">
@@ -100,11 +98,10 @@ export const WelcomeModal = () => {
                         </div>
                         <div className={styles.card}>
                             <div className={styles.card__inner}>
-                                <video
-                                    src="coui://platter/v1.webm"
-                                    autoPlay={true}
-                                    loop={true}
-                                    className={styles.card__image}></video>
+                                <img
+                                    src="coui://platter/placeholder.png"
+                                    className={styles.card__image}
+                                />
                                 <div className={styles.card__text_container}>
                                     {/* eslint-disable-next-line react/no-unknown-property */}
                                     <p className={styles.card__text} cohinline="true">

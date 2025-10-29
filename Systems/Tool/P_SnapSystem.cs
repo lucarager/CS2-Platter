@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using Colossal.Entities;
+using Unity.Burst;
 
 namespace Platter.Systems {
     using System;

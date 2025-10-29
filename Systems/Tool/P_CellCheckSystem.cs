@@ -5,6 +5,7 @@
 
 using Game.Common;
 using Game.Tools;
+using Unity.Burst;
 using Unity.Entities.Internal;
 
 namespace Platter.Systems {

@@ -93,7 +93,7 @@ const SnapModeSection = () => {
         <VC.Section title={translate("PlatterMod.UI.SectionTitle.SnapMode")}>
             <VC.ToolButton
                 className={VT.toolButton.button}
-                src={"Media/Glyphs/Close.svg"}
+                src={"coui://uil/Standard/XClose.svg"}
                 onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.None)}
                 selected={snapModeBinding == SnapMode.None}
                 multiSelect={false}
