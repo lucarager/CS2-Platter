@@ -11,11 +11,6 @@
         runs-on: windows-latest # Or ubuntu-latest, macos-latest
         steps:
         - uses: actions/checkout@v4 # Checks out the repository
-        
-        - name: Setup .NET
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: '4.8.x' # Specify the .NET SDK version
             
         - name: Setup MSBuild and add to PATH
           uses: microsoft/setup-msbuild@v1.0.0
