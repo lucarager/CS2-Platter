@@ -5,11 +5,12 @@
     margin-bottom: -6px;
 
     &_Header {
-    display: flex;
-    flex-direction: row;
-    padding-left: 12rem;
-    padding-bottom: 4rem;
-    align-items: center;
+        display: flex;
+        flex-direction: row;
+        padding-left: 12rem;
+        padding-bottom: 4rem;
+        align-items: center;
+        justify-content: space-between;
 
     &_Image {
         width: 24rem;
@@ -77,6 +78,12 @@
             background-color: rgba(255, 255, 255, .1);
         }
     }
+}
+
+.modeButton {
+    padding: 10rem;
+    width: auto;
+    height: auto;
 }
 
 .dropdownToggle {

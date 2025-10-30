@@ -26,7 +26,6 @@ namespace Platter {
     using Game.Zones;
     using Newtonsoft.Json;
     using Platter.Components;
-    using Platter.Patches;
     using Platter.Settings;
     using Platter.Systems;
     using Unity.Entities;
@@ -112,9 +111,6 @@ namespace Platter {
             GenerateLanguageFile();
 #endif
 
-            // Apply harmony patches.
-            // ReSharper disable once ObjectCreationAsStatement
-            new Patcher("lucachoo-Platter", Log);
 
             // Apply inflection patches.
             ModifyVabillaSubBlockSerialization(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
@@ -168,7 +164,8 @@ namespace Platter {
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
             updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
-            
+            //updateSystem.UpdateAt<P_RoadsideToolSystem>(SystemUpdatePhase.ToolUpdate);
+
             // Experimental Systems
             //updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.Modification1);
             //updateSystem.UpdateAfter<P_BuildingSpawnSystem>(SystemUpdatePhase.GameSimulation);
@@ -214,9 +211,6 @@ namespace Platter {
                 Settings.UnregisterInOptionsUI();
                 Settings = null;
             }
-
-            // Revert harmony patches.
-            Patcher.Instance?.UnPatchAll();
         }
 
         private static void AddTests() {

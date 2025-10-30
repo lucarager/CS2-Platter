@@ -20,10 +20,9 @@ namespace Platter.Settings {
     /// The mod's settings.
     /// </summary>
     [FileLocation(PlatterMod.ModName)]
-    [SettingsUIMouseAction(IncreaseParcelWidthActionName, ActionType.Button, usages: new string[] { Usages.kToolUsage })]
-    [SettingsUIMouseAction(DecreaseParcelWidthActionName, ActionType.Button, usages: new string[] { Usages.kToolUsage })]
-    [SettingsUIMouseAction(IncreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
-    [SettingsUIMouseAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(IncreaseParcelWidthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(DecreaseParcelWidthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(IncreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
     [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
     [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
@@ -38,6 +37,9 @@ namespace Platter.Settings {
         public const  string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
         public const  string DecreaseParcelDepthActionName = "DecreaseParcelDepthActionName";
         private const string Credit                        = "Made with <3 by Luca.";
+        public const  string ApplyActionName               = "PlatterToolApply";
+        public const  string CreateActionName              = "PlatterToolCreate";
+        public const  string CancelActionName              = "PlatterToolCancel";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -45,6 +47,32 @@ namespace Platter.Settings {
         /// <param name="mod"><see cref="IMod"/> instance.</param>
         public PlatterModSettings(IMod mod)
             : base(mod) {
+        }
+
+        /// <summary>
+        /// Gets or sets the Platter Tool apply action (copied from game action).
+        /// </summary>
+        [SettingsUIMouseBinding(ApplyActionName)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
+        public ProxyBinding PlatterToolApply {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets the Platter Tool apply action (copied from game action).
+        /// </summary>
+        [SettingsUIKeyboardBinding(CreateActionName)]
+        public ProxyBinding PlatterToolCreate {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets the Platter Tool cancel action (copied from game action).
+        /// </summary>
+        [SettingsUIMouseBinding(CancelActionName)]
+        [SettingsUIBindingMimic(InputManager.kShortcutsMap, "Cancel")]
+        public ProxyBinding PlatterToolCancel {
+            get; set;
         }
 
         /// <summary>

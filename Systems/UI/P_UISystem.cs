@@ -14,95 +14,63 @@ namespace Platter.Systems {
     using Game.Tools;
     using Game.Zones;
     using Platter;
-    using Platter.Extensions;
-    using Platter.Settings;
-    using Platter.Systems;
-    using Platter.Utils;
+    using Extensions;
+    using Settings;
+    using Systems;
+    using Utils;
     using Unity.Mathematics;
-    using static Platter.Systems.P_SnapSystem;
+    using static P_SnapSystem;
 
     /// <summary>
     /// System responsible for UI Bindings & Data Handling.
     /// </summary>
     public partial class P_UISystem : ExtendedUISystemBase {
-        public ZoneType PreZoneType { get; private set; } = ZoneType.None;
+        public enum PlatterToolMode {
+            Plop     = 0,
+            RoadEdge = 1,
+        }
 
-        // Systems
-        private PrefabSystem        m_PrefabSystem;
-        private ToolSystem          m_ToolSystem;
-        private ObjectToolSystem    m_ObjectToolSystem;
-        private P_OverlaySystem     m_PlatterOverlaySystem;
-        private P_AllowSpawnSystem  m_AllowSpawnSystem;
-        private P_SnapSystem        m_SnapSystem;
-        private P_ZoneCacheSystem   m_ZoneCacheSystem;
-
-        // Logger
-        private PrefixedLogger m_Log;
-
-        // Data
-        private int2 m_SelectedParcelSize = new(2, 2);
+        private ValueBindingHelper<bool> m_AllowSpawningBinding;
+        private P_AllowSpawnSystem       m_AllowSpawnSystem;
+        private ValueBindingHelper<int>  m_BlockDepthBinding;
+        private ValueBindingHelper<int>  m_BlockWidthBinding;
+        private ProxyAction              m_DecreaseBlockDepthAction;
+        private ProxyAction              m_DecreaseBlockWidthAction;
 
         // Bindings
-        private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
-        private ValueBindingHelper<int>          m_ZoneBinding;
-        private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
-        private ValueBindingHelper<int>          m_BlockWidthBinding;
-        private ValueBindingHelper<int>          m_BlockDepthBinding;
-        private ValueBindingHelper<bool>         m_RenderParcelsBinding;
-        private ValueBindingHelper<bool>         m_AllowSpawningBinding;
-        private ValueBindingHelper<int>          m_SnapModeBinding;
-        private ValueBindingHelper<float>        m_SnapSpacingBinding;
-        private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
+        private ValueBindingHelper<bool> m_EnableToolButtonsBinding;
+        private ProxyAction              m_IncreaseBlockDepthAction;
 
         // Shortcuts
         private ProxyAction m_IncreaseBlockWidthAction;
-        private ProxyAction m_IncreaseBlockDepthAction;
-        private ProxyAction m_DecreaseBlockWidthAction;
-        private ProxyAction m_DecreaseBlockDepthAction;
-        private ProxyAction m_ToggleRender;
-        private ProxyAction m_ToggleSpawn;
 
-        /// <summary>
-        /// Struct to store and send Zone Data and to the React UI.
-        /// </summary>
-        public readonly struct ZoneUIData : IJsonWritable {
-            public readonly string Name;
-            public readonly string Thumbnail;
-            public readonly string Category;
-            public readonly ushort Index;
+        // Logger
+        private PrefixedLogger           m_Log;
+        private ValueBindingHelper<bool> m_ModalFirstLaunchBinding;
+        private ObjectToolSystem         m_ObjectToolSystem;
+        private P_OverlaySystem          m_PlatterOverlaySystem;
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
-            /// </summary>
-            public ZoneUIData(string name,
-                              string thumbnail,
-                              string category,
-                              ushort index) {
-                Name      = name;
-                Thumbnail = thumbnail;
-                Category  = category;
-                Index     = index;
-            }
+        // Systems
+        private PrefabSystem               m_PrefabSystem;
+        private ValueBindingHelper<bool>   m_RenderParcelsBinding;
+        private ValueBindingHelper<float>  m_RoadEditorOffsetBinding;
+        private ValueBindingHelper<bool[]> m_RoadEditorSideBinding;
+        private ValueBindingHelper<float>  m_RoadEditorSpacingBinding;
+        //private P_RoadsideToolSystem       m_RoadsideToolSystem;
 
-            /// <inheritdoc/>
-            public void Write(IJsonWriter writer) {
-                writer.TypeBegin(GetType().FullName);
-
-                writer.PropertyName("name");
-                writer.Write(Name);
-
-                writer.PropertyName("thumbnail");
-                writer.Write(Thumbnail);
-
-                writer.PropertyName("category");
-                writer.Write(Category);
-
-                writer.PropertyName("index");
-                writer.Write(Index);
-
-                writer.TypeEnd();
-            }
-        }
+        // Data
+        private int2                             m_SelectedParcelSize = new(2, 2);
+        private ValueBindingHelper<int>          m_SnapModeBinding;
+        private ValueBindingHelper<float>        m_SnapSpacingBinding;
+        private P_SnapSystem                     m_SnapSystem;
+        private ProxyAction                      m_ToggleRender;
+        private ProxyAction                      m_ToggleSpawn;
+        private ValueBindingHelper<int>          m_ToolModeBinding;
+        private ToolSystem                       m_ToolSystem;
+        private ValueBindingHelper<int>          m_ZoneBinding;
+        private P_ZoneCacheSystem                m_ZoneCacheSystem;
+        private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
+        public  ZoneType                         PreZoneType { get; private set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -120,6 +88,7 @@ namespace Platter.Systems {
             m_AllowSpawnSystem     = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
             m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
+            //m_RoadsideToolSystem   = World.GetOrCreateSystemManaged<P_RoadsideToolSystem>();
 
             // Bindings
             m_EnableToolButtonsBinding = CreateBinding("ENABLE_TOOL_BUTTONS", false);
@@ -127,15 +96,21 @@ namespace Platter.Systems {
             m_BlockWidthBinding        = CreateBinding("BLOCK_WIDTH", 2);
             m_BlockDepthBinding        = CreateBinding("BLOCK_DEPTH", 2);
             m_ZoneDataBinding          = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
-            m_RenderParcelsBinding     = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
-            m_AllowSpawningBinding     = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
-            m_SnapModeBinding          = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
-            m_SnapSpacingBinding       = CreateBinding("SNAP_SPACING", P_SnapSystem.DefaultSnapDistance, SetSnapSpacing);
-            m_ModalFirstLaunchBinding  = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.ModalFirstLaunch);
+            m_RenderParcelsBinding = CreateBinding(
+                "RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
+            m_AllowSpawningBinding = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
+            m_SnapModeBinding = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
+            m_SnapSpacingBinding = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
+            m_ModalFirstLaunchBinding = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.ModalFirstLaunch);
+            m_RoadEditorSideBinding = CreateBinding("ROAD_SIDE__SIDES", new bool[4] { true, true, false, false }, SetSides);
+            m_RoadEditorSpacingBinding = CreateBinding("ROAD_SIDE__SPACING", 1f, SetSpacing);
+            m_RoadEditorOffsetBinding = CreateBinding("ROAD_SIDE__OFFSET", 2f, SetOffset);
+            m_ToolModeBinding = CreateBinding("TOOL_MODE", 0, SetToolMode);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
             CreateTrigger<string>("MODAL_DISMISS", HandleModalDismiss);
+            CreateTrigger("ROAD_SIDE__REQUEST_APPLY", RequestApply);
 
             // Shortcuts
             m_IncreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
@@ -187,8 +162,8 @@ namespace Platter.Systems {
                 m_SelectedParcelSize.y = ((ParcelPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
             }
 
-            // Rendering should be on when using the tool
-            m_PlatterOverlaySystem.RenderParcelsOverride = currentlyUsingParcelsInObjectTool;
+            // Rendering should be on when using a tool
+            m_PlatterOverlaySystem.RenderParcelsOverride = ShouldRenderOverlay();
 
             // Update Bindings
             m_RenderParcelsBinding.Value     = PlatterMod.Instance.Settings.RenderParcels;
@@ -218,6 +193,12 @@ namespace Platter.Systems {
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
             return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
+        }
+
+        /// <summary>
+        /// </summary>
+        private bool ShouldRenderOverlay() {
+            return m_ToolSystem.activeTool is ObjectToolSystem or BulldozeToolSystem or NetToolSystem or ZoneToolSystem || m_ToolSystem.activePrefab is ParcelPrefab;
         }
 
         /// <summary>
@@ -297,9 +278,9 @@ namespace Platter.Systems {
         private void SetSnapRoadside(bool enabled) {
             m_Log.Debug($"SetSnapRoadside(enabled = {enabled})");
             if (enabled) {
-                m_SnapSystem.CurrentSnapMode |= P_SnapSystem.SnapMode.RoadSide;
+                m_SnapSystem.CurrentSnapMode |= SnapMode.RoadSide;
             } else {
-                m_SnapSystem.CurrentSnapMode &= ~P_SnapSystem.SnapMode.RoadSide;
+                m_SnapSystem.CurrentSnapMode &= ~SnapMode.RoadSide;
             }
         }
 
@@ -310,7 +291,7 @@ namespace Platter.Systems {
             m_Log.Debug($"SetSnapRoadside(enabled = {amount})");
             if (amount < 1f) {
                 amount = 1f;
-            } else if (amount >= P_SnapSystem.MaxSnapDistance) {
+            } else if (amount >= MaxSnapDistance) {
                 amount = 100f;
             }
 
@@ -391,6 +372,106 @@ namespace Platter.Systems {
             m_Log.Debug($"UpdateSelectedPrefab() -- Found ${prefabBase}!");
 
             m_ToolSystem.ActivatePrefabTool((StaticObjectPrefab)prefabBase);
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetSpacing(float spacing) {
+            m_Log.Debug($"SetSpacing(spacing = {spacing})");
+
+            //m_RoadsideToolSystem.RoadEditorSpacing = spacing;
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetSides(bool[] sides) {
+            m_Log.Debug($"SetSides(sides = {sides})");
+
+            if (sides.Length != 4) {
+                return;
+            }
+
+            //m_RoadsideToolSystem.RoadEditorSides = new bool4(sides[0], sides[1], sides[2], sides[3]);
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetOffset(float offset) {
+            m_Log.Debug($"SetSpacing(offset = {offset})");
+
+            //m_RoadsideToolSystem.RoadEditorOffset = offset;
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void RequestApply() {
+            //m_RoadsideToolSystem.ApplyWasRequested = true;
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetToolMode(int modeIndex) {
+            m_Log.Debug($"SetToolMode(modeIndex = {modeIndex})");
+            var mode = (PlatterToolMode)modeIndex;
+
+            switch (mode) {
+                case PlatterToolMode.Plop:
+                    return;
+                case PlatterToolMode.RoadEdge: {
+                    //if (!m_RoadsideToolSystem.Enabled) {
+                    //    m_RoadsideToolSystem.RequestEnable();
+                    //}
+
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Struct to store and send Zone Data and to the React UI.
+        /// </summary>
+        public readonly struct ZoneUIData : IJsonWritable {
+            public readonly string Name;
+            public readonly string Thumbnail;
+            public readonly string Category;
+            public readonly ushort Index;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
+            /// </summary>
+            public ZoneUIData(string name,
+                              string thumbnail,
+                              string category,
+                              ushort index) {
+                Name      = name;
+                Thumbnail = thumbnail;
+                Category  = category;
+                Index     = index;
+            }
+
+            /// <inheritdoc/>
+            public void Write(IJsonWriter writer) {
+                writer.TypeBegin(GetType().FullName);
+
+                writer.PropertyName("name");
+                writer.Write(Name);
+
+                writer.PropertyName("thumbnail");
+                writer.Write(Thumbnail);
+
+                writer.PropertyName("category");
+                writer.Write(Category);
+
+                writer.PropertyName("index");
+                writer.Write(Index);
+
+                writer.TypeEnd();
+            }
         }
     }
 }

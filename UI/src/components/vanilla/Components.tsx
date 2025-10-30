@@ -26,6 +26,18 @@ const modulePaths = [
         path: "game-ui/game/components/selected-info-panel/shared-components/info-link/info-link.tsx",
         components: ["InfoLink"],
     },
+    {
+        path: "game-ui/menu/components/whats-new-panel/page-selector/page-selector.tsx",
+        components: ["PageSelector"]
+    },
+    {
+        path: "game-ui/common/animations/paging/page-switcher.tsx",
+        components: ["PageSwitcher", "Page"]
+    },
+    {
+        path: "game-ui/common/scrolling/scrollable.tsx",
+        components: ["Scrollable"]
+    }
 ];
 
 const themePaths = [
@@ -61,6 +73,22 @@ const themePaths = [
         path: "game-ui/common/panel/themes/default.module.scss",
         name: "panel",
     },
+    {
+        path: "game-ui/menu/components/whats-new-panel/page-selector/page-selector.module.scss",
+        name: "pageSelector",
+    },
+    {
+        path: "game-ui/menu/components/whats-new-panel/whats-new-page/whats-new-page.module.scss",
+        name: "whatsNewPage",
+    },
+    {
+        path: "game-ui/common/animations/paging/transitions/horizontal-transition.module.scss",
+        name: "horizontalTransition",
+    },
+    {
+        path: "game-ui/menu/components/whats-new-panel/whats-new-tab/whats-new-tab.module.scss",
+        name: "whatsNewTab",
+    }
 ];
 
 export const VC = {} as IVanillaComponents;

@@ -22,5 +22,16 @@ namespace Platter.Constants {
         // Guideline ColorConstants
         public static readonly Color GuidelinePrimary = Color.cyan;
         public static readonly Color GuidelineSecondary = Color.magenta;
+
+        public static Color[] DebugColors = new Color[] {
+            Color.blue,
+            Color.red,
+            Color.green,
+            Color.yellow,
+            Color.white,
+            Color.black,
+            Color.cyan,
+            Color.magenta
+        };
     }
 }

@@ -28,6 +28,7 @@ namespace Platter.Systems {
     using Unity.Mathematics;
     using UnityEngine;
     using Utils;
+    using static Colossal.IO.AssetDatabase.AtlasFrame;
     using static Platter.Systems.P_SnapSystem;
     using Block = Game.Zones.Block;
     using Transform = Game.Objects.Transform;
@@ -127,10 +128,13 @@ namespace Platter.Systems {
                 return;
             }
 
+            var curvesList = new NativeList<Bezier4x3>(Allocator.Temp);
+
             // Schedule our snapping job
             var parcelSnapJobHandle = new ParcelSnapJob(
                 m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
                 m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
+                curvesList: curvesList,
                 snapMode: m_SnapMode,
                 controlPoints: controlPoints,
                 objectDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<ObjectDefinition>(),
@@ -164,6 +168,8 @@ namespace Platter.Systems {
             m_TerrainSystem.AddCPUHeightReader(parcelSnapJobHandle);
             m_WaterSystem.AddSurfaceReader(parcelSnapJobHandle);
 
+            curvesList.Dispose(parcelSnapJobHandle);
+
             // Register deps
             Dependency = JobHandle.CombineDependencies(Dependency, parcelSnapJobHandle);
         }
@@ -196,9 +202,10 @@ namespace Platter.Systems {
             [ReadOnly] private ComponentLookup<EndNodeGeometry>         m_EndNodeGeoLookup;
             [ReadOnly] private BufferLookup<ConnectedEdge>              m_ConnectedEdgeLookup;
             [ReadOnly] private SnapMode                                 m_SnapMode;
+            private            NativeList<Bezier4x3>                    m_CurvesList;
             private            ComponentTypeHandle<ObjectDefinition>    m_ObjectDefinitionTypeHandle;
 
-            public ParcelSnapJob(NativeQuadTree<Entity, Bounds2> zoneTree, NativeQuadTree<Entity, QuadTreeBoundsXZ> netTree,
+            public ParcelSnapJob(NativeQuadTree<Entity, Bounds2> zoneTree, NativeQuadTree<Entity, QuadTreeBoundsXZ> netTree, NativeList<Bezier4x3> curvesList,
                                  TerrainHeightData terrainHeightData, WaterSurfaceData waterSurfaceData,
                                  NativeList<ControlPoint> controlPoints,
                                  ComponentTypeHandle<CreationDefinition> creationDefinitionTypeHandle,
@@ -217,6 +224,7 @@ namespace Platter.Systems {
                                  ComponentTypeHandle<ObjectDefinition> objectDefinitionTypeHandle, SnapMode snapMode) {
                 m_ZoneTree                     = zoneTree;
                 m_NetTree                      = netTree;
+                m_CurvesList                   = curvesList;
                 m_TerrainHeightData            = terrainHeightData;
                 m_WaterSurfaceData             = waterSurfaceData;
                 m_ControlPoints                = controlPoints;
@@ -290,6 +298,7 @@ namespace Platter.Systems {
                         bestSnapPosition = iterator.BestSnapPosition;
                     } else if (m_SnapMode == SnapMode.RoadSide) {
                         var iterator = new EdgeSnapIterator(
+                            m_CurvesList,
                             totalBounds,
                             bounds,
                             20f,
@@ -511,10 +520,10 @@ namespace Platter.Systems {
             private ComponentLookup<EndNodeGeometry>    m_EndNodeGeoLookup;
             private BufferLookup<ConnectedEdge>         m_ConnectedEdgeLookup;
             private float                               m_SnapSetback;
-
-            public EdgeSnapIterator(Bounds3 totalBounds, Bounds3 bounds, float snapOffset, float elevation, float legSnapWidth,
-                                    Bounds1 heightRange, NetData netData,
-                                    ControlPoint controlPoint, ControlPoint bestSnapPosition, TerrainHeightData terrainHeightData,
+            private NativeList<Bezier4x3>               m_CurvesList;
+            public EdgeSnapIterator(NativeList<Bezier4x3>  curvesList, Bounds3 totalBounds, Bounds3 bounds, float snapOffset, float elevation, float legSnapWidth,
+                                                                                                                                        Bounds1 heightRange, NetData netData,
+                                                                                                                                                                     ControlPoint controlPoint, ControlPoint bestSnapPosition, TerrainHeightData terrainHeightData,
                                     WaterSurfaceData waterSurfaceData, ComponentLookup<Node> nodeLookup,
                                     ComponentLookup<Edge> edgeLookup, ComponentLookup<Curve> curveLookup,
                                     ComponentLookup<Composition> compositionLookup, ComponentLookup<PrefabRef> prefabRefLookup,
@@ -525,6 +534,7 @@ namespace Platter.Systems {
                                     ComponentLookup<StartNodeGeometry> startNodeGeoLookup,
                                     ComponentLookup<EndNodeGeometry> endNodeGeoLookup,
                                     BufferLookup<ConnectedEdge> connectedEdgeLookup, float snapSetback) {
+                m_CurvesList               = curvesList;
                 m_TotalBounds              = totalBounds;
                 m_Bounds                   = bounds;
                 m_SnapOffset               = snapOffset;
@@ -700,55 +710,57 @@ namespace Platter.Systems {
                 var edgeGeo      = m_EdgeGeoLookup[curveEntity];
                 var startNodeGeo = m_StartNodeGeoLookup[curveEntity];
                 var endNodeGeo   = m_EndNodeGeoLookup[curveEntity];
+                var edge = m_EdgeLookup[curveEntity];
+
+                var startIsConnected = m_ConnectedEdgeLookup[edge.m_Start].Length > 1;
+                var endIsConnected   = m_ConnectedEdgeLookup[edge.m_End].Length > 1;
+
+                // Check if this road is connected at its end
+
 
                 // Gather all curves for this road.
-                var curves = new List<Bezier4x3>();
-
-                curves.AddRange(
-                    new[] {
-                        edgeGeo.m_Start.m_Left,
-                        edgeGeo.m_Start.m_Right,
-                        edgeGeo.m_End.m_Left,
-                        edgeGeo.m_End.m_Right,
-                    });
+                m_CurvesList.Add(edgeGeo.m_Start.m_Left);
+                m_CurvesList.Add(edgeGeo.m_Start.m_Right);
+                m_CurvesList.Add(edgeGeo.m_End.m_Left);
+                m_CurvesList.Add(edgeGeo.m_End.m_Right);
 
                 if (startNodeGeo.m_Geometry.m_Left.m_Length.x > 1) {
-                    curves.Add(startNodeGeo.m_Geometry.m_Left.m_Left);
+                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Left);
                 }
 
-                if (startNodeGeo.m_Geometry.m_Left.m_Length.y > 1) {
-                    curves.Add(startNodeGeo.m_Geometry.m_Left.m_Right);
+                if (startNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && startNodeGeo.m_Geometry.m_MiddleRadius > 0) {
+                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Right);
                 }
 
-                if (startNodeGeo.m_Geometry.m_Right.m_Length.x > 1) {
-                    curves.Add(startNodeGeo.m_Geometry.m_Right.m_Left);
+                if (startNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && startNodeGeo.m_Geometry.m_MiddleRadius > 0) {
+                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Left);
                 }
 
                 if (startNodeGeo.m_Geometry.m_Right.m_Length.y > 1) {
-                    curves.Add(startNodeGeo.m_Geometry.m_Right.m_Right);
+                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Right);
                 }
 
                 if (endNodeGeo.m_Geometry.m_Left.m_Length.x > 1) {
-                    curves.Add(endNodeGeo.m_Geometry.m_Left.m_Left);
+                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Left);
                 }
 
-                if (endNodeGeo.m_Geometry.m_Left.m_Length.y > 1) {
-                    curves.Add(endNodeGeo.m_Geometry.m_Left.m_Right);
+                if (endNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && endNodeGeo.m_Geometry.m_MiddleRadius > 0) {
+                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Right);
                 }
 
-                if (endNodeGeo.m_Geometry.m_Right.m_Length.x > 1) {
-                    curves.Add(endNodeGeo.m_Geometry.m_Right.m_Left);
+                if (endNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && endNodeGeo.m_Geometry.m_MiddleRadius > 0) {
+                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Left);
                 }
 
                 if (endNodeGeo.m_Geometry.m_Right.m_Length.y > 1) {
-                    curves.Add(endNodeGeo.m_Geometry.m_Right.m_Right);
+                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Right);
                 }
 
                 // Find curve closes to our control point.
                 var closestCurve    = default(Bezier4x3);
                 var closestDistance = float.MaxValue;
 
-                foreach (var curve in curves) {
+                foreach (var curve in m_CurvesList) {
                     // Calculate the distance from the control point to the curve
                     var distance = MathUtils.Distance(curve.xz, controlPoint.m_HitPosition.xz, out var t);
 

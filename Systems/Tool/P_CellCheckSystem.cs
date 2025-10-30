@@ -505,27 +505,19 @@ namespace Platter.Systems {
 
                     // If either is blocked already, nothing to do.
                     if (((curCell.m_State | otherCell.m_State) & CellFlags.Blocked) != CellFlags.None) {
-                        PlatterMod.Instance.Log.Debug(
-                            $"[CheckBlockOverlapJob] Blocked - {curCell} {curIndex} ({m_CurBlock.m_Size}) / {otherCell} {otherIndex} ({m_OtherBlock.m_Size})");
                         return;
                     }
 
                     // In sharing mode we only allow sharing when cell centers are very close.
                     if (!(math.lengthsq(MathUtils.Center(blockCorners) - MathUtils.Center(otherCorners)) < 16f)) {
-                        PlatterMod.Instance.Log.Debug(
-                            $"[CheckBlockOverlapJob] Not close - {curCell} {curIndex} ({blockCorners}) / {otherCell} {otherIndex} ({otherCorners})");
                         return;
                     }
 
                     if (m_CurBlockIsParcel) {
-                        PlatterMod.Instance.Log.Debug(
-                            $"[CheckBlockOverlapJob] Clearing {otherCell} {otherIndex} ({m_OtherBlock.m_Size} {m_OtherBlockEntity})");
                         otherCell.m_Zone         =  ZoneType.None;
                         otherCell.m_State        &= ~CellFlags.Shared;
                         m_OtherCells[otherIndex] =  otherCell;
                     } else if (m_OtherBlockIsParcel) {
-                        PlatterMod.Instance.Log.Debug(
-                            $"[CheckBlockOverlapJob] Clearing {curCell} {curIndex} ({m_CurBlock.m_Size} {m_CurBlockEntity})");
                         curCell.m_Zone            =  ZoneType.None;
                         curCell.m_State           &= ~CellFlags.Shared;
                         m_CurCellBuffer[curIndex] =  curCell;

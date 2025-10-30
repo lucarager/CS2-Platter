@@ -13,6 +13,44 @@ import { SnapMode } from "types";
 
 export type BlockControlProps = Record<string, never>;
 
+export const ToolModes = [
+    {
+        title: "Plop",
+        icon: "",
+    },
+    {
+        title: "Road Mode",
+        icon: "",
+    },
+];
+
+const ToolModeSection = () => {
+    const toolModeBinding = useValue(GAME_BINDINGS.TOOL_MODE.binding);
+
+    const { translate } = useLocalization();
+
+    return (
+        <VC.Section title="Tool Mode">
+            <VC.ToolButton
+                src={"coui://uil/Standard/ArrowDownTriangleNotch.svg"}
+                onSelect={() => GAME_BINDINGS.TOOL_MODE.set(0)}
+                selected={toolModeBinding == 0}
+                multiSelect={false}
+                className={VT.toolButton.button}
+                focusKey={VF.FOCUS_DISABLED}
+                tooltip={"Plop Mode"}
+            />
+            <VC.ToolButton
+                src={"coui://uil/Standard/Road.svg"}
+                multiSelect={false}
+                className={VT.toolButton.button}
+                focusKey={VF.FOCUS_DISABLED}
+                tooltip={"Road Platting Mode is under active development. Stay tuned!"}
+            />
+        </VC.Section>
+    );
+};
+
 const PrezoningSection = () => {
     const zoneBinding = useValue(GAME_BINDINGS.ZONE.binding);
     const zoneDataBinding = useValue(GAME_BINDINGS.ZONE_DATA.binding);
@@ -233,6 +271,7 @@ export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
                     </h1>
                 </div>
                 <FocusDisabled>
+                    <ToolModeSection />
                     <PrezoningSection />
                     <SnapModeSection />
                     {snapModeBinding != SnapMode.None ? <SnapRoadsideSection /> : null}

@@ -66,9 +66,6 @@ namespace Platter.Systems {
             Dependency = jobHandle;
         }
 
-#if USE_BURST
-        [BurstCompile]
-#endif
         public struct ProcessBuildingPrefabJob : IJobChunk {
             [ReadOnly] private EntityTypeHandle                        m_EntityTypeHandle;
             [ReadOnly] private ComponentTypeHandle<ObjectGeometryData> m_ObjectGeometryDataTypeHandle;
@@ -134,287 +131,287 @@ namespace Platter.Systems {
                     var cornerLeftBack   = new float3(geometry.m_Bounds.min.x, 0, geometry.m_Bounds.max.z);
                     var cornerRightBack  = new float3(geometry.m_Bounds.max.x, 0, geometry.m_Bounds.max.z);
 
-                    // Front
-                    var bounds = new Dictionary<string, Bounds3> {
-                    {
-                    "front", new Bounds3(
-                        cornerLeftFront  + shiftForLowerBound,
-                        cornerRightFront + shiftForUpperBound
-                    )
-                    }, {
-                    "left", new Bounds3(
-                        cornerLeftFront + shiftForLowerBound,
-                        cornerLeftBack  + shiftForUpperBound
-                    )
-                    }, {
-                    "rear", new Bounds3(
-                        cornerLeftBack  + shiftForLowerBound,
-                        cornerRightBack + shiftForUpperBound
-                    )
-                    }, {
-                    "right", new Bounds3(
-                        cornerRightFront + shiftForLowerBound,
-                        cornerRightBack  + shiftForUpperBound
-                    )
-                    },
-                    };
+                    //// Front
+                    //var bounds = new Dictionary<string, Bounds3> {
+                    //{
+                    //"front", new Bounds3(
+                    //    cornerLeftFront  + shiftForLowerBound,
+                    //    cornerRightFront + shiftForUpperBound
+                    //)
+                    //}, {
+                    //"left", new Bounds3(
+                    //    cornerLeftFront + shiftForLowerBound,
+                    //    cornerLeftBack  + shiftForUpperBound
+                    //)
+                    //}, {
+                    //"rear", new Bounds3(
+                    //    cornerLeftBack  + shiftForLowerBound,
+                    //    cornerRightBack + shiftForUpperBound
+                    //)
+                    //}, {
+                    //"right", new Bounds3(
+                    //    cornerRightFront + shiftForLowerBound,
+                    //    cornerRightBack  + shiftForUpperBound
+                    //)
+                    //},
+                    //};
 
-                    if (chunk.Has(ref m_SubAreaTypeHandle) && chunk.Has(ref m_SubAreaNodeTypeHandle)) {
-                        for (var i = 0; i < subAreabuffer.Length; i++) {
-                            var subArea = subAreabuffer[i];
+                    //if (chunk.Has(ref m_SubAreaTypeHandle) && chunk.Has(ref m_SubAreaNodeTypeHandle)) {
+                    //    for (var i = 0; i < subAreabuffer.Length; i++) {
+                    //        var subArea = subAreabuffer[i];
 
-                            if (subArea.m_NodeRange.y > subAreaNodeBuffer.Length) {
-                                continue;
-                            }
+                    //        if (subArea.m_NodeRange.y > subAreaNodeBuffer.Length) {
+                    //            continue;
+                    //        }
 
-                            for (var j = subArea.m_NodeRange.x; j < subArea.m_NodeRange.y; j++) {
-                                var node    = subAreaNodeBuffer[j];
-                                var data = new BoundarySubAreaNodeData {
-                                    absIndex  = j,
-                                    relIndex  = j - subArea.m_NodeRange.x,
-                                    areaIndex = i,
-                                };
+                    //        for (var j = subArea.m_NodeRange.x; j < subArea.m_NodeRange.y; j++) {
+                    //            var node    = subAreaNodeBuffer[j];
+                    //            var data = new BoundarySubAreaNodeData {
+                    //                absIndex  = j,
+                    //                relIndex  = j - subArea.m_NodeRange.x,
+                    //                areaIndex = i,
+                    //            };
 
-                                foreach (var (name, boundary) in bounds) {
-                                    if (!MathUtils.Intersect(boundary, node.m_Position)) {
-                                        continue;
-                                    }
+                    //            foreach (var (name, boundary) in bounds) {
+                    //                if (!MathUtils.Intersect(boundary, node.m_Position)) {
+                    //                    continue;
+                    //                }
 
-                                    switch (name) {
-                                        case "front":
-                                            data.projectionFilter.x    = true;
-                                            data.projectionConfig.c0.x = 0f; // distance to front
-                                            data.projectionConfig.c0.y = 0f; // projection onto front                                            
-                                            break;
-                                        case "left":
-                                            data.projectionFilter.y    = true;
-                                            data.projectionConfig.c1.x = 0f; // distance to left
-                                            data.projectionConfig.c1.y = 0f; // projection onto left                                            
-                                            break;
-                                        case "rear":
-                                            data.projectionFilter.z    = true;
-                                            data.projectionConfig.c2.x = 0f; // distance to rear
-                                            data.projectionConfig.c2.y = 0f; // projection onto rear                                            
-                                            break;
-                                        case "right":
-                                            data.projectionFilter.w    = true;
-                                            data.projectionConfig.c3.x = 0f; // distance to right
-                                            data.projectionConfig.c3.y = 0f; // projection onto right                                            
-                                            break;
-                                    }
-                                }
+                    //                switch (name) {
+                    //                    case "front":
+                    //                        data.projectionFilter.x    = true;
+                    //                        data.projectionConfig.c0.x = 0f; // distance to front
+                    //                        data.projectionConfig.c0.y = 0f; // projection onto front                                            
+                    //                        break;
+                    //                    case "left":
+                    //                        data.projectionFilter.y    = true;
+                    //                        data.projectionConfig.c1.x = 0f; // distance to left
+                    //                        data.projectionConfig.c1.y = 0f; // projection onto left                                            
+                    //                        break;
+                    //                    case "rear":
+                    //                        data.projectionFilter.z    = true;
+                    //                        data.projectionConfig.c2.x = 0f; // distance to rear
+                    //                        data.projectionConfig.c2.y = 0f; // projection onto rear                                            
+                    //                        break;
+                    //                    case "right":
+                    //                        data.projectionFilter.w    = true;
+                    //                        data.projectionConfig.c3.x = 0f; // distance to right
+                    //                        data.projectionConfig.c3.y = 0f; // projection onto right                                            
+                    //                        break;
+                    //                }
+                    //            }
 
-                                if (!math.any(data.projectionFilter)) {
-                                    continue;
-                                }
+                    //            if (!math.any(data.projectionFilter)) {
+                    //                continue;
+                    //            }
 
-                                boundarySubAreaNodeBuffer.Add(data);
-                                //node.m_Position      += shift;
-                                //subAreaNodeBuffer[i] =  node;
-                            }
-                        }
-                    }
+                    //            boundarySubAreaNodeBuffer.Add(data);
+                    //            //node.m_Position      += shift;
+                    //            //subAreaNodeBuffer[i] =  node;
+                    //        }
+                    //    }
+                    //}
 
-                    if (chunk.Has(ref m_SubObjectTypeHandle)) {
-                        for (var i = 0; i < subObjectBuffer.Length; i++) {
-                            var subObject = subObjectBuffer[i];
-                            var shift     = new float3();
-                            var shifted   = false;
-                            var data = new BoundarySubObjectData {
-                            index = i,
-                            };
+                    //if (chunk.Has(ref m_SubObjectTypeHandle)) {
+                    //    for (var i = 0; i < subObjectBuffer.Length; i++) {
+                    //        var subObject = subObjectBuffer[i];
+                    //        var shift     = new float3();
+                    //        var shifted   = false;
+                    //        var data = new BoundarySubObjectData {
+                    //        index = i,
+                    //        };
 
-                            foreach (var (name, boundary) in bounds) {
-                                if (!MathUtils.Intersect(boundary, subObject.m_Position)) {
-                                    continue;
-                                }
+                    //        foreach (var (name, boundary) in bounds) {
+                    //            if (!MathUtils.Intersect(boundary, subObject.m_Position)) {
+                    //                continue;
+                    //            }
 
-                                shifted = true;
+                    //            shifted = true;
 
-                                switch (name) {
-                                    case "front":
-                                        data.projectionFilter.x = true;
-                                        data.projectionConfig.c0.x = 0f; // distance to front
-                                        data.projectionConfig.c0.y = 0f; // projection onto front                                            
-                                        break;
-                                    case "left":
-                                        data.projectionFilter.y = true;
-                                        data.projectionConfig.c1.x = 0f; // distance to left
-                                        data.projectionConfig.c1.y = 0f; // projection onto left                                            
-                                        break;
-                                    case "rear":
-                                        data.projectionFilter.z = true;
-                                        data.projectionConfig.c2.x = 0f; // distance to rear
-                                        data.projectionConfig.c2.y = 0f; // projection onto rear                                            
-                                        break;
-                                    case "right":
-                                        data.projectionFilter.w = true;
-                                        data.projectionConfig.c3.x = 0f; // distance to right
-                                        data.projectionConfig.c3.y = 0f; // projection onto right                                            
-                                        break;
-                                }
-                            }
+                    //            switch (name) {
+                    //                case "front":
+                    //                    data.projectionFilter.x = true;
+                    //                    data.projectionConfig.c0.x = 0f; // distance to front
+                    //                    data.projectionConfig.c0.y = 0f; // projection onto front                                            
+                    //                    break;
+                    //                case "left":
+                    //                    data.projectionFilter.y = true;
+                    //                    data.projectionConfig.c1.x = 0f; // distance to left
+                    //                    data.projectionConfig.c1.y = 0f; // projection onto left                                            
+                    //                    break;
+                    //                case "rear":
+                    //                    data.projectionFilter.z = true;
+                    //                    data.projectionConfig.c2.x = 0f; // distance to rear
+                    //                    data.projectionConfig.c2.y = 0f; // projection onto rear                                            
+                    //                    break;
+                    //                case "right":
+                    //                    data.projectionFilter.w = true;
+                    //                    data.projectionConfig.c3.x = 0f; // distance to right
+                    //                    data.projectionConfig.c3.y = 0f; // projection onto right                                            
+                    //                    break;
+                    //            }
+                    //        }
 
-                            if (!shifted) {
-                                continue;
-                            }
+                    //        if (!shifted) {
+                    //            continue;
+                    //        }
 
-                            boundarySubObjectBuffer.Add(data);
-                            //subObject.m_Position += shift;
-                            //subObjectBuffer[i]   =  subObject;
-                        }
-                    }
+                    //        boundarySubObjectBuffer.Add(data);
+                    //        //subObject.m_Position += shift;
+                    //        //subObjectBuffer[i]   =  subObject;
+                    //    }
+                    //}
 
-                    if (chunk.Has(ref m_SubLaneTypeHandle)) {
-                        for (var i = 0; i < subLaneBuffer.Length; i++) {
-                            var subLane = subLaneBuffer[i];
-                            var points  = new[] { subLane.m_Curve.a, subLane.m_Curve.b, subLane.m_Curve.c, subLane.m_Curve.d };
-                            var shifts  = new float3[4];
-                            var shifted = false;
+                    //if (chunk.Has(ref m_SubLaneTypeHandle)) {
+                    //    for (var i = 0; i < subLaneBuffer.Length; i++) {
+                    //        var subLane = subLaneBuffer[i];
+                    //        var points  = new[] { subLane.m_Curve.a, subLane.m_Curve.b, subLane.m_Curve.c, subLane.m_Curve.d };
+                    //        var shifts  = new float3[4];
+                    //        var shifted = false;
 
-                            var data = new BoundarySubLaneData {
-                            index = i,
-                            };
+                    //        var data = new BoundarySubLaneData {
+                    //        index = i,
+                    //        };
 
-                            foreach (var (name, boundary) in bounds) {
-                                for (var j = 0; j < points.Length; j++) {
-                                    if (!MathUtils.Intersect(boundary, points[j])) {
-                                        continue;
-                                    }
+                    //        foreach (var (name, boundary) in bounds) {
+                    //            for (var j = 0; j < points.Length; j++) {
+                    //                if (!MathUtils.Intersect(boundary, points[j])) {
+                    //                    continue;
+                    //                }
 
-                                    shifted = true;
+                    //                shifted = true;
 
-                                    // get a ref to the correct slot (avoids copying and repeated switch logic later)
-                                    ref var projectionConfig = ref data.projectionConfig0;
-                                    switch (j) {
-                                        case 1:
-                                            projectionConfig = ref data.projectionConfig1;
-                                            break;
-                                        case 2:
-                                            projectionConfig = ref data.projectionConfig2;
-                                            break;
-                                        case 3:
-                                            projectionConfig = ref data.projectionConfig3;
-                                            break;
-                                    }
+                    //                // get a ref to the correct slot (avoids copying and repeated switch logic later)
+                    //                ref var projectionConfig = ref data.projectionConfig0;
+                    //                switch (j) {
+                    //                    case 1:
+                    //                        projectionConfig = ref data.projectionConfig1;
+                    //                        break;
+                    //                    case 2:
+                    //                        projectionConfig = ref data.projectionConfig2;
+                    //                        break;
+                    //                    case 3:
+                    //                        projectionConfig = ref data.projectionConfig3;
+                    //                        break;
+                    //                }
 
-                                    //ref var shift = ref shifts[j];
-                                    switch (name) {
-                                        case "front":
-                                            projectionConfig.c0.x = 0f; // distance to front
-                                            projectionConfig.c0.y = 0f; // projection onto front
-                                            //shift.z                    -= 10;
-                                            break;
-                                        case "left":
-                                            projectionConfig.c1.x = 0f; // distance to left
-                                            projectionConfig.c1.y = 0f; // projection onto left
-                                            //shift.x                    -= 10;
-                                            break;
-                                        case "rear":
-                                            projectionConfig.c2.x = 0f; // distance to rear
-                                            projectionConfig.c2.y = 0f; // projection onto rear
-                                            //shift.z                    += 10;
-                                            break;
-                                        case "right":
-                                            projectionConfig.c3.x = 0f; // distance to right
-                                            projectionConfig.c3.y = 0f; // projection onto right
-                                            //shift.x                    += 10;
-                                            break;
-                                    }
-                                }
-                            }
+                    //                //ref var shift = ref shifts[j];
+                    //                switch (name) {
+                    //                    case "front":
+                    //                        projectionConfig.c0.x = 0f; // distance to front
+                    //                        projectionConfig.c0.y = 0f; // projection onto front
+                    //                        //shift.z                    -= 10;
+                    //                        break;
+                    //                    case "left":
+                    //                        projectionConfig.c1.x = 0f; // distance to left
+                    //                        projectionConfig.c1.y = 0f; // projection onto left
+                    //                        //shift.x                    -= 10;
+                    //                        break;
+                    //                    case "rear":
+                    //                        projectionConfig.c2.x = 0f; // distance to rear
+                    //                        projectionConfig.c2.y = 0f; // projection onto rear
+                    //                        //shift.z                    += 10;
+                    //                        break;
+                    //                    case "right":
+                    //                        projectionConfig.c3.x = 0f; // distance to right
+                    //                        projectionConfig.c3.y = 0f; // projection onto right
+                    //                        //shift.x                    += 10;
+                    //                        break;
+                    //                }
+                    //            }
+                    //        }
 
-                            if (!shifted) {
-                                continue;
-                            }
+                    //        if (!shifted) {
+                    //            continue;
+                    //        }
 
-                            boundarySubLaneBuffer.Add(data);
+                    //        boundarySubLaneBuffer.Add(data);
 
-                            // Apply all shifts back to the curve
-                            //subLane.m_Curve.a += shifts[0];
-                            //subLane.m_Curve.b += shifts[1];
-                            //subLane.m_Curve.c += shifts[2];
-                            //subLane.m_Curve.d += shifts[3];
+                    //        // Apply all shifts back to the curve
+                    //        //subLane.m_Curve.a += shifts[0];
+                    //        //subLane.m_Curve.b += shifts[1];
+                    //        //subLane.m_Curve.c += shifts[2];
+                    //        //subLane.m_Curve.d += shifts[3];
 
-                            //subLaneBuffer[i] = subLane;
-                        }
-                    }
+                    //        //subLaneBuffer[i] = subLane;
+                    //    }
+                    //}
 
-                    if (chunk.Has(ref m_SubNetTypeHandle)) {
-                        for (var i = 0; i < subNetBuffer.Length; i++) {
-                            var subNet  = subNetBuffer[i];
-                            var points  = new[] { subNet.m_Curve.a, subNet.m_Curve.b, subNet.m_Curve.c, subNet.m_Curve.d };
-                            var shifts  = new float3[4];
-                            var shifted = false;
+                    //if (chunk.Has(ref m_SubNetTypeHandle)) {
+                    //    for (var i = 0; i < subNetBuffer.Length; i++) {
+                    //        var subNet  = subNetBuffer[i];
+                    //        var points  = new[] { subNet.m_Curve.a, subNet.m_Curve.b, subNet.m_Curve.c, subNet.m_Curve.d };
+                    //        var shifts  = new float3[4];
+                    //        var shifted = false;
 
-                            var data = new BoundarySubNetData {
-                            index = i,
-                            };
+                    //        var data = new BoundarySubNetData {
+                    //        index = i,
+                    //        };
 
-                            foreach (var (name, boundary) in bounds) {
-                                for (var j = 0; j < points.Length; j++) {
-                                    if (!MathUtils.Intersect(boundary, points[j])) {
-                                        continue;
-                                    }
+                    //        foreach (var (name, boundary) in bounds) {
+                    //            for (var j = 0; j < points.Length; j++) {
+                    //                if (!MathUtils.Intersect(boundary, points[j])) {
+                    //                    continue;
+                    //                }
 
-                                    shifted = true;
+                    //                shifted = true;
 
 
-                                    // get a ref to the correct slot (avoids copying and repeated switch logic later)
-                                    ref var projectionConfig = ref data.projectionConfig0;
-                                    switch (j) {
-                                        case 1:
-                                            projectionConfig = ref data.projectionConfig1;
-                                            break;
-                                        case 2:
-                                            projectionConfig = ref data.projectionConfig2;
-                                            break;
-                                        case 3:
-                                            projectionConfig = ref data.projectionConfig3;
-                                            break;
-                                    }
+                    //                // get a ref to the correct slot (avoids copying and repeated switch logic later)
+                    //                ref var projectionConfig = ref data.projectionConfig0;
+                    //                switch (j) {
+                    //                    case 1:
+                    //                        projectionConfig = ref data.projectionConfig1;
+                    //                        break;
+                    //                    case 2:
+                    //                        projectionConfig = ref data.projectionConfig2;
+                    //                        break;
+                    //                    case 3:
+                    //                        projectionConfig = ref data.projectionConfig3;
+                    //                        break;
+                    //                }
 
-                                    //ref var shift = ref shifts[j];
-                                    switch (name) {
-                                        case "front":
-                                            projectionConfig.c0.x = 0f; // distance to front
-                                            projectionConfig.c0.y = 0f; // projection onto front
-                                            //shift.z                    -= 10;
-                                            break;
-                                        case "left":
-                                            projectionConfig.c1.x = 0f; // distance to left
-                                            projectionConfig.c1.y = 0f; // projection onto left
-                                            //shift.x                    -= 10;
-                                            break;
-                                        case "rear":
-                                            projectionConfig.c2.x = 0f; // distance to rear
-                                            projectionConfig.c2.y = 0f; // projection onto rear
-                                            //shift.z                    += 10;
-                                            break;
-                                        case "right":
-                                            projectionConfig.c3.x = 0f; // distance to right
-                                            projectionConfig.c3.y = 0f; // projection onto right
-                                            //shift.x                    += 10;
-                                            break;
-                                    }
-                                }
-                            }
+                    //                //ref var shift = ref shifts[j];
+                    //                switch (name) {
+                    //                    case "front":
+                    //                        projectionConfig.c0.x = 0f; // distance to front
+                    //                        projectionConfig.c0.y = 0f; // projection onto front
+                    //                        //shift.z                    -= 10;
+                    //                        break;
+                    //                    case "left":
+                    //                        projectionConfig.c1.x = 0f; // distance to left
+                    //                        projectionConfig.c1.y = 0f; // projection onto left
+                    //                        //shift.x                    -= 10;
+                    //                        break;
+                    //                    case "rear":
+                    //                        projectionConfig.c2.x = 0f; // distance to rear
+                    //                        projectionConfig.c2.y = 0f; // projection onto rear
+                    //                        //shift.z                    += 10;
+                    //                        break;
+                    //                    case "right":
+                    //                        projectionConfig.c3.x = 0f; // distance to right
+                    //                        projectionConfig.c3.y = 0f; // projection onto right
+                    //                        //shift.x                    += 10;
+                    //                        break;
+                    //                }
+                    //            }
+                    //        }
 
-                            if (!shifted) {
-                                continue;
-                            }
+                    //        if (!shifted) {
+                    //            continue;
+                    //        }
 
-                            boundarySubNetBuffer.Add(data);
+                    //        boundarySubNetBuffer.Add(data);
 
-                            // Apply all shifts back to the curve
-                            //subNet.m_Curve.a += shifts[0];
-                            //subNet.m_Curve.b += shifts[1];
-                            //subNet.m_Curve.c += shifts[2];
-                            //subNet.m_Curve.d += shifts[3];
+                    //        // Apply all shifts back to the curve
+                    //        //subNet.m_Curve.a += shifts[0];
+                    //        //subNet.m_Curve.b += shifts[1];
+                    //        //subNet.m_Curve.c += shifts[2];
+                    //        //subNet.m_Curve.d += shifts[3];
 
-                            //subLaneBuffer[i] = subLane;
-                        }
-                    }
+                    //        //subLaneBuffer[i] = subLane;
+                    //    }
+                    //}
                 }
             }
         }

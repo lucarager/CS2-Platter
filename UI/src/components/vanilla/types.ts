@@ -12,7 +12,22 @@ export interface IVanillaComponents {
     InfoSection: React.FC<PropsWithChildren<InfoSectionProps>>;
     InfoRow: React.FC<PropsWithChildren<InfoRowProps>>;
     InfoLink: React.FC<PropsWithChildren<VanillaInfoLinkProps>>;
+    PageSelector: React.FC<PageSelectorProps>;
+    Page: React.FC<any>;
+    PageSwitcher: React.FC<PropsWithChildren<PageSwitcherProps>>;
     [key: string]: React.FC<any>;
+}
+
+export interface PageSelectorProps {
+    pages: number;
+    selected: number;
+    onSelect?: (x: number) => any;
+}
+
+export interface PageSwitcherProps {
+    activePage: number;
+    transitionStyles?: any;
+    className?: any;
 }
 
 export interface IVanillaThemes {
@@ -22,6 +37,8 @@ export interface IVanillaThemes {
     checkboxTheme: Record<"label", string>;
     toolbarFeatureButton: Record<"toolbarFeatureButton" | "button", string>;
     panel: Record<string, string>;
+    pageSelector: Record<string, string>;
+    whatsNewPage: Record<string, string>;
     [key: string]: Record<string, string>;
 }
 

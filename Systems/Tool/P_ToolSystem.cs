@@ -179,7 +179,7 @@ namespace Platter.Systems {
 
             // Manually enable base action if in editor mode.
             if (m_ToolSystem.actionMode.IsEditor()) {
-                applyAction.enabled = true;
+                //applyAction.enabled = true;
             }
 
             // Visualization
