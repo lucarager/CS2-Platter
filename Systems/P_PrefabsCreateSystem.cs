@@ -87,14 +87,16 @@ namespace Platter.Systems {
             var logMethodPrefix = $"OnGamePreload(purpose {purpose}, mode {mode}) --";
             m_Log.Debug($"{logMethodPrefix}");
 
-            if (mode != GameMode.Game) {
-                return;
+            if (!m_PrefabsAreInstalled) {
+                Install();
             }
+        }
 
-            if (m_PrefabsAreInstalled) {
-                m_Log.Debug($"{logMethodPrefix} _prefabsAreInstalled = true, skipping");
-                return;
-            }
+        private void Install() {
+            var logMethodPrefix = $"Install() --";
+            
+            // Mark the Install as already _prefabsAreInstalled
+            m_PrefabsAreInstalled = true;
 
             var prefabBaseDict = new Dictionary<string, PrefabBase>();
 
@@ -127,10 +129,19 @@ namespace Platter.Systems {
                 }
             }
 
-            // Mark the Install as already _prefabsAreInstalled
-            m_PrefabsAreInstalled = true;
-
             m_Log.Debug($"{logMethodPrefix} Completed.");
+        }
+
+
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose  purpose,
+                                                      GameMode mode) {
+            base.OnGameLoadingComplete(purpose, mode);
+            m_Log.Debug($"OnGameLoadingComplete(purpose={purpose}, mode={mode})");
+
+            if (!m_PrefabsAreInstalled) {
+                Install();
+            }
         }
 
         private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase) {

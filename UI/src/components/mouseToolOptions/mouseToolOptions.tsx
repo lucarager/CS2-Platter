@@ -56,18 +56,21 @@ const PrezoningSection = () => {
     const zoneDataBinding = useValue(GAME_BINDINGS.ZONE_DATA.binding);
     const { translate } = useLocalization();
     const categories = ["None", "Residential", "Commercial", "Industrial", "Office"];
+    const zones = categories.map((category) => {
+        return zoneDataBinding
+            .filter((zoneData) => zoneData.category == category)
+            .sort((a, b) => a.name.localeCompare(b.name));
+    });
 
     const dropDownList = (
         <div className={styles.dropdownContent}>
-            {categories.map((category) => (
-                <div key={category}>
+            {categories.map((category, index) => (
+                <div className={styles.zoneCategory} key={category}>
                     <div className={styles.dropdownCategory}>
                         {category != "None" ? category : ""}
                     </div>
-                    {zoneDataBinding
-                        .filter((zoneData) => zoneData.category == category)
-                        .sort((a, b) => b.index - a.index)
-                        .map((zoneData, idx) => (
+                    <div className={styles.zoneCategoryZones}>
+                        {zones[index].map((zoneData, idx) => (
                             <DropdownItem<number>
                                 key={idx}
                                 className={styles.dropdownItem}
@@ -80,6 +83,7 @@ const PrezoningSection = () => {
                                 {translate(`Assets.NAME[${zoneData.name}]`, zoneData.name)}
                             </DropdownItem>
                         ))}
+                    </div>
                 </div>
             ))}
         </div>

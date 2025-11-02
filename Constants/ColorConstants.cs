@@ -8,8 +8,8 @@ namespace Platter.Constants {
 
     public static class ColorConstants {
         // ColorConstants (general)
-        public static readonly float OpacityLow = 0.2f;
-        public static readonly float OpacityMedium = 0.66f;
+        public static readonly float OpacityLow = 0.1f;
+        public static readonly float OpacityMedium = 0.4f;
         public static readonly float OpacityFull = 1f;
 
         // Parcel ColorConstants
@@ -23,7 +23,7 @@ namespace Platter.Constants {
         public static readonly Color GuidelinePrimary = Color.cyan;
         public static readonly Color GuidelineSecondary = Color.magenta;
 
-        public static Color[] DebugColors = new Color[] {
+        public static readonly Color[] DebugColors = new Color[] {
             Color.blue,
             Color.red,
             Color.green,

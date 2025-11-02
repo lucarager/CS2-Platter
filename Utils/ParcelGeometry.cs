@@ -61,9 +61,13 @@ namespace Platter.Utils {
         /// <param name="parcelSize"></param>
         /// <returns></returns>
         public static Bounds3 GetParcelBounds(float3 parcelSize) {
+            //return new Bounds3(
+            //    new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z),
+            //    new float3(parcelSize.x / 2, parcelSize.y / 2, 0)
+            //);
             return new Bounds3(
-                new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z),
-                new float3(parcelSize.x / 2, parcelSize.y / 2, 0)
+                new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z / 2),
+                new float3(parcelSize.x  / 2, parcelSize.y  / 2, parcelSize.z / 2)
             );
         }
 
@@ -76,7 +80,8 @@ namespace Platter.Utils {
         }
 
         public float3 GetPivot() {
-            return new float3(0f, m_ParcelSize.y, 0f);
+            return GetCenter(m_ParcelBounds); 
+            //return new float3(0f, m_ParcelSize.y, 0f);
         }
 
         /// <summary>

@@ -113,10 +113,4 @@
 		<Copy SourceFiles="@(_AssetsDir)" DestinationFolder="$(DeployDir)/Assets" />
 	</Target>
 	
-	<Target Name="CustomModPostProcessorConfig" AfterTargets="ModPostProcessorConfig">
-		<PropertyGroup>
-			<ModPostProcessorArgs>"$(ModPostProcessorFullPath)" PostProcess "$(TargetPath)" -u "$(UnityModProjectFullPath)" @(ReferencePath->'-r "%(Identity)"', ' ') -p Windows -v</ModPostProcessorArgs>
-		</PropertyGroup>
-	</Target>
-
 </Project>

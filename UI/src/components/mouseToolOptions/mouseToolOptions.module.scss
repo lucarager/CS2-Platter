@@ -101,7 +101,25 @@
 }
 
 .dropdownContent {
-    width: 400rem;
+    width: 1040rem;
+    max-width: 80vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.zoneCategory {
+    width: 100%;
+}
+
+.zoneCategoryZones {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    & > button {
+        width: 33%;
+        overflow: hidden;
+    }
 }
 
 .dropdownIcon {

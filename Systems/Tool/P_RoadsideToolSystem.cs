@@ -269,7 +269,6 @@ namespace Platter.Systems {
 
             // Set apply and cancel actions from game settings.
             m_ApplyAction  = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ApplyActionName);
-            m_CreateAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.CreateActionName);
             m_CancelAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.CancelActionName);
         }
 
