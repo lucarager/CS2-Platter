@@ -9,18 +9,20 @@ namespace Platter.Systems {
     using System.Drawing;
     using Colossal.Collections;
     using Colossal.Mathematics;
+    using Components;
     using Game;
     using Game.Buildings;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
+    using Game.Routes;
     using Game.Tools;
-    using Components;
-    using Utils;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using Unity.Mathematics;
+    using Utils;
     using Transform = Game.Objects.Transform;
 
     /// <summary>
@@ -66,15 +68,16 @@ namespace Platter.Systems {
             m_Log.Debug("OnUpdate()");
 
             var updateJobHandle = new ProcessUpdatedBuildingsJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetComponentTypeHandle<LinkedParcel>(),
-                SystemAPI.GetComponentTypeHandle<TransformUpdated>(true),
-                SystemAPI.GetComponentTypeHandle<PrefabRef>(true),
-                SystemAPI.GetComponentTypeHandle<Transform>(true),
-                m_ParcelSearchSystem.GetStaticSearchTree(true, out var parcelSearchJobHandle),
-                SystemAPI.GetComponentLookup<ObjectGeometryData>(true),
-                SystemAPI.GetComponentLookup<Parcel>(false),
-                m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
+                entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
+                transformUpdatedComponentTypeHandle: SystemAPI.GetComponentTypeHandle<TransformUpdated>(true),
+                prefabRefComponentTypeHandle: SystemAPI.GetComponentTypeHandle<PrefabRef>(true),
+                transformComponentTypeHandle: SystemAPI.GetComponentTypeHandle<Transform>(true),
+                parcelSearchTree:  m_ParcelSearchSystem.GetStaticSearchTree(true, out var parcelSearchJobHandle),
+                objectGeometryDataLookup: SystemAPI.GetComponentLookup<ObjectGeometryData>(true),
+                buildingDataLookup: SystemAPI.GetComponentLookup<BuildingData>(true),
+                parcelLookup: SystemAPI.GetComponentLookup<Parcel>(false),
+                commandBuffer:  m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter(),
+                linkedParcelComponentComponentTypeHandle: SystemAPI.GetComponentTypeHandle<LinkedParcel>(true)
             ).ScheduleParallel(m_Query, JobHandle.CombineDependencies(Dependency, parcelSearchJobHandle));
 
             m_ParcelSearchSystem.AddSearchTreeReader(parcelSearchJobHandle);
@@ -92,29 +95,23 @@ namespace Platter.Systems {
             [ReadOnly] private ComponentTypeHandle<PrefabRef>           m_PrefabRefComponentTypeHandle;
             [ReadOnly] private ComponentTypeHandle<Transform>           m_TransformComponentTypeHandle;
             [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelSearchTree;
-            [ReadOnly] private ComponentLookup<ObjectGeometryData>      m_PrefabObjectGeometryDataLookup;
+            [ReadOnly] private ComponentLookup<ObjectGeometryData>      m_ObjectGeometryDataLookup;
+            [ReadOnly] private ComponentLookup<BuildingData>            m_BuildingDataLookup;
             private            ComponentLookup<Parcel>                  m_ParcelLookup;
             private            EntityCommandBuffer.ParallelWriter       m_CommandBuffer;
             private            ComponentTypeHandle<LinkedParcel>        m_LinkedParcelComponentComponentTypeHandle;
 
-            public ProcessUpdatedBuildingsJob(EntityTypeHandle                         entityTypeHandle,
-                                              ComponentTypeHandle<LinkedParcel>        linkedParcelComponentTypeHandle,
-                                              ComponentTypeHandle<TransformUpdated>    transformUpdatedComponentTypeHandle,
-                                              ComponentTypeHandle<PrefabRef>           prefabRefComponentTypeHandle,
-                                              ComponentTypeHandle<Transform>           transformComponentTypeHandle,
-                                              NativeQuadTree<Entity, QuadTreeBoundsXZ> parcelSearchTree,
-                                              ComponentLookup<ObjectGeometryData>      prefabObjectGeometryDataLookup,
-                                              ComponentLookup<Parcel>                  parcelLookup,
-                                              EntityCommandBuffer.ParallelWriter       commandBuffer) {
-                m_EntityTypeHandle                         = entityTypeHandle;
-                m_LinkedParcelComponentComponentTypeHandle = linkedParcelComponentTypeHandle;
-                m_TransformUpdatedComponentTypeHandle      = transformUpdatedComponentTypeHandle;
-                m_PrefabRefComponentTypeHandle             = prefabRefComponentTypeHandle;
-                m_TransformComponentTypeHandle             = transformComponentTypeHandle;
-                m_ParcelSearchTree                         = parcelSearchTree;
-                m_PrefabObjectGeometryDataLookup           = prefabObjectGeometryDataLookup;
-                m_CommandBuffer                            = commandBuffer;
-                m_ParcelLookup                             = parcelLookup;
+            public ProcessUpdatedBuildingsJob(EntityTypeHandle entityTypeHandle, ComponentTypeHandle<TransformUpdated> transformUpdatedComponentTypeHandle, ComponentTypeHandle<PrefabRef> prefabRefComponentTypeHandle, ComponentTypeHandle<Transform> transformComponentTypeHandle, NativeQuadTree<Entity, QuadTreeBoundsXZ> parcelSearchTree, ComponentLookup<ObjectGeometryData> objectGeometryDataLookup, ComponentLookup<BuildingData> buildingDataLookup, ComponentLookup<Parcel> parcelLookup, EntityCommandBuffer.ParallelWriter commandBuffer, ComponentTypeHandle<LinkedParcel> linkedParcelComponentComponentTypeHandle) {
+                m_EntityTypeHandle = entityTypeHandle;
+                m_TransformUpdatedComponentTypeHandle = transformUpdatedComponentTypeHandle;
+                m_PrefabRefComponentTypeHandle = prefabRefComponentTypeHandle;
+                m_TransformComponentTypeHandle = transformComponentTypeHandle;
+                m_ParcelSearchTree = parcelSearchTree;
+                m_ObjectGeometryDataLookup = objectGeometryDataLookup;
+                m_BuildingDataLookup = buildingDataLookup;
+                m_ParcelLookup = parcelLookup;
+                m_CommandBuffer = commandBuffer;
+                m_LinkedParcelComponentComponentTypeHandle = linkedParcelComponentComponentTypeHandle;
             }
 
             /// <inheritdoc/>
@@ -138,13 +135,16 @@ namespace Platter.Systems {
                         continue;
                     }
 
-                    var prefab = prefabRefArray[i].m_Prefab;
+                    var prefab = prefabRefArray[i];
                     var transform = transformArray[i];
-                    var objectGeometryData = m_PrefabObjectGeometryDataLookup[prefab];
+                    var objectGeometryData = m_ObjectGeometryDataLookup[prefab.m_Prefab];
+                    var buildingData = m_BuildingDataLookup[prefab.m_Prefab];
                     var bounds = ObjectUtils.CalculateBounds(transform.m_Position, transform.m_Rotation, objectGeometryData);
+                    var position = BuildingUtils.CalculateFrontPosition(transform, buildingData.m_LotSize.y);
 
                     var findParcelIterator = new Iterator(
-                        bounds
+                        bounds,
+                        position
                     );
 
                     m_ParcelSearchTree.Iterate(ref findParcelIterator);
@@ -163,20 +163,34 @@ namespace Platter.Systems {
 
             private struct Iterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
                 private Bounds3 m_Bounds;
+                private float   m_BestDistance;
+                private float3  m_Position;
                 public  Entity  MatchingParcel;
 
-                public Iterator(Bounds3 bounds) {
+                public Iterator(Bounds3 bounds, float3 position) {
                     m_Bounds       = bounds;
+                    m_Position     = position;
                     MatchingParcel = Entity.Null;
+                    m_BestDistance = 30f;
                 }
 
-                public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz); }
+                public bool Intersect(QuadTreeBoundsXZ bounds) {
+                    return MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz);
+                }
 
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity parcelEntity) {
                     if (!MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds.xz)) {
                         return;
                     }
 
+                    var distance = MathUtils.Distance(bounds.m_Bounds, m_Position);
+                    
+                    // If distance exceeds our "best", exit
+                    if (distance >= m_BestDistance) {
+                        return;
+                    }
+
+                    m_BestDistance = distance;
                     MatchingParcel = parcelEntity;
                 }
             }

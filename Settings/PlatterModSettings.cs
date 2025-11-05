@@ -20,10 +20,10 @@ namespace Platter.Settings {
     /// The mod's settings.
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(PlatterMod) + "/" + nameof(PlatterMod))]
-    [SettingsUIKeyboardAction(IncreaseParcelWidthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
-    [SettingsUIKeyboardAction(DecreaseParcelWidthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
-    [SettingsUIKeyboardAction(IncreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
-    [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, true, false, usages: new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(IncreaseParcelWidthActionName, ActionType.Button, new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(DecreaseParcelWidthActionName, ActionType.Button, new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(IncreaseParcelDepthActionName, ActionType.Button, new string[] { "Platter" })]
+    [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, new string[] { "Platter" })]
     [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
@@ -147,17 +147,19 @@ namespace Platter.Settings {
         }
 
         [SettingsUIHidden]
-        public bool ModalFirstLaunch { get; set; }
+        public bool Modals_FirstLaunchTutorial { get; set; } = false;
+
         [SettingsUIHidden]
-        public bool RenderParcels { get; set; }
+        public bool RenderParcels { get; set; } = false;
+
         [SettingsUIHidden]
-        public bool AllowSpawn { get; set; }
+        public bool AllowSpawn { get; set; } = true;
 
         /// <summary>
         /// Restores mod settings to default.
         /// </summary>
         public override void SetDefaults() {
-            ModalFirstLaunch = false;
+            Modals_FirstLaunchTutorial = false;
             RenderParcels    = false;
             AllowSpawn       = true;
         }

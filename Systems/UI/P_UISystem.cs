@@ -101,7 +101,7 @@ namespace Platter.Systems {
             m_AllowSpawningBinding = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
             m_SnapModeBinding = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
             m_SnapSpacingBinding = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
-            m_ModalFirstLaunchBinding = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.ModalFirstLaunch);
+            m_ModalFirstLaunchBinding = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
             m_RoadEditorSideBinding = CreateBinding("ROAD_SIDE__SIDES", new bool[4] { true, true, false, false }, SetSides);
             m_RoadEditorSpacingBinding = CreateBinding("ROAD_SIDE__SPACING", 1f, SetSpacing);
             m_RoadEditorOffsetBinding = CreateBinding("ROAD_SIDE__OFFSET", 2f, SetOffset);
@@ -171,7 +171,7 @@ namespace Platter.Systems {
             m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
             m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
             m_EnableToolButtonsBinding.Value = currentlyUsingParcelsInObjectTool;
-            m_ModalFirstLaunchBinding.Value  = PlatterMod.Instance.Settings.ModalFirstLaunch;
+            m_ModalFirstLaunchBinding.Value  = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
 
             // Send down zone data
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
@@ -206,7 +206,7 @@ namespace Platter.Systems {
         /// </summary>
         private void HandleModalDismiss(string modal) {
             m_Log.Debug($"HandleModalDismiss(modal: {modal})");
-            PlatterMod.Instance.Settings.ModalFirstLaunch = true;
+            PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial = true;
         }
 
         /// <summary>
