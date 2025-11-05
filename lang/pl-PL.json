@@ -5,7 +5,7 @@
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "O modyfikacji",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Usuń wszystkie Parcele",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Permanentnie usunie wszystkie parcele na mapie. Budynki, których strefy nie znajdują się na siatce pól z gry, znikną, chyba że masz moda, który temu zapobiega.",
-  "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Trwale usunąć wszystkie paczki z tego zapisu?",
+  "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Trwale usunąć wszystkie parcele z tego zapisu?",
   "Options.OPTION[Platter.Platter.PlatterMod/ToggleRenderActionName/binding]": "Przełącz „Nakładka Parcel”",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Przełącz „Nakładka Parcel”",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Skrót klawiszowy do przełączenia widoczności parcel.",
