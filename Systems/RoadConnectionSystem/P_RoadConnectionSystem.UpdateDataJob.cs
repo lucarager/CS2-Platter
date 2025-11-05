@@ -51,9 +51,6 @@ namespace Platter.Systems {
                 if (m_ParcelEntitiesList.Length == 0) {
                     return;
                 }
-#if !USE_BURST
-                PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] UpdateDataJob() -- Processing {m_ParcelEntitiesList.Length} entries.");
-#endif
 
                 foreach (var updateData in m_ParcelEntitiesList) {
                     var parcel = m_ParcelComponentLookup[updateData.m_Parcel];
@@ -71,25 +68,12 @@ namespace Platter.Systems {
                     // Either the "new best road" we found is not the one the parcel has stored
                     // or it's a newly created parcel
                     if (roadChanged || parcelHasCreatedComponent) {
-#if !USE_BURST
-                        if (roadChanged) {
-                            PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] UpdateDataJob() -- Updating parcel {updateData.m_Parcel} road. {parcel.m_RoadEdge} -> {updateData.m_NewRoad}...");
-                        }
-
-                        if (parcelHasCreatedComponent) {
-                            PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] UpdateDataJob() -- Updating CREATED parcel {updateData.m_Parcel} with road {updateData.m_NewRoad}...");
-                        }
-#endif
-
                         // If this is a TEMP entity
                         if (parcelHasTempComponent) {
                             // Update the parcel's data
                             parcel.m_RoadEdge                            = updateData.m_NewRoad;
                             parcel.m_CurvePosition                       = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-#if !USE_BURST
-                            PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] UpdateDataJob() -- Updated TEMP parcel {parcel}.");
-#endif
                         } else {
                             // Check if the parcel had a road and now doesn't, or vice versa, to update the icon status
                             if (parcelHadRoad != parcelHasNewRoad) {
@@ -119,9 +103,6 @@ namespace Platter.Systems {
 
                             // Remove old ConnectedParcel
                             if (parcelHadRoad && m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
-#if !USE_BURST
-                                PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] UpdateDataJob() -- Parcel had a road - removing {updateData.m_Parcel} from road {parcel.m_RoadEdge}'s ConnectedParcels buffer.");
-#endif
                                 CollectionUtils.RemoveValue<ConnectedParcel>(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
                             }
 
@@ -133,9 +114,6 @@ namespace Platter.Systems {
                             m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
 
                             if (parcelHasNewRoad) {
-#if !USE_BURST
-                                PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] UpdateDataJob() -- Parcel has new road - adding {updateData.m_Parcel} to road {updateData.m_NewRoad}'s ConnectedParcels buffer.");
-#endif
                                 m_ConnectedParcelsBufferLookup[updateData.m_NewRoad].Add(new ConnectedParcel(updateData.m_Parcel));
                             }
                         }

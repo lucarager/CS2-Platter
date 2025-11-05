@@ -45,7 +45,6 @@ namespace Game.Prefabs {
             base.GetArchetypeComponents(components);
 
             components.Add(ComponentType.ReadWrite<Parcel>());
-            components.Add(ComponentType.ReadWrite<ParcelZoning>());
             // components.Add(ComponentType.ReadWrite<PrefabVersion>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<ParcelSubBlock>());

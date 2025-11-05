@@ -84,10 +84,6 @@ namespace Platter.Systems {
                 var connectedParcelBufferAccessor = chunk.GetBufferAccessor<ConnectedParcel>(ref m_ConnectedParcelBufferTypeHandle);
 
                 if (connectedParcelBufferAccessor.Length != 0) {
-#if !USE_BURST
-                    PlatterMod.Instance.Log.Debug($"[P_RoadConnectionSystem] CreateEntitiesQueueJob() -- connectedParcelBufferAccessor {connectedParcelBufferAccessor.Length} entries. Deleted: {chunk.Has<Deleted>(ref m_DeletedTypeHandle)}");
-#endif
-
                     // Handle edge delete
                     if (chunk.Has<Deleted>(ref m_DeletedTypeHandle)) {
                         for (var i = 0; i < connectedParcelBufferAccessor.Length; i++) {

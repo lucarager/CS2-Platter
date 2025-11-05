@@ -72,8 +72,6 @@ namespace Platter.Systems {
                 m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
             }
 
-            m_CommandBuffer.Playback(EntityManager);
-            m_CommandBuffer.Dispose();
             entities.Dispose();
         }
     }
