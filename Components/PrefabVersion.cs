@@ -11,7 +11,7 @@ namespace Platter.Components {
     /// Component holding the version of a prefab. Used for migrations.
     /// </summary>
     public struct PrefabVersion : IComponentData, ISerializable {
-        public uint m_Version;
+        public int m_Version;
 
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)

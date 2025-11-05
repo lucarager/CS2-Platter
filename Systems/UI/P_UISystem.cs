@@ -19,7 +19,7 @@ namespace Platter.Systems {
     using Systems;
     using Utils;
     using Unity.Mathematics;
-    using static P_SnapSystem;
+    using static P_ObjectToolOverrideSystem;
 
     /// <summary>
     /// System responsible for UI Bindings & Data Handling.
@@ -62,7 +62,7 @@ namespace Platter.Systems {
         private int2                             m_SelectedParcelSize = new(2, 2);
         private ValueBindingHelper<int>          m_SnapModeBinding;
         private ValueBindingHelper<float>        m_SnapSpacingBinding;
-        private P_SnapSystem                     m_SnapSystem;
+        private P_ObjectToolOverrideSystem                     m_SnapSystem;
         private ProxyAction                      m_ToggleRender;
         private ProxyAction                      m_ToggleSpawn;
         private ValueBindingHelper<int>          m_ToolModeBinding;
@@ -86,7 +86,7 @@ namespace Platter.Systems {
             m_ObjectToolSystem     = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<P_OverlaySystem>();
             m_AllowSpawnSystem     = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
-            m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
+            m_SnapSystem           = World.GetOrCreateSystemManaged<P_ObjectToolOverrideSystem>();
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
             //m_RoadsideToolSystem   = World.GetOrCreateSystemManaged<P_RoadsideToolSystem>();
 
@@ -360,7 +360,7 @@ namespace Platter.Systems {
         ///  Called from the UI.
         /// </summary>
         private void UpdateSelectedPrefab() {
-            var id = ParcelUtils.CreatePrefabID(m_SelectedParcelSize);
+            var id = ParcelUtils.GetPrefabID(m_SelectedParcelSize);
 
             m_Log.Debug($"UpdateSelectedPrefab() -- Attempting to get Prefab with id {id}");
 

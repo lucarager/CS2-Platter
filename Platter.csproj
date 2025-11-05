@@ -54,7 +54,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Remove="UI\**" />
+		<EmbeddedResource Remove="UI\**" />
 		<None Remove="lang\*.jso" />
+		<None Remove="UI\**" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -77,24 +80,6 @@
 		<Content Include="$(ProjectDir)/PrefabObjects\\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Compile Remove="UI\build\**" />
-	  <Compile Remove="UI\debug\**" />
-	  <Compile Remove="UI\node_modules\**" />
-	  <EmbeddedResource Remove="UI\build\**" />
-	  <EmbeddedResource Remove="UI\debug\**" />
-	  <EmbeddedResource Remove="UI\node_modules\**" />
-	  <None Remove="UI\build\**" />
-	  <None Remove="UI\debug\**" />
-	  <None Remove="UI\node_modules\**" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Folder Include="UI\src\images\" />
-	  <Folder Include="UI\src\lang\" />
-	  <Folder Include="UI\src\utils\" />
 	</ItemGroup>
 	
 	<ItemGroup>

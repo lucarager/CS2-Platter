@@ -40,11 +40,10 @@ namespace Platter.Systems {
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             m_PrefabQuery = SystemAPI.QueryBuilder()
+                                     .WithAll<PrefabData, Created>()
                                      .WithAllRW<ParcelData>()
                                      .WithAllRW<ObjectGeometryData>()
                                      .WithAllRW<PlaceableObjectData>()
-                                     .WithAll<PrefabData>()
-                                     .WithAll<Created>()
                                      .Build();
 
             // Update Cycle
@@ -58,9 +57,6 @@ namespace Platter.Systems {
             m_Log.Debug($"OnUpdate() -- Found {prefabEntities.Length} prefabs to initialize.");
 
             foreach (var prefabEntity in prefabEntities) {
-                // @todo
-                // Looking at game code, I think its cleaner to get PrefabRef, which then can get prefab data directly
-                // with m_prefab
                 var prefabData = EntityManager.GetComponentData<PrefabData>(prefabEntity);
 
                 // Get prefab data

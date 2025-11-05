@@ -33,7 +33,6 @@ namespace Game.Prefabs {
         /// <inheritdoc/>
         public override void GetPrefabComponents(HashSet<ComponentType> components) {
             base.GetPrefabComponents(components);
-
             components.Add(ComponentType.ReadWrite<ParcelData>());
             components.Add(ComponentType.ReadWrite<PlaceableObjectData>());
 
@@ -46,7 +45,7 @@ namespace Game.Prefabs {
             base.GetArchetypeComponents(components);
 
             components.Add(ComponentType.ReadWrite<Parcel>());
-
+            components.Add(ComponentType.ReadWrite<ParcelZoning>());
             // components.Add(ComponentType.ReadWrite<PrefabVersion>());
             components.Add(ComponentType.ReadWrite<ParcelComposition>());
             components.Add(ComponentType.ReadWrite<ParcelSubBlock>());

@@ -1,21 +1,11 @@
-﻿// <copyright file="${File.FileName}" company="${User.FullName}">
-// Copyright (c) ${User.Name}. All rights reserved.
+﻿// <copyright file="BuildingBoundaries.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Colossal.IO.AssetDatabase;
-using Colossal.Mathematics;
-using Unity.Mathematics;
-
 namespace Platter.Components {
-    using Colossal.Serialization.Entities;
-    using Game.Prefabs;
     using Unity.Entities;
+    using Unity.Mathematics;
 
     public struct BoundarySubObjectData : IBufferElementData {
         public int      index;
