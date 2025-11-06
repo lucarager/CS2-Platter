@@ -3,41 +3,37 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Colossal.Logging;
-using Colossal.Serialization.Entities;
-using Game;
-using Game.Areas;
-using Game.Audio;
-using Game.Buildings;
-using Game.City;
-using Game.Common;
-using Game.Input;
-using Game.Net;
-using Game.Objects;
-using Game.Prefabs;
-using Game.Simulation;
-using Game.Tools;
-using Platter.Components;
-using Platter.Utils;
-using Unity.Collections;
-using Unity.Entities;
-using Unity.Jobs;
-
 namespace Platter.Systems {
+    using System;
+    using System.Threading.Tasks;
+    using Colossal.Serialization.Entities;
+    using Game.Common;
+    using Game.Objects;
+    using Game.Prefabs;
+    using Game.Tools;
+    using Platter.Components;
+    using Platter.Utils;
+    using Unity.Collections;
+    using Unity.Entities;
+    using Unity.Jobs;
+    using Colossal.Mathematics;
+    using Unity.Mathematics;
+
     public partial class P_TestToolSystem : ToolBaseSystem {
         /// <inheritdoc/>
         public override string toolID => "PlatterTestTool";
 
+        public enum PrefabType {
+            Object,
+            Edge,
+        }
+
         private PrefixedLogger      m_Log;
         private PrefabBase          m_SelectedPrefab;
         private Entity              m_PlacePrefabEntity;
-        private Transform           m_PlaceTransform;
+        private PrefabType          m_PlacePrefabType;
+        private Transform           m_PlaceTransform1;
+        private Transform           m_PlaceTransform2;
         private ushort              m_PlacePrezoneIndex;
         private Entity              m_PlacedEntity;
         private EntityQuery         m_TempQuery;
@@ -112,22 +108,40 @@ namespace Platter.Systems {
             }
 
             applyMode = ApplyMode.None;
-            m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- PlaceObjectPrefab");
-            PlaceObjectPrefab(m_PlacePrefabEntity, m_PlaceTransform);
+
+
+            switch (m_PlacePrefabType) {
+                case PrefabType.Edge:
+                    m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- PlaceEdge");
+                    PlaceEdge(m_PlacePrefabEntity, m_PlaceTransform1, m_PlaceTransform2);
+                    break;
+                case PrefabType.Object:
+                    m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- PlaceObject");
+                    PlaceObject(m_PlacePrefabEntity, m_PlaceTransform1);
+                    break;
+            }
 
             if (m_TempQuery.IsEmpty) {
                 return inputDeps;
             }
 
             m_PlacedEntity = m_TempQuery.ToEntityArray(Allocator.Temp)[0];
-            PrepareParcelForApply(m_PlacedEntity, m_PlacePrezoneIndex);
+
+            switch (m_PlacePrefabType) {
+                case PrefabType.Edge:
+                    break;
+                case PrefabType.Object:
+                    PrepareParcelForApply(m_PlacedEntity, m_PlacePrezoneIndex);
+                    break;
+            }
 
             m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- Apply");
 
             // Apply
             applyMode           = ApplyMode.Apply;
             m_PlacePrefabEntity = Entity.Null;
-            m_PlaceTransform    = default;
+            m_PlaceTransform1   = default;
+            m_PlaceTransform2   = default;
             m_PlacePrezoneIndex = 0;
 
             return inputDeps;
@@ -137,14 +151,16 @@ namespace Platter.Systems {
             return m_SelectedPrefab;
         }
 
-        public async Task<Entity> Plop(Entity prefab, Transform transform, ushort prezoneIndex) {
+        public async Task<Entity> PlopObject(Entity prefab, Transform transform, ushort prezoneIndex) {
             while (m_PlacePrefabEntity != Entity.Null) {
                 await Task.Delay(10);
             }
 
             m_PlacePrefabEntity = prefab;
-            m_PlaceTransform    = transform;
+            m_PlaceTransform1   = transform;
             m_PlacePrezoneIndex = prezoneIndex;
+            m_PlacePrefabType   = PrefabType.Object;
+
             var maxTries = 10;
             var tries    = 0;
             var entity   = Entity.Null;
@@ -154,6 +170,34 @@ namespace Platter.Systems {
                 await Task.Delay(10);
             }
             
+            if (tries == maxTries) {
+                throw new Exception("Could not find created entity");
+            }
+
+            m_PlacedEntity = Entity.Null;
+
+            return entity;
+        }
+
+        public async Task<Entity> PlopEdge(Entity prefab, Transform startNodePosition, Transform endNodePosition) {
+            while (m_PlacePrefabEntity != Entity.Null) {
+                await Task.Delay(10);
+            }
+
+            m_PlacePrefabEntity = prefab;
+            m_PlaceTransform1   = startNodePosition;
+            m_PlaceTransform2   = endNodePosition;
+            m_PlacePrefabType   = PrefabType.Edge;
+
+            var maxTries = 10;
+            var tries    = 0;
+            var entity   = Entity.Null;
+
+            while (entity == Entity.Null || tries++ <= maxTries) {
+                entity = m_PlacedEntity;
+                await Task.Delay(10);
+            }
+
             if (tries == maxTries) {
                 throw new Exception("Could not find created entity");
             }
@@ -187,7 +231,7 @@ namespace Platter.Systems {
             return true;
         }
 
-        public void PlaceObjectPrefab(Entity prefab, Transform transform) {
+        public void PlaceObject(Entity prefab, Transform transform) {
             var ecb    = new EntityCommandBuffer(Allocator.TempJob);
             var entity = ecb.CreateEntity();
 
@@ -218,7 +262,51 @@ namespace Platter.Systems {
             ecb.Dispose();
         }
 
-        private void PlaceEdge() {
+        private void PlaceEdge(Entity prefab, Transform startNodePosition, Transform endNodePosition) {
+            var ecb    = new EntityCommandBuffer(Allocator.TempJob);
+            var entity = ecb.CreateEntity();
+
+            ecb.AddComponent(entity, new CreationDefinition() {
+                m_Prefab    = prefab,
+                m_SubPrefab = Entity.Null,
+                m_Owner     = Entity.Null,
+                m_Original  = Entity.Null,
+            });
+
+            ecb.AddComponent(entity, new NetCourse() {
+                m_StartPosition = new CoursePos() {
+                    m_Entity        = Entity.Null,
+                    m_Position      = startNodePosition.m_Position,
+                    m_Rotation      = startNodePosition.m_Rotation,
+                    m_Elevation     = startNodePosition.m_Position.y,
+                    m_CourseDelta   = 0,
+                    m_SplitPosition = 0,
+                    m_Flags         = CoursePosFlags.IsFirst | CoursePosFlags.IsRight | CoursePosFlags.IsLeft,
+                    m_ParentMesh    = -1,
+                },
+                m_EndPosition = new CoursePos() {
+                    m_Entity        = Entity.Null,
+                    m_Position      = endNodePosition.m_Position,
+                    m_Rotation      = endNodePosition.m_Rotation,
+                    m_Elevation     = endNodePosition.m_Position.y,
+                    m_CourseDelta   = 1,
+                    m_SplitPosition = 0,
+                    m_Flags         = CoursePosFlags.IsLast | CoursePosFlags.IsRight | CoursePosFlags.IsLeft,
+                    m_ParentMesh    = -1,
+                },
+                m_Curve      = new Bezier4x3(startNodePosition.m_Position, startNodePosition.m_Position, endNodePosition.m_Position, endNodePosition.m_Position),
+                m_Elevation  = new float2(0, 0),
+                m_Length     = math.distance(startNodePosition.m_Position, endNodePosition.m_Position),
+                m_FixedIndex = -1,
+            });
+
+            ecb.AddComponent(entity, default(OwnerDefinition));
+
+            ecb.AddComponent(entity, default(Updated));
+
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
+
             //-course  { Game.Tools.NetCourse}
             //Game.Tools.NetCourse
             //-m_Curve { Colossal.Mathematics.Bezier4x3}

@@ -85,7 +85,7 @@ namespace Platter.Systems {
                 oGeoData.m_MinLod  = 1;
                 oGeoData.m_Size    = parcelGeo.Size;
                 oGeoData.m_Pivot   = parcelGeo.Pivot;
-                oGeoData.m_LegSize = new float3(2f, 2f, 2f);
+                oGeoData.m_LegSize = new float3(0f, 0f, 0f);
                 oGeoData.m_Bounds  = parcelGeo.Bounds;
                 oGeoData.m_Layers  = MeshLayer.Default;
                 oGeoData.m_Flags   = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority;

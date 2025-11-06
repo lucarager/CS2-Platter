@@ -34,12 +34,12 @@ namespace Platter.Tests {
     using Unity.Entities;
     using UnityEngine;
 
-    [TestDescriptor("Platter: Verify Load Integrity", Category.Serialization, false, TestPhase.Default, false)]
+    [TestDescriptor("Platter: Verify Load Integrity", Category.Default)]
     public class VerifyPlatterLoadTest : TestScenario {
-        private const string           MapID    = "bf8036b291428535b986c757fda3e627";
+        private const string           MapID    = "1906eb3c6e796ccf29cbef3e4866961e";
         private const string           CityName = "TestCity-1";
         private const string           Theme    = "European";
-        private const string           Save1    = "b526dc207d32a74363a6cce5d6c8d85a";
+        private const string           Save1    = "b620f4c6a3bf2ce1a67accf188444c52";
 
         // Systems
         private P_ZoneCacheSystem    m_P_ZoneCacheSystem;
