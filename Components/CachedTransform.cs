@@ -12,7 +12,7 @@ namespace Platter.Components {
     /// A component used to record where an object was placed so that it doesn't drop by accident.
     /// Originally written by @yenyang for Anarchy
     /// </summary>
-    public struct CachedTransform : IComponentData, IQueryTypeParameter, ISerializable {
+    public struct CachedTransform : IComponentData, ISerializable {
         /// <summary>
         /// The position record from original transform.
         /// </summary>

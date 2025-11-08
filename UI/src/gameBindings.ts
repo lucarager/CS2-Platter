@@ -49,5 +49,5 @@ export const GAME_TRIGGERS = {
     },
     ROAD_SIDE__REQUEST_APPLY: () => {
         trigger(mod.id, "ROAD_SIDE__REQUEST_APPLY");
-    }
+    },
 };

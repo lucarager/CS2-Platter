@@ -35,11 +35,8 @@ namespace Platter.Systems {
 
             // Queries
             m_Query = SystemAPI.QueryBuilder()
-                .WithAll<Block>()
-                .WithAll<Cell>()
-                .WithAll<ParcelOwner>()
-                .WithAll<Updated>()
-                .WithNone<Temp>()
+                .WithAll<Block, Cell, ParcelOwner, Updated>()
+                .WithNone<Deleted, Temp>()
                 .Build();
 
             // Update Cycle
@@ -68,6 +65,10 @@ namespace Platter.Systems {
                 if (containedZones.Count == 1) {
                     // If we only have one zone, set the Parcel to that
                     var parcelOwner = EntityManager.GetComponentData<ParcelOwner>(entity);
+                    // Temporary fix, we should find the root cause for this
+                    if (parcelOwner.m_Owner == Entity.Null) {
+                        return;
+                    }
                     var parcel = EntityManager.GetComponentData<Parcel>(parcelOwner.m_Owner);
                     parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
                     EntityManager.SetComponentData<Parcel>(parcelOwner.m_Owner, parcel);

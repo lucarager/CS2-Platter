@@ -8,6 +8,7 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    [InternalBufferCapacity(1)]
     public struct ParcelSubBlock : IBufferElementData, IEquatable<ParcelSubBlock>, IEmptySerializable {
         public Entity m_SubBlock;
 

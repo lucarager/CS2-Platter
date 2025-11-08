@@ -21,27 +21,21 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for caching Zone Information for other systems.
     /// </summary>
-    public partial class P_ZoneCacheSystem : GameSystemBase {
+    public partial class P_ZoneCacheSystem : PlatterGameSystemBase {
         public NativeHashMap<ushort, Entity> ZonePrefabs => m_ZonePrefabs;
-
         public Dictionary<ushort, Color> FillColors => m_FillColors;
-
         public Dictionary<ushort, Color> EdgeColors => m_EdgeColors;
-
         public Dictionary<ushort, P_UISystem.ZoneUIData> ZoneUIData => m_ZoneUIData;
 
         // Systems
         private PrefabSystem m_PrefabSystem;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         // Queries
         private EntityQuery m_ModifiedQuery;
         private EntityQuery m_AllQuery;
 
         // Data
-        private NativeHashMap<ushort, Entity>    m_ZonePrefabs;
+        private NativeHashMap<ushort, Entity>             m_ZonePrefabs;
         private Dictionary<ushort, Color>                 m_FillColors;
         private Dictionary<ushort, Color>                 m_EdgeColors;
         private Dictionary<ushort, P_UISystem.ZoneUIData> m_ZoneUIData;
@@ -49,10 +43,6 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_ZoneCacheSystem));
-            m_Log.Debug($"OnCreate()");
 
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 

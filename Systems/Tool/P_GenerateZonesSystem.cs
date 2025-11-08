@@ -24,7 +24,6 @@ namespace Platter.Systems {
         private EntityQuery          m_DefinitionQuery;
         private ModificationBarrier1 m_ModificationBarrier;
         private SearchSystem         m_ZoneSearchSystem;
-        private P_ParcelSearchSystem m_ParcelSearchSystem;
 
         protected override void OnCreate() {
             base.OnCreate();
@@ -350,10 +349,7 @@ namespace Platter.Systems {
                                 var cellPosition = ZoneUtils.GetCellPosition(block, cellData.m_Location);
                                 if (MathUtils.Intersect(m_Quad, cellPosition.xz) &&
                                     m_Overwrite | cell.m_Zone.Equals(ZoneType.None)) {
-                                    CellData                                   cellData2;
-                                    NativeParallelMultiHashMapIterator<Entity> nativeParallelMultiHashMapIterator;
-                                    if (!m_ZonedCells.TryGetFirstValue(
-                                            blockEntity, out cellData2, out nativeParallelMultiHashMapIterator)) {
+                                    if (!m_ZonedCells.TryGetFirstValue(blockEntity, out var _, out var _)) {
                                         m_ZonedBlocks.Add(in blockEntity);
                                     }
 
@@ -361,10 +357,10 @@ namespace Platter.Systems {
                                 }
                             }
 
-                            cellData.m_Location.x = cellData.m_Location.x + 1;
+                            cellData.m_Location.x += 1;
                         }
 
-                        cellData.m_Location.y = cellData.m_Location.y + 1;
+                        cellData.m_Location.y += 1;
                     }
                 }
             }

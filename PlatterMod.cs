@@ -43,7 +43,7 @@ namespace Platter {
         /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
-        public static readonly string Id = "Platter";
+        public const string Id = "Platter";
 
         /// <summary>
         /// Gets the instance reference.

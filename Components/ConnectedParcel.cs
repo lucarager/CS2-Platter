@@ -8,6 +8,7 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    [InternalBufferCapacity(1)]
     public struct ConnectedParcel : IBufferElementData, IEquatable<ConnectedParcel>, IEmptySerializable, ISerializable {
         public Entity m_Parcel;
 
