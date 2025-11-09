@@ -9,6 +9,7 @@ namespace Platter {
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
@@ -135,7 +136,8 @@ namespace Platter {
             updateSystem.UpdateAfter<P_PrefabsCreateSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ZoneCacheSystem>(SystemUpdatePhase.PrefabUpdate);
-
+            updateSystem.UpdateAfter<P_BuildingCacheSystem>(SystemUpdatePhase.PrefabUpdate);
+            
             // Buildings
             updateSystem.UpdateAfter<P_BuildingInitializeSystem, BuildingConstructionSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAt<P_BuildingTransformCheckSystem>(SystemUpdatePhase.Modification1);
@@ -188,17 +190,22 @@ namespace Platter {
         private void GenerateLanguageFile() {
             Log.Info($"[Platter] Exporting localization");
             var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
-            var str        = JsonConvert.SerializeObject(localeDict, Newtonsoft.Json.Formatting.Indented);
+            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
             try {
-                var path = "C:\\Users\\lucar\\source\\repos\\Platter\\lang\\en-US.json";
-                Log.Info($"[Platter] Exporting to {path}");
-                File.WriteAllText(path, str);
-                path = "C:\\Users\\lucar\\source\\repos\\Platter\\UI\\src\\lang\\en-US.json";
-                Log.Info($"[Platter] Exporting to {path}");
-                File.WriteAllText(path, str);
+                var path      = GetThisFilePath();
+                var directory = Path.GetDirectoryName(path);
+
+                var exportPath1 = $@"{directory}\lang\en-US.json";
+                var exportPath2 = $@"{directory}\UI\src\lang\en-US.json";
+                File.WriteAllText(exportPath1, str);
+                File.WriteAllText(exportPath2, str);
             } catch (Exception ex) {
                 Log.Error(ex.ToString());
             }
+        }
+
+        private static string GetThisFilePath([CallerFilePath] string path = null) {
+            return path;
         }
 
         /// <inheritdoc/>

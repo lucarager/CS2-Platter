@@ -36,9 +36,9 @@ namespace Platter.Systems {
         }
 
         protected override void OnUpdate() {
-            var zonedCellsHashMap = new NativeParallelMultiHashMap<Entity, CellData>(1000, Allocator.TempJob);
-            var zonedBlocksList   = new NativeList<Entity>(20, Allocator.TempJob);
-            var commandBuffer     = new EntityCommandBuffer(Allocator.TempJob);
+            var zonedCellsHashMap = new NativeParallelMultiHashMap<Entity, CellData>(1000, Allocator.Temp);
+            var zonedBlocksList   = new NativeList<Entity>(20, Allocator.Temp);
+            var commandBuffer     = new EntityCommandBuffer(Allocator.Temp);
 
             var fillBlocksListJob = new FillBlocksListJob(
                 SystemAPI.GetEntityTypeHandle(),

@@ -644,7 +644,7 @@ namespace Platter.Systems {
             //    m_UpgradeStates.Clear();
             //    m_AppliedUpgrade.Value = default;
             //    if (m_ToolSystem.actionMode.IsGame() && !m_LotQuery.IsEmptyIgnoreFilter) {
-            //        using (NativeArray<Entity> nativeArray = m_LotQuery.ToEntityArray(Allocator.TempJob)) {
+            //        using (NativeArray<Entity> nativeArray = m_LotQuery.ToEntityArray(Allocator.Temp)) {
             //            for (var i = 0; i < nativeArray.Length; i++) {
             //                var     entity         = nativeArray[i];
             //                ref var componentData  = EntityManager.GetComponentData<Area>(entity);
@@ -812,10 +812,10 @@ namespace Platter.Systems {
             //        m_BuildingQuery.ResetFilter();
             //        m_BuildingQuery.SetSharedComponentFilter<BuildingSpawnGroupData>(
             //            new BuildingSpawnGroupData(componentData.m_ZoneType));
-            //        nativeReference = new NativeReference<AttachmentData>(Allocator.TempJob);
+            //        nativeReference = new NativeReference<AttachmentData>(Allocator.Temp);
             //        JobHandle jobHandle2;
             //        NativeList<ArchetypeChunk> nativeList =
-            //        m_BuildingQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out jobHandle2);
+            //        m_BuildingQuery.ToArchetypeChunkListAsync(Allocator.Temp, out jobHandle2);
             //        var findAttachmentBuildingJob = default(ObjectToolSystem.FindAttachmentBuildingJob);
             //        findAttachmentBuildingJob.m_EntityType = InternalCompilerInterface.GetEntityTypeHandle(
             //            ref __TypeHandle.__Unity_Entities_Entity_TypeHandle, CheckedStateRef);

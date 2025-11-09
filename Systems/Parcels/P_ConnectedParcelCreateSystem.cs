@@ -46,12 +46,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         // Todo convert to job for perf
         protected override void OnUpdate() {
-            foreach (var chunk in m_PrefabCreatedQuery.ToArchetypeChunkArray(Allocator.TempJob)) {
-                foreach (var entity in chunk.GetNativeArray(SystemAPI.GetEntityTypeHandle())) {
-                    m_Log.Debug($"OnUpdate() -- Added ConnectedParcel buffer to entity");
-                    EntityManager.AddBuffer<ConnectedParcel>(entity);
-                }
-            }
+            EntityManager.AddComponent<ConnectedParcel>(m_PrefabCreatedQuery);
         }
     }
 }

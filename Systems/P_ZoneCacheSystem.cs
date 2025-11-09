@@ -89,7 +89,7 @@ namespace Platter.Systems {
         }
 
         private void CacheZonePrefabs(EntityQuery query) {
-            var chunkArray     = query.ToArchetypeChunkArray(Allocator.TempJob);
+            var chunkArray     = query.ToArchetypeChunkArray(Allocator.Temp);
             var prefabDataTh   = SystemAPI.GetComponentTypeHandle<PrefabData>();
             var zoneDataTh     = SystemAPI.GetComponentTypeHandle<ZoneData>();
             var deletedTh      = SystemAPI.GetComponentTypeHandle<Deleted>();

@@ -232,7 +232,7 @@ namespace Platter.Systems {
         }
 
         public void PlaceObject(Entity prefab, Transform transform) {
-            var ecb    = new EntityCommandBuffer(Allocator.TempJob);
+            var ecb    = new EntityCommandBuffer(Allocator.Temp);
             var entity = ecb.CreateEntity();
 
             ecb.AddComponent(entity, new CreationDefinition() {
@@ -263,7 +263,7 @@ namespace Platter.Systems {
         }
 
         private void PlaceEdge(Entity prefab, Transform startNodePosition, Transform endNodePosition) {
-            var ecb    = new EntityCommandBuffer(Allocator.TempJob);
+            var ecb    = new EntityCommandBuffer(Allocator.Temp);
             var entity = ecb.CreateEntity();
 
             ecb.AddComponent(entity, new CreationDefinition() {
@@ -395,7 +395,7 @@ namespace Platter.Systems {
         }
 
         public void PrepareParcelForApply(Entity entity, ushort prezoneIndex) {
-            var ecb    = new EntityCommandBuffer(Allocator.TempJob);
+            var ecb    = new EntityCommandBuffer(Allocator.Temp);
 
             var parcel = EntityManager.GetComponentData<Parcel>(entity);
             parcel.m_PreZoneType.m_Index = prezoneIndex;

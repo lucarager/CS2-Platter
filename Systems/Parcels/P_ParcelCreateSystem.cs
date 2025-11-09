@@ -8,8 +8,8 @@ namespace Platter.Systems {
     using Game;
     using Game.Common;
     using Game.Tools;
-    using Platter.Components;
-    using Platter.Utils;
+    using Components;
+    using Utils;
     using Unity.Collections;
     using Unity.Entities;
 
@@ -17,18 +17,9 @@ namespace Platter.Systems {
     /// System responsible for setting data when a parcel entity is created (likely by a tool).
     /// </summary>
     public partial class P_ParcelCreateSystem : GameSystemBase {
-        // Logger
         private PrefixedLogger m_Log;
-
-        // Barriers & Buffers
-        private ModificationBarrier1 m_ModificationBarrier1;
-        private EntityCommandBuffer m_CommandBuffer;
-
-        // Queries
-        private EntityQuery m_ParcelCreatedQuery;
-
-        // Systems & References
-        private P_UISystem m_PlatterUISystem;
+        private EntityQuery    m_ParcelCreatedQuery;
+        private P_UISystem     m_PlatterUISystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -36,11 +27,10 @@ namespace Platter.Systems {
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_ParcelCreateSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             // Retrieve Systems
-            m_ModificationBarrier1 = World.GetOrCreateSystemManaged<ModificationBarrier1>();
-            m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
+            m_PlatterUISystem      = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
             m_ParcelCreatedQuery = SystemAPI.QueryBuilder()
@@ -56,23 +46,19 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         // Todo convert to job for perf
         protected override void OnUpdate() {
-            m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer();
-            var entities = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
+            var entities              = m_ParcelCreatedQuery.ToEntityArray(Allocator.Temp);
             var currentDefaultPreZone = m_PlatterUISystem.PreZoneType;
 
             foreach (var parcelEntity in entities) {
                 // Retrieve components
-                if (!EntityManager.TryGetComponent<Parcel>(parcelEntity, out var parcel)) {
-                    m_Log.Error($"OnUpdate() -- Couldn't find all required components");
-                    return;
-                }
-
-                // Update prezoned type
+                var parcel = EntityManager.GetComponentData<Parcel>(
+                    parcelEntity
+                );
                 parcel.m_PreZoneType = currentDefaultPreZone;
-                m_CommandBuffer.SetComponent<Parcel>(parcelEntity, parcel);
+                EntityManager.SetComponentData(
+                    parcelEntity,
+                    parcel);
             }
-
-            entities.Dispose();
         }
     }
 }

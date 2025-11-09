@@ -122,8 +122,8 @@ namespace Platter.Systems {
         private JobHandle CollectUpdatedBlocks(NativeList<SortedEntity> updateBlocksList) {
             var zoneUpdateQueue   = new NativeQueue<Entity>(Allocator.TempJob);
             var objectUpdateQueue = new NativeQueue<Entity>(Allocator.TempJob);
-            var nativeQueue3      = new NativeQueue<Entity>(Allocator.TempJob);
-            var nativeQueue4      = new NativeQueue<Entity>(Allocator.TempJob);
+            var netUpdateQueue    = new NativeQueue<Entity>(Allocator.TempJob);
+            var areaUpdateQueue   = new NativeQueue<Entity>(Allocator.TempJob);
 
             var zoneSearchTree = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle);
             var jobHandle      = default(JobHandle);
@@ -156,7 +156,7 @@ namespace Platter.Systems {
                 var findUpdatedBlocksJob_Nets = new FindUpdatedBlocksDoubleIterationJob {
                     m_Bounds      = updatedNetBounds.AsDeferredJobArray(),
                     m_SearchTree  = zoneSearchTree,
-                    m_ResultQueue = nativeQueue3.AsParallelWriter(),
+                    m_ResultQueue = netUpdateQueue.AsParallelWriter(),
                 }.Schedule(updatedNetBounds, 1, JobHandle.CombineDependencies(updatedBoundsJobHandle, zoneSearchJobHandle));
                 m_NetUpdateCollectSystem.AddNetBoundsReader(findUpdatedBlocksJob_Nets);
 
@@ -169,7 +169,7 @@ namespace Platter.Systems {
                 var findUpdatedBlocksJob_Areas = new FindUpdatedBlocksDoubleIterationJob {
                     m_Bounds      = updatedLotBounds.AsDeferredJobArray(),
                     m_SearchTree  = zoneSearchTree,
-                    m_ResultQueue = nativeQueue4.AsParallelWriter(),
+                    m_ResultQueue = areaUpdateQueue.AsParallelWriter(),
                 }.Schedule(updatedLotBounds, 1, JobHandle.CombineDependencies(updatedBoundsJobHandle, zoneSearchJobHandle));
                 m_AreaUpdateCollectSystem.AddLotBoundsReader(findUpdatedBlocksJob_Areas);
 
@@ -182,7 +182,7 @@ namespace Platter.Systems {
                 var findUpdatedBlocksJob_MapTiles = new FindUpdatedBlocksDoubleIterationJob {
                     m_Bounds      = updatedMapTileBounds.AsDeferredJobArray(),
                     m_SearchTree  = zoneSearchTree,
-                    m_ResultQueue = nativeQueue4.AsParallelWriter(),
+                    m_ResultQueue = areaUpdateQueue.AsParallelWriter(),
                 }.Schedule(updatedMapTileBounds, 1, JobHandle.CombineDependencies(updatedBoundsJobHandle, searchJobHandle));
                 m_AreaUpdateCollectSystem.AddMapTileBoundsReader(findUpdatedBlocksJob_MapTiles);
 
@@ -192,15 +192,15 @@ namespace Platter.Systems {
             var collectBlocksJobHandle = new CollectBlocksJob {
                 m_Queue1     = zoneUpdateQueue,
                 m_Queue2     = objectUpdateQueue,
-                m_Queue3     = nativeQueue3,
-                m_Queue4     = nativeQueue4,
+                m_Queue3     = netUpdateQueue,
+                m_Queue4     = areaUpdateQueue,
                 m_ResultList = updateBlocksList,
             }.Schedule(jobHandle);
 
             zoneUpdateQueue.Dispose(collectBlocksJobHandle);
             objectUpdateQueue.Dispose(collectBlocksJobHandle);
-            nativeQueue3.Dispose(collectBlocksJobHandle);
-            nativeQueue4.Dispose(collectBlocksJobHandle);
+            netUpdateQueue.Dispose(collectBlocksJobHandle);
+            areaUpdateQueue.Dispose(collectBlocksJobHandle);
             m_ZoneSearchSystem.AddSearchTreeReader(jobHandle);
 
             return collectBlocksJobHandle;

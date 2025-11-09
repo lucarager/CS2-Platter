@@ -78,7 +78,7 @@ namespace Platter.Systems {
                 }
 
                 var edgeColors = m_ZoneCacheSystem.FillColors;
-                var colorsMap  = new NativeHashMap<ushort, Color>(edgeColors.Count, Allocator.TempJob);
+                var colorsMap  = new NativeHashMap<ushort, Color>(edgeColors.Count, Allocator.Temp);
 
                 foreach (var entry in edgeColors) {
                     colorsMap.Add(entry.Key, entry.Value);
