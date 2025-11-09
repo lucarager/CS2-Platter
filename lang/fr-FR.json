@@ -35,7 +35,7 @@
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.Github]": "Ouvre une fenêtre de navigateur sur https://github.com/lucarager/CS2-Platter",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.Discord]": "Discord.",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.Discord]": "Ouvre le lien pour rejoindre le CS:2 Modding Discord",
-  "PlatterMod.UI.SectionTitle.Prezoning": "Pre-Zone",
+  "PlatterMod.UI.SectionTitle.Prezoning": "Pré-zonage",
   "PlatterMod.UI.SectionTitle.ParcelControls": "Parcel Controls",
   "PlatterMod.UI.SectionTitle.RenderParcels": "Render Parcels",
   "PlatterMod.UI.SectionTitle.AllowSpawn": "Enable Spawning on Parcels",
