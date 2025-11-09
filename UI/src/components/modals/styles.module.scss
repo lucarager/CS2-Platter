@@ -126,9 +126,13 @@
         word-break: break-all;
 
         span {
-            color:  var(--accentColorLight);
+            white-space: pre-wrap;
         }
     }
+}
+
+.highlight {
+    color:  var(--accentColorLight);
 }
 
 .card:first-child {

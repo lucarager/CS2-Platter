@@ -6,12 +6,14 @@ import styles from "./styles.module.scss";
 import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import { useValue } from "cs2/api";
+import { useLocalization } from "cs2/l10n";
 
 export type BlockControlProps = Record<string, never>;
 
 export const WelcomeModal = () => {
     const modalBinding = useValue(GAME_BINDINGS.MODAL__FIRST_LAUNCH.binding);
     const [activePage, setActivePage] = useState(0);
+    const { translate } = useLocalization();
 
     const handleCloseOnSelect = useCallback(() => {
         GAME_TRIGGERS.MODAL_DISMISS("first_launch");
@@ -33,8 +35,8 @@ export const WelcomeModal = () => {
                     <div className={styles.header__inner}>
                         <span className={styles.headerText}>
                             <div className={styles.intro}>
-                                <h2>Thanks for installing Platter!</h2>
-                                <h3>Here&apos;s a quick intro to get you started</h3>
+                                <h2>{translate("PlatterMod.UI.Modals.FirstLaunch.Title")}</h2>
+                                <h3>{translate("PlatterMod.UI.Modals.FirstLaunch.Subtitle")}</h3>
                             </div>
                         </span>
                         <Button
@@ -60,15 +62,17 @@ export const WelcomeModal = () => {
                                             />
                                         </div>
                                         <div className={styles.card__text_container}>
-                                            <h3>Platter adds &quot;Parcels&quot; to the game.</h3>
+                                            <h3>
+                                                {translate(
+                                                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title",
+                                                )}
+                                            </h3>
                                             <p className={styles.card__text} cohinline="true">
-                                                You can find ploppable parcels in{" "}
-                                                <span>the new Platter tab</span>{" "}in the zone
-                                                toolbar.
-                                            </p>
-                                            <p className={styles.card__text} cohinline="true">
-                                                Oh, and no need to block or remove vanilla blocks,
-                                                plop parcels right on top!
+                                                <HighlightedText
+                                                    text={translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text",
+                                                    )}
+                                                />
                                             </p>
                                         </div>
                                     </div>
@@ -88,12 +92,17 @@ export const WelcomeModal = () => {
                                             />
                                         </div>
                                         <div className={styles.card__text_container}>
-                                            <h3>Parcels work just like vanilla blocks.</h3>
+                                            <h3>
+                                                {translate(
+                                                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title",
+                                                )}
+                                            </h3>
                                             <p className={styles.card__text} cohinline="true">
-                                                You can use the tools familiar to you to zone and
-                                                grow buildings.{" "}
-                                                <span>Use the Fill zone tool for best results</span>{" "}
-                                                - it will limit the flood area to a parcel.
+                                                <HighlightedText
+                                                    text={translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text",
+                                                    )}
+                                                />
                                             </p>
                                         </div>
                                     </div>
@@ -114,9 +123,11 @@ export const WelcomeModal = () => {
                                         </div>
                                         <div className={styles.card__text_container}>
                                             <p className={styles.card__text} cohinline="true">
-                                                The <span>top left Platter menu</span>{" "}allows you to
-                                                toggle the parcel overlay and temporarily block
-                                                buildings growing on parcels.
+                                                <HighlightedText
+                                                    text={translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text",
+                                                    )}
+                                                />
                                             </p>
                                         </div>
                                     </div>
@@ -129,8 +140,11 @@ export const WelcomeModal = () => {
                                         </div>
                                         <div className={styles.card__text_container}>
                                             <p className={styles.card__text} cohinline="true">
-                                                <span>Advanced Line Tool and MoveIt</span>{" "}are great
-                                                mods to use with parcels!
+                                                <HighlightedText
+                                                    text={translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial4.Text",
+                                                    )}
+                                                />
                                             </p>
                                         </div>
                                     </div>
@@ -148,18 +162,23 @@ export const WelcomeModal = () => {
                                         className={styles.card__image}
                                     /> */}
                                         <div className={styles.card__text_container}>
-                                            <h3>Disclaimer</h3>
+                                            <h3>
+                                                {translate(
+                                                    "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title",
+                                                )}
+                                            </h3>
                                             <p className={styles.alert}>
-                                                Platter is an experimental beta mod. Should you wish
-                                                to uninstall it, the Settings page contains an
-                                                uninstall button that will safely remove all custom
-                                                parcels from your save.
+                                                {translate(
+                                                    "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text",
+                                                )}
                                             </p>
                                             <div className={styles.action}>
                                                 <Button
                                                     variant="primary"
                                                     onSelect={handleCloseOnSelect}>
-                                                    Get plattin&apos;!
+                                                    {translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Button",
+                                                    )}
                                                 </Button>
                                             </div>
                                         </div>
@@ -178,5 +197,56 @@ export const WelcomeModal = () => {
                 />
             </Panel>
         </div>
+    );
+};
+
+interface HighlightedTextProps {
+    text: string | null;
+    highlightClassName?: string; // optional custom class for highlight
+}
+
+function parseHighlightedText(input: string) {
+    const parts: { text: string; highlight: boolean }[] = [];
+
+    // Split on __ while keeping the delimited text
+    const split = input.split(/(__.*?__)/);
+
+    for (const part of split) {
+        if (part.startsWith("__") && part.endsWith("__")) {
+            // Remove the __ markers
+            parts.push({
+                text: part.slice(2, -2),
+                highlight: true,
+            });
+        } else if (part.length > 0) {
+            parts.push({
+                text: part,
+                highlight: false,
+            });
+        }
+    }
+
+    return parts;
+}
+
+export const HighlightedText: React.FC<HighlightedTextProps> = ({
+    text,
+}) => {
+    if (text == null) return <></>;
+
+    const parts = parseHighlightedText(text);
+
+    return (
+        <>
+            {parts.map((part, i) =>
+                part.highlight ? (
+                    <span key={i} className={styles.highlight}>
+                        {part.text}
+                    </span>
+                ) : (
+                    <span key={i}>{part.text}</span>
+                ),
+            )}
+        </>
     );
 };
