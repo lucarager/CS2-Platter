@@ -30,3 +30,11 @@
 .headerText {
     margin-left: -5rem;
 }
+
+.toolButton {
+    background: rgba(34, 13, 22, 0.5);
+
+    &:hover {
+    background: rgb(34, 13, 22);
+    }
+}

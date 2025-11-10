@@ -22,6 +22,9 @@ namespace Platter.Systems {
         // Logger
         private PrefixedLogger m_Log;
 
+        public const GeometryFlags PermGeometryFlags = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority;
+        public const GeometryFlags TempGeometryFlags = GeometryFlags.WalkThrough;
+
         // Queries
         private EntityQuery m_PrefabQuery;
 
@@ -88,7 +91,7 @@ namespace Platter.Systems {
                 oGeoData.m_LegSize = new float3(0f, 0f, 0f);
                 oGeoData.m_Bounds  = parcelGeo.Bounds;
                 oGeoData.m_Layers  = MeshLayer.Default;
-                oGeoData.m_Flags   = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority;
+                oGeoData.m_Flags   = PermGeometryFlags;
                 EntityManager.SetComponentData(prefabEntity, oGeoData);
 
                 // Geometry data

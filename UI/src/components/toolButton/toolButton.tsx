@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Panel, PanelSection } from "cs2/ui";
+import { Button, Panel, PanelSection, Tooltip } from "cs2/ui";
 import styles from "./toolButton.module.scss";
 import { VF, VC, VT } from "../vanilla/Components";
 import { useValue } from "cs2/api";
@@ -17,12 +17,15 @@ export const ToolButton = () => {
     return (
         <>
             {enabled ? <ToolPanel /> : null}
-            <Button
-                variant="floating"
-                onSelect={() => setIsEnabled(!enabled)}
-                src={iconSrc}
-                tooltipLabel={translate("Options.SECTION[Platter.Platter.PlatterMod]")}
-            />
+            <Tooltip tooltip={translate("Options.SECTION[Platter.Platter.PlatterMod]")}>
+                <Button
+                    variant="floating"
+                    className={styles.toolButton}
+                    onSelect={() => setIsEnabled(!enabled)}
+                    src={iconSrc}
+                    tooltipLabel={translate("Options.SECTION[Platter.Platter.PlatterMod]")}
+                />
+            </Tooltip>
         </>
     );
 };
