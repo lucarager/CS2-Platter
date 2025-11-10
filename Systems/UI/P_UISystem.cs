@@ -158,8 +158,8 @@ namespace Platter.Systems {
 
             // Make sure we refresh the lot sizes if the Object Tool is active
             if (currentlyUsingParcelsInObjectTool) {
-                m_SelectedParcelSize.x = ((ParcelPrefab)m_ObjectToolSystem.prefab).m_LotWidth;
-                m_SelectedParcelSize.y = ((ParcelPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
+                m_SelectedParcelSize.x = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotWidth;
+                m_SelectedParcelSize.y = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
             }
 
             // Rendering should be on when using a tool
@@ -192,13 +192,13 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
+            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
         }
 
         /// <summary>
         /// </summary>
         private bool ShouldRenderOverlay() {
-            return m_ToolSystem.activeTool is ObjectToolSystem or BulldozeToolSystem or NetToolSystem or ZoneToolSystem || m_ToolSystem.activePrefab is ParcelPrefab;
+            return m_ToolSystem.activeTool is ObjectToolSystem or BulldozeToolSystem or NetToolSystem or ZoneToolSystem || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
         }
 
         /// <summary>

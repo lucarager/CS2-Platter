@@ -27,11 +27,6 @@ namespace Platter.Systems {
         public static readonly int4 BlockSizes = new(2, 2, 6, 6);
 
         /// <summary>
-        /// Common prefix to add to parcel prefab names.
-        /// </summary>
-        public static readonly string PrefabNamePrefix = "Parcel";
-
-        /// <summary>
         /// Stateful value to only run installation once.
         /// </summary>
         private static bool m_PrefabsAreInstalled;
@@ -122,9 +117,15 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
                 for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (!CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], zonePrefabUIObject, uiCategoryPrefab, areaPrefab)) {
-                        m_Log.Error($"{logMethodPrefix} Failed adding ParcelPrefab {i}x{j} to PrefabSystem, exiting prematurely.");
-                        return;
+                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], zonePrefabUIObject, uiCategoryPrefab, areaPrefab)) {
+                        m_Log.Debug($"Created Parcel Prefab {i}x{j}");
+                    } else {
+                        m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
+                    }
+                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], zonePrefabUIObject, uiCategoryPrefab, areaPrefab, true)) {
+                        m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
+                    } else {
+                        m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
                     }
                 }
             }
@@ -144,74 +145,74 @@ namespace Platter.Systems {
             }
         }
 
-        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase) {
-            var name = $"{PrefabNamePrefix} {lotWidth}x{lotDepth}";
-            var icon = $"coui://platter/{PrefabNamePrefix}_{lotWidth}x{lotDepth}.svg";
-            var parcelGeo = new ParcelGeometry(new int2(lotWidth, lotDepth));
+        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase, bool placeholder = false) {
+            var prefix     = "Parcel";
+            var name       = $"{prefix} {lotWidth}x{lotDepth}";
+            var icon       = $"coui://platter/{prefix}_{lotWidth}x{lotDepth}.svg";
+            var parcelGeo  = new ParcelGeometry(new int2(lotWidth, lotDepth));
 
-            // Point our new prefab
-            var parcelPrefabBase = ScriptableObject.CreateInstance<ParcelPrefab>();
-            parcelPrefabBase.name = name;
-            parcelPrefabBase.m_LotWidth = lotWidth;
-            parcelPrefabBase.m_LotDepth = lotDepth;
+            PrefabBase prefabBase;
+            if (placeholder) {
+                var parcelPrefabBase = ScriptableObject.CreateInstance<ParcelPlaceholderPrefab>();
+                parcelPrefabBase.name        = name;
+                parcelPrefabBase.m_LotWidth  = lotWidth;
+                parcelPrefabBase.m_LotDepth  = lotDepth;
+                parcelPrefabBase.m_ZoneBlock = roadPrefab.m_ZoneBlock;
+                prefabBase                   = parcelPrefabBase;
+            } else {
+                var parcelPrefabBase = ScriptableObject.CreateInstance<ParcelPrefab>();
+                parcelPrefabBase.name        = name;
+                parcelPrefabBase.m_LotWidth  = lotWidth;
+                parcelPrefabBase.m_LotDepth  = lotDepth;
+                parcelPrefabBase.m_ZoneBlock = roadPrefab.m_ZoneBlock;
+                prefabBase                   = parcelPrefabBase;
+            }
 
-            // Adding PlaceableObject Data.
             var placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
             placeableObject.m_ConstructionCost = 0;
             placeableObject.m_XPReward = 0;
-            parcelPrefabBase.AddComponentFrom(placeableObject);
-
-            // Adding ZoneBlock data.
-            parcelPrefabBase.m_ZoneBlock = roadPrefab.m_ZoneBlock;
-
-            var corners = parcelGeo.CornerNodesRelativeToGeometryCenter;
+            prefabBase.AddComponentFrom(placeableObject);
 
             // (experimental) adding area data
-            var objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
-            objectSubAreas.name = "ObjectSubAreas";
-            objectSubAreas.m_SubAreas = new ObjectSubAreaInfo[1] { new () {
-                    m_AreaPrefab = areaPrefabBase,
-                    m_NodePositions = new float3[] {
-                        corners.c0,
-                        corners.c1,
-                        corners.c2,
-                        corners.c3,
-                    },
-                    m_ParentMeshes = new int[4] {
-                         -1,
-                         -1,
-                         0,
-                         0,
-                    },
-                },
-            };
+            //var corners = parcelGeo.CornerNodesRelativeToGeometryCenter;
+            //var objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
+            //objectSubAreas.name = "ObjectSubAreas";
+            //objectSubAreas.m_SubAreas = new ObjectSubAreaInfo[1] { new () {
+            //        m_AreaPrefab = areaPrefabBase,
+            //        m_NodePositions = new float3[] {
+            //            corners.c0,
+            //            corners.c1,
+            //            corners.c2,
+            //            corners.c3,
+            //        },
+            //        m_ParentMeshes = new int[4] {
+            //             -1,
+            //             -1,
+            //             0,
+            //             0,
+            //        },
+            //    },
+            //};
+            // prefabBase.AddComponentFrom(objectSubAreas);
 
-            // Experimental
-            // parcelPrefabBase.AddComponentFrom(objectSubAreas);
-
-            // Point and populate the new UIObject for our cloned Prefab
-            var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
-            placeableLotPrefabUIObject.m_Icon = icon;
-            placeableLotPrefabUIObject.name = PrefabNamePrefix;
-            placeableLotPrefabUIObject.m_IsDebugObject = zonePrefabUIObject.m_IsDebugObject;
-            placeableLotPrefabUIObject.m_Priority = ((lotWidth - 2) * BlockSizes.z) + lotDepth - 1;
-            placeableLotPrefabUIObject.m_Group = uiCategoryPrefab;
-            placeableLotPrefabUIObject.active = zonePrefabUIObject.active;
-            parcelPrefabBase.AddComponentFrom(placeableLotPrefabUIObject);
-
-            m_Log.Debug($"Created Parcel SelectedPrefabBase with uiTag {parcelPrefabBase.uiTag}");
-
-            // Try to add it to the prefab System
-            var success = m_PrefabSystem.AddPrefab(parcelPrefabBase);
-
-            if (success) {
-                // Todo can we set data here instead of the system?
-                var prefabEntity = m_PrefabSystem.GetEntity(parcelPrefabBase);
-                m_PrefabBases.Add(parcelPrefabBase);
-                m_PrefabEntities.Add(parcelPrefabBase, prefabEntity);
+            if (placeholder) {
+                var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
+                placeableLotPrefabUIObject.m_Icon          = icon;
+                placeableLotPrefabUIObject.m_IsDebugObject = true;
+                placeableLotPrefabUIObject.m_Priority      = ((lotWidth - 2) * BlockSizes.z) + lotDepth - 1;
+                placeableLotPrefabUIObject.m_Group         = uiCategoryPrefab;
+                placeableLotPrefabUIObject.active          = true;
+                prefabBase.AddComponentFrom(placeableLotPrefabUIObject);
             }
 
-            return success;
+            if (m_PrefabSystem.AddPrefab(prefabBase)) {
+                var prefabEntity = m_PrefabSystem.GetEntity(prefabBase);
+                m_PrefabBases.Add(prefabBase);
+                m_PrefabEntities.Add(prefabBase, prefabEntity);
+                return true;
+            } else {
+                return false;
+            }
         }
 
         private bool CreateCategoryPrefab(UIAssetCategoryPrefab originalUICategoryPrefab, out UIAssetCategoryPrefab uiCategoryPrefab) {
@@ -230,7 +231,6 @@ namespace Platter.Systems {
             uiObject.m_Icon = icon;
             uiObject.m_IsDebugObject = false;
             uiObject.m_Icon = icon;
-            uiObject.name = name;
             uiCategoryPrefabBase.AddComponentFrom(uiObject);
 
             var success = m_PrefabSystem.AddPrefab(uiCategoryPrefabBase);

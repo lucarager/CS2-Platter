@@ -11,6 +11,8 @@ using Game.Prefabs; // Added to reference SpawnableBuildingData
 using Platter.Components; // Added to reference ParcelData
 
 namespace Platter.Systems {
+    using Colossal.Serialization.Entities;
+    using Game;
     using Unity.Mathematics;
 
     /// <summary>
@@ -50,8 +52,6 @@ namespace Platter.Systems {
                                        .Build();
 
             m_BuildingCount = new NativeHashMap<float3, int>(5, Allocator.Persistent);
-
-            RequireForUpdate(m_BuildingQuery);
         }
 
         /// <inheritdoc/>
@@ -59,10 +59,14 @@ namespace Platter.Systems {
             m_BuildingCount.Dispose();
             base.OnDestroy();
         }
-
-        /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug("OnUpdate()");
+        }
+
+        protected override void OnGameLoadingComplete(Purpose  purpose,
+                                                      GameMode mode) {
+            base.OnGameLoadingComplete(purpose, mode);
+
+            m_Log.Debug("OnGameLoadingComplete()");
 
             // Reset counts for this update cycle
             m_BuildingCount.Clear();

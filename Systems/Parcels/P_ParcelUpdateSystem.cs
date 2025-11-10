@@ -51,7 +51,7 @@ namespace Platter.Systems {
                 .WithAllRW<Parcel, ParcelSubBlock>()
                 .WithAll<PrefabRef, ParcelComposition, Transform>()
                 .WithAny<Updated, Deleted>()
-                .WithNone<Temp>()
+                .WithNone<Temp, ParcelPlaceholder>()
                 .Build();
 
             // Update Cycle

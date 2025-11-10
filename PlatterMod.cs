@@ -112,7 +112,6 @@ namespace Platter {
             GenerateLanguageFile();
 #endif
 
-
             // Apply inflection patches.
             ModifyVabillaSubBlockSerialization(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
 
@@ -137,7 +136,8 @@ namespace Platter {
             updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ZoneCacheSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_BuildingCacheSystem>(SystemUpdatePhase.PrefabUpdate);
-            
+            updateSystem.UpdateBefore<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
+
             // Buildings
             updateSystem.UpdateAfter<P_BuildingInitializeSystem, BuildingConstructionSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAt<P_BuildingTransformCheckSystem>(SystemUpdatePhase.Modification1);

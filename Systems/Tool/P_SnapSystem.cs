@@ -104,7 +104,7 @@ namespace Platter.Systems {
             // Exit early on certain conditions
             if (m_Query.IsEmptyIgnoreFilter ||
                 m_ToolSystem.activeTool is not ObjectToolSystem ||
-                m_ObjectToolSystem.prefab is not ParcelPrefab) {
+                m_ObjectToolSystem.prefab is not ParcelPlaceholderPrefab) {
                 return;
             }
 

@@ -77,7 +77,7 @@ namespace Platter.Systems {
             }
 
             // Retrieve current prezone and parcel sizes
-            var parcel = (ParcelPrefab)m_ObjectToolSystem.prefab;
+            var parcel = (ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab;
 
             var count = m_BuildingCacheSystem.GetBuildingCount(
                 prezone.m_Index,
@@ -129,7 +129,7 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPrefab;
+            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
         }
     }
 }
