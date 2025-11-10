@@ -21,6 +21,16 @@ namespace Platter.Utils {
             return GetPrefabID(size.x, size.y);
         }
 
+        public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
+            var category = placeholder ? "ParcelPlaceholderPrefab" : "ParcelPrefab";
+            var name     = $"Parcel {width}x{depth}";
+            return new PrefabID("ParcelPrefab", name);
+        }
+
+        public static PrefabID GetPrefabID(int2 size, bool placeholder = false) {
+            return GetPrefabID(size.x, size.y, placeholder);
+        }
+
         public enum ParcelNode {
             CornerLeftFront,
             CornerLeftBack,

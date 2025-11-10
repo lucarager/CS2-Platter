@@ -40,6 +40,12 @@
     flex-direction: row;
 }
 
+.dropdownItem {
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
 .controlsRowWidthDropdown {
     button {
         padding-left: 10rem;

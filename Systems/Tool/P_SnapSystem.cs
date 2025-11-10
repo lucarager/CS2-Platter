@@ -9,6 +9,7 @@ namespace Platter.Systems {
     using Colossal.Entities;
     using Colossal.Mathematics;
     using Components;
+    using Extensions;
     using Game;
     using Game.Buildings;
     using Game.Common;
@@ -107,6 +108,9 @@ namespace Platter.Systems {
                 m_ObjectToolSystem.prefab is not ParcelPlaceholderPrefab) {
                 return;
             }
+
+            // Enable the zone overlay
+            //m_ObjectToolSystem.SetMemberValue("requireZones", true);
 
             // Exit on disabled snap
             if (m_SnapMode != SnapMode.ZoneSide && m_SnapMode != SnapMode.RoadSide) {

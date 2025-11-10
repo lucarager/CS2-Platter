@@ -20,11 +20,14 @@ namespace Platter.Systems {
     public partial class P_PlaceholderSystem : PlatterGameSystemBase {
         private EntityQuery  m_Query;
         private PrefabSystem m_PrefabSystem;
+        private ToolSystem   m_ToolSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem                =  World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ToolSystem                  =  World.GetOrCreateSystemManaged<ToolSystem>();
+            m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
 
             m_Query = SystemAPI.QueryBuilder()
                                .WithAllRW<ParcelPlaceholder>()
@@ -47,6 +50,17 @@ namespace Platter.Systems {
                 EntityManager.RemoveComponent<ParcelPlaceholder>(entity);
                 EntityManager.AddComponent<Updated>(entity);
             }
+        }
+
+        private void OnPrefabChanged(PrefabBase currentPrefab) {
+            if (m_ToolSystem.activePrefab == null || m_ToolSystem.activePrefab is not ParcelPrefab) {
+                return;
+            }
+
+            m_PrefabSystem.TryGetPrefab(
+                new PrefabID("ParcelPlaceholderPrefab", currentPrefab.GetPrefabID().GetName()),
+                out var newPrefab);
+            m_ToolSystem.activeTool.TrySetPrefab(newPrefab);
         }
     }
 }

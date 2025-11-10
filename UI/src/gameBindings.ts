@@ -8,7 +8,11 @@ export const GAME_BINDINGS = {
     TOOL_ENABLED: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
     ALLOW_SPAWNING_INFO_SECTION: new TwoWayBinding<boolean>("ALLOW_SPAWNING_INFO_SECTION", false),
     BLOCK_WIDTH: new TwoWayBinding<number>("BLOCK_WIDTH", 2),
+    BLOCK_WIDTH_MIN: new TwoWayBinding<number>("BLOCK_WIDTH_MIN", 1),
+    BLOCK_WIDTH_MAX: new TwoWayBinding<number>("BLOCK_WIDTH_MAX", 6),
     BLOCK_DEPTH: new TwoWayBinding<number>("BLOCK_DEPTH", 2),
+    BLOCK_DEPTH_MIN: new TwoWayBinding<number>("BLOCK_DEPTH_MIN", 2),
+    BLOCK_DEPTH_MAX: new TwoWayBinding<number>("BLOCK_DEPTH_MAX", 6),
     PREFAB_DATA: new TwoWayBinding<PrefabData>("PREFAB_DATA", {
         name: undefined,
         thumbnail: undefined,

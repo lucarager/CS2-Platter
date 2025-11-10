@@ -27,8 +27,6 @@ export const ToolModes = [
 const ToolModeSection = () => {
     const toolModeBinding = useValue(GAME_BINDINGS.TOOL_MODE.binding);
 
-    const { translate } = useLocalization();
-
     return (
         <VC.Section title="Tool Mode">
             <VC.ToolButton
@@ -199,6 +197,8 @@ const SnapRoadsideSection = () => {
 const ParcelWidthSection = () => {
     const { translate } = useLocalization();
     const blockWidthBinding = useValue(GAME_BINDINGS.BLOCK_WIDTH.binding);
+    const blockWidthMinBinding = useValue(GAME_BINDINGS.BLOCK_WIDTH_MIN.binding);
+    const blockWidthMaxBinding = useValue(GAME_BINDINGS.BLOCK_WIDTH_MAX.binding);
 
     return (
         <VC.Section title={translate("PlatterMod.UI.SectionTitle.ParcelWidth")}>
@@ -206,7 +206,7 @@ const ParcelWidthSection = () => {
                 onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_DECREASE")}
                 src="Media/Glyphs/ThickStrokeArrowLeft.svg"
                 focusKey={VF.FOCUS_DISABLED}
-                disabled={blockWidthBinding === 2}
+                disabled={blockWidthBinding === blockWidthMinBinding}
                 tooltip={translate("PlatterMod.UI.Tooltip.BlockWidthDecrease")}
                 className={c(VT.toolButton.button, styles.button, VT.mouseToolOptions.startButton)}
             />
@@ -219,7 +219,7 @@ const ParcelWidthSection = () => {
                 onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_INCREASE")}
                 src="Media/Glyphs/ThickStrokeArrowRight.svg"
                 focusKey={VF.FOCUS_DISABLED}
-                disabled={blockWidthBinding === 6}
+                disabled={blockWidthBinding === blockWidthMaxBinding}
                 tooltip={translate("PlatterMod.UI.Tooltip.BlockWidthIncrease")}
                 className={c(VT.toolButton.button, styles.button, VT.mouseToolOptions.endButton)}
             />
@@ -229,6 +229,8 @@ const ParcelWidthSection = () => {
 
 const ParcelDepthSection = () => {
     const blockDepthBinding = useValue(GAME_BINDINGS.BLOCK_DEPTH.binding);
+    const blockDepthMinBinding = useValue(GAME_BINDINGS.BLOCK_DEPTH_MIN.binding);
+    const blockDepthMaxBinding = useValue(GAME_BINDINGS.BLOCK_DEPTH_MAX.binding);
 
     const { translate } = useLocalization();
 
@@ -238,7 +240,7 @@ const ParcelDepthSection = () => {
                 onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_DECREASE")}
                 src="Media/Glyphs/ThickStrokeArrowLeft.svg"
                 focusKey={VF.FOCUS_DISABLED}
-                disabled={blockDepthBinding === 2}
+                disabled={blockDepthBinding === blockDepthMinBinding}
                 tooltip={translate("PlatterMod.UI.Tooltip.BlockDepthDecrease")}
                 className={c(VT.toolButton.button, styles.button, VT.mouseToolOptions.startButton)}
             />
@@ -251,7 +253,7 @@ const ParcelDepthSection = () => {
                 onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_INCREASE")}
                 src="Media/Glyphs/ThickStrokeArrowRight.svg"
                 focusKey={VF.FOCUS_DISABLED}
-                disabled={blockDepthBinding === 6}
+                disabled={blockDepthBinding === blockDepthMaxBinding}
                 tooltip={translate("PlatterMod.UI.Tooltip.BlockDepthIncrease")}
                 className={c(VT.toolButton.button, styles.button, VT.mouseToolOptions.endButton)}
             />
