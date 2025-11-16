@@ -59,12 +59,12 @@ namespace Platter.Systems {
 
             // Queries
             m_UpdatedQuery = SystemAPI.QueryBuilder()
-                                      .WithAll<Parcel>()
+                                      .WithAll<Parcel, Initialized>()
                                       .WithAny<Updated, Deleted>()
                                       .WithNone<Temp>()
                                       .Build();
             m_AllQuery = SystemAPI.QueryBuilder()
-                                  .WithAll<Parcel>()
+                                  .WithAll<Parcel, Initialized>()
                                   .WithNone<Temp>()
                                   .Build();
             

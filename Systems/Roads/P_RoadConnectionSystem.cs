@@ -63,7 +63,7 @@ namespace Platter.Systems {
 
             // Define Queries
             m_ModificationQuery = SystemAPI.QueryBuilder()
-                                           .WithAll<Parcel>()
+                                           .WithAll<Parcel, Initialized>()
                                            .WithAny<Updated, Deleted>()
                                            .WithNone<Temp>()
                                            .AddAdditionalQuery()

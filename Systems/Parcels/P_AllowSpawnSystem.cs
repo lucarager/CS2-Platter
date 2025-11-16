@@ -20,8 +20,8 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Queries
-        private EntityQuery m_EnabledQuery;
-        private EntityQuery m_DisabledQuery;
+        private EntityQuery m_SpawnableQuery;
+        private EntityQuery m_NotSpawnableQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -32,12 +32,12 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Queries
-            m_EnabledQuery = SystemAPI.QueryBuilder()
-                                      .WithAll<Parcel, ParcelSpawnable>()
+            m_SpawnableQuery = SystemAPI.QueryBuilder()
+                                      .WithAll<Parcel, Initialized, ParcelSpawnable>()
                                       .WithNone<Deleted, Temp>()
                                       .Build();
-            m_DisabledQuery = SystemAPI.QueryBuilder()
-                                       .WithAll<Parcel>()
+            m_NotSpawnableQuery = SystemAPI.QueryBuilder()
+                                       .WithAll<Parcel, Initialized>()
                                        .WithNone<ParcelSpawnable, Deleted, Temp>()
                                        .Build();
             
@@ -47,24 +47,15 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
         }
 
-        // Todo convert to job for perf
         public void UpdateSpawning(bool allowSpawn = true) {
             m_Log.Debug($"UpdateSpawning(allowSpawn={allowSpawn})");
-
-            var query = allowSpawn ? m_DisabledQuery : m_EnabledQuery;
-            var entities = query.ToEntityArray(Allocator.Temp);
-
-            foreach (var entity in entities) {
-                if (allowSpawn) {
-                    EntityManager.AddComponent<ParcelSpawnable>(entity);
-                } else {
-                    EntityManager.RemoveComponent<ParcelSpawnable>(entity);
-                }
-
-                EntityManager.AddComponent<Updated>(entity);
+            if (allowSpawn) {
+                EntityManager.AddComponent<ParcelSpawnable>(m_NotSpawnableQuery);
+                EntityManager.AddComponent<Updated>(m_NotSpawnableQuery);
+            } else {
+                EntityManager.RemoveComponent<ParcelSpawnable>(m_SpawnableQuery);
+                EntityManager.AddComponent<Updated>(m_SpawnableQuery);
             }
-
-            entities.Dispose();
         }
     }
 }

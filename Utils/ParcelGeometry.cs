@@ -10,18 +10,24 @@ namespace Platter.Utils {
 
     internal class ParcelGeometry {
         private Bounds3 m_ParcelBounds;
-        private float3 m_ParcelSize;
+        private Bounds3 m_BlockBounds;
+        private float3  m_ParcelSize;
+        private float3  m_BlockSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelGeometry"/> class.
         /// </summary>
         /// <param name="parcelData"></param>
         public ParcelGeometry(int2 lotSize) {
-            m_ParcelSize = GetParcelSize(lotSize);
+            m_ParcelSize   = GetParcelSize(lotSize);
+            m_BlockSize    = GetBlockSize(lotSize);
             m_ParcelBounds = GetParcelBounds(m_ParcelSize);
+            m_BlockBounds  = GetBlockBounds(m_ParcelSize, m_BlockSize);
         }
 
         public float3 Center => GetCenter(m_ParcelBounds);
+
+        public float3 BlockCenter => GetBlockCenter(m_BlockBounds);
 
         public Bounds3 Bounds => m_ParcelBounds;
 
@@ -53,6 +59,13 @@ namespace Platter.Utils {
                 lotSize.y * DimensionConstants.CellSize
             );
         }
+        public static float3 GetBlockSize(int2 lotSize) {
+            return new float3(
+                math.max(2, lotSize.x) * DimensionConstants.CellSize,
+                DimensionConstants.ParcelHeight,
+                6 * DimensionConstants.CellSize
+            );
+        }
 
         /// <summary>
         /// The bounds determine where the object sits in relation to its pivot
@@ -70,8 +83,20 @@ namespace Platter.Utils {
                 new float3(parcelSize.x  / 2, parcelSize.y  / 2, parcelSize.z / 2)
             );
         }
+        public static Bounds3 GetBlockBounds(float3 parcelSize, float3 blockSize) {
+            var shiftX = (blockSize.x - parcelSize.x) / 2;
+            var shiftZ = (blockSize.z - parcelSize.z) / 2;
+            return new Bounds3(
+                new float3(-blockSize.x / 2 - shiftX, -blockSize.y / 2, (-blockSize.z / 2) - shiftZ),
+                new float3(blockSize.x  / 2 - shiftX, blockSize.y  / 2, (blockSize.z  / 2) - shiftZ)
+            );
+        }
 
         public static float3 GetCenter(Bounds3 bounds) {
+            return MathUtils.Center(bounds);
+        }
+
+        public static float3 GetBlockCenter(Bounds3 bounds) {
             return MathUtils.Center(bounds);
         }
 

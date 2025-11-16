@@ -76,7 +76,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
 
         // Props
-        public ZoneType PreZoneType { get; private set; } = ZoneType.None;
+        public ZoneType PreZoneType { get; set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -99,10 +99,10 @@ namespace Platter.Systems {
             // Bindings
             m_EnableToolButtonsBinding = CreateBinding("ENABLE_TOOL_BUTTONS", false);
             m_ZoneBinding              = CreateBinding("ZONE", 0, SetPreZone);
-            m_BlockWidthBinding        = CreateBinding("BLOCK_WIDTH", P_PrefabsCreateSystem.BlockSizes.x);
+            m_BlockWidthBinding        = CreateBinding("BLOCK_WIDTH", 2);
             m_BlockWidthMinBinding     = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.BlockSizes.x);
             m_BlockWidthMaxBinding     = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.BlockSizes.z);
-            m_BlockDepthBinding        = CreateBinding("BLOCK_DEPTH", P_PrefabsCreateSystem.BlockSizes.y);
+            m_BlockDepthBinding        = CreateBinding("BLOCK_DEPTH", 2);
             m_BlockDepthMinBinding     = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
             m_BlockDepthMaxBinding     = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
             m_ZoneDataBinding          = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
@@ -201,7 +201,7 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
+            return m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Platter.Systems {
             public readonly string Name;
             public readonly string Thumbnail;
             public readonly string Category;
-            public readonly ushort Index;
+            public readonly int Index;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
@@ -455,7 +455,7 @@ namespace Platter.Systems {
             public ZoneUIData(string name,
                               string thumbnail,
                               string category,
-                              ushort index) {
+                              int index) {
                 Name      = name;
                 Thumbnail = thumbnail;
                 Category  = category;

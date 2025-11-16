@@ -25,7 +25,7 @@ namespace Platter.Systems {
         private PrefixedLogger m_Log;
 
         // Barriers & Buffers
-        private ModificationBarrier4 m_ModificationBarrier;
+        private ModificationBarrier2 m_ModificationBarrier2;
         private EntityCommandBuffer m_CommandBuffer;
 
         // Queries
@@ -43,15 +43,15 @@ namespace Platter.Systems {
             m_Log.Debug($"OnCreate()");
 
             // Retrieve Systems
-            m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier4>();
+            m_ModificationBarrier2 = World.GetOrCreateSystemManaged<ModificationBarrier2>();
             m_PlatterUISystem = World.GetOrCreateSystemManaged<P_UISystem>();
 
             // Queries
             m_ParcelQuery = SystemAPI.QueryBuilder()
                 .WithAllRW<Parcel, ParcelSubBlock>()
-                .WithAll<PrefabRef, ParcelComposition, Transform>()
+                .WithAll<ParcelComposition, Initialized, Transform>()
                 .WithAny<Updated, Deleted>()
-                .WithNone<Temp, ParcelPlaceholder>()
+                .WithNone<ParcelPlaceholder>()
                 .Build();
 
             // Update Cycle
@@ -61,9 +61,16 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         /// Todo convert to job for perf
         protected override void OnUpdate() {
-            m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
+            m_CommandBuffer = m_ModificationBarrier2.CreateCommandBuffer();
             var entities = m_ParcelQuery.ToEntityArray(Allocator.Temp);
             var currentDefaultAllowSpawn = PlatterMod.Instance.Settings.AllowSpawn;
+
+            // Hardcoded block size minimums
+            // This is needed because the game requires
+            //   - blocks to be at least 2 wide to not be automatically set to occupied (even though LOTS can be 1 wide, like for townhomes)
+            //   - blocks to be 6 deep so that the rendering / culling system does not get confused and not render cells on certain smaller parcel sizes
+            const int minBlockDepth = 6;
+            const int minBlockWidth  = 2;
 
             foreach (var parcelEntity in entities) {
                 var subBlockBuffer = EntityManager.GetBuffer<ParcelSubBlock>(parcelEntity);
@@ -106,7 +113,7 @@ namespace Platter.Systems {
                 parcelComposition.m_ZoneBlockPrefab = parcelData.m_ZoneBlockPrefab;
                 m_CommandBuffer.SetComponent<ParcelComposition>(parcelEntity, parcelComposition);
 
-                // Retrive zone data
+                // Retrieve zone data
                 var blockPrefab = parcelComposition.m_ZoneBlockPrefab;
                 if (!EntityManager.TryGetComponent<ZoneBlockData>(blockPrefab, out var zoneBlockData)) {
                     m_Log.Error($"OnUpdate() -- Couldn't find ZoneBlockData");
@@ -127,15 +134,19 @@ namespace Platter.Systems {
                 var curvePosition = new CurvePosition() {
                     m_CurvePosition = new float2(1f, 0f),
                 };
+
+                var parcelBlockWidth = math.max(minBlockWidth, parcelData.m_LotSize.x);
+                var parcelBlockDepth = math.max(minBlockDepth, parcelData.m_LotSize.y);
+
                 var block = new Block() {
-                    m_Position = ParcelUtils.GetWorldPosition(transform, parcelGeo.Center),
+                    m_Position  = ParcelUtils.GetWorldPosition(transform, parcelGeo.BlockCenter),
                     m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
-                    m_Size = new int2(parcelData.m_LotSize.x, parcelData.m_LotSize.y),
+                    m_Size      = new int2(parcelBlockWidth, parcelBlockDepth),
                 };
 
-                // Builorder is used for cell priority calculations, lowest = oldest = higher priority.
+                // Build order is used for cell priority calculations, lowest = oldest = higher priority.
                 // Manually setting to 0 ensures priority.
-                var buildOder = new BuildOrder() {
+                var buildOrder = new BuildOrder() {
                     m_Order = 0,
                 };
 
@@ -145,30 +156,37 @@ namespace Platter.Systems {
                     m_CommandBuffer.SetComponent<PrefabRef>(subBlockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(subBlockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(subBlockEntity, curvePosition);
-                    m_CommandBuffer.SetComponent<BuildOrder>(subBlockEntity, buildOder);
+                    m_CommandBuffer.SetComponent<BuildOrder>(subBlockEntity, buildOrder);
                     m_CommandBuffer.AddComponent<Updated>(subBlockEntity, default);
                 } else {
                     var blockEntity = m_CommandBuffer.CreateEntity(zoneBlockData.m_Archetype);
                     m_CommandBuffer.SetComponent<PrefabRef>(blockEntity, new PrefabRef(blockPrefab));
                     m_CommandBuffer.SetComponent<Block>(blockEntity, block);
                     m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
-                    m_CommandBuffer.SetComponent<BuildOrder>(blockEntity, buildOder);
+                    m_CommandBuffer.SetComponent<BuildOrder>(blockEntity, buildOrder);
                     m_CommandBuffer.AddComponent<ParcelOwner>(blockEntity, new ParcelOwner(parcelEntity));
 
                     var cellBuffer = m_CommandBuffer.SetBuffer<Cell>(blockEntity);
 
-                    var cellCount = block.m_Size.x * block.m_Size.y;
-
-                    for (var l = 0; l < cellCount; l++) {
-                        cellBuffer.Add(new Cell() {
-                            m_Zone = parcel.m_PreZoneType,
-
-                            // "Visible" flag is usually added by the game's cell overlap systems
-                            // By adding it manually, we ensure that the game takes our custom blocks as a priority (given the 0 build order)
-                            // otherwise it always prioritizes visible cells first, which would be the ones already existing on roads
-                            // This may break in the future should the logic in CellOverlapJobs.cs change
-                            m_State = CellFlags.Visible,
-                        });
+                    // Set all cells outside of parcel bounds to occupied
+                    for (var row = 0; row < block.m_Size.y; row++) {
+                        for (var col = 0; col < block.m_Size.x; col++) {
+                            var cell = new Cell();
+                            if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
+                                // Set all cells beyond the depth or width limit to blocked
+                                // This is due to a graphical limitation of the vanilla game that needs the depth to be 6 to fully render cells
+                                // as well as the fact that a block has a minimum width of 2 to be valid.
+                                cell.m_State = CellFlags.Blocked;
+                            } else {
+                                cell.m_Zone = parcel.m_PreZoneType;
+                                // "Visible" flag is usually added by the game's cell overlap systems
+                                // By adding it manually, we ensure that the game takes our custom blocks as a priority (given the 0 build order)
+                                // otherwise it always prioritizes visible cells first, which would be the ones already existing on roads
+                                // This may break in the future should the logic in CellOverlapJobs.cs change
+                                cell.m_State = CellFlags.Visible;
+                            }
+                            cellBuffer.Add(cell);
+                        }
                     }
                 }
             }

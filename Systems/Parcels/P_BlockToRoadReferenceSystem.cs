@@ -39,7 +39,7 @@ namespace Platter.Systems {
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
             m_ParcelUpdatedQuery = SystemAPI.QueryBuilder()
-                                            .WithAll<Parcel>()
+                                            .WithAll<Parcel, Initialized>()
                                             .WithAny<Updated>()
                                             .WithNone<Temp>()
                                             .Build();

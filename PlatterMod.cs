@@ -143,20 +143,21 @@ namespace Platter {
             updateSystem.UpdateAt<P_BuildingTransformCheckSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_BuildingToParcelReferenceSystem>(SystemUpdatePhase.Modification2);
 
+            // Roads
+            updateSystem.UpdateAt<P_ConnectedParcelSystem>(SystemUpdatePhase.Modification1);
+
             // Parcels
             updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
-            updateSystem.UpdateAt<P_ConnectedParcelCreateSystem>(SystemUpdatePhase.Modification4);
-            updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.Modification5); // Needs to run after CellCheckSystem
 
             // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<P_ParcelInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<P_ParcelInfoPanelSystem>(SystemUpdatePhase.UIUpdate); 
             updateSystem.UpdateAt<P_BuildingInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<P_OverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<P_TooltipSystem>(SystemUpdatePhase.UITooltip);
@@ -164,9 +165,10 @@ namespace Platter {
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
-            updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
             //updateSystem.UpdateAt<P_RoadsideToolSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.Modification5); // Needs to run after CellCheckSystem
 
             // Experimental Systems
             //updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.Modification1);

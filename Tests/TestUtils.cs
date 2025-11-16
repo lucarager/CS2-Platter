@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
+using Game.Assets;
 using Game.SceneFlow;
 using Game.Settings;
 using Game.UI.Debug;
@@ -16,6 +18,11 @@ using Unity.Entities;
 
 namespace Platter.Tests {
     public static class TestUtils {
+        public static bool GetSave(string id, out SaveGameMetadata saveGameMetadata) {
+            saveGameMetadata = AssetDatabase.global.GetAsset<SaveGameMetadata>(global::Colossal.Hash128.Parse(id));
+            return saveGameMetadata != null;
+        }
+
         public static void SetDefaultTestConditions() {
             PlatterMod.Instance.IsTestMode = true;
 

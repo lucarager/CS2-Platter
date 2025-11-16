@@ -18,19 +18,16 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for adding the ConnectedParcel buffer to roads.
     /// </summary>
-    public partial class P_ConnectedParcelCreateSystem : GameSystemBase {
-        // Logger
+    public partial class P_ConnectedParcelSystem : GameSystemBase {
         private PrefixedLogger m_Log;
-
-        // Queries
-        private EntityQuery m_PrefabCreatedQuery;
+        private EntityQuery    m_PrefabCreatedQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_ConnectedParcelCreateSystem));
+            m_Log = new PrefixedLogger(nameof(P_ConnectedParcelSystem));
             m_Log.Debug($"OnCreate()");
 
             // Queries
@@ -44,7 +41,6 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        // Todo convert to job for perf
         protected override void OnUpdate() {
             EntityManager.AddComponent<ConnectedParcel>(m_PrefabCreatedQuery);
         }

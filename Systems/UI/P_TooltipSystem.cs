@@ -129,7 +129,7 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
+            return m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
         }
     }
 }

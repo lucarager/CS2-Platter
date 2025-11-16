@@ -4,10 +4,19 @@
 // </copyright>
 
 namespace Platter.Components {
+    using System;
     using Colossal.Serialization.Entities;
+    using Game.Prefabs;
     using Game.Zones;
     using Unity.Entities;
 
+    [Flags]
+    public enum ParcelZoneFlags : byte {
+        None  = 0,
+        Zoned = 1,
+        Mixed = 2,
+    }
+    
     /// <summary>
     /// A Parcel's primary data.
     /// </summary>
@@ -31,6 +40,7 @@ namespace Platter.Components {
         /// Zoning on this parcel.
         /// </summary>
         public ZoneType m_PreZoneType;
+        public ParcelZoneFlags m_ZoneFlags;
 
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)

@@ -13,6 +13,7 @@ using Unity.Collections;
 
 namespace Platter.Tests {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Colossal.Entities;
     using Colossal.IO.AssetDatabase;
@@ -41,14 +42,16 @@ namespace Platter.Tests {
 
     [TestDescriptor("Platter: Verify Parcel Behavior", Category.Default)]
     public class VerifyParcelBehaviorTest : TestScenario {
-        private const string MapID    = "1bd7c23f737aae6037caac0988be85f4";
-        private const string CityName = "TestCity-1";
-        private const string Theme    = "European";
+        private const  string           MapID            = "1906eb3c6e796ccf29cbef3e4866961e";
+        private const  string           SaveID           = "b620f4c6a3bf2ce1a67accf188444c52";
+        private const  string           CityName         = "TestCity-1";
+        private const  string           Theme            = "European";
         private static float            Elevation0       = 511.9453f;
         private static Transform        ParcelTransform1 = new(new float3(0, Elevation0, 0), new quaternion(0, 0, 0, 1f));
         private static Transform        ParcelTransform2 = new(new float3(60, Elevation0, 0), new quaternion(0, 0, 0, 1f));
         private        PrefabSystem     m_PrefabSystem;
         private        P_TestToolSystem m_TestToolSystem;
+        private        P_UISystem       m_UISystem;
         private        TestRunner       TR;
 
         /// <inheritdoc/>
@@ -61,6 +64,7 @@ namespace Platter.Tests {
 
             // Get Systems
             m_TestToolSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_TestToolSystem>();
+            m_UISystem       = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_UISystem>();
             m_PrefabSystem   = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
         }
 
@@ -72,16 +76,12 @@ namespace Platter.Tests {
 
         [Test]
         private async Task StartNewGameAndTest() {
-            log.Info("Execute");
-
-            var map = PrepareMap();
-
-            if (map == null) {
-                log.ErrorFormat("Asset {0} was not found. Test {1} skipped.", MapID, this);
+            if (!TestUtils.GetSave(SaveID, out var saveGameMetadata)) {
+                log.ErrorFormat("Asset {0} was not found. Test {1} skipped.", SaveID, this);
                 return;
             }
 
-            await GameManager.instance.Load(GameMode.Game, Purpose.NewGame, map);
+            await GameManager.instance.Load(GameMode.Game, Purpose.LoadGame, saveGameMetadata);
             await WaitFrames();
 
             try {
@@ -127,7 +127,10 @@ namespace Platter.Tests {
                                         var subblockBuffer = World.DefaultGameObjectInjectionWorld.EntityManager.GetBuffer<ParcelSubBlock>(parcelEntity);
                                         var blockEntity = subblockBuffer[0].m_SubBlock;
                                         var cellBuffer = World.DefaultGameObjectInjectionWorld.EntityManager.GetBuffer<Cell>(blockEntity);
-                                        Assert.AreEqual(cellBuffer.Length, i * j);
+                                        Assert.AreEqual(cellBuffer.Length, i * 6);
+                                        var occupiedCells = cellBuffer.Count(cell => (cell.m_State & CellFlags.Blocked) != CellFlags.None);
+                                        // Count occupied cells
+                                        Assert.AreEqual(occupiedCells, i * j);
                                         await DeleteEntity(parcelEntity);
                                     }
                             });
@@ -282,17 +285,6 @@ namespace Platter.Tests {
             //await GameManager.instance.MainMenu();
         }
 
-        private MapMetadata PrepareMap() {
-            var existingSystemManaged = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<CityConfigurationSystem>();
-            existingSystemManaged.overrideLoadedOptions                                               = true;
-            existingSystemManaged.overrideCityName                                                    = CityName;
-            existingSystemManaged.overrideThemeName                                                   = Theme;
-            existingSystemManaged.overrideLeftHandTraffic                                             = false;
-            World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TimeSystem>().startingYear = DateTime.Now.Year;
-
-            return AssetDatabase.global.GetAsset<MapMetadata>(Colossal.Hash128.Parse(MapID));
-        }
-
         private async Task<Entity> PlaceParcel(PrefabID prefabID, Transform transform) {
             return await PlaceParcel(prefabID, transform, 0);
         }
@@ -308,7 +300,10 @@ namespace Platter.Tests {
             await WaitFrames(1);
 
             m_TestToolSystem.TrySetPrefab(parcelPrefabBase);
-            var entity = await m_TestToolSystem.PlopObject(prefabEntity, transform, zoneIndex);
+            m_UISystem.PreZoneType = new ZoneType() {
+                m_Index = zoneIndex,
+            };
+            var entity = await m_TestToolSystem.PlopObject(prefabEntity, transform);
             await WaitFrames(20);
             return entity;
         }

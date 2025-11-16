@@ -4,11 +4,11 @@
 // </copyright>
 
 using System.Collections.Generic;
+using Game.Prefabs; // Added to reference SpawnableBuildingData
+using Platter.Components; // Added to reference ParcelData
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
-using Game.Prefabs; // Added to reference SpawnableBuildingData
-using Platter.Components; // Added to reference ParcelData
 
 namespace Platter.Systems {
     using Colossal.Serialization.Entities;
@@ -16,18 +16,22 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Tools;
     using Unity.Mathematics;
+    using UnityEngine.Rendering;
 
     public partial class P_PlaceholderSystem : PlatterGameSystemBase {
-        private EntityQuery  m_Query;
-        private PrefabSystem m_PrefabSystem;
-        private ToolSystem   m_ToolSystem;
+        private EntityQuery          m_Query;
+        private PrefabSystem         m_PrefabSystem;
+        private ToolSystem           m_ToolSystem;
+        private ModificationBarrier1 m_ModificationBarrier1;
+        private EntityCommandBuffer  m_CommandBuffer;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_PrefabSystem                =  World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ToolSystem                  =  World.GetOrCreateSystemManaged<ToolSystem>();
+            m_PrefabSystem                  =  World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ToolSystem                    =  World.GetOrCreateSystemManaged<ToolSystem>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
+            m_ModificationBarrier1          =  World.GetOrCreateSystemManaged<ModificationBarrier1>();
 
             m_Query = SystemAPI.QueryBuilder()
                                .WithAllRW<ParcelPlaceholder>()
@@ -38,6 +42,7 @@ namespace Platter.Systems {
         }
 
         protected override void OnUpdate() {
+            m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer();
             foreach (var entity in m_Query.ToEntityArray(Allocator.Temp)) {
                 var prefabRef = EntityManager.GetComponentData<PrefabRef>(entity);
                 // Todo we should have a cache for our parcel prefabs, for simplicity
@@ -46,9 +51,9 @@ namespace Platter.Systems {
                     new PrefabID("ParcelPrefab", currentPrefab.GetPrefabID().GetName()),
                     out var newPrefab);
                 prefabRef.m_Prefab = m_PrefabSystem.GetEntity(newPrefab);
-                EntityManager.SetComponentData(entity, prefabRef);
-                EntityManager.RemoveComponent<ParcelPlaceholder>(entity);
-                EntityManager.AddComponent<Updated>(entity);
+                m_CommandBuffer.SetComponent(entity, prefabRef);
+                m_CommandBuffer.RemoveComponent<ParcelPlaceholder>(entity);
+                m_CommandBuffer.AddComponent<Updated>(entity);
             }
         }
 

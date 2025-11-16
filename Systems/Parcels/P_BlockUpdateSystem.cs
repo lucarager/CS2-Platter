@@ -5,15 +5,19 @@
 
 namespace Platter.Systems {
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Linq;
     using Game;
     using Game.Common;
+    using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Mathematics;
+    using static UnityEngine.Rendering.DebugUI;
 
     /// <summary>
     /// Updates parcel data whenever block data updates.
@@ -50,31 +54,47 @@ namespace Platter.Systems {
 
             foreach (var entity in entities) {
                 m_Log.Debug($"OnUpdate() -- {entity}");
-                var cellBuffer = EntityManager.GetBuffer<Cell>(entity);
+                var parcelOwner    = EntityManager.GetComponentData<ParcelOwner>(entity);
+                var block          = EntityManager.GetComponentData<Block>(entity);
+                var cellBuffer     = EntityManager.GetBuffer<Cell>(entity);
+                var parcel         = EntityManager.GetComponentData<Parcel>(parcelOwner.m_Owner);
+                var prefabRef      = EntityManager.GetComponentData<PrefabRef>(parcelOwner.m_Owner);
+                var parcelData     = EntityManager.GetComponentData<ParcelData>(prefabRef.m_Prefab);
                 var containedZones = new Dictionary<ZoneType, int>();
 
-                // Check zone types
-                foreach (var cell in cellBuffer) {
-                    if (containedZones.TryGetValue(cell.m_Zone, out var current)) {
-                        containedZones[cell.m_Zone] = current + 1;
-                    } else {
-                        containedZones[cell.m_Zone] = 1;
+                for (var col = 0; col < block.m_Size.x; col++) {
+                    for (var row = 0; row < block.m_Size.y; row++) {
+                        var index = (row * block.m_Size.x) + col;
+                        var cell  = cellBuffer[index];
+
+                        // Set all cells outside of parcel bounds to occupied
+                        // todo move this out to its own system
+                        if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
+                            cell.m_State      = CellFlags.Blocked;
+                            cellBuffer[index] = cell;
+                        } else {
+                            // Count cell zones if inside parcel
+                            if (containedZones.TryGetValue(cell.m_Zone, out var current)) {
+                                containedZones[cell.m_Zone] = current + 1;
+                            } else {
+                                containedZones[cell.m_Zone] = 1;
+                            }
+                        }
                     }
                 }
 
                 if (containedZones.Count == 1) {
                     // If we only have one zone, set the Parcel to that
-                    var parcelOwner = EntityManager.GetComponentData<ParcelOwner>(entity);
                     // Temporary fix, we should find the root cause for this
                     if (parcelOwner.m_Owner == Entity.Null) {
                         return;
                     }
-                    var parcel = EntityManager.GetComponentData<Parcel>(parcelOwner.m_Owner);
                     parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
+                    parcel.m_ZoneFlags   = ParcelZoneFlags.Zoned;
                     EntityManager.SetComponentData<Parcel>(parcelOwner.m_Owner, parcel);
                 } else {
                     // Otherwise, set it to a "mix"
-                    // todo
+                    parcel.m_ZoneFlags = ParcelZoneFlags.Mixed;
                 }
             }
 

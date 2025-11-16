@@ -62,8 +62,8 @@ namespace Platter.Systems {
 
             // Systems & References
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
-            m_ZoneCacheSystem     = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
             m_PreCullingSystem    = World.GetOrCreateSystemManaged<PreCullingSystem>();
+            m_ZoneCacheSystem     = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
         }
 
         /// <inheritdoc/>
@@ -94,8 +94,7 @@ namespace Platter.Systems {
                     SystemAPI.GetComponentTypeHandle<Parcel>(),
                     SystemAPI.GetComponentLookup<ParcelData>(),
                     SystemAPI.GetComponentLookup<ParcelSpawnable>(),
-                    m_PreCullingSystem
-                    .GetCullingData(true, out var cullingDataJobHandle),
+                    m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle),
                     SystemAPI.GetComponentTypeHandle<CullingInfo>());
 
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(
@@ -173,9 +172,10 @@ namespace Platter.Systems {
                     var entity      = entitiesArray[i];
                     var cullingInfo = cullingInfoArray[i];
 
-                    if (!IsNearCamera(cullingInfo)) {
-                        continue;
-                    }
+                    // Temporary fix until we can figure out how to avoid culling overridden Parcels
+                    //if (!IsNearCamera(cullingInfo)) {
+                    //    continue;
+                    //}
 
                     var transform = transformsArray[i];
                     var prefabRef = prefabRefsArray[i];
@@ -201,9 +201,7 @@ namespace Platter.Systems {
             }
 
             private bool IsNearCamera(CullingInfo cullingInfo) {
-                return cullingInfo.m_CullingIndex != 0 &&
-                       (m_CullingData[cullingInfo.m_CullingIndex].m_Flags &
-                        PreCullingFlags.NearCamera) > 0U;
+                return cullingInfo.m_CullingIndex != 0 && (m_CullingData[cullingInfo.m_CullingIndex].m_Flags & PreCullingFlags.NearCamera) > 0U;
             }
         }
     }

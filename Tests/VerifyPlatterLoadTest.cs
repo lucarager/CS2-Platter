@@ -96,16 +96,11 @@ namespace Platter.Tests {
 
         [Test]
         private Task LoadGameAndVerifyIntegrity() {
-            if (GetSave(Save1, out var saveGameMetadata)) {
+            if (TestUtils.GetSave(Save1, out var saveGameMetadata)) {
                 return Execute(saveGameMetadata);
             }
 
             return Task.FromException(new Exception("Savegame not found."));
-        }
-
-        private static bool GetSave(string id, out SaveGameMetadata saveGameMetadata) {
-            saveGameMetadata = AssetDatabase.global.GetAsset<SaveGameMetadata>(global::Colossal.Hash128.Parse(id));
-            return saveGameMetadata != null;
         }
 
         private MapMetadata PrepareMap() {
@@ -122,19 +117,20 @@ namespace Platter.Tests {
         private async Task Execute(SaveGameMetadata saveGameMetadata = null) {
             log.Info("Execute");
 
-            var map = PrepareMap();
-
-            if (map == null) {
-                log.ErrorFormat("Asset {0} was not found. Test {1} skipped.", MapID, this);
-                return;
-            }
 
             // Create the game
             if (saveGameMetadata != null) {
                 await GameManager.instance.Load(GameMode.Game, Purpose.LoadGame, saveGameMetadata);
             } else {
+                var map = PrepareMap();
+
+                if (map == null) {
+                    log.ErrorFormat("Asset {0} was not found. Test {1} skipped.", MapID, this);
+                    return;
+                }
                 await GameManager.instance.Load(GameMode.Game, Purpose.NewGame, map);
             }
+
             await WaitFrames();
 
             TR.Describe("1. Roads", () => {

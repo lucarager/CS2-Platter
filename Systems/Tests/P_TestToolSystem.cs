@@ -34,7 +34,6 @@ namespace Platter.Systems {
         private PrefabType          m_PlacePrefabType;
         private Transform           m_PlaceTransform1;
         private Transform           m_PlaceTransform2;
-        private ushort              m_PlacePrezoneIndex;
         private Entity              m_PlacedEntity;
         private EntityQuery         m_TempQuery;
         private EntityQuery         m_CreatedEntityQuery;
@@ -126,15 +125,6 @@ namespace Platter.Systems {
             }
 
             m_PlacedEntity = m_TempQuery.ToEntityArray(Allocator.Temp)[0];
-
-            switch (m_PlacePrefabType) {
-                case PrefabType.Edge:
-                    break;
-                case PrefabType.Object:
-                    PrepareParcelForApply(m_PlacedEntity, m_PlacePrezoneIndex);
-                    break;
-            }
-
             m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- Apply");
 
             // Apply
@@ -142,7 +132,6 @@ namespace Platter.Systems {
             m_PlacePrefabEntity = Entity.Null;
             m_PlaceTransform1   = default;
             m_PlaceTransform2   = default;
-            m_PlacePrezoneIndex = 0;
 
             return inputDeps;
         }
@@ -151,14 +140,13 @@ namespace Platter.Systems {
             return m_SelectedPrefab;
         }
 
-        public async Task<Entity> PlopObject(Entity prefab, Transform transform, ushort prezoneIndex) {
+        public async Task<Entity> PlopObject(Entity prefab, Transform transform) {
             while (m_PlacePrefabEntity != Entity.Null) {
                 await Task.Delay(10);
             }
 
             m_PlacePrefabEntity = prefab;
             m_PlaceTransform1   = transform;
-            m_PlacePrezoneIndex = prezoneIndex;
             m_PlacePrefabType   = PrefabType.Object;
 
             var maxTries = 10;
@@ -392,17 +380,6 @@ namespace Platter.Systems {
             //+ m_Rotation  { quaternion(0f, 0f, 0f, 0f)}
             //Unity.Mathematics.quaternion
 
-        }
-
-        public void PrepareParcelForApply(Entity entity, ushort prezoneIndex) {
-            var ecb    = new EntityCommandBuffer(Allocator.Temp);
-
-            var parcel = EntityManager.GetComponentData<Parcel>(entity);
-            parcel.m_PreZoneType.m_Index = prezoneIndex;
-            ecb.SetComponent<Parcel>(entity, parcel);
-
-            ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }
