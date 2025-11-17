@@ -136,7 +136,6 @@ namespace Platter {
             updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ZoneCacheSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_BuildingCacheSystem>(SystemUpdatePhase.PrefabUpdate);
-            updateSystem.UpdateBefore<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
 
             // Buildings
             updateSystem.UpdateAfter<P_BuildingInitializeSystem, BuildingConstructionSystem>(SystemUpdatePhase.GameSimulation);
@@ -147,8 +146,9 @@ namespace Platter {
             updateSystem.UpdateAt<P_ConnectedParcelSystem>(SystemUpdatePhase.Modification1);
 
             // Parcels
-            updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification1);
-            updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
+            updateSystem.UpdateBefore<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
+            //updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);

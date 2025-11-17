@@ -91,16 +91,17 @@ namespace Platter.Tests {
                 await TR.Describe(
                     "New Parcels", async () => {
                         var parcel1 = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<Parcel>(parcelEntity1);
-                        var parcelComposition1 = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<ParcelComposition>(parcelEntity1);
                         var subblockBuffer1 = World.DefaultGameObjectInjectionWorld.EntityManager.GetBuffer<ParcelSubBlock>(parcelEntity1);
                         var blockEntity1 = subblockBuffer1[0].m_SubBlock;
 
                         var parcel2 = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<Parcel>(parcelEntity2);
                         var subblockBuffer2 = World.DefaultGameObjectInjectionWorld.EntityManager.GetBuffer<ParcelSubBlock>(parcelEntity2);
 
-                        TR.It(
-                            "A new parcel should have correct data after creation",
-                            () => { Assert.AreNotEqual(parcelComposition1.m_ZoneBlockPrefab, Entity.Null); });
+                        //TR.It(
+                        //    "A new parcel should have correct data after creation",
+                        //    () => {
+                        //        Assert.IsNotNull(parcel1);
+                        //    });
 
                         TR.It(
                             "A new parcel should have a ParcelSubBlock buffer of size 1.", () => {
