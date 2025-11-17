@@ -8,7 +8,7 @@ namespace Platter.Constants {
 
     public static class ColorConstants {
         // ColorConstants (general)
-        public static readonly float OpacityLow = 0.1f;
+        public static readonly float OpacityLow = 0.2f;
         public static readonly float OpacityMedium = 0.4f;
         public static readonly float OpacityFull = 1f;
 
