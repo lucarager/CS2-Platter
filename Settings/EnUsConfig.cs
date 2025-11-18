@@ -138,7 +138,7 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Tooltip.SnapSpacingAmount", "Setback between road and parcel" },
                 { "PlatterMod.UI.Tooltip.BlockWidthIncrease", "Increase parcel width" },
                 { "PlatterMod.UI.Tooltip.BlockWidthDecrease", "Decrease parcel width" },
-                { "PlatterMod.UI.Tooltip.BlockWidthNumber", "Parcel with" },
+                { "PlatterMod.UI.Tooltip.BlockWidthNumber", "Parcel width" },
                 { "PlatterMod.UI.Tooltip.BlockDepthIncrease", "Increase parcel depth" },
                 { "PlatterMod.UI.Tooltip.BlockDepthDecrease", "Decrease parcel depth" },
                 { "PlatterMod.UI.Tooltip.BlockDepthNumber", "Parcel depth" },
