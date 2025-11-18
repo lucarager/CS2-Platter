@@ -147,8 +147,7 @@ namespace Platter {
 
             // Parcels
             updateSystem.UpdateBefore<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
-            //updateSystem.UpdateAt<P_ParcelCreateSystem>(SystemUpdatePhase.Modification1);
-            updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification4);
+            updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
@@ -166,16 +165,12 @@ namespace Platter {
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
             updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
-            //updateSystem.UpdateAt<P_RoadsideToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
-            updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.Modification5); // Needs to run after CellCheckSystem
+            updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
 
-            // Experimental Systems
-            //updateSystem.UpdateAfter<P_BuildingPrefabClassifySystem>(SystemUpdatePhase.Modification1);
-            //updateSystem.UpdateAfter<P_BuildingSpawnSystem>(SystemUpdatePhase.GameSimulation);
-
-            // Add tests
+#if IS_DEBUG 
             AddTests();
+#endif
 
             // Add mod UI resource directory to UI resource handler.
             if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {

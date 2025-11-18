@@ -26,7 +26,7 @@ namespace Platter.Systems {
     public partial class P_ParcelUpdateSystem : GameSystemBase {
         private EntityQuery          m_DeletedQuery;
         private EntityQuery          m_UpdatedQuery;
-        private ModificationBarrier4 m_ModificationBarrier4;
+        private ModificationBarrier2 m_ModificationBarrier2;
         private PrefixedLogger       m_Log;
 
         // Hardcoded block size minimums
@@ -45,25 +45,25 @@ namespace Platter.Systems {
             m_Log.Debug("OnCreate()");
 
             // Retrieve Systems
-            m_ModificationBarrier4 = World.GetOrCreateSystemManaged<ModificationBarrier4>();
+            m_ModificationBarrier2 = World.GetOrCreateSystemManaged<ModificationBarrier2>();
 
             // Queries
             m_UpdatedQuery = SystemAPI.QueryBuilder()
                                       // Uninitialized parcels, that just got swapped from being a placeholder
                                       .WithAllRW<Parcel>()
                                       .WithNone<Initialized>()
-                                      .WithNone<ParcelPlaceholder>()
+                                      .WithNone<Temp, ParcelPlaceholder>()
                                       .AddAdditionalQuery()
                                       // Existing parcels that got updated
                                       .WithAllRW<Parcel>()
                                       .WithAll<Updated, Initialized>()
-                                      .WithNone<ParcelPlaceholder>()
+                                      .WithNone<Temp, ParcelPlaceholder>()
                                       .Build();
 
             m_DeletedQuery = SystemAPI.QueryBuilder()
                                       .WithAllRW<Parcel>()
                                       .WithAll<Deleted>()
-                                      .WithNone<ParcelPlaceholder>()
+                                      .WithNone<Temp, ParcelPlaceholder>()
                                       .Build();
         }
 
@@ -72,12 +72,12 @@ namespace Platter.Systems {
             // Job to delete parcels marked for deletion
             var deleteParcelJobHandle = new DeleteParcelJob(
                 SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetBufferTypeHandle<SubBlock>(),
+                SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
                 SystemAPI.GetBufferLookup<Cell>(),
-                m_ModificationBarrier4.CreateCommandBuffer().AsParallelWriter()
+                m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
             ).Schedule(m_DeletedQuery, Dependency);
 
-            m_ModificationBarrier4.AddJobHandleForProducer(deleteParcelJobHandle);
+            m_ModificationBarrier2.AddJobHandleForProducer(deleteParcelJobHandle);
 
             // Job to initialize a parcel after it has been replaced from a placeholder
             var updateParcelJobHandle = new UpdateParcelJob(
@@ -88,24 +88,27 @@ namespace Platter.Systems {
                 SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
                 SystemAPI.GetComponentLookup<ParcelData>(),
                 SystemAPI.GetComponentLookup<ZoneBlockData>(),
-                m_ModificationBarrier4.CreateCommandBuffer().AsParallelWriter()
+                m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
             ).Schedule(m_UpdatedQuery, Dependency);
 
-            m_ModificationBarrier4.AddJobHandleForProducer(updateParcelJobHandle);
+            m_ModificationBarrier2.AddJobHandleForProducer(updateParcelJobHandle);
 
             Dependency = JobHandle.CombineDependencies(deleteParcelJobHandle, updateParcelJobHandle);
         }
 
+#if USE_BURST
+        [BurstCompile]
+#endif
         private struct DeleteParcelJob : IJobChunk {
             [ReadOnly] private EntityTypeHandle                   m_EntityTypeHandle;
-            [ReadOnly] private BufferTypeHandle<SubBlock>         m_SubBlocBufferTypeHandle;
+            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>         m_SubBlockBufferTypeHandle;
             [ReadOnly] private BufferLookup<Cell>                 m_CellLookup;
             private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
-            public DeleteParcelJob(EntityTypeHandle entityTypeHandle, BufferTypeHandle<SubBlock> subBlocBufferTypeHandle, BufferLookup<Cell> cellLookup,
+            public DeleteParcelJob(EntityTypeHandle entityTypeHandle, BufferTypeHandle<ParcelSubBlock> subBlocBufferTypeHandle, BufferLookup<Cell> cellLookup,
                                    EntityCommandBuffer.ParallelWriter commandBuffer) {
                 m_EntityTypeHandle        = entityTypeHandle;
-                m_SubBlocBufferTypeHandle = subBlocBufferTypeHandle;
+                m_SubBlockBufferTypeHandle = subBlocBufferTypeHandle;
                 m_CellLookup              = cellLookup;
                 m_CommandBuffer           = commandBuffer;
             }
@@ -113,25 +116,25 @@ namespace Platter.Systems {
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
                 var entityArray         = chunk.GetNativeArray(m_EntityTypeHandle);
-                var subBlockBufferArray = chunk.GetBufferAccessor(ref m_SubBlocBufferTypeHandle);
+                var subBlockBufferArray = chunk.GetBufferAccessor(ref m_SubBlockBufferTypeHandle);
 
                 for (var i = 0; i < entityArray.Length; i++) {
                     var entity         = entityArray[i];
                     var subBlockBuffer = subBlockBufferArray[i];
 
-                    for (var j = 0; j < subBlockBuffer.Length; j++) {
+                    foreach (var subBlock in subBlockBuffer) {
                         var cellBuffer = m_CellLookup[entity];
 
                         // Clear cell zoning before deleting
-                        // This prevents shenanigans from the vanilla system that may try to re-zone underlying vanilla cells
+                        // This prevents shenanigans from the vanilla system that will try to re-zone underlying vanilla cells
                         for (var k = 0; k < cellBuffer.Length; k++) {
                             var cell = cellBuffer[k];
-                            cell.m_Zone   = ZoneType.None;
+                            cell.m_Zone = ZoneType.None;
                             cellBuffer[k] = cell;
                         }
 
                         // Mark Blocks for deletion
-                        m_CommandBuffer.AddComponent<Deleted>(unfilteredChunkIndex, entity);
+                        m_CommandBuffer.AddComponent<Deleted>(unfilteredChunkIndex, subBlock.m_SubBlock);
                     }
                 }
             }
@@ -145,7 +148,7 @@ namespace Platter.Systems {
             [ReadOnly] private ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
             [ReadOnly] private ComponentTypeHandle<PrefabRef>     m_PrefabRefTypeHandle;
             [ReadOnly] private ComponentTypeHandle<Transform>     m_TransformTypeHandle;
-            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>   m_SubBlockBufferTypeHandle;
+            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>   m_ParcelSubBlockBufferTypeHandle;
             [ReadOnly] private ComponentLookup<ParcelData>        m_ParcelDataLookup;
             [ReadOnly] private ComponentLookup<ZoneBlockData>     m_ZoneBlockDataLookup;
             private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
@@ -159,7 +162,7 @@ namespace Platter.Systems {
                 m_ParcelTypeHandle         = parcelTypeHandle;
                 m_PrefabRefTypeHandle      = prefabRefTypeHandle;
                 m_TransformTypeHandle      = transformTypeHandle;
-                m_SubBlockBufferTypeHandle = subBlockBufferTypeHandle;
+                m_ParcelSubBlockBufferTypeHandle = subBlockBufferTypeHandle;
                 m_ParcelDataLookup         = parcelDataLookup;
                 m_ZoneBlockDataLookup      = zoneBlockDataLookup;
                 m_CommandBuffer            = commandBuffer;
@@ -171,7 +174,7 @@ namespace Platter.Systems {
                 var parcelArray         = chunk.GetNativeArray(ref m_ParcelTypeHandle);
                 var prefabRefArray      = chunk.GetNativeArray(ref m_PrefabRefTypeHandle);
                 var transformArray      = chunk.GetNativeArray(ref m_TransformTypeHandle);
-                var subBlockBufferArray = chunk.GetBufferAccessor(ref m_SubBlockBufferTypeHandle);
+                var subBlockBufferArray = chunk.GetBufferAccessor(ref m_ParcelSubBlockBufferTypeHandle);
 
                 for (var i = 0; i < entityArray.Length; i++) {
                     var parcelEntity       = entityArray[i];
@@ -210,17 +213,15 @@ namespace Platter.Systems {
                     m_CommandBuffer.AddComponent(index, blockEntity, new ParcelOwner(parcelEntity));
                     m_CommandBuffer.AddComponent<Initialized>(index, parcelEntity);
                     var cellBuffer = m_CommandBuffer.SetBuffer<Cell>(index, blockEntity);
-                    cellBuffer.ResizeUninitialized(block.m_Size.y * block.m_Size.x);
 
                     // Set all cells outside of parcel bounds to occupied
                     for (var row = 0; row < block.m_Size.y; row++)
                     for (var col = 0; col < block.m_Size.x; col++) {
                         var isBlocked = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
-                        cellBuffer.Add(
-                            new Cell {
-                                m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
-                                m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
-                            });
+                        cellBuffer.Add(new Cell {
+                            m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
+                            m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
+                        });
                     }
                 }
             }

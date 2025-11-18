@@ -117,12 +117,12 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
                 for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], zonePrefabUIObject, uiCategoryPrefab, areaPrefab)) {
+                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab)) {
                         m_Log.Debug($"Created Parcel Prefab {i}x{j}");
                     } else {
                         m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
                     }
-                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], zonePrefabUIObject, uiCategoryPrefab, areaPrefab, true)) {
+                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, true)) {
                         m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
                     } else {
                         m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
@@ -145,7 +145,7 @@ namespace Platter.Systems {
             }
         }
 
-        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIObject zonePrefabUIObject, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase, bool placeholder = false) {
+        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase, bool placeholder = false) {
             var prefix     = "Parcel";
             var name       = $"{prefix} {lotWidth}x{lotDepth}";
             var icon       = $"coui://platter/{prefix}_{lotWidth}x{lotDepth}.svg";
@@ -198,7 +198,7 @@ namespace Platter.Systems {
             if (placeholder) {
                 var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
                 placeableLotPrefabUIObject.m_Icon          = icon;
-                placeableLotPrefabUIObject.m_IsDebugObject = true;
+                placeableLotPrefabUIObject.m_IsDebugObject = false;
                 placeableLotPrefabUIObject.m_Priority      = ((lotWidth - 2) * BlockSizes.z) + lotDepth - 1;
                 placeableLotPrefabUIObject.m_Group         = uiCategoryPrefab;
                 placeableLotPrefabUIObject.active          = true;

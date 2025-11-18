@@ -39,9 +39,9 @@ namespace Platter.Systems {
 
             // Queries
             m_Query = SystemAPI.QueryBuilder()
-                .WithAll<Block, Cell, ParcelOwner, Updated>()
-                .WithNone<Deleted, Temp>()
-                .Build();
+                               .WithAll<Block, Cell, ParcelOwner, Updated>()
+                               .WithNone<Deleted, Temp>()
+                               .Build();
 
             // Update Cycle
             RequireForUpdate(m_Query);
