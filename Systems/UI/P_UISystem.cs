@@ -15,6 +15,7 @@ namespace Platter.Systems {
     using Game.Zones;
     using Platter;
     using Extensions;
+    using Game.UI.InGame;
     using Settings;
     using Systems;
     using Utils;
@@ -30,39 +31,27 @@ namespace Platter.Systems {
             RoadEdge = 1,
         }
 
-        // Data
-        private int2               m_SelectedParcelSize = new(2, 2);
-        private ObjectToolSystem   m_ObjectToolSystem;
-        private P_AllowSpawnSystem m_AllowSpawnSystem;
-        private P_OverlaySystem    m_PlatterOverlaySystem;
-        private P_SnapSystem       m_SnapSystem;
-        private P_ZoneCacheSystem  m_ZoneCacheSystem;
-
-        // Systems
-        private PrefabSystem m_PrefabSystem;
-        //private P_RoadsideToolSystem       m_RoadsideToolSystem;
-
-        // Logger
-        private PrefixedLogger m_Log;
-        private ProxyAction    m_DecreaseBlockDepthAction;
-        private ProxyAction    m_DecreaseBlockWidthAction;
-        private ProxyAction    m_IncreaseBlockDepthAction;
-
-        // Shortcuts
-        private ProxyAction                m_IncreaseBlockWidthAction;
-        private ProxyAction                m_ToggleRender;
-        private ProxyAction                m_ToggleSpawn;
-        private ToolSystem                 m_ToolSystem;
-        private ValueBindingHelper<bool[]> m_RoadEditorSideBinding;
-
-        private ValueBindingHelper<bool> m_AllowSpawningBinding;
-
-        // Bindings
+        private int2                             m_SelectedParcelSize = new(2, 2);
+        private ObjectToolSystem                 m_ObjectToolSystem;
+        private P_AllowSpawnSystem               m_AllowSpawnSystem;
+        private P_OverlaySystem                  m_PlatterOverlaySystem;
+        private ToolbarUISystem                  m_ToolbarUISystem;
+        private P_SnapSystem                     m_SnapSystem;
+        private P_ZoneCacheSystem                m_ZoneCacheSystem;
+        private PrefabSystem                     m_PrefabSystem;
+        private PrefixedLogger                   m_Log;
+        private ProxyAction                      m_DecreaseBlockDepthAction;
+        private ProxyAction                      m_DecreaseBlockWidthAction;
+        private ProxyAction                      m_IncreaseBlockDepthAction;
+        private ProxyAction                      m_IncreaseBlockWidthAction;
+        private ProxyAction                      m_ToggleRender;
+        private ProxyAction                      m_ToggleSpawn;
+        private ToolSystem                       m_ToolSystem;
+        private ValueBindingHelper<bool>         m_AllowSpawningBinding;
         private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
+        private ValueBindingHelper<bool>         m_EnableCreateFromZoneBinding;
         private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
         private ValueBindingHelper<bool>         m_RenderParcelsBinding;
-        private ValueBindingHelper<float>        m_RoadEditorOffsetBinding;
-        private ValueBindingHelper<float>        m_RoadEditorSpacingBinding;
         private ValueBindingHelper<float>        m_SnapSpacingBinding;
         private ValueBindingHelper<int>          m_BlockWidthBinding;
         private ValueBindingHelper<int>          m_BlockWidthMinBinding;
@@ -74,9 +63,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
-
-        // Props
-        public ZoneType PreZoneType { get; set; } = ZoneType.None;
+        public  ZoneType                         PreZoneType { get; set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -91,35 +78,33 @@ namespace Platter.Systems {
             m_PrefabSystem         = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ObjectToolSystem     = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_PlatterOverlaySystem = World.GetOrCreateSystemManaged<P_OverlaySystem>();
+            m_ToolbarUISystem      = World.GetOrCreateSystemManaged<ToolbarUISystem>();
             m_AllowSpawnSystem     = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
             m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
-            //m_RoadsideToolSystem   = World.GetOrCreateSystemManaged<P_RoadsideToolSystem>();
 
             // Bindings
-            m_EnableToolButtonsBinding = CreateBinding("ENABLE_TOOL_BUTTONS", false);
-            m_ZoneBinding              = CreateBinding("ZONE", 0, SetPreZone);
-            m_BlockWidthBinding        = CreateBinding("BLOCK_WIDTH", 2);
-            m_BlockWidthMinBinding     = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.BlockSizes.x);
-            m_BlockWidthMaxBinding     = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.BlockSizes.z);
-            m_BlockDepthBinding        = CreateBinding("BLOCK_DEPTH", 2);
-            m_BlockDepthMinBinding     = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
-            m_BlockDepthMaxBinding     = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
-            m_ZoneDataBinding          = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
-            m_RenderParcelsBinding     = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
-            m_AllowSpawningBinding     = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
-            m_SnapModeBinding          = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
-            m_SnapSpacingBinding       = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
-            m_ModalFirstLaunchBinding  = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
-            m_RoadEditorSideBinding    = CreateBinding("ROAD_SIDE__SIDES", new bool[4] { true, true, false, false }, SetSides);
-            m_RoadEditorSpacingBinding = CreateBinding("ROAD_SIDE__SPACING", 1f, SetSpacing);
-            m_RoadEditorOffsetBinding  = CreateBinding("ROAD_SIDE__OFFSET", 2f, SetOffset);
-            m_ToolModeBinding          = CreateBinding("TOOL_MODE", 0, SetToolMode);
+            m_EnableToolButtonsBinding    = CreateBinding("ENABLE_TOOL_BUTTONS", false);
+            m_EnableCreateFromZoneBinding = CreateBinding("ENABLE_CREATE_FROM_ZONE", false);
+            m_ZoneBinding                 = CreateBinding("ZONE", 0, SetPreZone);
+            m_BlockWidthBinding           = CreateBinding("BLOCK_WIDTH", 2);
+            m_BlockWidthMinBinding        = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.BlockSizes.x);
+            m_BlockWidthMaxBinding        = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.BlockSizes.z);
+            m_BlockDepthBinding           = CreateBinding("BLOCK_DEPTH", 2);
+            m_BlockDepthMinBinding        = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
+            m_BlockDepthMaxBinding        = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
+            m_ZoneDataBinding             = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
+            m_RenderParcelsBinding        = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
+            m_AllowSpawningBinding        = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
+            m_SnapModeBinding             = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
+            m_SnapSpacingBinding          = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
+            m_ModalFirstLaunchBinding     = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
+            m_ToolModeBinding             = CreateBinding("TOOL_MODE", 0, SetToolMode);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
             CreateTrigger<string>("MODAL_DISMISS", HandleModalDismiss);
-            CreateTrigger("ROAD_SIDE__REQUEST_APPLY", RequestApply);
+            CreateTrigger("CREATE_PARCEL_WITH_ZONE", HandleCreateParcelWithZone);
 
             // Shortcuts
             m_IncreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
@@ -132,7 +117,8 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var currentlyUsingParcelsInObjectTool = CurrentlyUsingParcelsInObjectTool();
+            var currentlyUsingParcelsInObjectTool = m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+            var currentlyUsingZoneTool            = m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem; 
 
             // Enable Tool Shortcuts
             m_IncreaseBlockWidthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
@@ -175,12 +161,14 @@ namespace Platter.Systems {
             m_PlatterOverlaySystem.RenderParcelsOverride = ShouldRenderOverlay();
 
             // Update Bindings
-            m_RenderParcelsBinding.Value     = PlatterMod.Instance.Settings.RenderParcels;
-            m_AllowSpawningBinding.Value     = PlatterMod.Instance.Settings.AllowSpawn;
-            m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
-            m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
-            m_EnableToolButtonsBinding.Value = currentlyUsingParcelsInObjectTool;
-            m_ModalFirstLaunchBinding.Value  = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
+            m_RenderParcelsBinding.Value        = PlatterMod.Instance.Settings.RenderParcels;
+            m_AllowSpawningBinding.Value        = PlatterMod.Instance.Settings.AllowSpawn;
+            m_BlockWidthBinding.Value           = m_SelectedParcelSize.x;
+            m_BlockDepthBinding.Value           = m_SelectedParcelSize.y;
+            m_EnableToolButtonsBinding.Value    = currentlyUsingParcelsInObjectTool;
+            m_EnableCreateFromZoneBinding.Value = currentlyUsingZoneTool;
+            m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
+            m_ZoneBinding.Value                 = PreZoneType.m_Index;
 
             // Send down zone data
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
@@ -200,12 +188,6 @@ namespace Platter.Systems {
 
         /// <summary>
         /// </summary>
-        private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
-        }
-
-        /// <summary>
-        /// </summary>
         private bool ShouldRenderOverlay() {
             return m_ToolSystem.activeTool is ObjectToolSystem or BulldozeToolSystem or NetToolSystem or ZoneToolSystem ||
                    m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
@@ -217,6 +199,21 @@ namespace Platter.Systems {
         private void HandleModalDismiss(string modal) {
             m_Log.Debug($"HandleModalDismiss(modal: {modal})");
             PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial = true;
+        }
+
+        /// <summary>
+        /// HandleCreateParcelWithZone
+        /// </summary>
+        private void HandleCreateParcelWithZone() {
+            m_Log.Debug($"HandleCreateParcelWithZone()");
+            
+            var currentZonePrefab = (ZonePrefab)m_ToolSystem.activeTool.GetPrefab();
+            var entity            = m_PrefabSystem.GetEntity(currentZonePrefab);
+            var zoneData          = EntityManager.GetComponentData<ZoneData>(entity);
+
+            PreZoneType = zoneData.m_ZoneType;
+
+            UpdateSelectedPrefab();
         }
 
         /// <summary>
@@ -316,6 +313,7 @@ namespace Platter.Systems {
             var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[(ushort)zoneIndex];
             var zoneData   = EntityManager.GetComponentData<ZoneData>(zonePrefab);
             PreZoneType = zoneData.m_ZoneType;
+            UpdateSelectedPrefab();
         }
 
         /// <summary>
@@ -371,53 +369,23 @@ namespace Platter.Systems {
         /// </summary>
         private void UpdateSelectedPrefab() {
             var id = ParcelUtils.GetPrefabID(m_SelectedParcelSize, true);
-
-            m_Log.Debug($"UpdateSelectedPrefab() -- Attempting to get Prefab with id {id}");
+            m_Log.Debug($"UpdateSelectedPrefab() -- ${id}!");
 
             if (!m_PrefabSystem.TryGetPrefab(id, out var prefabBase)) {
-                m_Log.Debug("UpdateSelectedPrefab() -- Couldn't find prefabBase!");
                 return;
             }
 
-            m_Log.Debug($"UpdateSelectedPrefab() -- Found ${prefabBase}!");
+            var assetEntity = m_PrefabSystem.GetEntity(prefabBase);
+            m_ToolSystem.ActivatePrefabTool(prefabBase);
 
-            m_ToolSystem.ActivatePrefabTool((StaticObjectPrefab)prefabBase);
-        }
+            // Invoke the private SelectAsset method using reflection
+            var method = m_ToolbarUISystem.GetType().GetMethod(
+                "SelectAsset",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-        /// <summary>
-        /// Called from the UI.
-        /// </summary>
-        private void SetSpacing(float spacing) {
-            m_Log.Debug($"SetSpacing(spacing = {spacing})");
-
-            //m_RoadsideToolSystem.RoadEditorSpacing = spacing;
-        }
-
-        /// <summary>
-        /// Called from the UI.
-        /// </summary>
-        private void SetSides(bool[] sides) {
-            m_Log.Debug($"SetSides(sides = {sides})");
-
-            if (sides.Length != 4) { }
-
-            //m_RoadsideToolSystem.RoadEditorSides = new bool4(sides[0], sides[1], sides[2], sides[3]);
-        }
-
-        /// <summary>
-        /// Called from the UI.
-        /// </summary>
-        private void SetOffset(float offset) {
-            m_Log.Debug($"SetSpacing(offset = {offset})");
-
-            //m_RoadsideToolSystem.RoadEditorOffset = offset;
-        }
-
-        /// <summary>
-        /// Called from the UI.
-        /// </summary>
-        private void RequestApply() {
-            //m_RoadsideToolSystem.ApplyWasRequested = true;
+            if (method != null) {
+                method.Invoke(m_ToolbarUISystem, new object[] { assetEntity, true });
+            }
         }
 
         /// <summary>

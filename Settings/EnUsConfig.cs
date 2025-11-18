@@ -129,6 +129,7 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.SectionTitle.ParcelWidth", "Parcel Width" },
                 { "PlatterMod.UI.SectionTitle.ParcelDepth", "Parcel Depth" },
                 { "PlatterMod.UI.Label.ParcelSizeUnit", "cells" },
+                { "PlatterMod.UI.Button.CreateParcelFromZone", "Create Parcel with this Zone" },
                 { "PlatterMod.UI.Tooltip.SnapModeNone", "No Snapping" },
                 { "PlatterMod.UI.Tooltip.SnapModeZoneSide", "Snap to sides of a road" },
                 { "PlatterMod.UI.Tooltip.SnapModeRoadSide", "Snap to sides of the vanilla zone grid" },

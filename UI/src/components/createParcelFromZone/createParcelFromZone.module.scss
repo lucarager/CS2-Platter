@@ -1,0 +1,37 @@
+.moddedSection {
+    border-top: 1px solid  rgba(255, 255, 255, .2);
+    padding: 8rem 0;
+    background: rgba(82, 174, 255, 0.15);
+    margin-bottom: -6px;
+
+    &_Header {
+        display: flex;
+        flex-direction: row;
+        padding-left: 12rem;
+        padding-bottom: 4rem;
+        align-items: center;
+        justify-content: space-between;
+
+    &_Image {
+        width: 24rem;
+        height: 24rem;
+        margin-right: 4rem;
+        }
+
+        &_Title {
+            font-weight: 600;
+
+            color:  var(--accentColorNormal) ;
+            font-size: var(--fontSizeM) ;
+            line-height: 1.25em;
+        }
+    }
+}
+
+.button {
+    width: auto;
+    color: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding-left: 8rem;
+    padding-right: 8rem;
+}
