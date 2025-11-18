@@ -129,13 +129,15 @@ namespace Platter.Systems {
             }.Schedule(findOverlappingBlocksJobHandle);
 
             var clearBlocksJobHandle = new ClearBlocksJob(
-                blockOverlapArray: blockOverlapList.AsDeferredJobArray(),
                 overlapGroups: overlapGroupsList.AsDeferredJobArray(),
+                parcelOwnerLookup: SystemAPI.GetComponentLookup<ParcelOwner>(),
+                parcelDataLookup: SystemAPI.GetComponentLookup<ParcelData>(),
+                prefabRefLookup: SystemAPI.GetComponentLookup<PrefabRef>(),
                 blockLookup: SystemAPI.GetComponentLookup<Block>(),
                 buildOrderLookup: SystemAPI.GetComponentLookup<Game.Zones.BuildOrder>(),
-                parcelOwnerLookup: SystemAPI.GetComponentLookup<ParcelOwner>(),
-                cellsBLook: SystemAPI.GetBufferLookup<Cell>(),
-                validAreaLookup: SystemAPI.GetComponentLookup<ValidArea>()
+                validAreaLookup: SystemAPI.GetComponentLookup<ValidArea>(),
+                blockOverlapArray: blockOverlapList.AsDeferredJobArray(),
+                cellLookup: SystemAPI.GetBufferLookup<Cell>()
             ).Schedule(overlapGroupsList, 1, groupOverlappingBlocksJobHandle);
 
             updateBlocksList.Dispose(groupOverlappingBlocksJobHandle);
@@ -765,6 +767,7 @@ namespace Platter.Systems {
                         }
 
                         quad1 = MathUtils.Expand(quad1, -0.02f);
+
                         if (MathUtils.Intersect(quad1, triangle2)) {
                             cell.m_State  |= CellFlags.Blocked;
                             m_Cells[num2] =  cell;
@@ -791,23 +794,24 @@ namespace Platter.Systems {
         public struct ClearBlocksJob : IJobParallelForDefer {
             [ReadOnly]                            private NativeArray<OverlapGroup>              m_OverlapGroups;
             [ReadOnly]                            private ComponentLookup<ParcelOwner>           m_ParcelOwnerLookup;
+            [ReadOnly]                            private ComponentLookup<ParcelData>            m_ParcelDataLookup;
+            [ReadOnly]                            private ComponentLookup<PrefabRef>             m_PrefabRefLookup;
             [ReadOnly]                            private ComponentLookup<Block>                 m_BlockLookup;
             [ReadOnly]                            private ComponentLookup<Game.Zones.BuildOrder> m_BuildOrderLookup;
             [NativeDisableParallelForRestriction] private ComponentLookup<ValidArea>             m_ValidAreaLookup;
             [NativeDisableParallelForRestriction] private NativeArray<BlockOverlap>              m_BlockOverlapArray;
-            [NativeDisableParallelForRestriction] private BufferLookup<Cell>                     m_CellBLook;
+            [NativeDisableParallelForRestriction] private BufferLookup<Cell>                     m_CellLookup;
 
-            public ClearBlocksJob(NativeArray<OverlapGroup>  overlapGroups,     ComponentLookup<ParcelOwner>           parcelOwnerLookup,
-                                  ComponentLookup<Block>     blockLookup,        ComponentLookup<Game.Zones.BuildOrder> buildOrderLookup,
-                                  NativeArray<BlockOverlap>  blockOverlapArray, BufferLookup<Cell>                     cellsBLook,
-                                  ComponentLookup<ValidArea> validAreaLookup) {
-                m_OverlapGroups     = overlapGroups;
-                m_ParcelOwnerLookup  = parcelOwnerLookup;
-                m_BlockLookup        = blockLookup;
-                m_BuildOrderLookup   = buildOrderLookup;
-                m_BlockOverlapArray = blockOverlapArray;
-                m_CellBLook = cellsBLook;
+            public ClearBlocksJob(NativeArray<OverlapGroup> overlapGroups, ComponentLookup<ParcelOwner> parcelOwnerLookup, ComponentLookup<ParcelData> parcelDataLookup, ComponentLookup<PrefabRef> prefabRefLookup, ComponentLookup<Block> blockLookup, ComponentLookup<Game.Zones.BuildOrder> buildOrderLookup, ComponentLookup<ValidArea> validAreaLookup, NativeArray<BlockOverlap> blockOverlapArray, BufferLookup<Cell> cellLookup) {
+                m_OverlapGroups = overlapGroups;
+                m_ParcelOwnerLookup = parcelOwnerLookup;
+                m_ParcelDataLookup = parcelDataLookup;
+                m_PrefabRefLookup = prefabRefLookup;
+                m_BlockLookup = blockLookup;
+                m_BuildOrderLookup = buildOrderLookup;
                 m_ValidAreaLookup = validAreaLookup;
+                m_BlockOverlapArray = blockOverlapArray;
+                m_CellLookup = cellLookup;
             }
 
             public void Execute(int index) {
@@ -817,8 +821,10 @@ namespace Platter.Systems {
                     blockLookup: m_BlockLookup,
                     validAreaLookup: m_ValidAreaLookup,
                     buildOrderLookup: m_BuildOrderLookup,
-                    cellsBLook: m_CellBLook,
-                    parcelOwnerLookup: m_ParcelOwnerLookup
+                    cellsBLook: m_CellLookup,
+                    parcelOwnerLookup: m_ParcelOwnerLookup,
+                    parcelDataLookup: m_ParcelDataLookup,
+                    prefabRefLookup: m_PrefabRefLookup
                 );
 
                 for (var n = overlapGroup.m_StartIndex; n < overlapGroup.m_EndIndex; n++) {
@@ -873,12 +879,15 @@ namespace Platter.Systems {
 
                 public OverlapIterator(ComponentLookup<ParcelOwner> parcelOwnerLookup, ComponentLookup<Block>                 blockLookup,
                                        ComponentLookup<ValidArea>   validAreaLookup,   ComponentLookup<Game.Zones.BuildOrder> buildOrderLookup,
-                                       BufferLookup<Cell>           cellsBLook) : this() {
+                                       BufferLookup<Cell>           cellsBLook,        ComponentLookup<ParcelData>            parcelDataLookup,
+                                       ComponentLookup<PrefabRef>   prefabRefLookup) : this() {
                     m_ParcelOwnerLookup = parcelOwnerLookup;
                     m_BlockLookup       = blockLookup;
                     m_ValidAreaLookup   = validAreaLookup;
                     m_BuildOrderLookup  = buildOrderLookup;
                     m_CellBLook        = cellsBLook;
+                    m_ParcelDataLookup = parcelDataLookup;
+                    m_PrefabRefLookup = prefabRefLookup;
                 }
 
                 public void SetEntity(Entity curBlockEntity) {
@@ -964,7 +973,6 @@ namespace Platter.Systems {
 
                         var leftBounds  = MathUtils.Bounds(leftCorners);
                         var rightBounds = MathUtils.Bounds(rightCorners);
-
                         if (MathUtils.Intersect(leftBounds, otherBounds)) {
                             CheckOverlapZ1(leftBounds, otherBounds, leftCorners, otherCorners, leftArea, otherValidArea);
                         }
