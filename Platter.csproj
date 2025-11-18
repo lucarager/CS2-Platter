@@ -54,13 +54,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Remove="UI\**" />
-		<EmbeddedResource Remove="UI\**" />
-		<None Remove="lang\*.jso" />
-		<None Remove="UI\**" />
-	</ItemGroup>
-	
-	<ItemGroup>
 		<EmbeddedResource Include="lang\*.json" />
 	</ItemGroup>
 
@@ -68,20 +61,6 @@
 		<None Include="Config/References.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
-
-	<!--Copy prefabs-->
-	<ItemGroup>
-		<Content Include="$(ProjectDir)/PrefabObjects\\**\*.*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-	
 	<ItemGroup>
 	  <Reference Include="Unity.RenderPipelines.Core.Runtime">
 	    <HintPath>D:\SteamLibrary\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.RenderPipelines.Core.Runtime.dll</HintPath>

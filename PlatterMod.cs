@@ -24,7 +24,6 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
-    using Game.Zones;
     using Newtonsoft.Json;
     using Platter.Components;
     using Platter.Settings;
@@ -153,6 +152,7 @@ namespace Platter {
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateBefore<P_RemoveOverriddenSystem>(SystemUpdatePhase.ModificationEnd); // Run after Mod5 when overrides are applied
 
             // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);

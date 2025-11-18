@@ -119,11 +119,10 @@ namespace Platter.Systems {
                 var subBlockBufferArray = chunk.GetBufferAccessor(ref m_SubBlockBufferTypeHandle);
 
                 for (var i = 0; i < entityArray.Length; i++) {
-                    var entity         = entityArray[i];
                     var subBlockBuffer = subBlockBufferArray[i];
 
                     foreach (var subBlock in subBlockBuffer) {
-                        var cellBuffer = m_CellLookup[entity];
+                        var cellBuffer = m_CellLookup[subBlock.m_SubBlock];
 
                         // Clear cell zoning before deleting
                         // This prevents shenanigans from the vanilla system that will try to re-zone underlying vanilla cells
