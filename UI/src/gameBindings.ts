@@ -1,8 +1,7 @@
-import { trigger } from "cs2/api";
-import mod from "../mod.json";
 import { TwoWayBinding } from "utils/bidirectionalBinding";
 import { ParcelUIData, PrefabData, SnapMode, ZoneData } from "types";
 import { Entity } from "cs2/bindings";
+import TriggerBuilder from "utils/trigger";
 
 export const GAME_BINDINGS = {
     TOOL_ENABLED: new TwoWayBinding<boolean>("TOOL_ENABLED", false),
@@ -22,7 +21,10 @@ export const GAME_BINDINGS = {
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
     SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
     SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 0),
+
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
+    ENABLE_CREATE_FROM_ZONE: new TwoWayBinding<boolean>("ENABLE_CREATE_FROM_ZONE", false),
+
     ZONE: new TwoWayBinding<number>("ZONE", 0),
     TOOL_MODE: new TwoWayBinding<number>("TOOL_MODE"),
 
@@ -39,19 +41,12 @@ export const GAME_BINDINGS = {
 };
 
 export const GAME_TRIGGERS = {
-    ADJUST_BLOCK_SIZE: (action: string) => {
-        trigger(mod.id, "TRIGGER:ADJUST_BLOCK_SIZE", action);
-    },
-    MODAL_DISMISS: (modal: string) => {
-        trigger(mod.id, "TRIGGER:MODAL_DISMISS", modal);
-    },
-    INFOPANEL_SELECT_PARCEL_ENTITY: (entity: Entity) => {
-        trigger(mod.id, "TRIGGER:INFOPANEL_SELECT_PARCEL_ENTITY", entity);
-    },
-    INFOPANEL_PARCEL_RELOCATE: (entity: Entity) => {
-        trigger(mod.id, "TRIGGER:INFOPANEL_PARCEL_RELOCATE", entity);
-    },
-    ROAD_SIDE__REQUEST_APPLY: () => {
-        trigger(mod.id, "ROAD_SIDE__REQUEST_APPLY");
-    },
+    ADJUST_BLOCK_SIZE: TriggerBuilder.create<[string]>("ADJUST_BLOCK_SIZE"),
+    MODAL_DISMISS: TriggerBuilder.create<[string]>("MODAL_DISMISS"),
+    INFOPANEL_SELECT_PARCEL_ENTITY: TriggerBuilder.create<[Entity]>(
+        "INFOPANEL_SELECT_PARCEL_ENTITY",
+    ),
+    INFOPANEL_PARCEL_RELOCATE: TriggerBuilder.create<[Entity]>("INFOPANEL_PARCEL_RELOCATE"),
+    ROAD_SIDE__REQUEST_APPLY: TriggerBuilder.create<[]>("ROAD_SIDE__REQUEST_APPLY"),
+    CREATE_PARCEL_WITH_ZONE: TriggerBuilder.create<[]>("CREATE_PARCEL_WITH_ZONE"),
 };

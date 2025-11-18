@@ -7,16 +7,14 @@ using Colossal.Serialization.Entities;
 using Game;
 
 namespace Platter.Systems {
+    using Colossal.Serialization.Entities;
     using System.Collections.Generic;
     using Game.Common;
     using Game.Prefabs;
     using Game.UI;
-    using Game.UI.Tooltip;
-    using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
-    using Platter.Systems;
 
     /// <summary>
     /// System responsible for caching Zone Information for other systems.
@@ -47,13 +45,13 @@ namespace Platter.Systems {
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             m_ModifiedQuery = SystemAPI.QueryBuilder()
-                .WithAll<ZoneData, PrefabData>()
-                .WithAny<Created, Updated, Deleted>()
-                .Build();
+                                       .WithAll<ZoneData, PrefabData>()
+                                       .WithAny<Created, Updated, Deleted>()
+                                       .Build();
 
             m_AllQuery = SystemAPI.QueryBuilder()
-                                   .WithAll<ZoneData, PrefabData>()
-                                   .Build();
+                                  .WithAll<ZoneData, PrefabData>()
+                                  .Build();
 
             m_ZonePrefabs = new NativeHashMap<ushort, Entity>(256, Allocator.Persistent);
             m_FillColors  = new Dictionary<ushort, Color>();

@@ -19,18 +19,13 @@ namespace Platter.Systems {
     /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
     /// </summary>
     public partial class P_ParcelInitializeSystem : GameSystemBase {
-        // Logger
+        private const GeometryFlags PermGeometryFlags        = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority;
+        private const GeometryFlags PlaceholderGeometryFlags = GeometryFlags.WalkThrough | GeometryFlags.Brushable;
+
+        private EntityQuery    m_ParcelPrefabQuery;
+        private EntityQuery    m_ParcelPlaceholderPrefabQuery;
+        private PrefabSystem   m_PrefabSystem;
         private PrefixedLogger m_Log;
-
-        public const GeometryFlags PermGeometryFlags = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority;
-        public const GeometryFlags PlaceholderGeometryFlags = GeometryFlags.WalkThrough;
-
-        // Queries
-        private EntityQuery m_ParcelPrefabQuery;
-        private EntityQuery m_ParcelPlaceholderPrefabQuery;
-
-        // Systems & References
-        private PrefabSystem m_PrefabSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {

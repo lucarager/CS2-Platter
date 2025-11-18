@@ -8,9 +8,12 @@ namespace Platter.Systems {
     using Colossal.Entities;
     using Game;
     using Game.Common;
+    using Game.Tools;
     using Game.Zones;
     using Platter.Components;
     using Platter.Utils;
+    using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
 
@@ -29,51 +32,60 @@ namespace Platter.Systems {
             base.OnCreate();
 
             m_Log = new PrefixedLogger(nameof(P_ParcelToBlockReferenceSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             m_ParcelBlockQuery = SystemAPI.QueryBuilder()
                                           .WithAll<Block, ParcelOwner>()
                                           .WithAny<Created, Deleted>()
+                                          .WithNone<Temp>()
                                           .Build();
-            
+
             RequireForUpdate(m_ParcelBlockQuery);
         }
 
         /// <inheritdoc/>
-        // Todo convert to job for perf
         protected override void OnUpdate() {
-            var entities = m_ParcelBlockQuery.ToEntityArray(Allocator.Temp);
-            var subBlockBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>();
+            Dependency = new UpdateBlockJob(
+                SystemAPI.GetEntityTypeHandle(),
+                SystemAPI.GetComponentTypeHandle<ParcelOwner>(),
+                SystemAPI.GetComponentTypeHandle<Created>(),
+                SystemAPI.GetBufferLookup<ParcelSubBlock>()
+            ).Schedule(m_ParcelBlockQuery, Dependency);
+        }
 
-            foreach (var blockEntity in entities) {
-                m_Log.Debug($"OnUpdate() -- Setting Block ownership references for entity {blockEntity}");
+#if USE_BURST
+        [BurstCompile]
+#endif
+        private struct UpdateBlockJob : IJobChunk {
+            [ReadOnly] private EntityTypeHandle                 m_EntityTypeHandle;
+            [ReadOnly] private ComponentTypeHandle<ParcelOwner> m_ParcelOwnerTypeHandle;
+            [ReadOnly] private ComponentTypeHandle<Created>     m_CreatedTypeHandle;
+            [ReadOnly] private BufferLookup<ParcelSubBlock>     m_ParcelSubBlockLookup;
 
-                if (!EntityManager.TryGetComponent<ParcelOwner>(blockEntity, out var parcelOwner)) {
-                    m_Log.Error($"{blockEntity} didn't have parcelOwner component");
-                    return;
-                }
-
-                if (!subBlockBufferLookup.TryGetBuffer(parcelOwner.m_Owner, out var subBlockBuffer)) {
-                    m_Log.Error($"OnUpdate() -- Couldn't find owner's {parcelOwner.m_Owner} subblock buffer");
-                    return;
-                }
-
-                if (EntityManager.HasComponent<Created>(blockEntity)) {
-                    m_Log.Debug($"OnUpdate() -- Block was CREATED. Adding block reference to parcel.");
-
-                    if (!CollectionUtils.TryAddUniqueValue<ParcelSubBlock>(subBlockBuffer, new ParcelSubBlock(blockEntity))) {
-                        m_Log.Error($"OnUpdate() -- Unsuccesfully tried adding {blockEntity} to {parcelOwner.m_Owner}'s {subBlockBuffer} buffer");
-                    }
-
-                    return;
-                }
-
-                m_Log.Debug($"OnUpdate() -- Block was DELETED. Removing block from parcel buffer");
-
-                CollectionUtils.RemoveValue<ParcelSubBlock>(subBlockBuffer, new ParcelSubBlock(blockEntity));
+            public UpdateBlockJob(EntityTypeHandle             entityTypeHandle,  ComponentTypeHandle<ParcelOwner> parcelOwnerTypeHandle,
+                                  ComponentTypeHandle<Created> createdTypeHandle, BufferLookup<ParcelSubBlock>     parcelSubBlockLookup) {
+                m_EntityTypeHandle      = entityTypeHandle;
+                m_ParcelOwnerTypeHandle = parcelOwnerTypeHandle;
+                m_CreatedTypeHandle     = createdTypeHandle;
+                m_ParcelSubBlockLookup  = parcelSubBlockLookup;
             }
 
-            entities.Dispose();
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
+                                in v128           chunkEnabledMask) {
+                var entityArray      = chunk.GetNativeArray(m_EntityTypeHandle);
+                var parcelOwnerArray = chunk.GetNativeArray(ref m_ParcelOwnerTypeHandle);
+
+                for (var i = 0; i < entityArray.Length; i++) {
+                    var entity = entityArray[i];
+                    var owner  = parcelOwnerArray[i];
+                    if (chunk.Has(ref m_CreatedTypeHandle)) {
+                        CollectionUtils.TryAddUniqueValue(m_ParcelSubBlockLookup[owner.m_Owner], new ParcelSubBlock(entity));
+                        continue;
+                    }
+
+                    CollectionUtils.RemoveValue(m_ParcelSubBlockLookup[owner.m_Owner], new ParcelSubBlock(entity));
+                }
+            }
         }
     }
 }

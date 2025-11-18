@@ -15,6 +15,7 @@ namespace Platter.Systems {
     using Game.Objects;
     using Game.Prefabs;
     using Game.Zones;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Entities.UniversalDelegates;

@@ -39,9 +39,9 @@ namespace Platter.Systems {
 
             // Queries
             m_Query = SystemAPI.QueryBuilder()
-                .WithAll<Block, Cell, ParcelOwner, Updated>()
-                .WithNone<Deleted, Temp>()
-                .Build();
+                               .WithAll<Block, Cell, ParcelOwner, Updated>()
+                               .WithNone<Deleted, Temp>()
+                               .Build();
 
             // Update Cycle
             RequireForUpdate(m_Query);
@@ -50,10 +50,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         // Todo convert to job for perf
         protected override void OnUpdate() {
-            var entities = m_Query.ToEntityArray(Allocator.Temp);
-
-            foreach (var entity in entities) {
-                m_Log.Debug($"OnUpdate() -- {entity}");
+            foreach (var entity in m_Query.ToEntityArray(Allocator.Temp)) {
                 var parcelOwner    = EntityManager.GetComponentData<ParcelOwner>(entity);
                 var block          = EntityManager.GetComponentData<Block>(entity);
                 var cellBuffer     = EntityManager.GetBuffer<Cell>(entity);
@@ -90,15 +87,12 @@ namespace Platter.Systems {
                         return;
                     }
                     parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
-                    parcel.m_ZoneFlags   = ParcelZoneFlags.Zoned;
                     EntityManager.SetComponentData<Parcel>(parcelOwner.m_Owner, parcel);
                 } else {
                     // Otherwise, set it to a "mix"
                     parcel.m_ZoneFlags = ParcelZoneFlags.Mixed;
                 }
             }
-
-            entities.Dispose();
         }
     }
 }

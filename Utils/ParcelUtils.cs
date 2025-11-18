@@ -12,19 +12,10 @@ namespace Platter.Utils {
     using Unity.Mathematics;
 
     public static class ParcelUtils {
-        public static PrefabID GetPrefabID(int width, int depth) {
-            var name = $"Parcel {width}x{depth}";
-            return new PrefabID("ParcelPrefab", name);
-        }
-
-        public static PrefabID GetPrefabID(int2 size) {
-            return GetPrefabID(size.x, size.y);
-        }
-
         public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
             var category = placeholder ? "ParcelPlaceholderPrefab" : "ParcelPrefab";
             var name     = $"Parcel {width}x{depth}";
-            return new PrefabID("ParcelPrefab", name);
+            return new PrefabID(category, name);
         }
 
         public static PrefabID GetPrefabID(int2 size, bool placeholder = false) {
