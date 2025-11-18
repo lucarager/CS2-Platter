@@ -44,7 +44,7 @@
   "PlatterMod.UI.SectionTitle.ParcelWidth": "Ancho de la parcela",
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Largo de la parcela",
   "PlatterMod.UI.Label.ParcelSizeUnit": "celdas",
-  "PlatterMod.UI.Button.CreateParcelFromZone": "Create Parcel with this Zone",
+  "PlatterMod.UI.Button.CreateParcelFromZone": "Crear paquete con esta zona",
   "PlatterMod.UI.Tooltip.SnapModeNone": "Sin ajuste",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Ajustar a los lados de una carretera",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Ajustar a los lados de la cuadrícula de la zona del juego",
