@@ -44,6 +44,7 @@
   "PlatterMod.UI.SectionTitle.ParcelWidth": "Largura do Lote",
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Profundidade do Lote",
   "PlatterMod.UI.Label.ParcelSizeUnit": "células",
+  "PlatterMod.UI.Button.CreateParcelFromZone": "Criar parcela com esta Zona",
   "PlatterMod.UI.Tooltip.SnapModeNone": "Sem alinhamento",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Alinhar aos lados de uma rua",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Alinhar às laterais de uma área de zoneamento padrão",
