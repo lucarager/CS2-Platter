@@ -284,6 +284,8 @@ namespace Platter.Tests {
             }
 
             //await GameManager.instance.MainMenu();
+
+            TR.Complete();
         }
 
         private async Task<Entity> PlaceParcel(PrefabID prefabID, Transform transform) {

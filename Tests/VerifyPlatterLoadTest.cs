@@ -175,6 +175,8 @@ namespace Platter.Tests {
             });
 
             await GameManager.instance.MainMenu();
+
+            TR.Complete();
         }
     }
 }
