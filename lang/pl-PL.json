@@ -44,7 +44,7 @@
   "PlatterMod.UI.SectionTitle.ParcelWidth": "Szerokość Parceli",
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Głębokość Parceli",
   "PlatterMod.UI.Label.ParcelSizeUnit": "kratki",
-  "PlatterMod.UI.Button.CreateParcelFromZone": "Utwórz paczkę z tą strefą",
+  "PlatterMod.UI.Button.CreateParcelFromZone": "Stwórz parcele z tą strefą",
   "PlatterMod.UI.Tooltip.SnapModeNone": "Brak przyciągania",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Przyciągaj do stron drogi",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Przyciągaj do siatki pól z gry",
