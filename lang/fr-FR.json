@@ -44,6 +44,7 @@
   "PlatterMod.UI.SectionTitle.ParcelWidth": "Largeur de parcelle",
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Profondeur de parcelle",
   "PlatterMod.UI.Label.ParcelSizeUnit": "cellules",
+  "PlatterMod.UI.Button.CreateParcelFromZone": "Create Parcel with this Zone",
   "PlatterMod.UI.Tooltip.SnapModeNone": "Pas de snapping",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Snapper sur les bords des routes",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Snapper sur les côtés de la grille de zonage Vanilla",
