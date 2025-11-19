@@ -56,7 +56,7 @@
   "PlatterMod.UI.Tooltip.SnapSpacingAmount": "Es el espacio entre la carretera y el inicio de la parcela",
   "PlatterMod.UI.Tooltip.BlockWidthIncrease": "Aumentar ancho de parcela",
   "PlatterMod.UI.Tooltip.BlockWidthDecrease": "Aumentar ancho de parcela",
-  "PlatterMod.UI.Tooltip.BlockWidthNumber": "Parcel width",
+  "PlatterMod.UI.Tooltip.BlockWidthNumber": "Ancho de la parcela",
   "PlatterMod.UI.Tooltip.BlockDepthIncrease": "Aumentar largo de parcela",
   "PlatterMod.UI.Tooltip.BlockDepthDecrease": "Disminuir largo de parcela",
   "PlatterMod.UI.Tooltip.BlockDepthNumber": "Largo de la parcela",
