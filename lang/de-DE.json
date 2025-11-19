@@ -56,7 +56,7 @@
   "PlatterMod.UI.Tooltip.SnapSpacingAmount": "Zurücksetzen zwischen Straße und Parzelle",
   "PlatterMod.UI.Tooltip.BlockWidthIncrease": "Parzellenbreite vergrößern",
   "PlatterMod.UI.Tooltip.BlockWidthDecrease": "Paketbreite verkleinern",
-  "PlatterMod.UI.Tooltip.BlockWidthNumber": "Parcel width",
+  "PlatterMod.UI.Tooltip.BlockWidthNumber": "Parzelle mit",
   "PlatterMod.UI.Tooltip.BlockDepthIncrease": "Parzellentiefe erhöhen",
   "PlatterMod.UI.Tooltip.BlockDepthDecrease": "Parzellentiefe verringern",
   "PlatterMod.UI.Tooltip.BlockDepthNumber": "Parzellentiefe",
