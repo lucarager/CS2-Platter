@@ -26,9 +26,10 @@ export const ToolModes = [
 
 const ToolModeSection = () => {
     const toolModeBinding = useValue(GAME_BINDINGS.TOOL_MODE.binding);
+    const { translate } = useLocalization();
 
     return (
-        <VC.Section title="Tool Mode">
+        <VC.Section title={translate("PlatterMod.UI.SectionTitle.ToolMode")}>
             <VC.ToolButton
                 src={"coui://uil/Standard/ArrowDownTriangleNotch.svg"}
                 onSelect={() => GAME_BINDINGS.TOOL_MODE.set(0)}
@@ -36,14 +37,14 @@ const ToolModeSection = () => {
                 multiSelect={false}
                 className={VT.toolButton.button}
                 focusKey={VF.FOCUS_DISABLED}
-                tooltip={"Plop Mode"}
+                tooltip={translate("PlatterMod.UI.Tooltip.PlopMode")}
             />
             <VC.ToolButton
                 src={"coui://uil/Standard/Road.svg"}
                 multiSelect={false}
                 className={VT.toolButton.button}
                 focusKey={VF.FOCUS_DISABLED}
-                tooltip={"Road Platting Mode is under active development. Stay tuned!"}
+                tooltip={translate("PlatterMod.UI.Tooltip.RoadPlatMode")}
             />
         </VC.Section>
     );

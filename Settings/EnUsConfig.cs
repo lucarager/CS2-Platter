@@ -120,6 +120,7 @@ namespace Platter.Settings {
                 },
 
                 // UI
+                { "PlatterMod.UI.SectionTitle.ToolMode", "Tool Mode" },
                 { "PlatterMod.UI.SectionTitle.Prezoning", "Pre-Zone" },
                 { "PlatterMod.UI.SectionTitle.ParcelControls", "Parcel Controls" },
                 { "PlatterMod.UI.SectionTitle.RenderParcels", "Enable Parcels Overlay" },
@@ -130,6 +131,8 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.SectionTitle.ParcelDepth", "Parcel Depth" },
                 { "PlatterMod.UI.Label.ParcelSizeUnit", "cells" },
                 { "PlatterMod.UI.Button.CreateParcelFromZone", "Create Parcel with this Zone" },
+                { "PlatterMod.UI.Tooltip.PlopMode", "Plop Mode" },
+                { "PlatterMod.UI.Tooltip.RoadPlatMode", "Road Platting Mode is development. Stay tuned!" },
                 { "PlatterMod.UI.Tooltip.SnapModeNone", "No Snapping" },
                 { "PlatterMod.UI.Tooltip.SnapModeZoneSide", "Snap to sides of a road" },
                 { "PlatterMod.UI.Tooltip.SnapModeRoadSide", "Snap to sides of the vanilla zone grid" },

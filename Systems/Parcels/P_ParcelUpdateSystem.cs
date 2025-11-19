@@ -5,20 +5,21 @@
 
 namespace Platter.Systems {
     using Colossal.Entities;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
-    using Components;
-    using Utils;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
+    using Utils;
+    using static UnityEngine.Rendering.DebugUI;
 
     /// <summary>
     /// System responsible for updating Parcel and Cell data when a parcel is placed, moved, or deleted.
@@ -212,6 +213,16 @@ namespace Platter.Systems {
                     m_CommandBuffer.AddComponent(index, blockEntity, new ParcelOwner(parcelEntity));
                     m_CommandBuffer.AddComponent<Initialized>(index, parcelEntity);
                     var cellBuffer = m_CommandBuffer.SetBuffer<Cell>(index, blockEntity);
+
+
+                    // Set all cells beyond the depth or width limit to blocked
+                    // This is due to a graphical limitation of the vanilla game that needs the depth to be 6 to fully render cells
+                    // as well as the fact that a block has a minimum width of 2 to be valid.
+
+                    // "Visible" flag is usually added by the game's cell overlap systems
+                    // By adding it manually, we ensure that the game takes our custom blocks as a priority (given the 0 build order)
+                    // otherwise it always prioritizes visible cells first, which would be the ones already existing on roads
+                    // This may break in the future should the logic in CellOverlapJobs.cs change
 
                     // Set all cells outside of parcel bounds to occupied
                     for (var row = 0; row < block.m_Size.y; row++)

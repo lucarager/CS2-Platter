@@ -108,7 +108,7 @@ declare module "cs2/l10n" {
         Freedom = 1,
     }
     export interface Localization {
-        translate(id: AvailableStringKeys, fallback?: string | null): string | null;
+        translate(id: string, fallback?: string | null): string | null;
         unitSettings: UnitSettings;
     }
     export function useCachedLocalization(): Localization;

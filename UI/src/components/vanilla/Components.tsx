@@ -28,16 +28,16 @@ const modulePaths = [
     },
     {
         path: "game-ui/menu/components/whats-new-panel/page-selector/page-selector.tsx",
-        components: ["PageSelector"]
+        components: ["PageSelector"],
     },
     {
         path: "game-ui/common/animations/paging/page-switcher.tsx",
-        components: ["PageSwitcher", "Page"]
+        components: ["PageSwitcher", "Page"],
     },
     {
         path: "game-ui/common/scrolling/scrollable.tsx",
-        components: ["Scrollable"]
-    }
+        components: ["Scrollable"],
+    },
 ];
 
 const themePaths = [
@@ -88,7 +88,7 @@ const themePaths = [
     {
         path: "game-ui/menu/components/whats-new-panel/whats-new-tab/whats-new-tab.module.scss",
         name: "whatsNewTab",
-    }
+    },
 ];
 
 export const VC = {} as IVanillaComponents;
