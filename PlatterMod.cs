@@ -145,7 +145,7 @@ namespace Platter {
             updateSystem.UpdateAt<P_ConnectedParcelSystem>(SystemUpdatePhase.Modification1);
 
             // Parcels
-            updateSystem.UpdateBefore<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
@@ -221,13 +221,13 @@ namespace Platter {
             var log = LogManager.GetLogger(ModName);
             log.Debug($"AddTests()");
 
-            var m_ScenariosField = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (m_ScenariosField == null) {
+            var field = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (field == null) {
                 log.Error("AddTests() -- Could not find m_Scenarios");
                 return;
             }
 
-            var m_Scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)m_ScenariosField.GetValue(TestScenarioSystem.instance);
+            var m_Scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)field.GetValue(TestScenarioSystem.instance);
 
             foreach (var type in GetTests()) {
                 if (!type.IsClass || type.IsAbstract || type.IsInterface || !type.TryGetAttribute(
@@ -247,7 +247,7 @@ namespace Platter {
 
             m_Scenarios = TestScenarioSystem.SortScenarios(m_Scenarios);
 
-            m_ScenariosField.SetValue(TestScenarioSystem.instance, m_Scenarios);
+            field.SetValue(TestScenarioSystem.instance, m_Scenarios);
         }
 
         private static IEnumerable<Type> GetTests() {

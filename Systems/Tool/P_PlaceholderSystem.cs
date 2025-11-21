@@ -3,31 +3,31 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System.Collections.Generic;
-using Game.Prefabs; // Added to reference SpawnableBuildingData
-using Platter.Components; // Added to reference ParcelData
-using Unity.Collections;
-using Unity.Entities;
-using UnityEngine;
-
 namespace Platter.Systems {
-    using Colossal.Serialization.Entities;
-    using Game;
+    #region Using Statements
+
+    using Components;
     using Game.Common;
+    using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
     using Unity.Burst.Intrinsics;
-    using Unity.Mathematics;
-    using UnityEngine.Rendering;
+    using Unity.Collections;
+    using Unity.Entities;
+    using Unity.Jobs;
+    using Utils;
+
+    #endregion
 
     public partial class P_PlaceholderSystem : PlatterGameSystemBase {
-        private EntityQuery          m_PlacedQuery;
-        private EntityQuery          m_TempQuery;
-        private PrefabSystem         m_PrefabSystem;
-        private ToolSystem           m_ToolSystem;
-        private ModificationBarrier1 m_ModificationBarrier1;
-        private P_UISystem           m_PlatterUISystem;
-        private EntityCommandBuffer  m_CommandBuffer;
+        private EntityCommandBuffer   m_CommandBuffer;
+        private EntityQuery           m_PlacedQuery;
+        private EntityQuery           m_TempQuery;
+        private ModificationBarrier1  m_ModificationBarrier1;
+        private P_UISystem            m_PlatterUISystem;
+        private PrefabSystem          m_PrefabSystem;
+        private ToolSystem            m_ToolSystem;
+        private P_PrefabsCreateSystem m_PPrefabsCreateSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -36,18 +36,19 @@ namespace Platter.Systems {
             m_ToolSystem           = World.GetOrCreateSystemManaged<ToolSystem>();
             m_ModificationBarrier1 = World.GetOrCreateSystemManaged<ModificationBarrier1>();
             m_PlatterUISystem      = World.GetOrCreateSystemManaged<P_UISystem>();
-             
+            m_PPrefabsCreateSystem = World.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
 
             m_PlacedQuery = SystemAPI.QueryBuilder()
-                               .WithAllRW<ParcelPlaceholder>()
-                               .WithNone<Temp, Deleted>()
-                               .Build();
+                                     .WithAllRW<ParcelPlaceholder>()
+                                     .WithNone<Temp, Deleted>()
+                                     .Build();
 
             m_TempQuery = SystemAPI.QueryBuilder()
-                                     .WithAllRW<ParcelPlaceholder>()
-                                     .WithAll<Temp>()
-                                     .Build();
+                                   .WithAllRW<ParcelPlaceholder>()
+                                   .WithAll<Temp>()
+                                   .Build();
         }
 
         protected override void OnUpdate() {
@@ -59,24 +60,19 @@ namespace Platter.Systems {
                 SystemAPI.GetComponentTypeHandle<Parcel>(),
                 m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter()
             ).Schedule(m_TempQuery, Dependency);
-
             m_ModificationBarrier1.AddJobHandleForProducer(updateTempPlaceholderJobHandle);
 
-            // Job to swap out a permanent placeholder with the real parcel one it is placed
-            // Todo make job
-            m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer();
-            foreach (var entity in m_PlacedQuery.ToEntityArray(Allocator.Temp)) {
-                var prefabRef = EntityManager.GetComponentData<PrefabRef>(entity);
-                // Todo we should have a cache for our parcel prefabs, for simplicity
-                var currentPrefab = m_PrefabSystem.GetPrefab<ParcelPlaceholderPrefab>(prefabRef);
-                m_PrefabSystem.TryGetPrefab(
-                    new PrefabID("ParcelPrefab", currentPrefab.GetPrefabID().GetName()),
-                    out var newPrefab);
-                prefabRef.m_Prefab = m_PrefabSystem.GetEntity(newPrefab);
-                m_CommandBuffer.SetComponent(entity, prefabRef);
-                m_CommandBuffer.RemoveComponent<ParcelPlaceholder>(entity);
-                m_CommandBuffer.AddComponent<Updated>(entity);
-            }
+            // Job to swap prefabref once placeholder is placed
+            var updatePermanentPlaceholderJobHandle = new UpdatePermanentPlaceholderJob() {
+                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                m_PrefabRefTypeHandle = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(),
+                m_PrefabCache = m_PPrefabsCreateSystem.GetReadOnlyPrefabCache(),
+                m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter(),
+            }.Schedule(m_PlacedQuery, Dependency);
+            m_ModificationBarrier1.AddJobHandleForProducer(updatePermanentPlaceholderJobHandle);
+
+            Dependency = JobHandle.CombineDependencies(updateTempPlaceholderJobHandle, updatePermanentPlaceholderJobHandle);
         }
 
         private void OnPrefabChanged(PrefabBase currentPrefab) {
@@ -97,12 +93,13 @@ namespace Platter.Systems {
             private            ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
             private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
-            public UpdateTempPlaceholderJob(EntityTypeHandle entityTypeHandle, ZoneType zoneType, bool allowSpawn, ComponentTypeHandle<Parcel> parcelTypeHandle, EntityCommandBuffer.ParallelWriter commandBuffer) {
+            public UpdateTempPlaceholderJob(EntityTypeHandle entityTypeHandle, ZoneType zoneType, bool allowSpawn, ComponentTypeHandle<Parcel> parcelTypeHandle,
+                                            EntityCommandBuffer.ParallelWriter commandBuffer) {
                 m_EntityTypeHandle = entityTypeHandle;
-                m_ZoneType = zoneType;
-                m_AllowSpawn = allowSpawn;
+                m_ZoneType         = zoneType;
+                m_AllowSpawn       = allowSpawn;
                 m_ParcelTypeHandle = parcelTypeHandle;
-                m_CommandBuffer = commandBuffer;
+                m_CommandBuffer    = commandBuffer;
             }
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
@@ -126,17 +123,39 @@ namespace Platter.Systems {
         }
 
         private struct UpdatePermanentPlaceholderJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                   m_EntityTypeHandle;
-            private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
+            [ReadOnly] public required EntityTypeHandle                    m_EntityTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<PrefabRef>      m_PrefabRefTypeHandle;
+            [ReadOnly] public required ComponentLookup<ParcelData>         m_ParcelDataLookup;
+            [ReadOnly] public required NativeHashMap<int, Entity>.ReadOnly m_PrefabCache;
+            public required            EntityCommandBuffer.ParallelWriter  m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
-                var entityArray = chunk.GetNativeArray(m_EntityTypeHandle);
+                var entityArray    = chunk.GetNativeArray(m_EntityTypeHandle);
+                var prefabRefArray = chunk.GetNativeArray(ref m_PrefabRefTypeHandle);
 
                 for (var i = 0; i < entityArray.Length; i++) {
-                    var entity = entityArray[i];
-                }
+                    var entity    = entityArray[i];
+                    var prefabRef = prefabRefArray[i];
 
+                    // Get the parcel data from the placeholder prefab entity to extract dimensions
+                    if (!m_ParcelDataLookup.HasComponent(prefabRef.m_Prefab)) {
+                        continue;
+                    }
+
+                    var parcelData     = m_ParcelDataLookup[prefabRef.m_Prefab];
+                    var parcelPrefabID = ParcelUtils.GetPrefabID(parcelData.m_LotSize.x, parcelData.m_LotSize.y);
+                    var cacheKey       = parcelPrefabID.GetHashCode();
+
+                    if (!m_PrefabCache.TryGetValue(cacheKey, out var newPrefabEntity)) {
+                        continue;
+                    }
+
+                    prefabRef.m_Prefab = newPrefabEntity;
+                    m_CommandBuffer.SetComponent(unfilteredChunkIndex, entity, prefabRef);
+                    m_CommandBuffer.RemoveComponent<ParcelPlaceholder>(unfilteredChunkIndex, entity);
+                    m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, entity);
+                }
             }
         }
     }

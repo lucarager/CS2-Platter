@@ -47,7 +47,7 @@
   "PlatterMod.UI.Label.ParcelSizeUnit": "cells",
   "PlatterMod.UI.Button.CreateParcelFromZone": "Create Parcel with this Zone",
   "PlatterMod.UI.Tooltip.PlopMode": "Plop Mode",
-  "PlatterMod.UI.Tooltip.RoadPlatMode": "Road Platting Mode is under active development. Stay tuned!",
+  "PlatterMod.UI.Tooltip.RoadPlatMode": "Road Platting Mode is development. Stay tuned!",
   "PlatterMod.UI.Tooltip.SnapModeNone": "No Snapping",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Snap to sides of a road",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Snap to sides of the vanilla zone grid",

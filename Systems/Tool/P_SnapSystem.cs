@@ -183,7 +183,7 @@ namespace Platter.Systems {
             [ReadOnly] private NativeQuadTree<Entity, Bounds2> m_ZoneTree;
             [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetTree;
             [ReadOnly] private TerrainHeightData m_TerrainHeightData;
-            [ReadOnly] private WaterSurfaceData m_WaterSurfaceData;
+            [ReadOnly] private WaterSurfaceData<SurfaceWater> m_WaterSurfaceData;
             [ReadOnly] private NativeList<ControlPoint> m_ControlPoints;
             [ReadOnly] private ComponentTypeHandle<CreationDefinition> m_CreationDefinitionTypeHandle;
             [ReadOnly] private ComponentLookup<Block> m_BlockComponentLookup;
@@ -211,7 +211,7 @@ namespace Platter.Systems {
 
             public ParcelSnapJob(NativeQuadTree<Entity, Bounds2> zoneTree, NativeQuadTree<Entity, QuadTreeBoundsXZ> netTree,
                                  NativeList<Bezier4x3> curvesList, NativeList<bool> curvesFilter,
-                                 TerrainHeightData terrainHeightData, WaterSurfaceData waterSurfaceData,
+                                 TerrainHeightData terrainHeightData, WaterSurfaceData<SurfaceWater>waterSurfaceData,
                                  NativeList<ControlPoint> controlPoints,
                                  ComponentTypeHandle<CreationDefinition> creationDefinitionTypeHandle,
                                  ComponentLookup<Block> blockComponentLookup,
@@ -516,7 +516,7 @@ namespace Platter.Systems {
                 private ControlPoint m_BestSnapPosition;
                 private int2 m_LotSize;
                 private TerrainHeightData m_TerrainHeightData;
-                private WaterSurfaceData m_WaterSurfaceData;
+                private WaterSurfaceData<SurfaceWater>m_WaterSurfaceData;
                 private ComponentLookup<Node> m_NodeLookup;
                 private ComponentLookup<Edge> m_EdgeLookup;
                 private ComponentLookup<Curve> m_CurveLookup;
@@ -541,7 +541,7 @@ namespace Platter.Systems {
                                         Bounds1 heightRange, NetData netData,
                                         ControlPoint controlPoint, ControlPoint bestSnapPosition,
                                         TerrainHeightData terrainHeightData,
-                                        WaterSurfaceData waterSurfaceData, ComponentLookup<Node> nodeLookup,
+                                        WaterSurfaceData<SurfaceWater>waterSurfaceData, ComponentLookup<Node> nodeLookup,
                                         ComponentLookup<Edge> edgeLookup, ComponentLookup<Curve> curveLookup,
                                         ComponentLookup<Composition> compositionLookup,
                                         ComponentLookup<PrefabRef> prefabRefLookup,

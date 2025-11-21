@@ -3,15 +3,13 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net48</TargetFramework>
-		<LangVersion>9.0</LangVersion>
+		<LangVersion>11.0</LangVersion>
 		<Configurations>Debug;Release;I18N</Configurations>
 		<Title>Platter</Title>
 		<AssemblyTitle>$(Title)</AssemblyTitle>
 		<Description>A Cities: Skylines 2 mod.</Description>
 		<Authors>Luca Rager</Authors>
-		<Copyright>Copyright © 2024 Luca Rager (github.com/LucaRager). All rights reserved.</Copyright>
 		<Product>$(Title)</Product>
-		<Version>0.0.1</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -39,10 +37,17 @@
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
 
-	<!--Imports must be after PropertyGroup block-->
-	<Import Project="Config/References.csproj" />
-	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
-	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
+	<!--Additional Build Steps-->
+	<Target Name="BuildUI" AfterTargets="DeployWIP">
+		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/UI" />
+	</Target>
+
+	<Target Name="CopyIcons" AfterTargets="DeployWIP">
+		<ItemGroup>
+			<_AssetsDir Include="$(ProjectDir)/UI/src/assets/*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(_AssetsDir)" DestinationFolder="$(DeployDir)/Assets" />
+	</Target>
 
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties/Mod.props" />
@@ -50,11 +55,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<_AssetsDir Include="$(ProjectDir)/UI/src/assets/*" />
+		<EmbeddedResource Include="lang\*.json" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="lang\*.json" />
+	  <Compile Remove="UI\**" />
+	  <EmbeddedResource Remove="UI\**" />
+	  <None Remove="UI\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -62,19 +69,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="Unity.RenderPipelines.Core.Runtime">
-	    <HintPath>D:\SteamLibrary\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
-		  <Private>false</Private>
-	  </Reference>
+	  <PackageReference Include="PolySharp" Version="1.15.0">
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	    <PrivateAssets>all</PrivateAssets>
+	  </PackageReference>
 	</ItemGroup>
 
-	<!--Additional Build Steps-->
-	<Target Name="BuildUI" AfterTargets="AfterBuild">
-		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/UI" />
-	</Target>
-	
-	<Target Name="CopyIcons" AfterTargets="AfterBuild">
-		<Copy SourceFiles="@(_AssetsDir)" DestinationFolder="$(DeployDir)/Assets" />
-	</Target>
-	
+	<!--Imports must be after PropertyGroup block-->
+	<Import Project="Config/References.csproj" />
+	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
+	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 </Project>

@@ -64,6 +64,9 @@
 		<Reference Include="Newtonsoft.Json">
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="Unity.RenderPipelines.Core.Runtime">
+			<Private>false</Private>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
