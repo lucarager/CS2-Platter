@@ -13,24 +13,12 @@ using Unity.Jobs;
 namespace Platter.Systems {
     internal static class P_ParcelCreationDefinitionJob {
         internal struct ParcelCreationDefinitionJob : IJob {
-            [ReadOnly] private Entity                                  m_ObjectPrefab;
-            [ReadOnly] private RandomSeed                              m_RandomSeed;
-            [ReadOnly] private ControlPoint                            m_ControlPoint;
-            [ReadOnly] private ComponentLookup<Transform>              m_TransformLookup;
-            [ReadOnly] private ComponentLookup<Game.Objects.Elevation> m_ElevationLookup;
-            private            EntityCommandBuffer                     m_CommandBuffer;
-
-            public ParcelCreationDefinitionJob(Entity objectPrefab, RandomSeed randomSeed, ControlPoint controlPoint,
-                                               ComponentLookup<Transform> transformLookup,
-                                               ComponentLookup<Game.Objects.Elevation> elevationLookup,
-                                               EntityCommandBuffer commandBuffer) {
-                m_ObjectPrefab    = objectPrefab;
-                m_RandomSeed      = randomSeed;
-                m_ControlPoint    = controlPoint;
-                m_TransformLookup = transformLookup;
-                m_ElevationLookup = elevationLookup;
-                m_CommandBuffer   = commandBuffer;
-            }
+            [ReadOnly] public required Entity                                  m_ObjectPrefab;
+            [ReadOnly] public required RandomSeed                              m_RandomSeed;
+            [ReadOnly] public required ControlPoint                            m_ControlPoint;
+            [ReadOnly] public required ComponentLookup<Transform>              m_TransformLookup;
+            [ReadOnly] public required ComponentLookup<Game.Objects.Elevation> m_ElevationLookup;
+            public required            EntityCommandBuffer                     m_CommandBuffer;
 
             public void Execute() {
                 var controlPoint = m_ControlPoint;

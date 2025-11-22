@@ -130,36 +130,36 @@ namespace Platter.Systems {
             var curvesFilter = new NativeList<bool>(Allocator.Temp);
 
             // Schedule our snapping job
-            var parcelSnapJobHandle = new ParcelSnapJob(
-                m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
-                m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
-                curvesList,
-                curvesFilter,
-                snapMode: m_SnapMode,
-                controlPoints: controlPoints,
-                objectDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<ObjectDefinition>(),
-                creationDefinitionTypeHandle: SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
-                blockComponentLookup: SystemAPI.GetComponentLookup<Block>(true),
-                parcelDataComponentLookup: SystemAPI.GetComponentLookup<ParcelData>(true),
-                parcelOwnerComponentLookup: SystemAPI.GetComponentLookup<ParcelOwner>(true),
-                nodeLookup: SystemAPI.GetComponentLookup<Node>(true),
-                edgeLookup: SystemAPI.GetComponentLookup<Edge>(true),
-                curveLookup: SystemAPI.GetComponentLookup<Curve>(true),
-                compositionLookup: SystemAPI.GetComponentLookup<Composition>(true),
-                prefabRefLookup: SystemAPI.GetComponentLookup<PrefabRef>(true),
-                netDataLookup: SystemAPI.GetComponentLookup<NetData>(true),
-                netGeometryDataLookup: SystemAPI.GetComponentLookup<NetGeometryData>(true),
-                netCompositionDataLookup: SystemAPI.GetComponentLookup<NetCompositionData>(true),
-                edgeGeoLookup: SystemAPI.GetComponentLookup<EdgeGeometry>(true),
-                startNodeGeoLookup: SystemAPI.GetComponentLookup<StartNodeGeometry>(true),
-                endNodeGeoLookup: SystemAPI.GetComponentLookup<EndNodeGeometry>(true),
-                connectedEdgeLookup: SystemAPI.GetBufferLookup<ConnectedEdge>(),
-                terrainHeightData: m_TerrainSystem.GetHeightData(),
-                waterSurfaceData: m_WaterSystem.GetSurfaceData(out var waterSurfaceJobHandle),
-                snapSetback: m_SnapSetback,
-                entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
-                connectedParcelLookup: SystemAPI.GetBufferLookup<ConnectedParcel>(true)
-            ).ScheduleParallel(
+            var parcelSnapJobHandle = new ParcelSnapJob {
+                m_ZoneTree = m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
+                m_NetTree = m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
+                m_CurvesList = curvesList,
+                m_CurvesFilter = curvesFilter,
+                m_SnapMode = m_SnapMode,
+                m_ControlPoints = controlPoints,
+                m_ObjectDefinitionTypeHandle = SystemAPI.GetComponentTypeHandle<ObjectDefinition>(),
+                m_CreationDefinitionTypeHandle = SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
+                m_BlockComponentLookup = SystemAPI.GetComponentLookup<Block>(true),
+                m_ParcelDataComponentLookup = SystemAPI.GetComponentLookup<ParcelData>(true),
+                m_ParcelOwnerComponentLookup = SystemAPI.GetComponentLookup<ParcelOwner>(true),
+                m_NodeLookup = SystemAPI.GetComponentLookup<Node>(true),
+                m_EdgeLookup = SystemAPI.GetComponentLookup<Edge>(true),
+                m_CurveLookup = SystemAPI.GetComponentLookup<Curve>(true),
+                m_CompositionLookup = SystemAPI.GetComponentLookup<Composition>(true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(true),
+                m_NetDataLookup = SystemAPI.GetComponentLookup<NetData>(true),
+                m_NetGeometryDataLookup = SystemAPI.GetComponentLookup<NetGeometryData>(true),
+                m_NetCompositionDataLookup = SystemAPI.GetComponentLookup<NetCompositionData>(true),
+                m_EdgeGeoLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
+                m_StartNodeGeoLookup = SystemAPI.GetComponentLookup<StartNodeGeometry>(true),
+                m_EndNodeGeoLookup = SystemAPI.GetComponentLookup<EndNodeGeometry>(true),
+                m_ConnectedEdgeLookup = SystemAPI.GetBufferLookup<ConnectedEdge>(),
+                m_TerrainHeightData = m_TerrainSystem.GetHeightData(),
+                m_WaterSurfaceData = m_WaterSystem.GetSurfaceData(out var waterSurfaceJobHandle),
+                m_SnapSetback = m_SnapSetback,
+                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                m_ConnectedParcelLookup = SystemAPI.GetBufferLookup<ConnectedParcel>(true)
+            }.ScheduleParallel(
                 m_Query,
                 JobUtils.CombineDependencies(Dependency, zoneTreeJobHandle, netTreeJobHandle, waterSurfaceJobHandle)
             );
@@ -180,83 +180,34 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct ParcelSnapJob : IJobChunk {
-            [ReadOnly] private NativeQuadTree<Entity, Bounds2> m_ZoneTree;
-            [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetTree;
-            [ReadOnly] private TerrainHeightData m_TerrainHeightData;
-            [ReadOnly] private WaterSurfaceData<SurfaceWater> m_WaterSurfaceData;
-            [ReadOnly] private NativeList<ControlPoint> m_ControlPoints;
-            [ReadOnly] private ComponentTypeHandle<CreationDefinition> m_CreationDefinitionTypeHandle;
-            [ReadOnly] private ComponentLookup<Block> m_BlockComponentLookup;
-            [ReadOnly] private ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
-            [ReadOnly] private ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-            [ReadOnly] private float m_SnapSetback;
-            [ReadOnly] private EntityTypeHandle m_EntityTypeHandle;
-            [ReadOnly] private ComponentLookup<Node> m_NodeLookup;
-            [ReadOnly] private ComponentLookup<Edge> m_EdgeLookup;
-            [ReadOnly] private ComponentLookup<Curve> m_CurveLookup;
-            [ReadOnly] private ComponentLookup<Composition> m_CompositionLookup;
-            [ReadOnly] private ComponentLookup<PrefabRef> m_PrefabRefLookup;
-            [ReadOnly] private ComponentLookup<NetData> m_NetDataLookup;
-            [ReadOnly] private ComponentLookup<NetGeometryData> m_NetGeometryDataLookup;
-            [ReadOnly] private ComponentLookup<NetCompositionData> m_NetCompositionDataLookup;
-            [ReadOnly] private ComponentLookup<EdgeGeometry> m_EdgeGeoLookup;
-            [ReadOnly] private ComponentLookup<StartNodeGeometry> m_StartNodeGeoLookup;
-            [ReadOnly] private ComponentLookup<EndNodeGeometry> m_EndNodeGeoLookup;
-            [ReadOnly] private BufferLookup<ConnectedParcel> m_ConnectedParcelLookup;
-            [ReadOnly] private BufferLookup<ConnectedEdge> m_ConnectedEdgeLookup;
-            [ReadOnly] private SnapMode m_SnapMode;
-            private NativeList<Bezier4x3> m_CurvesList;
-            private NativeList<bool> m_CurvesFilter;
-            private ComponentTypeHandle<ObjectDefinition> m_ObjectDefinitionTypeHandle;
-
-            public ParcelSnapJob(NativeQuadTree<Entity, Bounds2> zoneTree, NativeQuadTree<Entity, QuadTreeBoundsXZ> netTree,
-                                 NativeList<Bezier4x3> curvesList, NativeList<bool> curvesFilter,
-                                 TerrainHeightData terrainHeightData, WaterSurfaceData<SurfaceWater>waterSurfaceData,
-                                 NativeList<ControlPoint> controlPoints,
-                                 ComponentTypeHandle<CreationDefinition> creationDefinitionTypeHandle,
-                                 ComponentLookup<Block> blockComponentLookup,
-                                 ComponentLookup<ParcelOwner> parcelOwnerComponentLookup,
-                                 ComponentLookup<ParcelData> parcelDataComponentLookup, float snapSetback,
-                                 EntityTypeHandle entityTypeHandle, ComponentLookup<Node> nodeLookup,
-                                 ComponentLookup<Edge> edgeLookup, ComponentLookup<Curve> curveLookup,
-                                 ComponentLookup<Composition> compositionLookup, ComponentLookup<PrefabRef> prefabRefLookup,
-                                 ComponentLookup<NetData> netDataLookup, ComponentLookup<NetGeometryData> netGeometryDataLookup,
-                                 ComponentLookup<NetCompositionData> netCompositionDataLookup,
-                                 ComponentLookup<EdgeGeometry> edgeGeoLookup,
-                                 ComponentLookup<StartNodeGeometry> startNodeGeoLookup,
-                                 ComponentLookup<EndNodeGeometry> endNodeGeoLookup,
-                                 BufferLookup<ConnectedEdge> connectedEdgeLookup,
-                                 ComponentTypeHandle<ObjectDefinition> objectDefinitionTypeHandle, SnapMode snapMode,
-                                 BufferLookup<ConnectedParcel> connectedParcelLookup) {
-                m_ZoneTree = zoneTree;
-                m_NetTree = netTree;
-                m_CurvesList = curvesList;
-                m_CurvesFilter = curvesFilter;
-                m_TerrainHeightData = terrainHeightData;
-                m_WaterSurfaceData = waterSurfaceData;
-                m_ControlPoints = controlPoints;
-                m_CreationDefinitionTypeHandle = creationDefinitionTypeHandle;
-                m_BlockComponentLookup = blockComponentLookup;
-                m_ParcelOwnerComponentLookup = parcelOwnerComponentLookup;
-                m_ParcelDataComponentLookup = parcelDataComponentLookup;
-                m_SnapSetback = snapSetback;
-                m_EntityTypeHandle = entityTypeHandle;
-                m_NodeLookup = nodeLookup;
-                m_EdgeLookup = edgeLookup;
-                m_CurveLookup = curveLookup;
-                m_CompositionLookup = compositionLookup;
-                m_PrefabRefLookup = prefabRefLookup;
-                m_NetDataLookup = netDataLookup;
-                m_NetGeometryDataLookup = netGeometryDataLookup;
-                m_NetCompositionDataLookup = netCompositionDataLookup;
-                m_EdgeGeoLookup = edgeGeoLookup;
-                m_StartNodeGeoLookup = startNodeGeoLookup;
-                m_EndNodeGeoLookup = endNodeGeoLookup;
-                m_ConnectedEdgeLookup = connectedEdgeLookup;
-                m_ObjectDefinitionTypeHandle = objectDefinitionTypeHandle;
-                m_SnapMode = snapMode;
-                m_ConnectedParcelLookup = connectedParcelLookup;
-            }
+            [ReadOnly] public required NativeQuadTree<Entity, Bounds2> m_ZoneTree;
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetTree;
+            [ReadOnly] public required TerrainHeightData m_TerrainHeightData;
+            [ReadOnly] public required WaterSurfaceData<SurfaceWater> m_WaterSurfaceData;
+            [ReadOnly] public required NativeList<ControlPoint> m_ControlPoints;
+            [ReadOnly] public required ComponentTypeHandle<CreationDefinition> m_CreationDefinitionTypeHandle;
+            [ReadOnly] public required ComponentLookup<Block> m_BlockComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly] public required float m_SnapSetback;
+            [ReadOnly] public required EntityTypeHandle m_EntityTypeHandle;
+            [ReadOnly] public required ComponentLookup<Node> m_NodeLookup;
+            [ReadOnly] public required ComponentLookup<Edge> m_EdgeLookup;
+            [ReadOnly] public required ComponentLookup<Curve> m_CurveLookup;
+            [ReadOnly] public required ComponentLookup<Composition> m_CompositionLookup;
+            [ReadOnly] public required ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly] public required ComponentLookup<NetData> m_NetDataLookup;
+            [ReadOnly] public required ComponentLookup<NetGeometryData> m_NetGeometryDataLookup;
+            [ReadOnly] public required ComponentLookup<NetCompositionData> m_NetCompositionDataLookup;
+            [ReadOnly] public required ComponentLookup<EdgeGeometry> m_EdgeGeoLookup;
+            [ReadOnly] public required ComponentLookup<StartNodeGeometry> m_StartNodeGeoLookup;
+            [ReadOnly] public required ComponentLookup<EndNodeGeometry> m_EndNodeGeoLookup;
+            [ReadOnly] public required BufferLookup<ConnectedParcel> m_ConnectedParcelLookup;
+            [ReadOnly] public required BufferLookup<ConnectedEdge> m_ConnectedEdgeLookup;
+            [ReadOnly] public required SnapMode m_SnapMode;
+            public required NativeList<Bezier4x3> m_CurvesList;
+            public required NativeList<bool> m_CurvesFilter;
+            public required ComponentTypeHandle<ObjectDefinition> m_ObjectDefinitionTypeHandle;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128 chunkEnabledMask) {

@@ -36,11 +36,11 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_Log.Debug($"OnUpdate()");
 
-            var deserializeJobHandle = new DeserializeJob(
-                entityType: SystemAPI.GetEntityTypeHandle(),
-                parcelOwnerType: SystemAPI.GetComponentTypeHandle<ParcelOwner>(true),
-                subBlocksBufferLookup: SystemAPI.GetBufferLookup<ParcelSubBlock>(false)
-            ).Schedule(m_Query, base.Dependency);
+            var deserializeJobHandle = new DeserializeJob {
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                m_ParcelOwnerType = SystemAPI.GetComponentTypeHandle<ParcelOwner>(true),
+                m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(false)
+            }.Schedule(m_Query, base.Dependency);
 
             base.Dependency = deserializeJobHandle;
         }
@@ -50,16 +50,10 @@ namespace Platter.Systems {
 #endif
         private struct DeserializeJob : IJobChunk {
             [ReadOnly]
-            public EntityTypeHandle m_EntityType;
+            public required EntityTypeHandle m_EntityType;
             [ReadOnly]
-            public ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
-            public BufferLookup<ParcelSubBlock> m_SubBlocksBufferLookup;
-
-            public DeserializeJob(EntityTypeHandle entityType, ComponentTypeHandle<ParcelOwner> parcelOwnerType, BufferLookup<ParcelSubBlock> subBlocksBufferLookup) {
-                m_EntityType = entityType;
-                m_ParcelOwnerType = parcelOwnerType;
-                m_SubBlocksBufferLookup = subBlocksBufferLookup;
-            }
+            public required ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
+            public required BufferLookup<ParcelSubBlock> m_SubBlocksBufferLookup;
 
             public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);

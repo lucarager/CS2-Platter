@@ -45,30 +45,22 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            Dependency = new UpdateBlockJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetComponentTypeHandle<ParcelOwner>(),
-                SystemAPI.GetComponentTypeHandle<Created>(),
-                SystemAPI.GetBufferLookup<ParcelSubBlock>()
-            ).Schedule(m_ParcelBlockQuery, Dependency);
+            Dependency = new UpdateBlockJob {
+                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                m_ParcelOwnerTypeHandle = SystemAPI.GetComponentTypeHandle<ParcelOwner>(),
+                m_CreatedTypeHandle = SystemAPI.GetComponentTypeHandle<Created>(),
+                m_ParcelSubBlockLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>()
+            }.Schedule(m_ParcelBlockQuery, Dependency);
         }
 
 #if USE_BURST
         [BurstCompile]
 #endif
         private struct UpdateBlockJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                 m_EntityTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<ParcelOwner> m_ParcelOwnerTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Created>     m_CreatedTypeHandle;
-            [ReadOnly] private BufferLookup<ParcelSubBlock>     m_ParcelSubBlockLookup;
-
-            public UpdateBlockJob(EntityTypeHandle             entityTypeHandle,  ComponentTypeHandle<ParcelOwner> parcelOwnerTypeHandle,
-                                  ComponentTypeHandle<Created> createdTypeHandle, BufferLookup<ParcelSubBlock>     parcelSubBlockLookup) {
-                m_EntityTypeHandle      = entityTypeHandle;
-                m_ParcelOwnerTypeHandle = parcelOwnerTypeHandle;
-                m_CreatedTypeHandle     = createdTypeHandle;
-                m_ParcelSubBlockLookup  = parcelSubBlockLookup;
-            }
+            [ReadOnly] public required EntityTypeHandle                 m_EntityTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<ParcelOwner> m_ParcelOwnerTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Created>     m_CreatedTypeHandle;
+            [ReadOnly] public required BufferLookup<ParcelSubBlock>     m_ParcelSubBlockLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {

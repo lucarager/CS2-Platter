@@ -27,57 +27,21 @@ namespace Platter.Systems {
     [BurstCompile]
 #endif
         public struct FindRoadConnectionJob : IJobParallelForDefer {
-            private NativeArray<UpdateData> m_ParcelEntitiesList;
-            [ReadOnly] private ComponentLookup<Deleted> m_DeletedDataComponentLookup;
-            [ReadOnly] private ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
-            [ReadOnly] private ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
-            [ReadOnly] private ComponentLookup<Transform> m_TransformComponentLookup;
-            [ReadOnly] private BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
-            [ReadOnly] private ComponentLookup<Curve> m_CurveDataComponentLookup;
-            [ReadOnly] private ComponentLookup<Composition> m_CompositionDataComponentLookup;
-            [ReadOnly] private ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
-            [ReadOnly] private ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
-            [ReadOnly] private ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
-            [ReadOnly] private ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
-            [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
-            [ReadOnly] private NativeList<ArchetypeChunk> m_UpdatedNetChunks;
-            [ReadOnly] private EntityTypeHandle m_EntityTypeHandle;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="FindRoadConnectionJob"/> struct.
-            /// </summary>
-            /// <param name="parcelEntitiesList"></param>
-            /// <param name="deletedDataComponentLookup"></param>
-            /// <param name="prefabRefComponentLookup"></param>
-            /// <param name="parcelDataComponentLookup"></param>
-            /// <param name="transformComponentLookup"></param>
-            /// <param name="connectedParcelsBufferLookup"></param>
-            /// <param name="curveDataComponentLookup"></param>
-            /// <param name="compositionDataComponentLookup"></param>
-            /// <param name="edgeGeometryDataComponentLookup"></param>
-            /// <param name="startNodeGeometryDataComponentLookup"></param>
-            /// <param name="endNodeGeometryDataComponentLookup"></param>
-            /// <param name="prefabNetCompositionDataComponentLookup"></param>
-            /// <param name="netSearchTree"></param>
-            /// <param name="updatedNetChunks"></param>
-            /// <param name="entityTypeHandle"></param>
-            public FindRoadConnectionJob(NativeArray<UpdateData> parcelEntitiesList, ComponentLookup<Deleted> deletedDataComponentLookup, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Transform> transformComponentLookup, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, ComponentLookup<Curve> curveDataComponentLookup, ComponentLookup<Composition> compositionDataComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryDataComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryDataComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryDataComponentLookup, ComponentLookup<NetCompositionData> prefabNetCompositionDataComponentLookup, NativeQuadTree<Entity, QuadTreeBoundsXZ> netSearchTree, NativeList<ArchetypeChunk> updatedNetChunks, EntityTypeHandle entityTypeHandle) {
-                m_ParcelEntitiesList = parcelEntitiesList;
-                m_DeletedDataComponentLookup = deletedDataComponentLookup;
-                m_PrefabRefComponentLookup = prefabRefComponentLookup;
-                m_ParcelDataComponentLookup = parcelDataComponentLookup;
-                m_TransformComponentLookup = transformComponentLookup;
-                m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
-                m_CurveDataComponentLookup = curveDataComponentLookup;
-                m_CompositionDataComponentLookup = compositionDataComponentLookup;
-                m_EdgeGeometryDataComponentLookup = edgeGeometryDataComponentLookup;
-                m_StartNodeGeometryDataComponentLookup = startNodeGeometryDataComponentLookup;
-                m_EndNodeGeometryDataComponentLookup = endNodeGeometryDataComponentLookup;
-                m_PrefabNetCompositionDataComponentLookup = prefabNetCompositionDataComponentLookup;
-                m_NetSearchTree = netSearchTree;
-                m_UpdatedNetChunks = updatedNetChunks;
-                m_EntityTypeHandle = entityTypeHandle;
-            }
+            public required NativeArray<UpdateData> m_ParcelEntitiesList;
+            [ReadOnly] public required ComponentLookup<Deleted> m_DeletedDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<PrefabRef> m_PrefabRefComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelData> m_ParcelDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<Transform> m_TransformComponentLookup;
+            [ReadOnly] public required BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
+            [ReadOnly] public required ComponentLookup<Curve> m_CurveDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<Composition> m_CompositionDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<EdgeGeometry> m_EdgeGeometryDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<StartNodeGeometry> m_StartNodeGeometryDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<EndNodeGeometry> m_EndNodeGeometryDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<NetCompositionData> m_PrefabNetCompositionDataComponentLookup;
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
+            [ReadOnly] public required NativeList<ArchetypeChunk> m_UpdatedNetChunks;
+            [ReadOnly] public required EntityTypeHandle m_EntityTypeHandle;
 
             /// <inheritdoc/>
             public void Execute(int index) {

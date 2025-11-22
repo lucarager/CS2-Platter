@@ -26,25 +26,14 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct UpdateDataJob : IJob {
-            [ReadOnly] private NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
-            [ReadOnly] private ComponentLookup<Created> m_CreatedComponentLookup;
-            [ReadOnly] private ComponentLookup<Temp> m_TempComponentLookup;
-            [ReadOnly] private TrafficConfigurationData m_TrafficConfigurationData;
-            private ComponentLookup<Parcel> m_ParcelComponentLookup;
-            private EntityCommandBuffer m_CommandBuffer;
-            private IconCommandBuffer m_IconCommandBuffer;
-            private BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
-
-            public UpdateDataJob(ComponentLookup<Parcel> parcelComponentLookup, NativeList<UpdateData> parcelEntitiesList, ComponentLookup<Created> createdComponentLookup, ComponentLookup<Temp> tempComponentLookup, TrafficConfigurationData trafficConfigurationData, EntityCommandBuffer commandBuffer, IconCommandBuffer iconCommandBuffer, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup) {
-                m_ParcelComponentLookup = parcelComponentLookup;
-                m_ParcelEntitiesList = parcelEntitiesList;
-                m_CreatedComponentLookup = createdComponentLookup;
-                m_TempComponentLookup = tempComponentLookup;
-                m_TrafficConfigurationData = trafficConfigurationData;
-                m_CommandBuffer = commandBuffer;
-                m_IconCommandBuffer = iconCommandBuffer;
-                m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
-            }
+            [ReadOnly] public required NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
+            [ReadOnly] public required ComponentLookup<Created> m_CreatedComponentLookup;
+            [ReadOnly] public required ComponentLookup<Temp> m_TempComponentLookup;
+            [ReadOnly] public required TrafficConfigurationData m_TrafficConfigurationData;
+            public required ComponentLookup<Parcel> m_ParcelComponentLookup;
+            public required EntityCommandBuffer m_CommandBuffer;
+            public required IconCommandBuffer m_IconCommandBuffer;
+            public required BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
             /// <inheritdoc/>
             public void Execute() {

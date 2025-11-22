@@ -27,57 +27,21 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct CreateEntitiesQueueJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                         m_EntityTypeHandle;
-            [ReadOnly] private BufferTypeHandle<ConnectedParcel>        m_ConnectedParcelBufferTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Deleted>             m_DeletedTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<EdgeGeometry>        m_EdgeGeometryTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<StartNodeGeometry>   m_StartNodeGeometryTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<EndNodeGeometry>     m_EndNodeGeometryTypeHandle;
-            [ReadOnly] private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelSearchTree;
-            [ReadOnly] private ComponentLookup<PrefabRef>               m_PrefabRefComponentLookup;
-            [ReadOnly] private ComponentLookup<EdgeGeometry>            m_EdgeGeometryComponentLookup;
-            [ReadOnly] private ComponentLookup<StartNodeGeometry>       m_StartNodeGeometryComponentLookup;
-            [ReadOnly] private ComponentLookup<EndNodeGeometry>         m_EndNodeGeometryComponentLookup;
-            [ReadOnly] private ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
-            [ReadOnly] private ComponentLookup<Parcel>                  m_ParcelComponentLookup;
-            [ReadOnly] private ComponentLookup<Transform>               m_TransformComponentLookup;
-            private            NativeQueue<Entity>.ParallelWriter       m_ParcelEntitiesQueue;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CreateEntitiesQueueJob"/> struct.
-            /// </summary>
-            /// <param name="parcelEntitiesQueue"></param>
-            /// <param name="entityTypeHandle"></param>
-            /// <param name="connectedParcelBufferTypeHandle"></param>
-            /// <param name="deletedTypeHandle"></param>
-            /// <param name="edgeGeometryTypeHandle"></param>
-            /// <param name="startNodeGeometryTypeHandle"></param>
-            /// <param name="endNodeGeometryTypeHandle"></param>
-            /// <param name="parcelSearchTree"></param>
-            /// <param name="prefabRefComponentLookup"></param>
-            /// <param name="edgeGeometryComponentLookup"></param>
-            /// <param name="startNodeGeometryComponentLookup"></param>
-            /// <param name="endNodeGeometryComponentLookup"></param>
-            /// <param name="parcelDataComponentLookup"></param>
-            /// <param name="parcelComponentLookup"></param>
-            /// <param name="transformComponentLookup"></param>
-            public CreateEntitiesQueueJob(NativeQueue<Entity>.ParallelWriter parcelEntitiesQueue, EntityTypeHandle entityTypeHandle, BufferTypeHandle<ConnectedParcel> connectedParcelBufferTypeHandle, ComponentTypeHandle<Deleted> deletedTypeHandle, ComponentTypeHandle<EdgeGeometry> edgeGeometryTypeHandle, ComponentTypeHandle<StartNodeGeometry> startNodeGeometryTypeHandle, ComponentTypeHandle<EndNodeGeometry> endNodeGeometryTypeHandle, NativeQuadTree<Entity, QuadTreeBoundsXZ> parcelSearchTree, ComponentLookup<PrefabRef> prefabRefComponentLookup, ComponentLookup<EdgeGeometry> edgeGeometryComponentLookup, ComponentLookup<StartNodeGeometry> startNodeGeometryComponentLookup, ComponentLookup<EndNodeGeometry> endNodeGeometryComponentLookup, ComponentLookup<ParcelData> parcelDataComponentLookup, ComponentLookup<Parcel> parcelComponentLookup, ComponentLookup<Transform> transformComponentLookup) {
-                m_ParcelEntitiesQueue = parcelEntitiesQueue;
-                m_EntityTypeHandle = entityTypeHandle;
-                m_ConnectedParcelBufferTypeHandle = connectedParcelBufferTypeHandle;
-                m_DeletedTypeHandle = deletedTypeHandle;
-                m_EdgeGeometryTypeHandle = edgeGeometryTypeHandle;
-                m_StartNodeGeometryTypeHandle = startNodeGeometryTypeHandle;
-                m_EndNodeGeometryTypeHandle = endNodeGeometryTypeHandle;
-                m_ParcelSearchTree = parcelSearchTree;
-                m_PrefabRefComponentLookup = prefabRefComponentLookup;
-                m_EdgeGeometryComponentLookup = edgeGeometryComponentLookup;
-                m_StartNodeGeometryComponentLookup = startNodeGeometryComponentLookup;
-                m_EndNodeGeometryComponentLookup = endNodeGeometryComponentLookup;
-                m_ParcelDataComponentLookup = parcelDataComponentLookup;
-                m_ParcelComponentLookup = parcelComponentLookup;
-                m_TransformComponentLookup = transformComponentLookup;
-            }
+            [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
+            [ReadOnly] public required BufferTypeHandle<ConnectedParcel>        m_ConnectedParcelBufferTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Deleted>             m_DeletedTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<EdgeGeometry>        m_EdgeGeometryTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<StartNodeGeometry>   m_StartNodeGeometryTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<EndNodeGeometry>     m_EndNodeGeometryTypeHandle;
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelSearchTree;
+            [ReadOnly] public required ComponentLookup<PrefabRef>               m_PrefabRefComponentLookup;
+            [ReadOnly] public required ComponentLookup<EdgeGeometry>            m_EdgeGeometryComponentLookup;
+            [ReadOnly] public required ComponentLookup<StartNodeGeometry>       m_StartNodeGeometryComponentLookup;
+            [ReadOnly] public required ComponentLookup<EndNodeGeometry>         m_EndNodeGeometryComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<Parcel>                  m_ParcelComponentLookup;
+            [ReadOnly] public required ComponentLookup<Transform>               m_TransformComponentLookup;
+            public required            NativeQueue<Entity>.ParallelWriter       m_ParcelEntitiesQueue;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {

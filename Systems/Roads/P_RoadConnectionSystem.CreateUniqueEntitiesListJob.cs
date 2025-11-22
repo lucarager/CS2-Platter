@@ -19,13 +19,8 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct CreateUniqueEntitiesListJob : IJob {
-            private NativeQueue<Entity> m_ParcelEntitiesQueue;
-            private NativeList<UpdateData> m_ParcelEntittiesList;
-
-            public CreateUniqueEntitiesListJob(NativeQueue<Entity> parcelEntitiesQueue, NativeList<UpdateData> parcelEntittiesList) {
-                m_ParcelEntitiesQueue = parcelEntitiesQueue;
-                m_ParcelEntittiesList = parcelEntittiesList;
-            }
+            public required NativeQueue<Entity> m_ParcelEntitiesQueue;
+            public required NativeList<UpdateData> m_ParcelEntittiesList;
 
             /// <inheritdoc/>
             public void Execute() {

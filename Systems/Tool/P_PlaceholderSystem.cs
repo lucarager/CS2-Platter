@@ -53,13 +53,13 @@ namespace Platter.Systems {
 
         protected override void OnUpdate() {
             // Job to set the prezone data on a temp placeholder parcel
-            var updateTempPlaceholderJobHandle = new UpdateTempPlaceholderJob(
-                SystemAPI.GetEntityTypeHandle(),
-                m_PlatterUISystem.PreZoneType,
-                PlatterMod.Instance.Settings.AllowSpawn,
-                SystemAPI.GetComponentTypeHandle<Parcel>(),
-                m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter()
-            ).Schedule(m_TempQuery, Dependency);
+            var updateTempPlaceholderJobHandle = new UpdateTempPlaceholderJob {
+                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                m_ZoneType = m_PlatterUISystem.PreZoneType,
+                m_AllowSpawn = PlatterMod.Instance.Settings.AllowSpawn,
+                m_ParcelTypeHandle = SystemAPI.GetComponentTypeHandle<Parcel>(),
+                m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter(),
+            }.Schedule(m_TempQuery, Dependency);
             m_ModificationBarrier1.AddJobHandleForProducer(updateTempPlaceholderJobHandle);
 
             // Job to swap prefabref once placeholder is placed
@@ -87,20 +87,11 @@ namespace Platter.Systems {
         }
 
         private struct UpdateTempPlaceholderJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                   m_EntityTypeHandle;
-            [ReadOnly] private ZoneType                           m_ZoneType;
-            [ReadOnly] private bool                               m_AllowSpawn;
-            private            ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
-            private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
-
-            public UpdateTempPlaceholderJob(EntityTypeHandle entityTypeHandle, ZoneType zoneType, bool allowSpawn, ComponentTypeHandle<Parcel> parcelTypeHandle,
-                                            EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTypeHandle = entityTypeHandle;
-                m_ZoneType         = zoneType;
-                m_AllowSpawn       = allowSpawn;
-                m_ParcelTypeHandle = parcelTypeHandle;
-                m_CommandBuffer    = commandBuffer;
-            }
+            [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
+            [ReadOnly] public required ZoneType                           m_ZoneType;
+            [ReadOnly] public required bool                               m_AllowSpawn;
+            public required            ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
+            public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {

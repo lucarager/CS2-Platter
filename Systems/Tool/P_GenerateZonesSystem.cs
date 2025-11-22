@@ -4,14 +4,16 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using Colossal.Collections;
     using Colossal.Mathematics;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
-    using Components;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -19,6 +21,8 @@ namespace Platter.Systems {
     using Unity.Jobs;
     using Unity.Mathematics;
     using Block = Game.Zones.Block;
+
+    #endregion
 
     public partial class P_GenerateZonesSystem : GameSystemBase {
         private EntityQuery          m_DefinitionQuery;
@@ -30,7 +34,8 @@ namespace Platter.Systems {
             m_ZoneSearchSystem    = World.GetOrCreateSystemManaged<SearchSystem>();
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier1>();
             m_DefinitionQuery = GetEntityQuery(
-                ComponentType.ReadOnly<CreationDefinition>(), ComponentType.ReadOnly<Zoning>(),
+                ComponentType.ReadOnly<CreationDefinition>(),
+                ComponentType.ReadOnly<Zoning>(),
                 ComponentType.ReadOnly<Updated>());
             RequireForUpdate(m_DefinitionQuery);
         }
@@ -40,34 +45,34 @@ namespace Platter.Systems {
             var zonedBlocksList   = new NativeList<Entity>(20, Allocator.Temp);
             var commandBuffer     = new EntityCommandBuffer(Allocator.Temp);
 
-            var fillBlocksListJob = new FillBlocksListJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetComponentTypeHandle<CreationDefinition>(),
-                SystemAPI.GetComponentTypeHandle<Zoning>(),
-                SystemAPI.GetComponentLookup<Block>(),
-                SystemAPI.GetComponentLookup<ParcelOwner>(),
-                SystemAPI.GetComponentLookup<ZoneData>(),
-                SystemAPI.GetBufferLookup<Cell>(),
-                m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle),
-                zonedCellsHashMap,
-                zonedBlocksList,
-                commandBuffer.AsParallelWriter()
-            ).Schedule(m_DefinitionQuery, JobHandle.CombineDependencies(Dependency, zoneSearchJobHandle));
-            
+            var fillBlocksListJob = new FillBlocksListJob {
+                m_EntityTh             = SystemAPI.GetEntityTypeHandle(),
+                m_CreationDefinitionTh = SystemAPI.GetComponentTypeHandle<CreationDefinition>(),
+                m_ZoningTh             = SystemAPI.GetComponentTypeHandle<Zoning>(),
+                m_BlockCLook           = SystemAPI.GetComponentLookup<Block>(),
+                m_ParcelOwnerCLook     = SystemAPI.GetComponentLookup<ParcelOwner>(),
+                m_ZoneCLook            = SystemAPI.GetComponentLookup<ZoneData>(),
+                m_CellsBLook           = SystemAPI.GetBufferLookup<Cell>(),
+                m_ZoneSearchTree       = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle),
+                m_ZonedCells           = zonedCellsHashMap,
+                m_ZonedBlocks          = zonedBlocksList,
+                m_CommandBuffer        = commandBuffer.AsParallelWriter(),
+            }.Schedule(m_DefinitionQuery, JobHandle.CombineDependencies(Dependency, zoneSearchJobHandle));
+
             m_ZoneSearchSystem.AddSearchTreeReader(fillBlocksListJob);
             fillBlocksListJob.Complete();
             commandBuffer.Playback(EntityManager);
             commandBuffer.Dispose();
 
-            var createBlocksJobHandle = new CreateBlocksJob(
-                SystemAPI.GetComponentLookup<Block>(),
-                SystemAPI.GetComponentLookup<PrefabRef>(),
-                SystemAPI.GetComponentLookup<ZoneBlockData>(),
-                SystemAPI.GetBufferLookup<Cell>(),
-                commandBuffer: m_ModificationBarrier.CreateCommandBuffer().AsParallelWriter(),
-                zonedCells: zonedCellsHashMap,
-                zonedBlocks: zonedBlocksList.AsArray()
-            ).Schedule(zonedBlocksList, 1, fillBlocksListJob);
+            var createBlocksJobHandle = new CreateBlocksJob {
+                m_BlockData         = SystemAPI.GetComponentLookup<Block>(),
+                m_PrefabRefData     = SystemAPI.GetComponentLookup<PrefabRef>(),
+                m_ZoneBlockDataData = SystemAPI.GetComponentLookup<ZoneBlockData>(),
+                m_Cells             = SystemAPI.GetBufferLookup<Cell>(),
+                m_ZonedCells        = zonedCellsHashMap,
+                m_ZonedBlocks       = zonedBlocksList.AsArray(),
+                m_CommandBuffer     = m_ModificationBarrier.CreateCommandBuffer().AsParallelWriter(),
+            }.Schedule(zonedBlocksList, 1, fillBlocksListJob);
 
             zonedCellsHashMap.Dispose(createBlocksJobHandle);
             zonedBlocksList.Dispose(createBlocksJobHandle);
@@ -77,44 +82,30 @@ namespace Platter.Systems {
         }
 
         private struct CellData {
-            public int2 m_Location;
+            public int2     m_Location;
             public ZoneType m_ZoneType;
         }
 
         private struct BaseCell {
             public Entity m_Block;
-            public int2 m_Location;
+            public int2   m_Location;
         }
 
 #if USE_BURST
         [BurstCompile]
 #endif
         private struct FillBlocksListJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle      m_EntityTh;
-            [ReadOnly] private ComponentTypeHandle<CreationDefinition>      m_CreationDefinitionTh;
-            [ReadOnly] private ComponentTypeHandle<Zoning>                  m_ZoningTh;
-            [ReadOnly] private ComponentLookup<Block>                       m_BlockCLook;
-            [ReadOnly] private ComponentLookup<ParcelOwner>                 m_ParcelOwnerCLook;
-            [ReadOnly] private ComponentLookup<ZoneData>                    m_ZoneCLook;
-            [ReadOnly] private BufferLookup<Cell>                           m_CellsBLook;
-            [ReadOnly] private NativeQuadTree<Entity, Bounds2>              m_ZoneSearchTree;
-            private            NativeParallelMultiHashMap<Entity, CellData> m_ZonedCells;
-            private            NativeList<Entity>                           m_ZonedBlocks;
-            private            EntityCommandBuffer.ParallelWriter           m_CommandBuffer;
-
-            public FillBlocksListJob(EntityTypeHandle entityTh, ComponentTypeHandle<CreationDefinition> creationDefinitionTh, ComponentTypeHandle<Zoning> zoningTh, ComponentLookup<Block> blockCLook, ComponentLookup<ParcelOwner> parcelOwnerCLook, ComponentLookup<ZoneData> zoneCLook, BufferLookup<Cell> cellsBLook, NativeQuadTree<Entity, Bounds2> zoneSearchTree, NativeParallelMultiHashMap<Entity, CellData> zonedCells, NativeList<Entity> zonedBlocks, EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTh = entityTh;
-                m_CreationDefinitionTh = creationDefinitionTh;
-                m_ZoningTh = zoningTh;
-                m_BlockCLook = blockCLook;
-                m_ParcelOwnerCLook = parcelOwnerCLook;
-                m_ZoneCLook = zoneCLook;
-                m_CellsBLook = cellsBLook;
-                m_ZoneSearchTree = zoneSearchTree;
-                m_ZonedCells = zonedCells;
-                m_ZonedBlocks = zonedBlocks;
-                m_CommandBuffer = commandBuffer;
-            }
+            [ReadOnly] public required EntityTypeHandle                             m_EntityTh;
+            [ReadOnly] public required ComponentTypeHandle<CreationDefinition>      m_CreationDefinitionTh;
+            [ReadOnly] public required ComponentTypeHandle<Zoning>                  m_ZoningTh;
+            [ReadOnly] public required ComponentLookup<Block>                       m_BlockCLook;
+            [ReadOnly] public required ComponentLookup<ParcelOwner>                 m_ParcelOwnerCLook;
+            [ReadOnly] public required ComponentLookup<ZoneData>                    m_ZoneCLook;
+            [ReadOnly] public required BufferLookup<Cell>                           m_CellsBLook;
+            [ReadOnly] public required NativeQuadTree<Entity, Bounds2>              m_ZoneSearchTree;
+            public required            NativeParallelMultiHashMap<Entity, CellData> m_ZonedCells;
+            public required            NativeList<Entity>                           m_ZonedBlocks;
+            public required            EntityCommandBuffer.ParallelWriter           m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
@@ -123,7 +114,7 @@ namespace Platter.Systems {
                 var zoningArray             = chunk.GetNativeArray(ref m_ZoningTh);
 
                 for (var i = 0; i < creationDefinitionArray.Length; i++) {
-                    var entity = entityArray[i];
+                    var entity             = entityArray[i];
                     var creationDefinition = creationDefinitionArray[i];
                     var zoning             = zoningArray[i];
 
@@ -200,7 +191,7 @@ namespace Platter.Systems {
 
                     // Skip if the cell is not visible OR if the Shared flag is NOT set.
                     if ((cell.m_State & CellFlags.Visible) == CellFlags.None ||
-                        (cell.m_State & CellFlags.Shared) == CellFlags.None) {
+                        (cell.m_State & CellFlags.Shared)  == CellFlags.None) {
                         continue;
                     }
 
@@ -244,7 +235,7 @@ namespace Platter.Systems {
 
                     var j = 0;
                     while (j < cellLocationsList.Length) {
-                        var cellLocation             = cellLocationsList[j++];
+                        var cellLocation = cellLocationsList[j++];
                         floodFillIterator.Position   = ZoneUtils.GetCellPosition(block, cellLocation).xz;
                         floodFillIterator.FoundCells = 0;
 
@@ -298,27 +289,28 @@ namespace Platter.Systems {
             }
 
             private struct MarqueeIterator : INativeQuadTreeIterator<Entity, Bounds2> {
-                private Bounds2 m_Bounds;
-                private Quad2 m_Quad;
-                private ZoneType m_NewZoneType;
-                private bool m_Overwrite;
-                private ComponentLookup<Block> m_BlockData;
-                private BufferLookup<Cell> m_CellBLook;
+                private Bounds2                                      m_Bounds;
+                private Quad2                                        m_Quad;
+                private ZoneType                                     m_NewZoneType;
+                private bool                                         m_Overwrite;
+                private ComponentLookup<Block>                       m_BlockData;
+                private BufferLookup<Cell>                           m_CellBLook;
                 private NativeParallelMultiHashMap<Entity, CellData> m_ZonedCells;
-                private NativeList<Entity> m_ZonedBlocks;
+                private NativeList<Entity>                           m_ZonedBlocks;
 
-                public MarqueeIterator(Bounds2 bounds, Quad2 quad, ZoneType newZoneType, bool overwrite, ComponentLookup<Block> blockData, BufferLookup<Cell> cellBLook, NativeParallelMultiHashMap<Entity, CellData> zonedCells, NativeList<Entity> zonedBlocks) {
-                    m_Bounds = bounds;
-                    m_Quad = quad;
+                public MarqueeIterator(Bounds2            bounds,    Quad2 quad, ZoneType newZoneType, bool overwrite, ComponentLookup<Block> blockData,
+                                       BufferLookup<Cell> cellBLook, NativeParallelMultiHashMap<Entity, CellData> zonedCells, NativeList<Entity> zonedBlocks) {
+                    m_Bounds      = bounds;
+                    m_Quad        = quad;
                     m_NewZoneType = newZoneType;
-                    m_Overwrite = overwrite;
-                    m_BlockData = blockData;
-                    m_CellBLook = cellBLook;
-                    m_ZonedCells = zonedCells;
+                    m_Overwrite   = overwrite;
+                    m_BlockData   = blockData;
+                    m_CellBLook   = cellBLook;
+                    m_ZonedCells  = zonedCells;
                     m_ZonedBlocks = zonedBlocks;
                 }
 
-                public bool               Intersect(Bounds2 bounds) { return MathUtils.Intersect(bounds, m_Bounds); }
+                public bool Intersect(Bounds2 bounds) { return MathUtils.Intersect(bounds, m_Bounds); }
 
                 public void Iterate(Bounds2 bounds, Entity blockEntity) {
                     if (!MathUtils.Intersect(bounds, m_Bounds)) {
@@ -349,7 +341,7 @@ namespace Platter.Systems {
                                 var cellPosition = ZoneUtils.GetCellPosition(block, cellData.m_Location);
                                 if (MathUtils.Intersect(m_Quad, cellPosition.xz) &&
                                     m_Overwrite | cell.m_Zone.Equals(ZoneType.None)) {
-                                    if (!m_ZonedCells.TryGetFirstValue(blockEntity, out var _, out var _)) {
+                                    if (!m_ZonedCells.TryGetFirstValue(blockEntity, out _, out _)) {
                                         m_ZonedBlocks.Add(in blockEntity);
                                     }
 
@@ -366,18 +358,19 @@ namespace Platter.Systems {
             }
 
             private struct BaseLineIterator : INativeQuadTreeIterator<Entity, Bounds2> {
-                private Line2.Segment          m_Line;
-                private ComponentLookup<Block> m_BlockCLook;
+                private Line2.Segment                m_Line;
+                private ComponentLookup<Block>       m_BlockCLook;
                 private ComponentLookup<ParcelOwner> m_ParcelOwnerCLook;
-                private BufferLookup<Cell>     m_CellsBLook;
-                private NativeList<BaseCell>   m_BaseCellsList;
+                private BufferLookup<Cell>           m_CellsBLook;
+                private NativeList<BaseCell>         m_BaseCellsList;
 
-                public BaseLineIterator(Line2.Segment line, ComponentLookup<Block> blockCLook, ComponentLookup<ParcelOwner> parcelOwnerCLook, BufferLookup<Cell> cellsBLook, NativeList<BaseCell> baseCellsList) {
-                    m_Line = line;
-                    m_BlockCLook = blockCLook;
+                public BaseLineIterator(Line2.Segment      line,       ComponentLookup<Block> blockCLook, ComponentLookup<ParcelOwner> parcelOwnerCLook,
+                                        BufferLookup<Cell> cellsBLook, NativeList<BaseCell>   baseCellsList) {
+                    m_Line             = line;
+                    m_BlockCLook       = blockCLook;
                     m_ParcelOwnerCLook = parcelOwnerCLook;
-                    m_CellsBLook = cellsBLook;
-                    m_BaseCellsList = baseCellsList;
+                    m_CellsBLook       = cellsBLook;
+                    m_BaseCellsList    = baseCellsList;
                 }
 
                 public bool Intersect(Bounds2 bounds) { return MathUtils.Intersect(bounds, m_Line, out _); }
@@ -524,26 +517,13 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct CreateBlocksJob : IJobParallelForDefer {
-            [ReadOnly] private ComponentLookup<Block>                       m_BlockData;
-            [ReadOnly] private ComponentLookup<PrefabRef>                   m_PrefabRefData;
-            [ReadOnly] private ComponentLookup<ZoneBlockData>               m_ZoneBlockDataData;
-            [ReadOnly] private BufferLookup<Cell>                           m_Cells;
-            [ReadOnly] private NativeParallelMultiHashMap<Entity, CellData> m_ZonedCells;
-            [ReadOnly] private NativeArray<Entity>                          m_ZonedBlocks;
-            private            EntityCommandBuffer.ParallelWriter           m_CommandBuffer;
-
-            public CreateBlocksJob(ComponentLookup<Block> blockData, ComponentLookup<PrefabRef> prefabRefData,
-                                   ComponentLookup<ZoneBlockData> zoneBlockDataData, BufferLookup<Cell> cells,
-                                   NativeParallelMultiHashMap<Entity, CellData> zonedCells, NativeArray<Entity> zonedBlocks,
-                                   EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_BlockData         = blockData;
-                m_PrefabRefData     = prefabRefData;
-                m_ZoneBlockDataData = zoneBlockDataData;
-                m_Cells             = cells;
-                m_ZonedCells        = zonedCells;
-                m_ZonedBlocks       = zonedBlocks;
-                m_CommandBuffer     = commandBuffer;
-            }
+            [ReadOnly] public required ComponentLookup<Block>                       m_BlockData;
+            [ReadOnly] public required ComponentLookup<PrefabRef>                   m_PrefabRefData;
+            [ReadOnly] public required ComponentLookup<ZoneBlockData>               m_ZoneBlockDataData;
+            [ReadOnly] public required BufferLookup<Cell>                           m_Cells;
+            [ReadOnly] public required NativeParallelMultiHashMap<Entity, CellData> m_ZonedCells;
+            [ReadOnly] public required NativeArray<Entity>                          m_ZonedBlocks;
+            public required            EntityCommandBuffer.ParallelWriter           m_CommandBuffer;
 
             public void Execute(int index) {
                 var entity        = m_ZonedBlocks[index];
@@ -557,17 +537,19 @@ namespace Platter.Systems {
                 m_CommandBuffer.SetComponent(index, entity2, block);
                 var dynamicBuffer2 = m_CommandBuffer.SetBuffer<Cell>(index, entity2);
                 m_CommandBuffer.AddComponent(
-                    index, entity2, new Temp {
-                    m_Original = entity,
+                    index,
+                    entity2,
+                    new Temp {
+                        m_Original = entity,
                     });
                 m_CommandBuffer.AddComponent(index, entity, default(Hidden));
                 m_CommandBuffer.AddComponent(index, entity, default(BatchesUpdated));
-                
-                foreach (var t in dynamicBuffer) dynamicBuffer2.Add(t);
 
-                CellData                                   cellData;
-                NativeParallelMultiHashMapIterator<Entity> nativeParallelMultiHashMapIterator;
-                if (!m_ZonedCells.TryGetFirstValue(entity, out cellData, out nativeParallelMultiHashMapIterator)) {
+                foreach (var t in dynamicBuffer) {
+                    dynamicBuffer2.Add(t);
+                }
+
+                if (!m_ZonedCells.TryGetFirstValue(entity, out var cellData, out var nativeParallelMultiHashMapIterator)) {
                     return;
                 }
 
