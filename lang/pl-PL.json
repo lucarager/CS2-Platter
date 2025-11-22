@@ -47,7 +47,7 @@
   "PlatterMod.UI.Label.ParcelSizeUnit": "kratki",
   "PlatterMod.UI.Button.CreateParcelFromZone": "Stwórz parcele z tą strefą",
   "PlatterMod.UI.Tooltip.PlopMode": "Umieść ręcznie",
-  "PlatterMod.UI.Tooltip.RoadPlatMode": "Tryb platformy drogowej jest w fazie rozwoju. Bądź czujny!",
+  "PlatterMod.UI.Tooltip.RoadPlatMode": "Tryb Wyznaczania Drogowego jest w trakcie rozwoju. Wyczekuj na więcej!",
   "PlatterMod.UI.Tooltip.SnapModeNone": "Brak przyciągania",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Przyciągaj do stron drogi",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Przyciągaj do siatki pól z gry",
