@@ -4,6 +4,8 @@
 // </copyright>
 
 namespace Platter {
+    #region Using Statements
+
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -12,11 +14,13 @@ namespace Platter {
     using System.Runtime.CompilerServices;
     using Colossal;
     using Colossal.IO.AssetDatabase;
+    using Colossal.Json;
     using Colossal.Localization;
     using Colossal.Logging;
     using Colossal.Reflection;
     using Colossal.TestFramework;
     using Colossal.UI;
+    using Components;
     using Game;
     using Game.Modding;
     using Game.Prefabs;
@@ -25,64 +29,58 @@ namespace Platter {
     using Game.Simulation;
     using Game.Tools;
     using Newtonsoft.Json;
-    using Platter.Components;
-    using Platter.Settings;
-    using Platter.Systems;
+    using Settings;
+    using Systems;
     using Unity.Entities;
     using UnityEngine;
+    using StreamReader = System.IO.StreamReader;
+
+    #endregion
 
     /// <summary>
     /// Mod entry point.
     /// </summary>
     public class PlatterMod : IMod {
         /// <summary>
-        /// The mod's default actionName.
-        /// </summary>
-        public const string ModName = "Platter";
-
-        /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
         public const string Id = "Platter";
 
         /// <summary>
-        /// Gets the instance reference.
+        /// The mod's default actionName.
         /// </summary>
-        public static PlatterMod Instance {
-            get; private set;
-        }
-
-        /// <summary>
-        /// Gets the mod's settings configuration.
-        /// </summary>
-        internal PlatterModSettings Settings {
-            get; private set;
-        }
-
-        /// <summary>
-        /// Gets the mod's logger.
-        /// </summary>
-        internal ILog Log {
-            get; private set;
-        }
+        public const string ModName = "Platter";
 
         /// <summary>
         /// Sets mod to test mode
         /// </summary>
-        internal bool IsTestMode {
-            get;
-            set;
-        } = false;
+        internal bool IsTestMode { get; set; } = false;
+
+        /// <summary>
+        /// Gets the mod's logger.
+        /// </summary>
+        internal ILog Log { get; private set; }
+
+        /// <summary>
+        /// Gets the instance reference.
+        /// </summary>
+        public static PlatterMod Instance { get; private set; }
+
+        /// <summary>
+        /// Gets the mod's settings configuration.
+        /// </summary>
+        internal PlatterModSettings Settings { get; private set; }
+
+        /// <summary>
+        /// Gets the mod's informational version
+        /// </summary>
+        public static string InformationalVersion =>
+            Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
         /// <summary>
         /// Gets the mod's version
         /// </summary>
         public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
-
-        /// <summary>
-        /// Gets the mod's informational version
-        /// </summary>
-        public static string InformationalVersion => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem) {
@@ -102,9 +100,9 @@ namespace Platter {
 
             // Load i18n
             GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
-            Log.Info($"[Platter] Loaded en-US.");
+            Log.Info("[Platter] Loaded en-US.");
             LoadNonEnglishLocalizations();
-            Log.Info($"[Platter] Loaded localization files.");
+            Log.Info("[Platter] Loaded localization files.");
 
             // Generate i18n files
 #if IS_DEBUG && EXPORT_EN_US
@@ -156,7 +154,7 @@ namespace Platter {
 
             // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<P_ParcelInfoPanelSystem>(SystemUpdatePhase.UIUpdate); 
+            updateSystem.UpdateAt<P_ParcelInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<P_BuildingInfoPanelSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<P_OverlaySystem>(SystemUpdatePhase.Rendering);
             updateSystem.UpdateAt<P_TooltipSystem>(SystemUpdatePhase.UITooltip);
@@ -168,13 +166,13 @@ namespace Platter {
             updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
 
-#if IS_DEBUG 
+#if IS_DEBUG
             AddTests();
 #endif
 
             // Add mod UI resource directory to UI resource handler.
             if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
-                Log.Error($"Failed to get executable asset path. Exiting.");
+                Log.Error("Failed to get executable asset path. Exiting.");
                 return;
             }
 
@@ -182,27 +180,6 @@ namespace Platter {
             UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
 
             Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
-        }
-
-        private void GenerateLanguageFile() {
-            Log.Info($"[Platter] Exporting localization");
-            var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
-            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
-            try {
-                var path      = GetThisFilePath();
-                var directory = Path.GetDirectoryName(path);
-
-                var exportPath1 = $@"{directory}\lang\en-US.json";
-                var exportPath2 = $@"{directory}\UI\src\lang\en-US.json";
-                File.WriteAllText(exportPath1, str);
-                File.WriteAllText(exportPath2, str);
-            } catch (Exception ex) {
-                Log.Error(ex.ToString());
-            }
-        }
-
-        private static string GetThisFilePath([CallerFilePath] string path = null) {
-            return path;
         }
 
         /// <inheritdoc/>
@@ -217,9 +194,29 @@ namespace Platter {
             }
         }
 
+        private void GenerateLanguageFile() {
+            Log.Info("[Platter] Exporting localization");
+            var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
+                                                     .ToDictionary(pair => pair.Key, pair => pair.Value);
+            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
+            try {
+                var path      = GetThisFilePath();
+                var directory = Path.GetDirectoryName(path);
+
+                var exportPath1 = $@"{directory}\lang\en-US.json";
+                var exportPath2 = $@"{directory}\UI\src\lang\en-US.json";
+                File.WriteAllText(exportPath1, str);
+                File.WriteAllText(exportPath2, str);
+            } catch (Exception ex) {
+                Log.Error(ex.ToString());
+            }
+        }
+
+        private static string GetThisFilePath([CallerFilePath] string path = null) { return path; }
+
         private static void AddTests() {
             var log = LogManager.GetLogger(ModName);
-            log.Debug($"AddTests()");
+            log.Debug("AddTests()");
 
             var field = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
             if (field == null) {
@@ -231,18 +228,20 @@ namespace Platter {
 
             foreach (var type in GetTests()) {
                 if (!type.IsClass || type.IsAbstract || type.IsInterface || !type.TryGetAttribute(
-                        out TestDescriptorAttribute testDescriptorAttribute, false)) {
+                        out TestDescriptorAttribute testDescriptorAttribute)) {
                     continue;
                 }
 
                 log.Debug($"AddTests() -- {testDescriptorAttribute.description}");
 
-                m_Scenarios.Add(testDescriptorAttribute.description, new TestScenarioSystem.Scenario {
-                    category  = testDescriptorAttribute.category,
-                    testPhase = testDescriptorAttribute.testPhase,
-                    test      = type,
-                    disabled  = testDescriptorAttribute.disabled,
-                });
+                m_Scenarios.Add(
+                    testDescriptorAttribute.description,
+                    new TestScenarioSystem.Scenario {
+                        category  = testDescriptorAttribute.category,
+                        testPhase = testDescriptorAttribute.testPhase,
+                        test      = type,
+                        disabled  = testDescriptorAttribute.disabled,
+                    });
             }
 
             m_Scenarios = TestScenarioSystem.SortScenarios(m_Scenarios);
@@ -252,8 +251,8 @@ namespace Platter {
 
         private static IEnumerable<Type> GetTests() {
             return from t in Assembly.GetExecutingAssembly().GetTypes()
-                   where typeof(TestScenario).IsAssignableFrom(t)
-                   select t;
+                where typeof(TestScenario).IsAssignableFrom(t)
+                select t;
         }
 
         private static void ModifyVabillaSubBlockSerialization(ComponentSystemBase originalSystem) {
@@ -274,7 +273,7 @@ namespace Platter {
             }
 
             var originalQueryDescs = originalQuery.GetEntityQueryDescs();
-            var componentType = ComponentType.ReadOnly<ParcelOwner>();
+            var componentType      = ComponentType.ReadOnly<ParcelOwner>();
 
             foreach (var originalQueryDesc in originalQueryDescs) {
                 if (originalQueryDesc.None.Contains(componentType)) {
@@ -288,12 +287,12 @@ namespace Platter {
                     BindingFlags.Instance | BindingFlags.NonPublic,
                     null,
                     CallingConventions.Any,
-                    new Type[] { typeof(EntityQueryDesc[]) },
+                    new[] { typeof(EntityQueryDesc[]) },
                     Array.Empty<ParameterModifier>()
-                 );
+                );
 
                 // generate EntityQuery
-                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new EntityQueryDesc[] { originalQueryDesc } });
+                var modifiedQuery = (EntityQuery)getQueryMethod.Invoke(originalSystem, new object[] { new[] { originalQueryDesc } });
 
                 // replace current query to use more restrictive
                 queryField.SetValue(originalSystem, modifiedQuery);
@@ -306,11 +305,11 @@ namespace Platter {
         }
 
         private void LoadNonEnglishLocalizations() {
-            var thisAssembly = Assembly.GetExecutingAssembly();
+            var thisAssembly  = Assembly.GetExecutingAssembly();
             var resourceNames = thisAssembly.GetManifestResourceNames();
 
             try {
-                Log.Debug($"Reading localizations");
+                Log.Debug("Reading localizations");
 
                 foreach (var localeID in GameManager.instance.localizationManager.GetSupportedLocales()) {
                     var resourceName = $"{thisAssembly.GetName().Name}.lang.{localeID}.json";
@@ -320,10 +319,10 @@ namespace Platter {
                             Log.Debug($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
-                            using System.IO.StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
+                            using StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
                             {
-                                var entireFile = reader.ReadToEnd();
-                                var varient = Colossal.Json.JSON.Load(entireFile);
+                                var entireFile   = reader.ReadToEnd();
+                                var varient      = JSON.Load(entireFile);
                                 var translations = varient.Make<Dictionary<string, string>>();
                                 GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
                             }

@@ -3,12 +3,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Colossal.Serialization.Entities;
-using Game;
-
 namespace Platter.Systems {
-    using Colossal.Serialization.Entities;
+    #region Using Statements
+
     using System.Collections.Generic;
+    using Colossal.Serialization.Entities;
     using Game.Common;
     using Game.Prefabs;
     using Game.UI;
@@ -16,27 +15,29 @@ namespace Platter.Systems {
     using Unity.Entities;
     using UnityEngine;
 
+    #endregion
+
     /// <summary>
     /// System responsible for caching Zone Information for other systems.
     /// </summary>
     public partial class P_ZoneCacheSystem : PlatterGameSystemBase {
-        public NativeHashMap<ushort, Entity> ZonePrefabs => m_ZonePrefabs;
-        public Dictionary<ushort, Color> FillColors => m_FillColors;
-        public Dictionary<ushort, Color> EdgeColors => m_EdgeColors;
-        public Dictionary<ushort, P_UISystem.ZoneUIData> ZoneUIData => m_ZoneUIData;
-
-        // Systems
-        private PrefabSystem m_PrefabSystem;
+        private EntityQuery m_AllQuery;
 
         // Queries
         private EntityQuery m_ModifiedQuery;
-        private EntityQuery m_AllQuery;
 
         // Data
-        private NativeHashMap<ushort, Entity>             m_ZonePrefabs;
-        private Dictionary<ushort, Color>                 m_FillColors;
-        private Dictionary<ushort, Color>                 m_EdgeColors;
-        private Dictionary<ushort, P_UISystem.ZoneUIData> m_ZoneUIData;
+        private NativeHashMap<ushort, Entity> m_ZonePrefabs;
+
+        // Systems
+        private PrefabSystem              m_PrefabSystem;
+        public  Dictionary<ushort, Color> EdgeColors { get; private set; }
+
+        public Dictionary<ushort, Color> FillColors { get; private set; }
+
+        public Dictionary<ushort, P_UISystem.ZoneUIData> ZoneUIData { get; private set; }
+
+        public NativeHashMap<ushort, Entity> ZonePrefabs => m_ZonePrefabs;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -54,9 +55,9 @@ namespace Platter.Systems {
                                   .Build();
 
             m_ZonePrefabs = new NativeHashMap<ushort, Entity>(256, Allocator.Persistent);
-            m_FillColors  = new Dictionary<ushort, Color>();
-            m_EdgeColors  = new Dictionary<ushort, Color>();
-            m_ZoneUIData  = new Dictionary<ushort, P_UISystem.ZoneUIData>();
+            FillColors    = new Dictionary<ushort, Color>();
+            EdgeColors    = new Dictionary<ushort, Color>();
+            ZoneUIData    = new Dictionary<ushort, P_UISystem.ZoneUIData>();
 
             RequireForUpdate(m_ModifiedQuery);
         }
@@ -69,7 +70,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug($"OnUpdate()");
+            m_Log.Debug("OnUpdate()");
 
             if (m_ModifiedQuery.IsEmptyIgnoreFilter) {
                 return;
@@ -111,9 +112,9 @@ namespace Platter.Systems {
 
                     if (archetypeChunk.Has(ref deletedTh)) {
                         m_ZonePrefabs.Remove(zoneData.m_ZoneType.m_Index);
-                        m_FillColors.Remove(zoneData.m_ZoneType.m_Index);
-                        m_EdgeColors.Remove(zoneData.m_ZoneType.m_Index);
-                        m_ZoneUIData.Remove(zoneData.m_ZoneType.m_Index);
+                        FillColors.Remove(zoneData.m_ZoneType.m_Index);
+                        EdgeColors.Remove(zoneData.m_ZoneType.m_Index);
+                        ZoneUIData.Remove(zoneData.m_ZoneType.m_Index);
                     } else {
                         // Cache Zone
                         m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Adding to cache.");
@@ -122,9 +123,9 @@ namespace Platter.Systems {
 
                         // Cache
                         m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
-                        m_FillColors[zoneData.m_ZoneType.m_Index]  = zonePrefab.m_Color;
-                        m_EdgeColors[zoneData.m_ZoneType.m_Index]  = zonePrefab.m_Edge;
-                        m_ZoneUIData[zoneData.m_ZoneType.m_Index] = new P_UISystem.ZoneUIData(
+                        FillColors[zoneData.m_ZoneType.m_Index]    = zonePrefab.m_Color;
+                        EdgeColors[zoneData.m_ZoneType.m_Index]    = zonePrefab.m_Edge;
+                        ZoneUIData[zoneData.m_ZoneType.m_Index] = new P_UISystem.ZoneUIData(
                             zonePrefab.name,
                             ImageSystem.GetThumbnail(zonePrefab),
                             category,

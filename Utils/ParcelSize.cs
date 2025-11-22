@@ -4,19 +4,27 @@
 // </copyright>
 
 namespace Platter.Utils {
-    using Platter.Constants;
+    #region Using Statements
+
+    using Constants;
     using Unity.Mathematics;
+
+    #endregion
 
     public class ParcelSize {
         private float3 size;
+
+        public float Depth => size.z;
+
+        public float Height => size.y;
+
+        public float Width => size.x;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelSize"/> class.
         /// </summary>
         /// <param name="size"></param>
-        public ParcelSize(float3 size) {
-            this.size = size;
-        }
+        public ParcelSize(float3 size) { this.size = size; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelSize"/> class.
@@ -25,7 +33,7 @@ namespace Platter.Utils {
         /// <param name="depth"></param>
         /// <param name="height"></param>
         public ParcelSize(float width, float depth, float height) {
-            this.size = default;
+            size   = default;
             size.x = width;
             size.z = depth;
             size.y = height;
@@ -37,20 +45,12 @@ namespace Platter.Utils {
         /// <param name="width"></param>
         /// <param name="depth"></param>
         public ParcelSize(float width, float depth) {
-            this.size = default;
+            size   = default;
             size.x = width;
             size.z = depth;
             size.y = DimensionConstants.ParcelHeight;
         }
 
-        public float Width => size.x;
-
-        public float Depth => size.z;
-
-        public float Height => size.y;
-
-        public static implicit operator ParcelSize(float3 size) {
-            return new ParcelSize(size);
-        }
+        public static implicit operator ParcelSize(float3 size) { return new ParcelSize(size); }
     }
 }

@@ -4,10 +4,14 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System;
     using Game;
     using Unity.Entities;
     using Unity.Mathematics;
+
+    #endregion
 
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
@@ -44,17 +48,15 @@ namespace Platter.Systems {
             /// </summary>
             /// <param name="parcel">A Parcel to update.</param>
             public UpdateData(Entity parcel) {
-                m_Parcel = parcel;
-                m_NewRoad = Entity.Null;
+                m_Parcel   = parcel;
+                m_NewRoad  = Entity.Null;
                 m_FrontPos = default;
                 m_CurvePos = 0f;
-                m_Deleted = false;
+                m_Deleted  = false;
             }
 
             /// <inheritdoc/>
-            public int CompareTo(P_RoadConnectionSystem.UpdateData other) {
-                return m_Parcel.Index - other.m_Parcel.Index;
-            }
+            public int CompareTo(UpdateData other) { return m_Parcel.Index - other.m_Parcel.Index; }
         }
     }
 }

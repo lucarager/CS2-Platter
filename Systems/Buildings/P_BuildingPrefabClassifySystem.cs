@@ -3,28 +3,28 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Unity.Burst;
-
 namespace Platter.Systems {
-    using System.Collections.Generic;
-    using Colossal.Mathematics;
-    using Game.Prefabs;
-    using Unity.Burst.Intrinsics;
-    using Unity.Mathematics;
+    #region Using Statements
+
     using Components;
     using Game;
     using Game.Common;
+    using Game.Prefabs;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Mathematics;
     using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for adding the GrowableBuilding and LinkedParcel components to buildings.
     /// </summary>
     public partial class P_BuildingPrefabClassifySystem : GameSystemBase {
         private EntityQuery          m_BuildingPrefabQuery;
-        private PrefixedLogger       m_Log;
         private ModificationBarrier2 m_ModificationBarrier2;
+        private PrefixedLogger       m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -77,14 +77,14 @@ namespace Platter.Systems {
             private            EntityCommandBuffer.ParallelWriter      m_CommandBuffer;
             private const      float                                   ShiftBase = 2f;
 
-            public ProcessBuildingPrefabJob(EntityTypeHandle entityTypeHandle,
-                                      ComponentTypeHandle<ObjectGeometryData> objectGeometryDataTypeHandle,
-                                      BufferTypeHandle<SubAreaNode> subAreaNodeTypeHandle,
-                                      BufferTypeHandle<SubObject> subObjectTypeHandle,
-                                      BufferTypeHandle<SubLane> subLaneTypeHandle, 
-                                      BufferTypeHandle<SubNet> subNetTypeHandle,
-                                      BufferTypeHandle<SubArea> subAreaTypeHandle,
-                                      EntityCommandBuffer.ParallelWriter commandBuffer) {
+            public ProcessBuildingPrefabJob(EntityTypeHandle                        entityTypeHandle,
+                                            ComponentTypeHandle<ObjectGeometryData> objectGeometryDataTypeHandle,
+                                            BufferTypeHandle<SubAreaNode>           subAreaNodeTypeHandle,
+                                            BufferTypeHandle<SubObject>             subObjectTypeHandle,
+                                            BufferTypeHandle<SubLane>               subLaneTypeHandle,
+                                            BufferTypeHandle<SubNet>                subNetTypeHandle,
+                                            BufferTypeHandle<SubArea>               subAreaTypeHandle,
+                                            EntityCommandBuffer.ParallelWriter      commandBuffer) {
                 m_EntityTypeHandle             = entityTypeHandle;
                 m_ObjectGeometryDataTypeHandle = objectGeometryDataTypeHandle;
                 m_SubAreaNodeTypeHandle        = subAreaNodeTypeHandle;

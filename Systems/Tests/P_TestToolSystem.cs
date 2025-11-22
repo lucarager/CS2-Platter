@@ -1,44 +1,48 @@
-﻿// <copyright file="${File.FileName}" company="${User.FullName}">
-// Copyright (c) ${User.Name}. All rights reserved.
+﻿// <copyright file="P_TestToolSystem.cs" company="Luca Rager">
+// Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System;
     using System.Threading.Tasks;
+    using Colossal.Mathematics;
     using Colossal.Serialization.Entities;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using Colossal.Mathematics;
     using Unity.Mathematics;
+    using Utils;
+
+    #endregion
 
     public partial class P_TestToolSystem : ToolBaseSystem {
-        /// <inheritdoc/>
-        public override string toolID => "PlatterTestTool";
-
         public enum PrefabType {
             Object,
             Edge,
         }
 
-        private PrefixedLogger      m_Log;
-        private PrefabBase          m_SelectedPrefab;
-        private Entity              m_PlacePrefabEntity;
-        private PrefabType          m_PlacePrefabType;
-        private Transform           m_PlaceTransform1;
-        private Transform           m_PlaceTransform2;
         private Entity              m_PlacedEntity;
-        private EntityQuery         m_TempQuery;
-        private EntityQuery         m_CreatedEntityQuery;
-        private ToolOutputBarrier   m_ToolOutputBarrier;
+        private Entity              m_PlacePrefabEntity;
         private EntityCommandBuffer m_CommandBuffer;
+        private EntityQuery         m_CreatedEntityQuery;
+        private EntityQuery         m_TempQuery;
+        private PrefabBase          m_SelectedPrefab;
+        private PrefabType          m_PlacePrefabType;
+
+        private PrefixedLogger    m_Log;
+        private ToolOutputBarrier m_ToolOutputBarrier;
+        private Transform         m_PlaceTransform1;
+        private Transform         m_PlaceTransform2;
+
+        /// <inheritdoc/>
+        public override string toolID => "PlatterTestTool";
 
         protected override void OnCreate() {
             base.OnCreate();
@@ -52,7 +56,7 @@ namespace Platter.Systems {
 
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
 
-            var toolList        = World.GetOrCreateSystemManaged<ToolSystem>().tools;
+            var            toolList        = World.GetOrCreateSystemManaged<ToolSystem>().tools;
             ToolBaseSystem thisSystem      = null;
             var            objectToolIndex = 0;
 
@@ -77,23 +81,23 @@ namespace Platter.Systems {
 
         protected override void OnGameLoaded(Context serializationContext) {
             base.OnGameLoaded(serializationContext);
-            m_Log.Debug($"OnGameLoaded(Context serializationContext)");
+            m_Log.Debug("OnGameLoaded(Context serializationContext)");
         }
 
         protected override void OnDestroy() {
             base.OnDestroy();
-            m_Log.Debug($"OnDestroy()");
+            m_Log.Debug("OnDestroy()");
         }
 
         protected override void OnStartRunning() {
             base.OnStartRunning();
-            m_Log.Debug($"OnStartRunning()");
+            m_Log.Debug("OnStartRunning()");
             applyMode = ApplyMode.Clear;
         }
 
         protected override void OnStopRunning() {
             base.OnStopRunning();
-            m_Log.Debug($"OnStopRunning()");
+            m_Log.Debug("OnStopRunning()");
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps) {
@@ -111,11 +115,11 @@ namespace Platter.Systems {
 
             switch (m_PlacePrefabType) {
                 case PrefabType.Edge:
-                    m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- PlaceEdge");
+                    m_Log.Debug("OnUpdate(JobHandle inputDeps) -- PlaceEdge");
                     PlaceEdge(m_PlacePrefabEntity, m_PlaceTransform1, m_PlaceTransform2);
                     break;
                 case PrefabType.Object:
-                    m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- PlaceObject");
+                    m_Log.Debug("OnUpdate(JobHandle inputDeps) -- PlaceObject");
                     PlaceObject(m_PlacePrefabEntity, m_PlaceTransform1);
                     break;
             }
@@ -125,7 +129,7 @@ namespace Platter.Systems {
             }
 
             m_PlacedEntity = m_TempQuery.ToEntityArray(Allocator.Temp)[0];
-            m_Log.Debug($"OnUpdate(JobHandle inputDeps) -- Apply");
+            m_Log.Debug("OnUpdate(JobHandle inputDeps) -- Apply");
 
             // Apply
             applyMode           = ApplyMode.Apply;
@@ -136,14 +140,10 @@ namespace Platter.Systems {
             return inputDeps;
         }
 
-        public override PrefabBase GetPrefab() {
-            return m_SelectedPrefab;
-        }
+        public override PrefabBase GetPrefab() { return m_SelectedPrefab; }
 
         public async Task<Entity> PlopObject(Entity prefab, Transform transform) {
-            while (m_PlacePrefabEntity != Entity.Null) {
-                await Task.Delay(10);
-            }
+            while (m_PlacePrefabEntity != Entity.Null) await Task.Delay(10);
 
             m_PlacePrefabEntity = prefab;
             m_PlaceTransform1   = transform;
@@ -157,7 +157,7 @@ namespace Platter.Systems {
                 entity = m_PlacedEntity;
                 await Task.Delay(10);
             }
-            
+
             if (tries == maxTries) {
                 throw new Exception("Could not find created entity");
             }
@@ -168,9 +168,7 @@ namespace Platter.Systems {
         }
 
         public async Task<Entity> PlopEdge(Entity prefab, Transform startNodePosition, Transform endNodePosition) {
-            while (m_PlacePrefabEntity != Entity.Null) {
-                await Task.Delay(10);
-            }
+            while (m_PlacePrefabEntity != Entity.Null) await Task.Delay(10);
 
             m_PlacePrefabEntity = prefab;
             m_PlaceTransform1   = startNodePosition;
@@ -200,7 +198,7 @@ namespace Platter.Systems {
                 return;
             }
 
-            m_Log.Debug($"RequestEnable()");
+            m_Log.Debug("RequestEnable()");
             m_ToolSystem.activeTool = this;
         }
 
@@ -223,24 +221,28 @@ namespace Platter.Systems {
             var ecb    = new EntityCommandBuffer(Allocator.Temp);
             var entity = ecb.CreateEntity();
 
-            ecb.AddComponent(entity, new CreationDefinition() {
-                m_Prefab    = prefab,
-                m_SubPrefab = Entity.Null,
-                m_Owner     = Entity.Null,
-                m_Original  = Entity.Null,
-            });
+            ecb.AddComponent(
+                entity,
+                new CreationDefinition {
+                    m_Prefab    = prefab,
+                    m_SubPrefab = Entity.Null,
+                    m_Owner     = Entity.Null,
+                    m_Original  = Entity.Null,
+                });
 
-            ecb.AddComponent(entity, new ObjectDefinition() {
-                m_ParentMesh     = -1,
-                m_Position       = transform.m_Position,
-                m_Rotation       = transform.m_Rotation,
-                m_Probability    = 100,
-                m_PrefabSubIndex = -1,
-                m_Scale          = 1f,
-                m_Intensity      = 1f,
-                m_Elevation      = transform.m_Position.y,
-                m_LocalRotation  = transform.m_Rotation,
-            });
+            ecb.AddComponent(
+                entity,
+                new ObjectDefinition {
+                    m_ParentMesh     = -1,
+                    m_Position       = transform.m_Position,
+                    m_Rotation       = transform.m_Rotation,
+                    m_Probability    = 100,
+                    m_PrefabSubIndex = -1,
+                    m_Scale          = 1f,
+                    m_Intensity      = 1f,
+                    m_Elevation      = transform.m_Position.y,
+                    m_LocalRotation  = transform.m_Rotation,
+                });
 
             ecb.AddComponent(entity, default(OwnerDefinition));
 
@@ -254,39 +256,43 @@ namespace Platter.Systems {
             var ecb    = new EntityCommandBuffer(Allocator.Temp);
             var entity = ecb.CreateEntity();
 
-            ecb.AddComponent(entity, new CreationDefinition() {
-                m_Prefab    = prefab,
-                m_SubPrefab = Entity.Null,
-                m_Owner     = Entity.Null,
-                m_Original  = Entity.Null,
-            });
+            ecb.AddComponent(
+                entity,
+                new CreationDefinition {
+                    m_Prefab    = prefab,
+                    m_SubPrefab = Entity.Null,
+                    m_Owner     = Entity.Null,
+                    m_Original  = Entity.Null,
+                });
 
-            ecb.AddComponent(entity, new NetCourse() {
-                m_StartPosition = new CoursePos() {
-                    m_Entity        = Entity.Null,
-                    m_Position      = startNodePosition.m_Position,
-                    m_Rotation      = startNodePosition.m_Rotation,
-                    m_Elevation     = startNodePosition.m_Position.y,
-                    m_CourseDelta   = 0,
-                    m_SplitPosition = 0,
-                    m_Flags         = CoursePosFlags.IsFirst | CoursePosFlags.IsRight | CoursePosFlags.IsLeft,
-                    m_ParentMesh    = -1,
-                },
-                m_EndPosition = new CoursePos() {
-                    m_Entity        = Entity.Null,
-                    m_Position      = endNodePosition.m_Position,
-                    m_Rotation      = endNodePosition.m_Rotation,
-                    m_Elevation     = endNodePosition.m_Position.y,
-                    m_CourseDelta   = 1,
-                    m_SplitPosition = 0,
-                    m_Flags         = CoursePosFlags.IsLast | CoursePosFlags.IsRight | CoursePosFlags.IsLeft,
-                    m_ParentMesh    = -1,
-                },
-                m_Curve      = new Bezier4x3(startNodePosition.m_Position, startNodePosition.m_Position, endNodePosition.m_Position, endNodePosition.m_Position),
-                m_Elevation  = new float2(0, 0),
-                m_Length     = math.distance(startNodePosition.m_Position, endNodePosition.m_Position),
-                m_FixedIndex = -1,
-            });
+            ecb.AddComponent(
+                entity,
+                new NetCourse {
+                    m_StartPosition = new CoursePos {
+                        m_Entity        = Entity.Null,
+                        m_Position      = startNodePosition.m_Position,
+                        m_Rotation      = startNodePosition.m_Rotation,
+                        m_Elevation     = startNodePosition.m_Position.y,
+                        m_CourseDelta   = 0,
+                        m_SplitPosition = 0,
+                        m_Flags         = CoursePosFlags.IsFirst | CoursePosFlags.IsRight | CoursePosFlags.IsLeft,
+                        m_ParentMesh    = -1,
+                    },
+                    m_EndPosition = new CoursePos {
+                        m_Entity        = Entity.Null,
+                        m_Position      = endNodePosition.m_Position,
+                        m_Rotation      = endNodePosition.m_Rotation,
+                        m_Elevation     = endNodePosition.m_Position.y,
+                        m_CourseDelta   = 1,
+                        m_SplitPosition = 0,
+                        m_Flags         = CoursePosFlags.IsLast | CoursePosFlags.IsRight | CoursePosFlags.IsLeft,
+                        m_ParentMesh    = -1,
+                    },
+                    m_Curve = new Bezier4x3(startNodePosition.m_Position, startNodePosition.m_Position, endNodePosition.m_Position, endNodePosition.m_Position),
+                    m_Elevation = new float2(0, 0),
+                    m_Length = math.distance(startNodePosition.m_Position, endNodePosition.m_Position),
+                    m_FixedIndex = -1,
+                });
 
             ecb.AddComponent(entity, default(OwnerDefinition));
 
@@ -379,8 +385,6 @@ namespace Platter.Systems {
             //+ m_Prefab    "Entity.Null"   Unity.Entities.Entity
             //+ m_Rotation  { quaternion(0f, 0f, 0f, 0f)}
             //Unity.Mathematics.quaternion
-
         }
     }
 }
-

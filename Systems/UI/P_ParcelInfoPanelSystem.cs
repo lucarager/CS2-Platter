@@ -1,71 +1,46 @@
-﻿// <copyright file="P_SelectedInfoPanelSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_ParcelInfoPanelSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Colossal.Entities;
-using Game.Prefabs;
-
 namespace Platter.Systems {
+    #region Using Statements
+
     using System;
+    using Colossal.Entities;
     using Colossal.UI.Binding;
+    using Components;
+    using Extensions;
+    using Game.Prefabs;
     using Game.Tools;
-    using Game.UI.InGame;
-    using Platter.Components;
-    using Platter.Extensions;
-    using Platter.Utils;
     using Unity.Entities;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
     /// </summary>
     public partial class P_ParcelInfoPanelSystem : ExtendedInfoSectionBase {
+        private ObjectToolSystem           m_ObjectToolSystem;
+        private P_ZoneCacheSystem          m_ZoneCacheSystem;
         private PrefixedLogger             m_Log;
         private ToolSystem                 m_ToolSystem;
-        private P_ZoneCacheSystem          m_ZoneCacheSystem;
-        private ObjectToolSystem           m_ObjectToolSystem;
-        private ValueBindingHelper<UIData> m_DataBinding;
         private ValueBindingHelper<Entity> m_DataBuildingBinding;
         private ValueBindingHelper<Entity> m_DataRoadBinding;
-
-        public readonly struct UIData : IJsonWritable {
-            public readonly string Name;
-            public readonly string Zoning;
-
-            public UIData(string name,
-                          string zoning) {
-                Name   = name;
-                Zoning = zoning;
-            }
-
-            /// <inheritdoc/>
-            public void Write(IJsonWriter writer) {
-                writer.TypeBegin(GetType().FullName);
-
-                writer.PropertyName("name");
-                writer.Write(Name);
-
-                writer.PropertyName("zoning");
-                writer.Write(Zoning);
-
-                writer.TypeEnd();
-            }
-        }
+        private ValueBindingHelper<UIData> m_DataBinding;
 
         /// <inheritdoc/>
         protected override string group => "Platter";
 
         /// <inheritdoc/>
-        public override void OnWriteProperties(IJsonWriter writer) {
-        }
+        public override void OnWriteProperties(IJsonWriter writer) { }
 
         /// <inheritdoc/>
-        protected override void OnProcess() {
-        }
+        protected override void OnProcess() { }
 
         /// <inheritdoc/>
-        protected override void Reset() {
-        }
+        protected override void Reset() { }
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -73,7 +48,7 @@ namespace Platter.Systems {
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_ParcelInfoPanelSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             // Add section to UI System
             m_InfoUISystem.AddMiddleSection(this);
@@ -84,9 +59,9 @@ namespace Platter.Systems {
             m_ZoneCacheSystem  = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
 
             // Bindings
-            m_DataBinding         = CreateBinding<UIData>("INFOPANEL_PARCEL_DATA", new UIData());
-            m_DataBuildingBinding = CreateBinding<Entity>("INFOPANEL_PARCEL_DATA_BUILDING", Entity.Null);
-            m_DataRoadBinding     = CreateBinding<Entity>("INFOPANEL_PARCEL_DATA_ROAD", Entity.Null);
+            m_DataBinding         = CreateBinding("INFOPANEL_PARCEL_DATA", new UIData());
+            m_DataBuildingBinding = CreateBinding("INFOPANEL_PARCEL_DATA_BUILDING", Entity.Null);
+            m_DataRoadBinding     = CreateBinding("INFOPANEL_PARCEL_DATA_ROAD", Entity.Null);
             CreateTrigger("INFOPANEL_PARCEL_RELOCATE", new Action<Entity>(OnRelocate));
         }
 
@@ -100,8 +75,8 @@ namespace Platter.Systems {
                 var prefabRef = EntityManager.GetComponentData<PrefabRef>(selectedEntity);
 
                 m_DataBinding.Value = new UIData(
-                    name: prefabRef.ToString(),
-                    zoning: hasZone ? zoneData.Name : ""
+                    prefabRef.ToString(),
+                    hasZone ? zoneData.Name : ""
                 );
                 m_DataBuildingBinding.Value = parcel.m_Building;
                 m_DataRoadBinding.Value     = parcel.m_RoadEdge;
@@ -126,6 +101,30 @@ namespace Platter.Systems {
         private void OnRelocate(Entity entity) {
             m_ObjectToolSystem.StartMoving(entity);
             m_ToolSystem.activeTool = m_ObjectToolSystem;
+        }
+
+        public readonly struct UIData : IJsonWritable {
+            public readonly string Name;
+            public readonly string Zoning;
+
+            public UIData(string name,
+                          string zoning) {
+                Name   = name;
+                Zoning = zoning;
+            }
+
+            /// <inheritdoc/>
+            public void Write(IJsonWriter writer) {
+                writer.TypeBegin(GetType().FullName);
+
+                writer.PropertyName("name");
+                writer.Write(Name);
+
+                writer.PropertyName("zoning");
+                writer.Write(Zoning);
+
+                writer.TypeEnd();
+            }
         }
     }
 }

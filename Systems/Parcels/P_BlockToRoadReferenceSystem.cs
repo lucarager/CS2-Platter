@@ -1,40 +1,45 @@
-﻿// <copyright file="P_ParcelBlockToRoadReferenceSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_BlockToRoadReferenceSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using Colossal.Entities;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Tools;
     using Game.Zones;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for adding the "Owner" component to a block when a parcel and road get connected.
     /// This is what marks a block as a valid spawn location to the vanilla ZoneSpawnSystem.
     /// </summary>
     public partial class P_BlockToRoadReferenceSystem : GameSystemBase {
-        // Logger
-        private PrefixedLogger m_Log;
-
-        // Barriers & Buffers
-        private ModificationBarrier5 m_ModificationBarrier;
         private EntityCommandBuffer m_CommandBuffer;
 
         // Queries
         private EntityQuery m_ParcelUpdatedQuery;
+
+        // Barriers & Buffers
+        private ModificationBarrier5 m_ModificationBarrier;
+
+        // Logger
+        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
             m_Log = new PrefixedLogger(nameof(P_BlockToRoadReferenceSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
@@ -50,7 +55,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         // Todo convert to job for perf
         protected override void OnUpdate() {
-            m_Log.Debug($"OnUpdate() -- Updating Percel->Block->Road ownership references");
+            m_Log.Debug("OnUpdate() -- Updating Percel->Block->Road ownership references");
 
             m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
 
@@ -70,7 +75,7 @@ namespace Platter.Systems {
                     var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
 
                     curvePosition.m_CurvePosition = parcel.m_CurvePosition;
-                    m_CommandBuffer.SetComponent<CurvePosition>(blockEntity, curvePosition);
+                    m_CommandBuffer.SetComponent(blockEntity, curvePosition);
 
                     m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating Block's Owner ({parcel.m_RoadEdge})");
 
@@ -89,9 +94,9 @@ namespace Platter.Systems {
                     } else {
                         if (EntityManager.TryGetComponent<Owner>(blockEntity, out var owner)) {
                             owner.m_Owner = parcel.m_RoadEdge;
-                            m_CommandBuffer.SetComponent<Owner>(blockEntity, owner);
+                            m_CommandBuffer.SetComponent(blockEntity, owner);
                         } else {
-                            m_CommandBuffer.AddComponent<Owner>(blockEntity, new Owner(parcel.m_RoadEdge));
+                            m_CommandBuffer.AddComponent(blockEntity, new Owner(parcel.m_RoadEdge));
                         }
                     }
                 }

@@ -3,27 +3,28 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System.Collections.Generic;
-using Unity.Collections;
-using Unity.Entities;
-using UnityEngine;
-using Game.Prefabs; // Added to reference SpawnableBuildingData
-using Platter.Components; // Added to reference ParcelData
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Prefabs;
+    using Unity.Collections;
+    using Unity.Entities;
     using Unity.Mathematics;
+
+    #endregion
 
     /// <summary>
     /// System responsible for caching Building Information for other systems.
     /// </summary>
     public partial class P_BuildingCacheSystem : PlatterGameSystemBase {
+        // Queries
+        private EntityQuery m_BuildingQuery;
+
         // Data
         private NativeHashMap<float3, int> m_BuildingCount;
-
-        // Queries
-        private EntityQuery                m_BuildingQuery;
 
         public int GetBuildingCount(ushort zoneIndex, int lotWidth, int lotDepth) {
             var key = new float3(
@@ -48,7 +49,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             m_BuildingQuery = SystemAPI.QueryBuilder()
-                                       .WithAll<BuildingData, SpawnableBuildingData>() 
+                                       .WithAll<BuildingData, SpawnableBuildingData>()
                                        .Build();
 
             m_BuildingCount = new NativeHashMap<float3, int>(5, Allocator.Persistent);
@@ -59,8 +60,8 @@ namespace Platter.Systems {
             m_BuildingCount.Dispose();
             base.OnDestroy();
         }
-        protected override void OnUpdate() {
-        }
+
+        protected override void OnUpdate() { }
 
         protected override void OnGameLoadingComplete(Purpose  purpose,
                                                       GameMode mode) {

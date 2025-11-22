@@ -82,13 +82,13 @@ namespace Platter.Systems {
         }
 
         private struct CellData {
-            public int2     m_Location;
-            public ZoneType m_ZoneType;
+            public int2     Location;
+            public ZoneType ZoneType;
         }
 
         private struct BaseCell {
-            public Entity m_Block;
-            public int2   m_Location;
+            public Entity Block;
+            public int2   Location;
         }
 
 #if USE_BURST
@@ -178,16 +178,16 @@ namespace Platter.Systems {
             private void PaintBlocks(CreationDefinition creationDefinition, Zoning               zoning, ZoneData zoneData,
                                      ZoneType           zoneType,           NativeList<BaseCell> baseCells) {
                 foreach (var baseCell in baseCells) {
-                    var block    = m_BlockCLook[baseCell.m_Block];
+                    var block    = m_BlockCLook[baseCell.Block];
                     var cellData = default(CellData);
-                    cellData.m_Location = baseCell.m_Location;
-                    cellData.m_ZoneType = zoneType;
+                    cellData.Location = baseCell.Location;
+                    cellData.ZoneType = zoneType;
 
-                    if (!math.all((cellData.m_Location >= 0) & (cellData.m_Location < block.m_Size))) {
+                    if (!math.all((cellData.Location >= 0) & (cellData.Location < block.m_Size))) {
                         continue;
                     }
 
-                    var cell = m_CellsBLook[baseCell.m_Block][cellData.m_Location.y * block.m_Size.x + cellData.m_Location.x];
+                    var cell = m_CellsBLook[baseCell.Block][cellData.Location.y * block.m_Size.x + cellData.Location.x];
 
                     // Skip if the cell is not visible OR if the Shared flag is NOT set.
                     if ((cell.m_State & CellFlags.Visible) == CellFlags.None ||
@@ -195,15 +195,15 @@ namespace Platter.Systems {
                         continue;
                     }
 
-                    if (!m_ZonedCells.TryGetFirstValue(baseCell.m_Block, out _, out _)) {
-                        m_ZonedBlocks.Add(in baseCell.m_Block);
+                    if (!m_ZonedCells.TryGetFirstValue(baseCell.Block, out _, out _)) {
+                        m_ZonedBlocks.Add(in baseCell.Block);
                     }
 
                     if ((zoning.m_Flags & ZoningFlags.Overwrite) == 0U && !cell.m_Zone.Equals(ZoneType.None)) {
-                        cellData.m_ZoneType = cell.m_Zone;
+                        cellData.ZoneType = cell.m_Zone;
                     }
 
-                    m_ZonedCells.Add(baseCell.m_Block, cellData);
+                    m_ZonedCells.Add(baseCell.Block, cellData);
                 }
             }
 
@@ -213,9 +213,9 @@ namespace Platter.Systems {
                 var cellLocationsList = new NativeList<int2>(1000, Allocator.Temp);
 
                 foreach (var baseCell in baseCells) {
-                    var block            = m_BlockCLook[baseCell.m_Block];
-                    var cellsBuffer      = m_CellsBLook[baseCell.m_Block];
-                    var baseCellLocation = baseCell.m_Location;
+                    var block            = m_BlockCLook[baseCell.Block];
+                    var cellsBuffer      = m_CellsBLook[baseCell.Block];
+                    var baseCellLocation = baseCell.Location;
                     var cell             = cellsBuffer[baseCellLocation.y * block.m_Size.x + baseCellLocation.x];
 
                     var floodFillIterator = new FloodFillIterator(
@@ -327,18 +327,18 @@ namespace Platter.Systems {
                     var cellBuffer = m_CellBLook[blockEntity];
 
                     var cellData = default(CellData);
-                    cellData.m_ZoneType   = m_NewZoneType;
-                    cellData.m_Location.y = 0;
+                    cellData.ZoneType   = m_NewZoneType;
+                    cellData.Location.y = 0;
 
-                    while (cellData.m_Location.y < block.m_Size.y) {
-                        cellData.m_Location.x = 0;
+                    while (cellData.Location.y < block.m_Size.y) {
+                        cellData.Location.x = 0;
 
-                        while (cellData.m_Location.x < block.m_Size.x) {
-                            var num  = cellData.m_Location.y * block.m_Size.x + cellData.m_Location.x;
+                        while (cellData.Location.x < block.m_Size.x) {
+                            var num  = cellData.Location.y * block.m_Size.x + cellData.Location.x;
                             var cell = cellBuffer[num];
 
                             if ((cell.m_State & CellFlags.Visible) != CellFlags.None && (cell.m_State & CellFlags.Shared) == CellFlags.None) {
-                                var cellPosition = ZoneUtils.GetCellPosition(block, cellData.m_Location);
+                                var cellPosition = ZoneUtils.GetCellPosition(block, cellData.Location);
                                 if (MathUtils.Intersect(m_Quad, cellPosition.xz) &&
                                     m_Overwrite | cell.m_Zone.Equals(ZoneType.None)) {
                                     if (!m_ZonedCells.TryGetFirstValue(blockEntity, out _, out _)) {
@@ -349,10 +349,10 @@ namespace Platter.Systems {
                                 }
                             }
 
-                            cellData.m_Location.x += 1;
+                            cellData.Location.x += 1;
                         }
 
-                        cellData.m_Location.y += 1;
+                        cellData.Location.y += 1;
                     }
                 }
             }
@@ -415,8 +415,8 @@ namespace Platter.Systems {
                             if ((dynamicBuffer[i * block.m_Size.x + j].m_State & CellFlags.Visible) != CellFlags.None &&
                                 MathUtils.Intersect(quad3, m_Line, out _)) {
                                 var baseCell = default(BaseCell);
-                                baseCell.m_Block    = blockEntity;
-                                baseCell.m_Location = new int2(j, i);
+                                baseCell.Block    = blockEntity;
+                                baseCell.Location = new int2(j, i);
                                 m_BaseCellsList.Add(in baseCell);
                             }
 
@@ -472,11 +472,11 @@ namespace Platter.Systems {
 
                     // Compute cell index within the block from world position
                     var cellData = default(CellData);
-                    cellData.m_Location = ZoneUtils.GetCellIndex(block, Position);
-                    cellData.m_ZoneType = m_NewZoneType;
+                    cellData.Location = ZoneUtils.GetCellIndex(block, Position);
+                    cellData.ZoneType = m_NewZoneType;
 
                     // Ensure index is inside the block
-                    if (!math.all((cellData.m_Location >= 0) & (cellData.m_Location < block.m_Size))) {
+                    if (!math.all((cellData.Location >= 0) & (cellData.Location < block.m_Size))) {
                         return;
                     }
 
@@ -487,7 +487,7 @@ namespace Platter.Systems {
 
                     // Get the cell 
                     var cellBuffer = m_CellsBLook[blockEntity];
-                    var flatIndex  = cellData.m_Location.y * block.m_Size.x + cellData.m_Location.x;
+                    var flatIndex  = cellData.Location.y * block.m_Size.x + cellData.Location.x;
                     var cell       = cellBuffer[flatIndex];
 
                     // Check state mask and original zone
@@ -503,7 +503,7 @@ namespace Platter.Systems {
 
                     // If not overwriting and the cell already has a zone, keep the existing zone
                     if (!m_Overwrite && !cell.m_Zone.Equals(ZoneType.None)) {
-                        cellData.m_ZoneType = cell.m_Zone;
+                        cellData.ZoneType = cell.m_Zone;
                     }
 
                     // Record the cell to apply zoning later and count it
@@ -554,10 +554,10 @@ namespace Platter.Systems {
                 }
 
                 do {
-                    var num  = cellData.m_Location.y * block.m_Size.x + cellData.m_Location.x;
+                    var num  = cellData.Location.y * block.m_Size.x + cellData.Location.x;
                     var cell = dynamicBuffer2[num];
                     cell.m_State        |= CellFlags.Selected;
-                    cell.m_Zone         =  cellData.m_ZoneType;
+                    cell.m_Zone         =  cellData.ZoneType;
                     dynamicBuffer2[num] =  cell;
                 } while (m_ZonedCells.TryGetNextValue(out cellData, ref nativeParallelMultiHashMapIterator));
             }

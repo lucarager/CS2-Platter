@@ -4,9 +4,13 @@
 // </copyright>
 
 namespace Platter.Utils {
+    #region Using Statements
+
     using Colossal.Mathematics;
-    using Platter.Constants;
+    using Constants;
     using Unity.Mathematics;
+
+    #endregion
 
     /// <summary>
     /// Burst-compatible static utility class for parcel geometry calculations.
@@ -47,7 +51,7 @@ namespace Platter.Utils {
         public static Bounds3 GetParcelBounds(float3 parcelSize) {
             return new Bounds3(
                 new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z / 2),
-                new float3(parcelSize.x / 2, parcelSize.y / 2, parcelSize.z / 2)
+                new float3(parcelSize.x  / 2, parcelSize.y  / 2, parcelSize.z  / 2)
             );
         }
 
@@ -61,8 +65,8 @@ namespace Platter.Utils {
             var shiftX = (blockSize.x - parcelSize.x) / 2;
             var shiftZ = (blockSize.z - parcelSize.z) / 2;
             return new Bounds3(
-                new float3(-blockSize.x / 2 - shiftX, -blockSize.y / 2, (-blockSize.z / 2) - shiftZ),
-                new float3(blockSize.x / 2 - shiftX, blockSize.y / 2, (blockSize.z / 2) - shiftZ)
+                new float3(-blockSize.x / 2 - shiftX, -blockSize.y / 2, -blockSize.z / 2 - shiftZ),
+                new float3(blockSize.x  / 2 - shiftX, blockSize.y  / 2, blockSize.z  / 2 - shiftZ)
             );
         }
 
@@ -71,9 +75,7 @@ namespace Platter.Utils {
         /// </summary>
         /// <param name="bounds">The bounds to calculate center for.</param>
         /// <returns>The center point of the bounds.</returns>
-        public static float3 GetCenter(Bounds3 bounds) {
-            return MathUtils.Center(bounds);
-        }
+        public static float3 GetCenter(Bounds3 bounds) { return MathUtils.Center(bounds); }
 
         /// <summary>
         /// Calculates the block center from lot size.
@@ -82,8 +84,8 @@ namespace Platter.Utils {
         /// <param name="lotSize">Lot size in cells (width x depth).</param>
         /// <returns>The center point of the block.</returns>
         public static float3 GetBlockCenter(int2 lotSize) {
-            var parcelSize = GetParcelSize(lotSize);
-            var blockSize = GetBlockSize(lotSize);
+            var parcelSize  = GetParcelSize(lotSize);
+            var blockSize   = GetBlockSize(lotSize);
             var blockBounds = GetBlockBounds(parcelSize, blockSize);
             return GetCenter(blockBounds);
         }
@@ -94,7 +96,7 @@ namespace Platter.Utils {
         /// <param name="lotSize">Lot size in cells (width x depth).</param>
         /// <returns>The center point of the parcel.</returns>
         public static float3 GetParcelCenter(int2 lotSize) {
-            var parcelSize = GetParcelSize(lotSize);
+            var parcelSize   = GetParcelSize(lotSize);
             var parcelBounds = GetParcelBounds(parcelSize);
             return GetCenter(parcelBounds);
         }

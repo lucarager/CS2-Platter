@@ -4,28 +4,31 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using Colossal.Collections;
-    using Colossal.Entities;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Tools;
     using Game.Zones;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for linking parcels to their blocks.
     /// </summary>
     public partial class P_ParcelToBlockReferenceSystem : GameSystemBase {
-        // Logger
-        private PrefixedLogger m_Log;
-
         // Queries
         private EntityQuery m_ParcelBlockQuery;
+
+        // Logger
+        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -46,10 +49,10 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             Dependency = new UpdateBlockJob {
-                m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                m_EntityTypeHandle      = SystemAPI.GetEntityTypeHandle(),
                 m_ParcelOwnerTypeHandle = SystemAPI.GetComponentTypeHandle<ParcelOwner>(),
-                m_CreatedTypeHandle = SystemAPI.GetComponentTypeHandle<Created>(),
-                m_ParcelSubBlockLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>()
+                m_CreatedTypeHandle     = SystemAPI.GetComponentTypeHandle<Created>(),
+                m_ParcelSubBlockLookup  = SystemAPI.GetBufferLookup<ParcelSubBlock>(),
             }.Schedule(m_ParcelBlockQuery, Dependency);
         }
 

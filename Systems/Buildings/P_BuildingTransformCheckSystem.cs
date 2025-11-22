@@ -4,16 +4,21 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
+    using Components;
     using Game;
     using Game.Buildings;
     using Game.Common;
     using Game.Tools;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine;
+    using Utils;
     using Transform = Game.Objects.Transform;
+
+    #endregion
 
     /// <summary>
     /// System responsible for connecting buildings to their parcels.
@@ -55,14 +60,14 @@ namespace Platter.Systems {
             m_Log.Debug("OnUpdate()");
 
             var updateJobHandle = new UpdateCachedTransformJob(
-                entityTypeHandle: SystemAPI.GetEntityTypeHandle(),
-                cachedTransformTypeHandle: SystemAPI.GetComponentTypeHandle<CachedTransform>(),
-                transformTypeHandle: SystemAPI.GetComponentTypeHandle<Transform>(),
-                commandBuffer: m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter()
-            ).ScheduleParallel(m_UpdatedQuery, base.Dependency);
+                SystemAPI.GetEntityTypeHandle(),
+                SystemAPI.GetComponentTypeHandle<CachedTransform>(),
+                SystemAPI.GetComponentTypeHandle<Transform>(),
+                m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter()
+            ).ScheduleParallel(m_UpdatedQuery, Dependency);
 
             m_ModificationBarrier1.AddJobHandleForProducer(updateJobHandle);
-            base.Dependency = updateJobHandle;
+            Dependency = updateJobHandle;
         }
 
 #if BURST
@@ -74,11 +79,12 @@ namespace Platter.Systems {
             private            ComponentTypeHandle<CachedTransform> m_CachedTransformTypeHandle;
             private            EntityCommandBuffer.ParallelWriter   m_CommandBuffer;
 
-            public UpdateCachedTransformJob(EntityTypeHandle entityTypeHandle, ComponentTypeHandle<CachedTransform> cachedTransformTypeHandle, ComponentTypeHandle<Transform> transformTypeHandle, EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTypeHandle = entityTypeHandle;
+            public UpdateCachedTransformJob(EntityTypeHandle               entityTypeHandle,    ComponentTypeHandle<CachedTransform> cachedTransformTypeHandle,
+                                            ComponentTypeHandle<Transform> transformTypeHandle, EntityCommandBuffer.ParallelWriter   commandBuffer) {
+                m_EntityTypeHandle          = entityTypeHandle;
                 m_CachedTransformTypeHandle = cachedTransformTypeHandle;
-                m_TransformTypeHandle = transformTypeHandle;
-                m_CommandBuffer = commandBuffer;
+                m_TransformTypeHandle       = transformTypeHandle;
+                m_CommandBuffer             = commandBuffer;
             }
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
@@ -88,14 +94,17 @@ namespace Platter.Systems {
                 var transformArray       = chunk.GetNativeArray(ref m_TransformTypeHandle);
 
                 for (var i = 0; i < chunk.Count; i++) {
-                    var             currentEntity     = entityArray[i];
-                    var             originalTransform = transformArray[i];
+                    var currentEntity     = entityArray[i];
+                    var originalTransform = transformArray[i];
 
                     if (!chunk.Has(ref m_CachedTransformTypeHandle)) {
-                        m_CommandBuffer.AddComponent(unfilteredChunkIndex, currentEntity, new CachedTransform {
-                            m_Position = originalTransform.m_Position,
-                            m_Rotation = originalTransform.m_Rotation,
-                        });
+                        m_CommandBuffer.AddComponent(
+                            unfilteredChunkIndex,
+                            currentEntity,
+                            new CachedTransform {
+                                m_Position = originalTransform.m_Position,
+                                m_Rotation = originalTransform.m_Rotation,
+                            });
                     } else {
                         var cachedTransform = cachedTransformArray[i];
 
@@ -112,16 +121,16 @@ namespace Platter.Systems {
             }
 
             private static bool Equals(CachedTransform record, Transform original) {
-                if (!UnityEngine.Mathf.Approximately(record.m_Position.x, original.m_Position.x) ||
-                    !UnityEngine.Mathf.Approximately(record.m_Position.y, original.m_Position.y) ||
-                    !UnityEngine.Mathf.Approximately(record.m_Position.z, original.m_Position.z)) {
+                if (!Mathf.Approximately(record.m_Position.x, original.m_Position.x) ||
+                    !Mathf.Approximately(record.m_Position.y, original.m_Position.y) ||
+                    !Mathf.Approximately(record.m_Position.z, original.m_Position.z)) {
                     return false;
                 }
 
-                return UnityEngine.Mathf.Approximately(record.m_Rotation.value.x, original.m_Rotation.value.x) &&
-                       UnityEngine.Mathf.Approximately(record.m_Rotation.value.y, original.m_Rotation.value.y) &&
-                       UnityEngine.Mathf.Approximately(record.m_Rotation.value.z, original.m_Rotation.value.z) &&
-                       UnityEngine.Mathf.Approximately(record.m_Rotation.value.w, original.m_Rotation.value.w);
+                return Mathf.Approximately(record.m_Rotation.value.x, original.m_Rotation.value.x) &&
+                       Mathf.Approximately(record.m_Rotation.value.y, original.m_Rotation.value.y) &&
+                       Mathf.Approximately(record.m_Rotation.value.z, original.m_Rotation.value.z) &&
+                       Mathf.Approximately(record.m_Rotation.value.w, original.m_Rotation.value.w);
             }
         }
     }

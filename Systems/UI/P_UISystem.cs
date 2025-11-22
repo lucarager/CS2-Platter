@@ -4,23 +4,26 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System;
     using System.Linq;
+    using System.Reflection;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
+    using Extensions;
     using Game;
     using Game.Input;
     using Game.Prefabs;
     using Game.Tools;
-    using Game.Zones;
-    using Platter;
-    using Extensions;
     using Game.UI.InGame;
+    using Game.Zones;
     using Settings;
-    using Systems;
-    using Utils;
     using Unity.Mathematics;
+    using Utils;
     using static P_SnapSystem;
+
+    #endregion
 
     /// <summary>
     /// System responsible for UI Bindings & Data Handling.
@@ -35,7 +38,6 @@ namespace Platter.Systems {
         private ObjectToolSystem                 m_ObjectToolSystem;
         private P_AllowSpawnSystem               m_AllowSpawnSystem;
         private P_OverlaySystem                  m_PlatterOverlaySystem;
-        private ToolbarUISystem                  m_ToolbarUISystem;
         private P_SnapSystem                     m_SnapSystem;
         private P_ZoneCacheSystem                m_ZoneCacheSystem;
         private PrefabSystem                     m_PrefabSystem;
@@ -46,19 +48,20 @@ namespace Platter.Systems {
         private ProxyAction                      m_IncreaseBlockWidthAction;
         private ProxyAction                      m_ToggleRender;
         private ProxyAction                      m_ToggleSpawn;
+        private ToolbarUISystem                  m_ToolbarUISystem;
         private ToolSystem                       m_ToolSystem;
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
-        private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
         private ValueBindingHelper<bool>         m_EnableCreateFromZoneBinding;
+        private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
         private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
         private ValueBindingHelper<bool>         m_RenderParcelsBinding;
         private ValueBindingHelper<float>        m_SnapSpacingBinding;
-        private ValueBindingHelper<int>          m_BlockWidthBinding;
-        private ValueBindingHelper<int>          m_BlockWidthMinBinding;
-        private ValueBindingHelper<int>          m_BlockWidthMaxBinding;
         private ValueBindingHelper<int>          m_BlockDepthBinding;
-        private ValueBindingHelper<int>          m_BlockDepthMinBinding;
         private ValueBindingHelper<int>          m_BlockDepthMaxBinding;
+        private ValueBindingHelper<int>          m_BlockDepthMinBinding;
+        private ValueBindingHelper<int>          m_BlockWidthBinding;
+        private ValueBindingHelper<int>          m_BlockWidthMaxBinding;
+        private ValueBindingHelper<int>          m_BlockWidthMinBinding;
         private ValueBindingHelper<int>          m_SnapModeBinding;
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
@@ -118,7 +121,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             var currentlyUsingParcelsInObjectTool = m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
-            var currentlyUsingZoneTool            = m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem; 
+            var currentlyUsingZoneTool            = m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem;
 
             // Enable Tool Shortcuts
             m_IncreaseBlockWidthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
@@ -205,8 +208,8 @@ namespace Platter.Systems {
         /// HandleCreateParcelWithZone
         /// </summary>
         private void HandleCreateParcelWithZone() {
-            m_Log.Debug($"HandleCreateParcelWithZone()");
-            
+            m_Log.Debug("HandleCreateParcelWithZone()");
+
             var currentZonePrefab = (ZonePrefab)m_ToolSystem.activeTool.GetPrefab();
             var entity            = m_PrefabSystem.GetEntity(currentZonePrefab);
             var zoneData          = EntityManager.GetComponentData<ZoneData>(entity);
@@ -381,7 +384,7 @@ namespace Platter.Systems {
             // Invoke the private SelectAsset method using reflection
             var method = m_ToolbarUISystem.GetType().GetMethod(
                 "SelectAsset",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (method != null) {
                 method.Invoke(m_ToolbarUISystem, new object[] { assetEntity, true });
@@ -415,7 +418,7 @@ namespace Platter.Systems {
             public readonly string Name;
             public readonly string Thumbnail;
             public readonly string Category;
-            public readonly int Index;
+            public readonly int    Index;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
@@ -423,7 +426,7 @@ namespace Platter.Systems {
             public ZoneUIData(string name,
                               string thumbnail,
                               string category,
-                              int index) {
+                              int    index) {
                 Name      = name;
                 Thumbnail = thumbnail;
                 Category  = category;

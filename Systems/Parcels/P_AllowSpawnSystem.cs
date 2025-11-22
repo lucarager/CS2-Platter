@@ -1,27 +1,31 @@
-﻿// <copyright file="P_ParcelSpawnSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_AllowSpawnSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
+    using Components;
     using Game;
     using Game.Common;
     using Game.Tools;
-    using Platter.Components;
-    using Platter.Utils;
-    using Unity.Collections;
     using Unity.Entities;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for adding/removing the AllowSpawn component.
     /// </summary>
     public partial class P_AllowSpawnSystem : GameSystemBase {
-        // Logger
-        private PrefixedLogger m_Log;
+        private EntityQuery m_NotSpawnableQuery;
 
         // Queries
         private EntityQuery m_SpawnableQuery;
-        private EntityQuery m_NotSpawnableQuery;
+
+        // Logger
+        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -29,23 +33,21 @@ namespace Platter.Systems {
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_AllowSpawnSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             // Queries
             m_SpawnableQuery = SystemAPI.QueryBuilder()
-                                      .WithAll<Parcel, Initialized, ParcelSpawnable>()
-                                      .WithNone<Deleted, Temp>()
-                                      .Build();
+                                        .WithAll<Parcel, Initialized, ParcelSpawnable>()
+                                        .WithNone<Deleted, Temp>()
+                                        .Build();
             m_NotSpawnableQuery = SystemAPI.QueryBuilder()
-                                       .WithAll<Parcel, Initialized>()
-                                       .WithNone<ParcelSpawnable, Deleted, Temp>()
-                                       .Build();
-            
+                                           .WithAll<Parcel, Initialized>()
+                                           .WithNone<ParcelSpawnable, Deleted, Temp>()
+                                           .Build();
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate() {
-        }
+        protected override void OnUpdate() { }
 
         public void UpdateSpawning(bool allowSpawn = true) {
             m_Log.Debug($"UpdateSpawning(allowSpawn={allowSpawn})");

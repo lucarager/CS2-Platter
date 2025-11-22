@@ -4,15 +4,19 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Prefabs;
-    using Platter.Utils;
+    using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
-    using Unity.Collections;
     using UnityEngine;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for generating our parcel prefabs on game load.
@@ -27,10 +31,15 @@ namespace Platter.Systems {
         /// </summary>
         public static readonly int4 BlockSizes = new(2, 2, 6, 6);
 
+        private static BuildingInitializeSystem m_BuildingInitializeSystem;
+
         /// <summary>
         /// Stateful value to only run installation once.
         /// </summary>
         private static bool m_PrefabsAreInstalled;
+
+        // Systems & References
+        private static PrefabSystem m_PrefabSystem;
 
         /// <summary>
         /// Configuration for vanilla prefabas to load for further processing.
@@ -43,20 +52,17 @@ namespace Platter.Systems {
             { "netLane", new PrefabID("NetLaneGeometryPrefab", "Gravel Pavement Transition") },
         };
 
+        private Dictionary<PrefabBase, Entity> m_PrefabEntities;
+
         /// <summary>
         /// Cache for prefabs.
         /// </summary>
         private List<PrefabBase> m_PrefabBases;
-        private Dictionary<PrefabBase, Entity> m_PrefabEntities;
 
         /// <summary>
         /// Cache for prefab entities indexed by PrefabID hash.
         /// </summary>
         private NativeHashMap<int, Entity> m_PrefabCache;
-
-        // Systems & References
-        private static PrefabSystem m_PrefabSystem;
-        private static BuildingInitializeSystem m_BuildingInitializeSystem;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -66,17 +72,17 @@ namespace Platter.Systems {
             base.OnCreate();
 
             m_Log = new PrefixedLogger(nameof(P_PrefabsCreateSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             // Initialize native hash map (initial capacity for 2x6x6 = 72 parcels + 1 category + 1 area)
             m_PrefabCache = new NativeHashMap<int, Entity>(100, Allocator.Persistent);
 
             // Storage
-            m_PrefabBases = new List<PrefabBase>();
+            m_PrefabBases    = new List<PrefabBase>();
             m_PrefabEntities = new Dictionary<PrefabBase, Entity>();
 
             // Systems
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem             = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_BuildingInitializeSystem = World.GetOrCreateSystemManaged<BuildingInitializeSystem>();
         }
 
@@ -89,8 +95,7 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate() {
-        }
+        protected override void OnUpdate() { }
 
         /// <inheritdoc/>
         protected override void OnGamePreload(Purpose purpose, GameMode mode) {
@@ -104,8 +109,8 @@ namespace Platter.Systems {
         }
 
         private void Install() {
-            var logMethodPrefix = $"Install() --";
-            
+            var logMethodPrefix = "Install() --";
+
             // Mark the Install as already _prefabsAreInstalled
             m_PrefabsAreInstalled = true;
 
@@ -131,24 +136,23 @@ namespace Platter.Systems {
             CreateCategoryPrefab((UIAssetCategoryPrefab)prefabBaseDict["uiAssetCategory"], out var uiCategoryPrefab);
 
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
-            for (var i = BlockSizes.x; i <= BlockSizes.z; i++) {
-                for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
-                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab)) {
-                        m_Log.Debug($"Created Parcel Prefab {i}x{j}");
-                    } else {
-                        m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
-                    }
-                    if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, true)) {
-                        m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
-                    } else {
-                        m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
-                    }
+            for (var i = BlockSizes.x; i <= BlockSizes.z; i++)
+            for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab)) {
+                    m_Log.Debug($"Created Parcel Prefab {i}x{j}");
+                } else {
+                    m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
+                }
+
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, true)) {
+                    m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
+                } else {
+                    m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
                 }
             }
 
             m_Log.Debug($"{logMethodPrefix} Completed.");
         }
-
 
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose  purpose,
@@ -161,11 +165,12 @@ namespace Platter.Systems {
             }
         }
 
-        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase, bool placeholder = false) {
-            var prefix     = "Parcel";
-            var name       = $"{prefix} {lotWidth}x{lotDepth}";
-            var icon       = $"coui://platter/{prefix}_{lotWidth}x{lotDepth}.svg";
-            var parcelGeo  = new ParcelGeometry(new int2(lotWidth, lotDepth));
+        private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase,
+                                        bool placeholder = false) {
+            var prefix    = "Parcel";
+            var name      = $"{prefix} {lotWidth}x{lotDepth}";
+            var icon      = $"coui://platter/{prefix}_{lotWidth}x{lotDepth}.svg";
+            var parcelGeo = new ParcelGeometry(new int2(lotWidth, lotDepth));
 
             PrefabBase prefabBase;
             if (placeholder) {
@@ -186,14 +191,14 @@ namespace Platter.Systems {
 
             var placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
             placeableObject.m_ConstructionCost = 0;
-            placeableObject.m_XPReward = 0;
+            placeableObject.m_XPReward         = 0;
             prefabBase.AddComponentFrom(placeableObject);
 
             if (placeholder) {
                 var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
                 placeableLotPrefabUIObject.m_Icon          = icon;
                 placeableLotPrefabUIObject.m_IsDebugObject = false;
-                placeableLotPrefabUIObject.m_Priority      = ((lotWidth - 2) * BlockSizes.z) + lotDepth - 1;
+                placeableLotPrefabUIObject.m_Priority      = (lotWidth - 2) * BlockSizes.z + lotDepth - 1;
                 placeableLotPrefabUIObject.m_Group         = uiCategoryPrefab;
                 placeableLotPrefabUIObject.active          = true;
                 prefabBase.AddComponentFrom(placeableLotPrefabUIObject);
@@ -201,42 +206,42 @@ namespace Platter.Systems {
 
             if (m_PrefabSystem.AddPrefab(prefabBase)) {
                 var prefabEntity = m_PrefabSystem.GetEntity(prefabBase);
-                var prefabID = prefabBase.GetPrefabID();
-                var cacheKey = prefabID.GetHashCode();
-                
+                var prefabID     = prefabBase.GetPrefabID();
+                var cacheKey     = prefabID.GetHashCode();
+
                 m_PrefabCache[cacheKey] = prefabEntity;
                 return true;
-            } else {
-                return false;
             }
+
+            return false;
         }
 
         private bool CreateCategoryPrefab(UIAssetCategoryPrefab originalUICategoryPrefab, out UIAssetCategoryPrefab uiCategoryPrefab) {
-            var name = $"PlatterCat";
-            var icon = $"coui://platter/logo.svg";
+            var name = "PlatterCat";
+            var icon = "coui://platter/logo.svg";
 
             var uiCategoryPrefabBase = ScriptableObject.CreateInstance<UIAssetCategoryPrefab>();
-            uiCategoryPrefabBase.name = name;
+            uiCategoryPrefabBase.name   = name;
             uiCategoryPrefabBase.m_Menu = originalUICategoryPrefab.m_Menu;
 
             var uiObject = ScriptableObject.CreateInstance<UIObject>();
-            uiObject.active = true;
-            uiObject.m_Group = null;
-            uiObject.m_Priority = 100;
-            uiObject.m_Icon = icon;
+            uiObject.active          = true;
+            uiObject.m_Group         = null;
+            uiObject.m_Priority      = 100;
+            uiObject.m_Icon          = icon;
             uiObject.m_IsDebugObject = false;
-            uiObject.m_Icon = icon;
+            uiObject.m_Icon          = icon;
             uiCategoryPrefabBase.AddComponentFrom(uiObject);
 
             var success = m_PrefabSystem.AddPrefab(uiCategoryPrefabBase);
             uiCategoryPrefab = uiCategoryPrefabBase;
-            
+
             if (success) {
                 var prefabID = uiCategoryPrefabBase.GetPrefabID();
                 var cacheKey = prefabID.GetHashCode();
                 m_PrefabCache[cacheKey] = m_PrefabSystem.GetEntity(uiCategoryPrefabBase);
             }
-            
+
             return success;
         }
 
@@ -244,8 +249,8 @@ namespace Platter.Systems {
             var parecelAreaPrefab = (AreaPrefab)originalAreaPrefab.Clone("Parcel Enclosed Area");
 
             var enclosedArea = ScriptableObject.CreateInstance<EnclosedArea>();
-            enclosedArea.name = "EnclosedArea";
-            enclosedArea.m_BorderLaneType = borderPrefab;
+            enclosedArea.name               = "EnclosedArea";
+            enclosedArea.m_BorderLaneType   = borderPrefab;
             enclosedArea.m_CounterClockWise = false;
 
             parecelAreaPrefab.AddComponentFrom(enclosedArea);
@@ -256,7 +261,7 @@ namespace Platter.Systems {
                 var prefabID = parecelAreaPrefab.GetPrefabID();
                 var cacheKey = prefabID.GetHashCode();
                 m_PrefabCache[cacheKey] = m_PrefabSystem.GetEntity(parecelAreaPrefab);
-                areaPrefab = parecelAreaPrefab;
+                areaPrefab              = parecelAreaPrefab;
                 return true;
             }
 
@@ -267,15 +272,11 @@ namespace Platter.Systems {
         /// <summary>
         /// Get a cached prefab entity by PrefabID.
         /// </summary>
-        public bool TryGetCachedPrefab(PrefabID prefabID, out Entity entity) {
-            return m_PrefabCache.TryGetValue(prefabID.GetHashCode(), out entity);
-        }
+        public bool TryGetCachedPrefab(PrefabID prefabID, out Entity entity) { return m_PrefabCache.TryGetValue(prefabID.GetHashCode(), out entity); }
 
         /// <summary>
         /// Get a readonly version of the cache for use in Burst jobs.
         /// </summary>
-        public NativeHashMap<int, Entity>.ReadOnly GetReadOnlyPrefabCache() {
-            return m_PrefabCache.AsReadOnly();
-        }
+        public NativeHashMap<int, Entity>.ReadOnly GetReadOnlyPrefabCache() { return m_PrefabCache.AsReadOnly(); }
     }
 }

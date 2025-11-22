@@ -4,6 +4,8 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using Components;
     using Game;
     using Game.Common;
@@ -14,6 +16,8 @@ namespace Platter.Systems {
     using Unity.Mathematics;
     using Utils;
 
+    #endregion
+
     /// <summary>
     /// System responsible for initializing ParcelPrefab data.
     /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
@@ -21,9 +25,9 @@ namespace Platter.Systems {
     public partial class P_ParcelInitializeSystem : GameSystemBase {
         private const GeometryFlags PermGeometryFlags        = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority;
         private const GeometryFlags PlaceholderGeometryFlags = GeometryFlags.WalkThrough | GeometryFlags.Brushable;
+        private       EntityQuery   m_ParcelPlaceholderPrefabQuery;
 
         private EntityQuery    m_ParcelPrefabQuery;
-        private EntityQuery    m_ParcelPlaceholderPrefabQuery;
         private PrefabSystem   m_PrefabSystem;
         private PrefixedLogger m_Log;
 
@@ -39,12 +43,12 @@ namespace Platter.Systems {
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             m_ParcelPrefabQuery = SystemAPI.QueryBuilder()
-                                     .WithAll<PrefabData, Created>()
-                                     .WithAllRW<ParcelData>()
-                                     .WithAllRW<ObjectGeometryData>()
-                                     .WithAllRW<PlaceableObjectData>()
-                                     .WithNone<ParcelPlaceholderData>()
-                                     .Build();
+                                           .WithAll<PrefabData, Created>()
+                                           .WithAllRW<ParcelData>()
+                                           .WithAllRW<ObjectGeometryData>()
+                                           .WithAllRW<PlaceableObjectData>()
+                                           .WithNone<ParcelPlaceholderData>()
+                                           .Build();
 
             m_ParcelPlaceholderPrefabQuery = SystemAPI.QueryBuilder()
                                                       .WithAll<PrefabData, Created, ParcelPlaceholderData>()
@@ -118,9 +122,10 @@ namespace Platter.Systems {
 
             // Geometry data
             EntityManager.SetComponentData(
-                prefabEntity, new PlaceableObjectData {
+                prefabEntity,
+                new PlaceableObjectData {
                     m_Flags = PlacementFlags
-                    .OwnerSide, // Ownerside added to make sure EDT doesn't pick up parcels. Temporary fix until we can patch
+                        .OwnerSide, // Ownerside added to make sure EDT doesn't pick up parcels. Temporary fix until we can patch
                     // EDT or Platter accordingly
                     m_PlacementOffset  = new float3(0, 0, 0),
                     m_ConstructionCost = 0,

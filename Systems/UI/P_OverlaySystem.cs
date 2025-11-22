@@ -4,25 +4,35 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Prefabs;
     using Game.Rendering;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using UnityEngine;
+    using Utils;
     using Transform = Game.Objects.Transform;
+
+    #endregion
 
     /// <summary>
     /// Overlay Rendering System.
     /// <todo>Check BuildingLotRenderJob for any optimizations to grab</todo>
     /// </summary>
     public partial class P_OverlaySystem : GameSystemBase {
+        // Data
+        private bool m_ShouldRenderParcelsOverride;
+
+        // Queries
+        private EntityQuery m_ParcelQuery;
+
         // Systems & References
         private OverlayRenderSystem m_OverlayRenderSystem;
         private P_ZoneCacheSystem   m_ZoneCacheSystem;
@@ -30,13 +40,6 @@ namespace Platter.Systems {
 
         // Logger
         private PrefixedLogger m_Log;
-
-        // Queries
-        private EntityQuery m_ParcelQuery;
-
-        // Data
-        private bool m_ShouldRenderParcelsOverride;
-
 
         /// <summary>
         /// Gets or sets a value indicating whether to override render parcels (i.e. for tool).
@@ -100,7 +103,7 @@ namespace Platter.Systems {
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(
                     m_ParcelQuery,
                     JobHandle.CombineDependencies(
-                        base.Dependency,
+                        Dependency,
                         overlayRenderBufferJobHandle,
                         cullingDataJobHandle));
 
@@ -110,7 +113,7 @@ namespace Platter.Systems {
                 drawOverlaysJob.Complete();
                 colorsMap.Dispose();
 
-                base.Dependency = drawOverlaysJob;
+                Dependency = drawOverlaysJob;
             } catch (Exception ex) {
                 m_Log.Error($"Failed on DrawOverlaysJob:\n{ex}");
             }
@@ -131,18 +134,16 @@ namespace Platter.Systems {
             [ReadOnly] private NativeList<PreCullingData>       m_CullingData;
             [ReadOnly] private ComponentTypeHandle<CullingInfo> m_CullingInfoComponentTypeHandle;
 
-            public DrawOverlaysJob(
-                OverlayRenderSystem.Buffer       overlayRenderBuffer,
-                NativeHashMap<ushort, Color>     colorsMap,
-                EntityTypeHandle                 entityTypeHandle,
-                ComponentTypeHandle<Transform>   transformComponentTypeHandle,
-                ComponentTypeHandle<PrefabRef>   prefabRefComponentTypeHandle,
-                ComponentTypeHandle<Parcel>      parcelComponentTypeHandle,
-                ComponentLookup<ParcelData>      parcelDataComponentLookup,
-                ComponentLookup<ParcelSpawnable> parcelSpawnableComponentLookup,
-                NativeList<PreCullingData>       cullingData,
-                ComponentTypeHandle<CullingInfo> cullingInfoComponentTypeHandle
-            ) {
+            public DrawOverlaysJob(OverlayRenderSystem.Buffer       overlayRenderBuffer,
+                                   NativeHashMap<ushort, Color>     colorsMap,
+                                   EntityTypeHandle                 entityTypeHandle,
+                                   ComponentTypeHandle<Transform>   transformComponentTypeHandle,
+                                   ComponentTypeHandle<PrefabRef>   prefabRefComponentTypeHandle,
+                                   ComponentTypeHandle<Parcel>      parcelComponentTypeHandle,
+                                   ComponentLookup<ParcelData>      parcelDataComponentLookup,
+                                   ComponentLookup<ParcelSpawnable> parcelSpawnableComponentLookup,
+                                   NativeList<PreCullingData>       cullingData,
+                                   ComponentTypeHandle<CullingInfo> cullingInfoComponentTypeHandle) {
                 m_OverlayRenderBuffer            = overlayRenderBuffer;
                 m_ColorsMap                      = colorsMap;
                 m_EntityTypeHandle               = entityTypeHandle;
@@ -156,11 +157,10 @@ namespace Platter.Systems {
             }
 
             /// <inheritdoc/>
-            public void Execute(
-                    in ArchetypeChunk chunk,
-                    int               unfilteredChunkIndex,
-                    bool              useEnabledMask,
-                    in v128           chunkEnabledMask) {
+            public void Execute(in ArchetypeChunk chunk,
+                                int               unfilteredChunkIndex,
+                                bool              useEnabledMask,
+                                in v128           chunkEnabledMask) {
                 var enumerator       = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
                 var entitiesArray    = chunk.GetNativeArray(m_EntityTypeHandle);
                 var transformsArray  = chunk.GetNativeArray(ref m_TransformComponentTypeHandle);

@@ -4,11 +4,12 @@
 // </copyright>
 
 namespace Platter.Settings {
+    #region Using Statements
+
     using System.Collections.Generic;
-    using System.Security.Policy;
     using Colossal;
-    using Game.Tools;
-    using Platter;
+
+    #endregion
 
     /// <summary>
     /// Configures the English (US) localization for Platter Mod.
@@ -155,11 +156,17 @@ namespace Platter.Settings {
                 // FirstLaunch Modal
                 { "PlatterMod.UI.Modals.FirstLaunch.Title", "Thanks for installing Platter!" },
                 { "PlatterMod.UI.Modals.FirstLaunch.Subtitle", "Here's a quick intro to get you started" },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title", "Platter adds \"Parcels\" to the game" },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text", "You can find ploppable parcels in __the new Platter tab__ in the zone toolbar.\r\n Oh, and no need to block or remove vanilla blocks, plop parcels right on top!" },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title", "Parcels work just like vanilla blocks." },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text", "You can use the tools familiar to you to zone and grow buildings.\r\n __Use the Fill zone tool for best results__ - it will limit the flood area to a parcel." },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text", "The __top left Platter menu__ allows you to toggle the parcel overlay and temporarily block buildings growing on parcels." },
+                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title", "Platter adds \"Parcels\" to the game" }, {
+                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text",
+                    "You can find ploppable parcels in __the new Platter tab__ in the zone toolbar.\r\n Oh, and no need to block or remove vanilla blocks, plop parcels right on top!"
+                },
+                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title", "Parcels work just like vanilla blocks." }, {
+                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text",
+                    "You can use the tools familiar to you to zone and grow buildings.\r\n __Use the Fill zone tool for best results__ - it will limit the flood area to a parcel."
+                }, {
+                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text",
+                    "The __top left Platter menu__ allows you to toggle the parcel overlay and temporarily block buildings growing on parcels."
+                },
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial4.Text", "__Advanced Line Tool__ and __MoveIt__ are great mods to use with Platter!" },
                 { "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title", "Disclaimer" }, {
                     "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text",

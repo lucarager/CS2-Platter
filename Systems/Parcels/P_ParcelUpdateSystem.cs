@@ -4,7 +4,8 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using Colossal.Entities;
+    #region Using Statements
+
     using Components;
     using Game;
     using Game.Common;
@@ -19,23 +20,23 @@ namespace Platter.Systems {
     using Unity.Jobs;
     using Unity.Mathematics;
     using Utils;
-    using static UnityEngine.Rendering.DebugUI;
+
+    #endregion
 
     /// <summary>
     /// System responsible for updating Parcel and Cell data when a parcel is placed, moved, or deleted.
     /// </summary>
     public partial class P_ParcelUpdateSystem : GameSystemBase {
-        private EntityQuery          m_DeletedQuery;
-        private EntityQuery          m_UpdatedQuery;
-        private ModificationBarrier2 m_ModificationBarrier2;
-        private PrefixedLogger       m_Log;
-
         // Hardcoded block size minimums
         // This is needed because the game requires
         //   - blocks to be at least 2 wide to not be automatically set to occupied (even though LOTS can be 1 wide, like for townhomes)
         //   - blocks to be 6 deep so that the rendering / culling system does not get confused and not render cells on certain smaller parcel sizes
-        public const int MinBlockDepth = 6;
-        public const int MinBlockWidth = 2;
+        public const int                  MinBlockDepth = 6;
+        public const int                  MinBlockWidth = 2;
+        private      EntityQuery          m_DeletedQuery;
+        private      EntityQuery          m_UpdatedQuery;
+        private      ModificationBarrier2 m_ModificationBarrier2;
+        private      PrefixedLogger       m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -102,16 +103,16 @@ namespace Platter.Systems {
 #endif
         private struct DeleteParcelJob : IJobChunk {
             [ReadOnly] private EntityTypeHandle                   m_EntityTypeHandle;
-            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>         m_SubBlockBufferTypeHandle;
+            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>   m_SubBlockBufferTypeHandle;
             [ReadOnly] private BufferLookup<Cell>                 m_CellLookup;
             private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
             public DeleteParcelJob(EntityTypeHandle entityTypeHandle, BufferTypeHandle<ParcelSubBlock> subBlocBufferTypeHandle, BufferLookup<Cell> cellLookup,
                                    EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTypeHandle        = entityTypeHandle;
+                m_EntityTypeHandle         = entityTypeHandle;
                 m_SubBlockBufferTypeHandle = subBlocBufferTypeHandle;
-                m_CellLookup              = cellLookup;
-                m_CommandBuffer           = commandBuffer;
+                m_CellLookup               = cellLookup;
+                m_CommandBuffer            = commandBuffer;
             }
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
@@ -129,7 +130,7 @@ namespace Platter.Systems {
                         // This prevents shenanigans from the vanilla system that will try to re-zone underlying vanilla cells
                         for (var k = 0; k < cellBuffer.Length; k++) {
                             var cell = cellBuffer[k];
-                            cell.m_Zone = ZoneType.None;
+                            cell.m_Zone   = ZoneType.None;
                             cellBuffer[k] = cell;
                         }
 
@@ -158,14 +159,14 @@ namespace Platter.Systems {
                                    ComponentTypeHandle<Transform>     transformTypeHandle, BufferTypeHandle<ParcelSubBlock> subBlockBufferTypeHandle,
                                    ComponentLookup<ParcelData>        parcelDataLookup,    ComponentLookup<ZoneBlockData>   zoneBlockDataLookup,
                                    EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTypeHandle         = entityTypeHandle;
-                m_ParcelTypeHandle         = parcelTypeHandle;
-                m_PrefabRefTypeHandle      = prefabRefTypeHandle;
-                m_TransformTypeHandle      = transformTypeHandle;
+                m_EntityTypeHandle               = entityTypeHandle;
+                m_ParcelTypeHandle               = parcelTypeHandle;
+                m_PrefabRefTypeHandle            = prefabRefTypeHandle;
+                m_TransformTypeHandle            = transformTypeHandle;
                 m_ParcelSubBlockBufferTypeHandle = subBlockBufferTypeHandle;
-                m_ParcelDataLookup         = parcelDataLookup;
-                m_ZoneBlockDataLookup      = zoneBlockDataLookup;
-                m_CommandBuffer            = commandBuffer;
+                m_ParcelDataLookup               = parcelDataLookup;
+                m_ZoneBlockDataLookup            = zoneBlockDataLookup;
+                m_CommandBuffer                  = commandBuffer;
             }
 
             public void Execute(in ArchetypeChunk chunk, int index, bool useEnabledMask,
@@ -177,13 +178,13 @@ namespace Platter.Systems {
                 var subBlockBufferArray = chunk.GetBufferAccessor(ref m_ParcelSubBlockBufferTypeHandle);
 
                 for (var i = 0; i < entityArray.Length; i++) {
-                    var parcelEntity       = entityArray[i];
-                    var parcel             = parcelArray[i];
-                    var prefabRef          = prefabRefArray[i];
-                    var transform          = transformArray[i];
-                    var subBlockBuffer     = subBlockBufferArray[i];
-                    var parcelData         = m_ParcelDataLookup[prefabRef.m_Prefab];
-                    var isUpdatingExisting = subBlockBuffer.Length > 0;
+                    var    parcelEntity       = entityArray[i];
+                    var    parcel             = parcelArray[i];
+                    var    prefabRef          = prefabRefArray[i];
+                    var    transform          = transformArray[i];
+                    var    subBlockBuffer     = subBlockBufferArray[i];
+                    var    parcelData         = m_ParcelDataLookup[prefabRef.m_Prefab];
+                    var    isUpdatingExisting = subBlockBuffer.Length > 0;
                     Entity blockEntity;
 
                     if (isUpdatingExisting) {
@@ -228,10 +229,11 @@ namespace Platter.Systems {
                     for (var row = 0; row < block.m_Size.y; row++)
                     for (var col = 0; col < block.m_Size.x; col++) {
                         var isBlocked = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
-                        cellBuffer.Add(new Cell {
-                            m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
-                            m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
-                        });
+                        cellBuffer.Add(
+                            new Cell {
+                                m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
+                                m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
+                            });
                     }
                 }
             }

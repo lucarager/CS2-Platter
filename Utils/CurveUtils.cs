@@ -4,9 +4,13 @@
 // </copyright>
 
 namespace Platter.Utils {
+    #region Using Statements
+
     using Colossal.Mathematics;
     using Unity.Mathematics;
     using UnityEngine;
+
+    #endregion
 
     internal class CurveUtils {
         /// <summary>
@@ -17,10 +21,10 @@ namespace Platter.Utils {
         /// <param name="distance">Distance to travel.</param>
         /// <returns>Target t factor.</returns>
         public static float BezierStep(Bezier4x3 bezier, float tStart, float distance) {
-            const float Tolerance = 0.001f;
+            const float Tolerance        = 0.001f;
             const float ToleranceSquared = Tolerance * Tolerance;
 
-            var tEnd = Travel(bezier, tStart, distance);
+            var tEnd         = Travel(bezier, tStart, distance);
             var usedDistance = CubicBezierArcLengthXZGauss04(bezier, tStart, tEnd);
 
             // Twelve iteration maximum for performance and to prevent infinite loops.
@@ -31,8 +35,8 @@ namespace Platter.Utils {
                     break;
                 }
 
-                usedDistance = CubicBezierArcLengthXZGauss04(bezier, tStart, tEnd);
-                tEnd += (distance - usedDistance) / CubicSpeedXZ(bezier, tEnd);
+                usedDistance =  CubicBezierArcLengthXZGauss04(bezier, tStart, tEnd);
+                tEnd         += (distance - usedDistance) / CubicSpeedXZ(bezier, tEnd);
             }
 
             return tEnd;
@@ -46,10 +50,10 @@ namespace Platter.Utils {
         /// <param name="distance">Distance to travel.</param>
         /// <returns>Target t factor.</returns>
         public static float BezierStepReverse(Bezier4x3 bezier, float tStart, float distance) {
-            const float Tolerance = 0.001f;
+            const float Tolerance        = 0.001f;
             const float ToleranceSquared = Tolerance * Tolerance;
 
-            var tEnd = Travel(bezier, tStart, -distance);
+            var tEnd         = Travel(bezier, tStart, -distance);
             var usedDistance = CubicBezierArcLengthXZGauss04(bezier, tEnd, tStart);
 
             // Twelve iteration maximum for performance and to prevent infinite loops.
@@ -60,8 +64,8 @@ namespace Platter.Utils {
                     break;
                 }
 
-                usedDistance = CubicBezierArcLengthXZGauss04(bezier, tEnd, tStart);
-                tEnd -= (distance - usedDistance) / CubicSpeedXZ(bezier, tEnd);
+                usedDistance =  CubicBezierArcLengthXZGauss04(bezier, tEnd, tStart);
+                tEnd         -= (distance - usedDistance) / CubicSpeedXZ(bezier, tEnd);
             }
 
             return tEnd;
@@ -75,7 +79,7 @@ namespace Platter.Utils {
         /// <returns>Integrand of arc length.</returns>
         public static float CubicSpeedXZ(Bezier4x3 bezier, float t) {
             // Pythagorean theorem.
-            var tangent = MathUtils.Tangent(bezier, t);
+            var tangent   = MathUtils.Tangent(bezier, t);
             var derivXsqr = tangent.x * tangent.x;
             var derivZsqr = tangent.z * tangent.z;
 
@@ -111,9 +115,9 @@ namespace Platter.Utils {
         /// <param name="b">b.</param>
         /// <returns>Cubic speed.</returns>
         public static float CubicSpeedXZGaussPoint(Bezier4x3 bezier, float x_i, float w_i, float a, float b) {
-            var linearAdj = (b - a) / 2f;
+            var linearAdj   = (b - a) / 2f;
             var constantAdj = (a + b) / 2f;
-            return w_i * CubicSpeedXZ(bezier, (linearAdj * x_i) + constantAdj);
+            return w_i * CubicSpeedXZ(bezier, linearAdj * x_i + constantAdj);
         }
 
         /// <summary>
@@ -128,31 +132,31 @@ namespace Platter.Utils {
             if (distance < 0f) {
                 // Negative (reverse) direction.
                 distance = 0f - distance;
-                var startT = 0f;
-                var endT = start;
+                var startT        = 0f;
+                var endT          = start;
                 var startDistance = Vector3.SqrMagnitude(bezier.a - (float3)startPos);
-                var endDistance = 0f;
+                var endDistance   = 0f;
 
                 // Eight steps max.
                 for (var i = 0; i < 8; ++i) {
                     // Calculate current position.
-                    var midT = (startT + endT) * 0.5f;
-                    Vector3 midpoint = MathUtils.Position(bezier, midT);
-                    var midDistance = Vector3.SqrMagnitude(midpoint - startPos);
+                    var     midT        = (startT + endT) * 0.5f;
+                    Vector3 midpoint    = MathUtils.Position(bezier, midT);
+                    var     midDistance = Vector3.SqrMagnitude(midpoint - startPos);
 
                     // Check for nearer match.
                     if (midDistance < distance * distance) {
-                        endT = midT;
+                        endT        = midT;
                         endDistance = midDistance;
                     } else {
-                        startT = midT;
+                        startT        = midT;
                         startDistance = midDistance;
                     }
                 }
 
                 // We've been using square magnitudes for comparison, so rest to true value.
                 startDistance = Mathf.Sqrt(startDistance);
-                endDistance = Mathf.Sqrt(endDistance);
+                endDistance   = Mathf.Sqrt(endDistance);
 
                 // Check for exact match.
                 var fDiff = startDistance - endDistance;
@@ -165,31 +169,31 @@ namespace Platter.Utils {
                 return Mathf.Lerp(endT, startT, Mathf.Clamp01((distance - endDistance) / fDiff));
             } else {
                 // Positive (forward) direction.
-                var startT = start;
-                var endT = 1f;
+                var startT        = start;
+                var endT          = 1f;
                 var startDistance = 0f;
-                var endDistance = Vector3.SqrMagnitude(bezier.d - (float3)startPos);
+                var endDistance   = Vector3.SqrMagnitude(bezier.d - (float3)startPos);
 
                 // Eight steps max.
                 for (var i = 0; i < 8; ++i) {
                     // Calculate current position.
-                    var tMid = (startT + endT) * 0.5f;
-                    Vector3 midPoint = MathUtils.Position(bezier, tMid);
-                    var midDistance = Vector3.SqrMagnitude(midPoint - startPos);
+                    var     tMid        = (startT + endT) * 0.5f;
+                    Vector3 midPoint    = MathUtils.Position(bezier, tMid);
+                    var     midDistance = Vector3.SqrMagnitude(midPoint - startPos);
 
                     // Check for nearer match.
                     if (midDistance < distance * distance) {
-                        startT = tMid;
+                        startT        = tMid;
                         startDistance = midDistance;
                     } else {
-                        endT = tMid;
+                        endT        = tMid;
                         endDistance = midDistance;
                     }
                 }
 
                 // We've been using square magnitudes for comparison, so rest to true value.
                 startDistance = Mathf.Sqrt(startDistance);
-                endDistance = Mathf.Sqrt(endDistance);
+                endDistance   = Mathf.Sqrt(endDistance);
 
                 // Check for exact match.
                 var remainder = endDistance - startDistance;

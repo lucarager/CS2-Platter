@@ -3,20 +3,22 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Unity.Burst;
-
 namespace Platter.Systems {
+    #region Using Statements
+
     using Colossal.Collections;
+    using Components;
     using Game;
     using Game.Common;
-    using Game.Net;
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
-    using Platter.Components;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+
+    #endregion
 
     public partial class P_RoadConnectionSystem : GameSystemBase {
         /// <summary>
@@ -26,14 +28,14 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct UpdateDataJob : IJob {
-            [ReadOnly] public required NativeList<P_RoadConnectionSystem.UpdateData> m_ParcelEntitiesList;
-            [ReadOnly] public required ComponentLookup<Created> m_CreatedComponentLookup;
-            [ReadOnly] public required ComponentLookup<Temp> m_TempComponentLookup;
-            [ReadOnly] public required TrafficConfigurationData m_TrafficConfigurationData;
-            public required ComponentLookup<Parcel> m_ParcelComponentLookup;
-            public required EntityCommandBuffer m_CommandBuffer;
-            public required IconCommandBuffer m_IconCommandBuffer;
-            public required BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
+            [ReadOnly] public required NativeList<UpdateData>        m_ParcelEntitiesList;
+            [ReadOnly] public required ComponentLookup<Created>      m_CreatedComponentLookup;
+            [ReadOnly] public required ComponentLookup<Temp>         m_TempComponentLookup;
+            [ReadOnly] public required TrafficConfigurationData      m_TrafficConfigurationData;
+            public required            ComponentLookup<Parcel>       m_ParcelComponentLookup;
+            public required            EntityCommandBuffer           m_CommandBuffer;
+            public required            IconCommandBuffer             m_IconCommandBuffer;
+            public required            BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
             /// <inheritdoc/>
             public void Execute() {
@@ -69,9 +71,7 @@ namespace Platter.Systems {
                                 if (parcelHasNewRoad) {
                                     m_IconCommandBuffer.Remove(
                                         updateData.m_Parcel,
-                                        m_TrafficConfigurationData.m_RoadConnectionNotification,
-                                        default,
-                                        0
+                                        m_TrafficConfigurationData.m_RoadConnectionNotification
                                     );
                                 } else if (!updateData.m_Deleted) {
                                     m_IconCommandBuffer.Add(
@@ -80,19 +80,14 @@ namespace Platter.Systems {
                                         updateData.m_FrontPos,
                                         IconPriority.Warning,
                                         IconClusterLayer.Default,
-                                        IconFlags.OnTop,
-                                        default,
-                                        false,
-                                        false,
-                                        false,
-                                        0f
+                                        IconFlags.OnTop
                                     );
                                 }
                             }
 
                             // Remove old ConnectedParcel
                             if (parcelHadRoad && m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
-                                CollectionUtils.RemoveValue<ConnectedParcel>(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
+                                CollectionUtils.RemoveValue(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
                             }
 
                             // Update data
@@ -100,7 +95,7 @@ namespace Platter.Systems {
                             parcel.m_CurvePosition                       = updateData.m_CurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
-                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new());
+                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new Updated());
 
                             if (parcelHasNewRoad) {
                                 m_ConnectedParcelsBufferLookup[updateData.m_NewRoad].Add(new ConnectedParcel(updateData.m_Parcel));
@@ -126,12 +121,7 @@ namespace Platter.Systems {
                             updateData.m_FrontPos,
                             IconPriority.Warning,
                             IconClusterLayer.Default,
-                            IconFlags.OnTop,
-                            default,
-                            false,
-                            false,
-                            false,
-                            0f
+                            IconFlags.OnTop
                         );
                     }
                 }

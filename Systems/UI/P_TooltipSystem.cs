@@ -4,6 +4,8 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System.Collections.Generic;
     using Game.Input;
     using Game.Prefabs;
@@ -11,25 +13,26 @@ namespace Platter.Systems {
     using Game.UI.Localization;
     using Game.UI.Tooltip;
     using Settings;
-    using static Game.Modding.ModManager;
+
+    #endregion
 
     /// <summary>
     /// Tooltip System.
     /// </summary>
     public partial class P_TooltipSystem : TooltipSystemBase {
-        private P_BuildingCacheSystem m_BuildingCacheSystem;
-        private ProxyAction           m_DecreaseDepthAction;
-        private ProxyAction           m_DecreaseWidthAction;
-        private ProxyAction           m_IncreaseDepthAction;
-        private ProxyAction           m_IncreaseWidthAction;
-        private ObjectToolSystem      m_ObjectToolSystem;
-        private ToolSystem            m_ToolSystem;
-        private StringTooltip         m_Tooltip_BuildingCount;
         private InputHintTooltip      m_Tooltip_DecreaseDepth;
         private InputHintTooltip      m_Tooltip_DecreaseWidth;
         private InputHintTooltip      m_Tooltip_IncreaseDepth;
         private InputHintTooltip      m_Tooltip_IncreaseWidth;
+        private ObjectToolSystem      m_ObjectToolSystem;
+        private P_BuildingCacheSystem m_BuildingCacheSystem;
         private P_UISystem            m_UISystem;
+        private ProxyAction           m_DecreaseDepthAction;
+        private ProxyAction           m_DecreaseWidthAction;
+        private ProxyAction           m_IncreaseDepthAction;
+        private ProxyAction           m_IncreaseWidthAction;
+        private StringTooltip         m_Tooltip_BuildingCount;
+        private ToolSystem            m_ToolSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -128,8 +131,6 @@ namespace Platter.Systems {
 
         /// <summary>
         /// </summary>
-        private bool CurrentlyUsingParcelsInObjectTool() {
-            return m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
-        }
+        private bool CurrentlyUsingParcelsInObjectTool() { return m_ToolSystem.activePrefab is ParcelPlaceholderPrefab; }
     }
 }

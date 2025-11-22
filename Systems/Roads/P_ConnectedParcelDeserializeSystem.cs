@@ -3,31 +3,34 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Unity.Burst;
-
 namespace Platter.Systems {
+    #region Using Statements
+
+    using Components;
     using Game;
-    using Platter.Components;
-    using Platter.Utils;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for deserializing Parcels to initialize ConnectedParcel buffers.
     /// </summary>
     internal partial class P_ConnectedParcelDeserializeSystem : GameSystemBase {
-        private EntityQuery m_Query;
+        private EntityQuery    m_Query;
         private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            
+
             // Logger
             m_Log = new PrefixedLogger(nameof(P_ConnectedParcelDeserializeSystem));
-            m_Log.Debug($"OnCreate()");
-            
+            m_Log.Debug("OnCreate()");
+
             // Queries
             m_Query = SystemAPI.QueryBuilder()
                                .WithAll<Parcel>()
@@ -38,15 +41,15 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug($"OnUpdate()");
+            m_Log.Debug("OnUpdate()");
 
             var deserializeJobHandle = new DeserializeJob(
-                entityType: SystemAPI.GetEntityTypeHandle(),
-                parcelType: SystemAPI.GetComponentTypeHandle<Parcel>(),
-                connectedParcelsBufferLookup: SystemAPI.GetBufferLookup<ConnectedParcel>()
-            ).Schedule(m_Query, base.Dependency);
+                SystemAPI.GetEntityTypeHandle(),
+                SystemAPI.GetComponentTypeHandle<Parcel>(),
+                SystemAPI.GetBufferLookup<ConnectedParcel>()
+            ).Schedule(m_Query, Dependency);
 
-            base.Dependency = deserializeJobHandle;
+            Dependency = deserializeJobHandle;
         }
 
 #if USE_BURST
@@ -57,15 +60,16 @@ namespace Platter.Systems {
             [ReadOnly] private ComponentTypeHandle<Parcel>   m_ParcelType;
             private            BufferLookup<ConnectedParcel> m_ConnectedParcelsBufferLookup;
 
-            public DeserializeJob(EntityTypeHandle entityType, ComponentTypeHandle<Parcel> parcelType, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup) {
-                m_EntityType = entityType;
-                m_ParcelType = parcelType;
+            public DeserializeJob(EntityTypeHandle              entityType, ComponentTypeHandle<Parcel> parcelType,
+                                  BufferLookup<ConnectedParcel> connectedParcelsBufferLookup) {
+                m_EntityType                   = entityType;
+                m_ParcelType                   = parcelType;
                 m_ConnectedParcelsBufferLookup = connectedParcelsBufferLookup;
             }
 
             void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
-                var parcelArray = chunk.GetNativeArray<Parcel>(ref m_ParcelType);
+                var parcelArray = chunk.GetNativeArray(ref m_ParcelType);
                 for (var i = 0; i < parcelArray.Length; i++) {
                     var parcelEntity = entityArray[i];
                     var parcel       = parcelArray[i];

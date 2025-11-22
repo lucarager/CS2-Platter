@@ -3,48 +3,61 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Unity.Burst;
-
 namespace Platter.Systems {
+    #region Using Statements
+
     using Colossal.Collections;
     using Colossal.Serialization.Entities;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Serialization;
     using Game.Tools;
-    using Platter.Components;
-    using Platter.Utils;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using Utils;
     using GeometryFlags = Game.Objects.GeometryFlags;
+
+    #endregion
 
     /// <summary>
     /// System responsible for maintaing a QuadSearchTree for parcels.
     /// </summary>
     public partial class P_ParcelSearchSystem : GameSystemBase, IPreDeserialize {
-        public bool Loaded => !m_NeedFirstLoad;
+        private bool        m_NeedFirstLoad;
+        private EntityQuery m_AllQuery;
+
+        // Queries
+        private EntityQuery m_UpdatedQuery;
+        private JobHandle   m_MovingReadDependencies;
+        private JobHandle   m_MovingWriteDependencies;
+        private JobHandle   m_StaticReadDependencies;
+        private JobHandle   m_StaticWriteDependencies;
+
+        // Data & Jobs
+        private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
 
         // Logger
         private PrefixedLogger m_Log;
 
         // Systems
         private ToolSystem m_ToolSystem;
+        public  bool       Loaded => !m_NeedFirstLoad;
 
-        // Queries
-        private EntityQuery m_UpdatedQuery;
-        private EntityQuery m_AllQuery;
+        /// <inheritdoc/>
+        public void PreDeserialize(Context context) {
+            m_Log.Debug("PreDeserialize()");
 
-        // Data & Jobs
-        private NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
-        private JobHandle m_StaticReadDependencies;
-        private JobHandle m_StaticWriteDependencies;
-        private JobHandle m_MovingReadDependencies;
-        private JobHandle m_MovingWriteDependencies;
-        private bool m_NeedFirstLoad;
+            var staticSearchTree = GetStaticSearchTree(false, out var searchTreeJobHandle);
+            searchTreeJobHandle.Complete();
+            staticSearchTree.Clear();
+            m_NeedFirstLoad = true;
+        }
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -52,7 +65,7 @@ namespace Platter.Systems {
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_ParcelSearchSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             // Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
@@ -67,7 +80,7 @@ namespace Platter.Systems {
                                   .WithAll<Parcel, Initialized>()
                                   .WithNone<Temp>()
                                   .Build();
-            
+
             m_SearchTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Persistent);
         }
 
@@ -97,7 +110,7 @@ namespace Platter.Systems {
             var entityQuery = firstLoad ? m_AllQuery : m_UpdatedQuery;
 
             if (firstLoad) {
-                m_Log.Debug($"OnUpdate() -- First load.");
+                m_Log.Debug("OnUpdate() -- First load.");
             }
 
             if (entityQuery.IsEmptyIgnoreFilter) {
@@ -105,22 +118,22 @@ namespace Platter.Systems {
             }
 
             var updateSearchTreeJob = new UpdateSearchTreeJob(
-                entityType: SystemAPI.GetEntityTypeHandle(),
-                ownerType: SystemAPI.GetComponentTypeHandle<Owner>(),
-                transformType: SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(),
-                prefabRefType: SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                createdType: SystemAPI.GetComponentTypeHandle<Created>(),
-                deletedType: SystemAPI.GetComponentTypeHandle<Deleted>(),
-                overriddenType: SystemAPI.GetComponentTypeHandle<Overridden>(),
-                prefabObjectGeometryData: SystemAPI.GetComponentLookup<ObjectGeometryData>(),
-                editorMode: m_ToolSystem.actionMode.IsEditor(),
-                firstLoad: firstLoad,
-                searchTree: GetStaticSearchTree(false, out var updateSearchTreeJobHandle)
+                SystemAPI.GetEntityTypeHandle(),
+                SystemAPI.GetComponentTypeHandle<Owner>(),
+                SystemAPI.GetComponentTypeHandle<Transform>(),
+                SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                SystemAPI.GetComponentTypeHandle<Created>(),
+                SystemAPI.GetComponentTypeHandle<Deleted>(),
+                SystemAPI.GetComponentTypeHandle<Overridden>(),
+                SystemAPI.GetComponentLookup<ObjectGeometryData>(),
+                m_ToolSystem.actionMode.IsEditor(),
+                firstLoad,
+                GetStaticSearchTree(false, out var updateSearchTreeJobHandle)
             );
 
-            base.Dependency = updateSearchTreeJob.Schedule(entityQuery, JobHandle.CombineDependencies(base.Dependency, updateSearchTreeJobHandle));
+            Dependency = updateSearchTreeJob.Schedule(entityQuery, JobHandle.CombineDependencies(Dependency, updateSearchTreeJobHandle));
 
-            AddSearchTreeWriter(base.Dependency);
+            AddSearchTreeWriter(Dependency);
         }
 
         public NativeQuadTree<Entity, QuadTreeBoundsXZ> GetStaticSearchTree(bool readOnly, out JobHandle dependencies) {
@@ -128,23 +141,9 @@ namespace Platter.Systems {
             return m_SearchTree;
         }
 
-        public void AddSearchTreeReader(JobHandle jobHandle) {
-            m_StaticReadDependencies = JobHandle.CombineDependencies(m_StaticReadDependencies, jobHandle);
-        }
+        public void AddSearchTreeReader(JobHandle jobHandle) { m_StaticReadDependencies = JobHandle.CombineDependencies(m_StaticReadDependencies, jobHandle); }
 
-        public void AddSearchTreeWriter(JobHandle jobHandle) {
-            m_StaticWriteDependencies = jobHandle;
-        }
-
-        /// <inheritdoc/>
-        public void PreDeserialize(Context context) {
-            m_Log.Debug($"PreDeserialize()");
-
-            var staticSearchTree = GetStaticSearchTree(false, out var searchTreeJobHandle);
-            searchTreeJobHandle.Complete();
-            staticSearchTree.Clear();
-            m_NeedFirstLoad = true;
-        }
+        public void AddSearchTreeWriter(JobHandle jobHandle) { m_StaticWriteDependencies = jobHandle; }
 
 #if USE_BURST
         [BurstCompile]
@@ -152,44 +151,58 @@ namespace Platter.Systems {
         private struct UpdateSearchTreeJob : IJobChunk {
             [ReadOnly]
             public EntityTypeHandle m_EntityType;
+
             [ReadOnly]
             public ComponentTypeHandle<Owner> m_OwnerType;
+
             [ReadOnly]
-            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
+            public ComponentTypeHandle<Transform> m_TransformType;
+
             [ReadOnly]
             public ComponentTypeHandle<PrefabRef> m_PrefabRefType;
+
             [ReadOnly]
             public ComponentTypeHandle<Created> m_CreatedType;
+
             [ReadOnly]
             public ComponentTypeHandle<Deleted> m_DeletedType;
+
             [ReadOnly]
             public ComponentTypeHandle<Overridden> m_OverriddenType;
+
             [ReadOnly]
             public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
+
             [ReadOnly]
             public bool m_EditorMode;
+
             [ReadOnly]
             public bool m_FirstLoad;
+
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
 
-            public UpdateSearchTreeJob(EntityTypeHandle entityType, ComponentTypeHandle<Owner> ownerType, ComponentTypeHandle<Transform> transformType, ComponentTypeHandle<PrefabRef> prefabRefType, ComponentTypeHandle<Created> createdType, ComponentTypeHandle<Deleted> deletedType, ComponentTypeHandle<Overridden> overriddenType, ComponentLookup<ObjectGeometryData> prefabObjectGeometryData, bool editorMode, bool firstLoad, NativeQuadTree<Entity, QuadTreeBoundsXZ> searchTree) {
-                m_EntityType = entityType;
-                m_OwnerType = ownerType;
-                m_TransformType = transformType;
-                m_PrefabRefType = prefabRefType;
-                m_CreatedType = createdType;
-                m_DeletedType = deletedType;
-                m_OverriddenType = overriddenType;
+            public UpdateSearchTreeJob(EntityTypeHandle entityType, ComponentTypeHandle<Owner> ownerType, ComponentTypeHandle<Transform> transformType,
+                                       ComponentTypeHandle<PrefabRef> prefabRefType, ComponentTypeHandle<Created> createdType,
+                                       ComponentTypeHandle<Deleted> deletedType, ComponentTypeHandle<Overridden> overriddenType,
+                                       ComponentLookup<ObjectGeometryData> prefabObjectGeometryData, bool editorMode, bool firstLoad,
+                                       NativeQuadTree<Entity, QuadTreeBoundsXZ> searchTree) {
+                m_EntityType               = entityType;
+                m_OwnerType                = ownerType;
+                m_TransformType            = transformType;
+                m_PrefabRefType            = prefabRefType;
+                m_CreatedType              = createdType;
+                m_DeletedType              = deletedType;
+                m_OverriddenType           = overriddenType;
                 m_PrefabObjectGeometryData = prefabObjectGeometryData;
-                m_EditorMode = editorMode;
-                m_FirstLoad = firstLoad;
-                m_SearchTree = searchTree;
+                m_EditorMode               = editorMode;
+                m_FirstLoad                = firstLoad;
+                m_SearchTree               = searchTree;
             }
 
             public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
 
-                if (chunk.Has<Deleted>(ref m_DeletedType)) {
+                if (chunk.Has(ref m_DeletedType)) {
                     for (var i = 0; i < entityArray.Length; i++) {
                         var entity = entityArray[i];
                         m_SearchTree.TryRemove(entity);
@@ -198,15 +211,15 @@ namespace Platter.Systems {
                     return;
                 }
 
-                var prefabRefArray = chunk.GetNativeArray<PrefabRef>(ref m_PrefabRefType);
-                var transformArray = chunk.GetNativeArray<Game.Objects.Transform>(ref m_TransformType);
+                var prefabRefArray = chunk.GetNativeArray(ref m_PrefabRefType);
+                var transformArray = chunk.GetNativeArray(ref m_TransformType);
                 for (var j = 0; j < entityArray.Length; j++) {
                     var parcelEntity = entityArray[j];
-                    var prefabRef = prefabRefArray[j];
-                    var transform = transformArray[j];
+                    var prefabRef    = prefabRefArray[j];
+                    var transform    = transformArray[j];
 
                     if (m_PrefabObjectGeometryData.TryGetComponent(prefabRef.m_Prefab, out var objectGeometryData)) {
-                        var bounds = ObjectUtils.CalculateBounds(transform.m_Position, transform.m_Rotation, objectGeometryData);
+                        var bounds     = ObjectUtils.CalculateBounds(transform.m_Position, transform.m_Rotation, objectGeometryData);
                         var boundsMask = BoundsMask.Debug;
 
                         if ((objectGeometryData.m_Flags & GeometryFlags.OccupyZone) != GeometryFlags.None) {
@@ -221,7 +234,7 @@ namespace Platter.Systems {
                             boundsMask |= BoundsMask.HasLot;
                         }
 
-                        if (m_FirstLoad || chunk.Has<Created>(ref m_CreatedType)) {
+                        if (m_FirstLoad || chunk.Has(ref m_CreatedType)) {
                             m_SearchTree.Add(parcelEntity, new QuadTreeBoundsXZ(bounds, boundsMask, objectGeometryData.m_MinLod));
                         } else {
                             m_SearchTree.Update(parcelEntity, new QuadTreeBoundsXZ(bounds, boundsMask, objectGeometryData.m_MinLod));
@@ -230,9 +243,7 @@ namespace Platter.Systems {
                 }
             }
 
-            void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
-                Execute(in chunk);
-            }
+            void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) { Execute(in chunk); }
         }
     }
 }

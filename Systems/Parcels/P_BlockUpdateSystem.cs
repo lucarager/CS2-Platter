@@ -1,33 +1,34 @@
-﻿// <copyright file="P_ParcelBlockUpdateSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_BlockUpdateSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
+    using Components;
     using Game;
     using Game.Common;
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Mathematics;
-    using static UnityEngine.Rendering.DebugUI;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
     public partial class P_BlockUpdateSystem : GameSystemBase {
-        // Logger
-        private PrefixedLogger m_Log;
-
         // Queries
         private EntityQuery m_Query;
+
+        // Logger
+        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -35,7 +36,7 @@ namespace Platter.Systems {
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_BlockUpdateSystem));
-            m_Log.Debug($"OnCreate()");
+            m_Log.Debug("OnCreate()");
 
             // Queries
             m_Query = SystemAPI.QueryBuilder()
@@ -59,23 +60,22 @@ namespace Platter.Systems {
                 var parcelData     = EntityManager.GetComponentData<ParcelData>(prefabRef.m_Prefab);
                 var containedZones = new Dictionary<ZoneType, int>();
 
-                for (var col = 0; col < block.m_Size.x; col++) {
-                    for (var row = 0; row < block.m_Size.y; row++) {
-                        var index = (row * block.m_Size.x) + col;
-                        var cell  = cellBuffer[index];
+                for (var col = 0; col < block.m_Size.x; col++)
+                for (var row = 0; row < block.m_Size.y; row++) {
+                    var index = row * block.m_Size.x + col;
+                    var cell  = cellBuffer[index];
 
-                        // Set all cells outside of parcel bounds to occupied
-                        // todo move this out to its own system
-                        if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
-                            cell.m_State      = CellFlags.Blocked;
-                            cellBuffer[index] = cell;
+                    // Set all cells outside of parcel bounds to occupied
+                    // todo move this out to its own system
+                    if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
+                        cell.m_State      = CellFlags.Blocked;
+                        cellBuffer[index] = cell;
+                    } else {
+                        // Count cell zones if inside parcel
+                        if (containedZones.TryGetValue(cell.m_Zone, out var current)) {
+                            containedZones[cell.m_Zone] = current + 1;
                         } else {
-                            // Count cell zones if inside parcel
-                            if (containedZones.TryGetValue(cell.m_Zone, out var current)) {
-                                containedZones[cell.m_Zone] = current + 1;
-                            } else {
-                                containedZones[cell.m_Zone] = 1;
-                            }
+                            containedZones[cell.m_Zone] = 1;
                         }
                     }
                 }
@@ -86,8 +86,9 @@ namespace Platter.Systems {
                     if (parcelOwner.m_Owner == Entity.Null) {
                         return;
                     }
+
                     parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
-                    EntityManager.SetComponentData<Parcel>(parcelOwner.m_Owner, parcel);
+                    EntityManager.SetComponentData(parcelOwner.m_Owner, parcel);
                 } else {
                     // Otherwise, set it to a "mix"
                     parcel.m_ZoneFlags = ParcelZoneFlags.Mixed;

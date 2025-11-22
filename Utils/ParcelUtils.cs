@@ -3,25 +3,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Game.Prefabs;
-
 namespace Platter.Utils {
+    #region Using Statements
+
+    using Components;
+    using Constants;
     using Game.Objects;
-    using Platter.Components;
-    using Platter.Constants;
+    using Game.Prefabs;
     using Unity.Mathematics;
 
+    #endregion
+
     public static class ParcelUtils {
-        public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
-            var category = placeholder ? "ParcelPlaceholderPrefab" : "ParcelPrefab";
-            var name     = $"Parcel {width}x{depth}";
-            return new PrefabID(category, name);
-        }
-
-        public static PrefabID GetPrefabID(int2 size, bool placeholder = false) {
-            return GetPrefabID(size.x, size.y, placeholder);
-        }
-
         public enum ParcelNode {
             CornerLeftFront,
             CornerLeftBack,
@@ -30,6 +23,14 @@ namespace Platter.Utils {
             Front,
             Back,
         }
+
+        public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
+            var category = placeholder ? "ParcelPlaceholderPrefab" : "ParcelPrefab";
+            var name     = $"Parcel {width}x{depth}";
+            return new PrefabID(category, name);
+        }
+
+        public static PrefabID GetPrefabID(int2 size, bool placeholder = false) { return GetPrefabID(size.x, size.y, placeholder); }
 
         public static float3 NodeMult(ParcelNode node) {
             return node switch {
@@ -51,13 +52,9 @@ namespace Platter.Utils {
             );
         }
 
-        public static float4x4 GetTransformMatrix(Game.Objects.Transform transform) {
-            return new float4x4(transform.m_Rotation, transform.m_Position);
-        }
+        public static float4x4 GetTransformMatrix(Transform transform) { return new float4x4(transform.m_Rotation, transform.m_Position); }
 
-        public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) {
-            return math.transform(trs, center + position);
-        }
+        public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) { return math.transform(trs, center + position); }
 
         public static float3 GetWorldPosition(Transform transform, float3 center) {
             var trs = GetTransformMatrix(transform);

@@ -4,23 +4,26 @@
 // </copyright>
 
 namespace Game.Prefabs {
+    #region Using Statements
+
     using System.Collections.Generic;
     using Platter.Components;
     using Unity.Entities;
+
+    #endregion
 
     /// <summary>
     /// Prefab base of a parcel.
     /// </summary>
     public class ParcelPrefab : StaticObjectPrefab {
-        public int m_LotWidth = 2;
-        public int m_LotDepth = 2;
+        public int             m_LotWidth = 2;
+        public int             m_LotDepth = 2;
         public ZoneBlockPrefab m_ZoneBlock;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelPrefab"/> class.
         /// </summary>
-        public ParcelPrefab() {
-        }
+        public ParcelPrefab() { }
 
         /// <inheritdoc/>
         public override void GetDependencies(List<PrefabBase> prefabs) {

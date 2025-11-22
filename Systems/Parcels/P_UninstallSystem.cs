@@ -4,43 +4,43 @@
 // </copyright>
 
 namespace Platter.Systems {
+    #region Using Statements
+
+    using Components;
     using Game;
     using Game.Common;
-    using Platter.Components;
-    using Platter.Utils;
     using Unity.Collections;
     using Unity.Entities;
+    using Utils;
+
+    #endregion
 
     /// <summary>
     /// System responsible for safely uninstalling Platter.
     /// </summary>
     internal partial class P_UninstallSystem : GameSystemBase {
+        private EntityQuery    m_ParcelQuery;
         private PrefixedLogger m_Log;
-        private EntityQuery m_ParcelQuery;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
             m_Log = new PrefixedLogger(nameof(P_UninstallSystem));
-            m_Log.Debug($"OnCreate()");
-            m_ParcelQuery = base.GetEntityQuery(new ComponentType[]
-            {
-                ComponentType.ReadOnly<Parcel>(),
-            });
+            m_Log.Debug("OnCreate()");
+            m_ParcelQuery = GetEntityQuery(ComponentType.ReadOnly<Parcel>());
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate() {
-        }
+        protected override void OnUpdate() { }
 
         public void UninstallPlatter() {
-            m_Log.Debug($"UninstallPlatter()");
+            m_Log.Debug("UninstallPlatter()");
 
             RemoveAllParcels();
         }
 
         public void RemoveAllParcels() {
-            m_Log.Debug($"RemoveAllParcels()");
+            m_Log.Debug("RemoveAllParcels()");
             var parcelEntities = m_ParcelQuery.ToEntityArray(Allocator.Temp);
 
             m_Log.Debug($"RemoveAllParcels() -- Removing {parcelEntities.Length} parcels...");
@@ -57,7 +57,7 @@ namespace Platter.Systems {
                 EntityManager.AddComponent<Deleted>(entity);
             }
 
-            m_Log.Debug($"RemoveAllParcels() -- Done.");
+            m_Log.Debug("RemoveAllParcels() -- Done.");
         }
     }
 }

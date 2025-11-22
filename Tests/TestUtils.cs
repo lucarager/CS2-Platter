@@ -1,25 +1,23 @@
-﻿// <copyright file="GameTestUtility.cs" company="Luca Rager">
+﻿// <copyright file="TestUtils.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Colossal.IO.AssetDatabase;
-using Colossal.Logging;
-using Game.Assets;
-using Game.SceneFlow;
-using Game.Settings;
-using Game.UI.Debug;
-using Unity.Entities;
-
 namespace Platter.Tests {
+    #region Using Statements
+
+    using Colossal.IO.AssetDatabase;
+    using Game.Assets;
+    using Game.SceneFlow;
+    using Game.UI.Debug;
+    using Unity.Entities;
+    using Hash128 = Colossal.Hash128;
+
+    #endregion
+
     public static class TestUtils {
         public static bool GetSave(string id, out SaveGameMetadata saveGameMetadata) {
-            saveGameMetadata = AssetDatabase.global.GetAsset<SaveGameMetadata>(global::Colossal.Hash128.Parse(id));
+            saveGameMetadata = AssetDatabase.global.GetAsset<SaveGameMetadata>(Hash128.Parse(id));
             return saveGameMetadata != null;
         }
 

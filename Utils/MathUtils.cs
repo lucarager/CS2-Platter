@@ -4,11 +4,13 @@
 // </copyright>
 
 namespace Platter.Utils {
+    #region Using Statements
+
     using Colossal.Mathematics;
 
+    #endregion
+
     public class PlatterMathUtils {
-        public static Bezier4x3 InvertBezier(Bezier4x3 curve) {
-            return new Bezier4x3(curve.d, curve.c, curve.b, curve.a);
-        }
+        public static Bezier4x3 InvertBezier(Bezier4x3 curve) { return new Bezier4x3(curve.d, curve.c, curve.b, curve.a); }
     }
 }

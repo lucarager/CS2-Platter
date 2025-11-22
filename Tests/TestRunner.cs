@@ -3,20 +3,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Colossal.Logging;
-
 namespace Platter.Tests {
+    #region Using Statements
+
+    using System;
+    using System.Threading.Tasks;
+    using Colossal.Logging;
+
+    #endregion
+
     internal class TestRunner {
+        private ILog m_Log;
         private int  describeCounter;
+        private int  failedTests;
         private int  itCounter;
         private int  passedTests;
-        private int  failedTests;
-        private ILog m_Log;
 
         public TestRunner(ILog log) {
             m_Log           = LogManager.GetLogger(PlatterMod.ModName + "Tests");
@@ -72,7 +73,7 @@ namespace Platter.Tests {
         }
 
         public void PrintSummary() {
-            int totalTests = passedTests + failedTests;
+            var totalTests = passedTests + failedTests;
             m_Log.Info(string.Empty);
             m_Log.Info("====== TEST SUMMARY ======");
             m_Log.Info($"Total Tests: {totalTests}");

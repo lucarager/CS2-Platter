@@ -4,7 +4,8 @@
 // </copyright>
 
 namespace Platter.Systems {
-    using System;
+    #region Using Statements
+
     using Colossal.Collections;
     using Colossal.Mathematics;
     using Components;
@@ -18,14 +19,21 @@ namespace Platter.Systems {
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
     using Utils;
     using static Game.Zones.CellCheckHelpers;
     using Block = Game.Zones.Block;
+    using BuildOrder = Game.Zones.BuildOrder;
+    using GeometryFlags = Game.Objects.GeometryFlags;
+    using Node = Game.Areas.Node;
+    using RoadFlags = Game.Prefabs.RoadFlags;
+    using SearchSystem = Game.Areas.SearchSystem;
     using Transform = Game.Objects.Transform;
+    using UpdateCollectSystem = Game.Areas.UpdateCollectSystem;
+
+    #endregion
 
     /// <summary>
     /// Cell Check System. Similar to vanilla's CellCheckSystem.
@@ -38,10 +46,10 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_CellCheckSystem : GameSystemBase {
         private PrefixedLogger                   m_Log;
-        private Game.Zones.SearchSystem          m_ZoneSearchSystem;
+        private SearchSystem                     m_AreaSearchSystem;
         private Game.Net.SearchSystem            m_NetSearchSystem;
-        private Game.Areas.SearchSystem          m_AreaSearchSystem;
-        private Game.Areas.UpdateCollectSystem   m_AreaUpdateCollectSystem;
+        private Game.Zones.SearchSystem          m_ZoneSearchSystem;
+        private UpdateCollectSystem              m_AreaUpdateCollectSystem;
         private Game.Net.UpdateCollectSystem     m_NetUpdateCollectSystem;
         private Game.Objects.UpdateCollectSystem m_ObjectUpdateCollectSystem;
         private Game.Zones.UpdateCollectSystem   m_ZoneUpdateCollectSystem;
@@ -54,10 +62,10 @@ namespace Platter.Systems {
             m_ZoneUpdateCollectSystem   = World.GetOrCreateSystemManaged<Game.Zones.UpdateCollectSystem>();
             m_ObjectUpdateCollectSystem = World.GetOrCreateSystemManaged<Game.Objects.UpdateCollectSystem>();
             m_NetUpdateCollectSystem    = World.GetOrCreateSystemManaged<Game.Net.UpdateCollectSystem>();
-            m_AreaUpdateCollectSystem   = World.GetOrCreateSystemManaged<Game.Areas.UpdateCollectSystem>();
+            m_AreaUpdateCollectSystem   = World.GetOrCreateSystemManaged<UpdateCollectSystem>();
             m_ZoneSearchSystem          = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
             m_NetSearchSystem           = World.GetOrCreateSystemManaged<Game.Net.SearchSystem>();
-            m_AreaSearchSystem          = World.GetOrCreateSystemManaged<Game.Areas.SearchSystem>();
+            m_AreaSearchSystem          = World.GetOrCreateSystemManaged<SearchSystem>();
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_CellCheckSystem));
@@ -103,7 +111,7 @@ namespace Platter.Systems {
                 SystemAPI.GetComponentLookup<AreaGeometryData>(),
                 SystemAPI.GetComponentLookup<ObjectGeometryData>(),
                 SystemAPI.GetComponentLookup<Native>(),
-                SystemAPI.GetBufferLookup<Game.Areas.Node>(),
+                SystemAPI.GetBufferLookup<Node>(),
                 SystemAPI.GetBufferLookup<Triangle>(),
                 SystemAPI.GetBufferLookup<Cell>(),
                 SystemAPI.GetComponentLookup<ValidArea>()
@@ -116,7 +124,7 @@ namespace Platter.Systems {
                 m_SearchTree     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle),
                 m_BlockData      = SystemAPI.GetComponentLookup<Block>(),
                 m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(),
-                m_BuildOrderData = SystemAPI.GetComponentLookup<Game.Zones.BuildOrder>(),
+                m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(),
                 m_ResultQueue    = blockOverlapQueue.AsParallelWriter(),
             }.Schedule(updateBlocksList, 1, JobHandle.CombineDependencies(undoBlockedCellsJobHandle, zoneSearchJobHandle));
             m_ZoneSearchSystem.AddSearchTreeReader(findOverlappingBlocksJobHandle);
@@ -129,15 +137,15 @@ namespace Platter.Systems {
             }.Schedule(findOverlappingBlocksJobHandle);
 
             var clearBlocksJobHandle = new ClearBlocksJob(
-                overlapGroups: overlapGroupsList.AsDeferredJobArray(),
-                parcelOwnerLookup: SystemAPI.GetComponentLookup<ParcelOwner>(),
-                parcelDataLookup: SystemAPI.GetComponentLookup<ParcelData>(),
-                prefabRefLookup: SystemAPI.GetComponentLookup<PrefabRef>(),
-                blockLookup: SystemAPI.GetComponentLookup<Block>(),
-                buildOrderLookup: SystemAPI.GetComponentLookup<Game.Zones.BuildOrder>(),
-                validAreaLookup: SystemAPI.GetComponentLookup<ValidArea>(),
-                blockOverlapArray: blockOverlapList.AsDeferredJobArray(),
-                cellLookup: SystemAPI.GetBufferLookup<Cell>()
+                overlapGroupsList.AsDeferredJobArray(),
+                SystemAPI.GetComponentLookup<ParcelOwner>(),
+                SystemAPI.GetComponentLookup<ParcelData>(),
+                SystemAPI.GetComponentLookup<PrefabRef>(),
+                SystemAPI.GetComponentLookup<Block>(),
+                SystemAPI.GetComponentLookup<BuildOrder>(),
+                SystemAPI.GetComponentLookup<ValidArea>(),
+                blockOverlapList.AsDeferredJobArray(),
+                SystemAPI.GetBufferLookup<Cell>()
             ).Schedule(overlapGroupsList, 1, groupOverlappingBlocksJobHandle);
 
             updateBlocksList.Dispose(groupOverlappingBlocksJobHandle);
@@ -257,12 +265,13 @@ namespace Platter.Systems {
             [ReadOnly]                            private ComponentLookup<AreaGeometryData>                m_PrefabAreaGeometryData;
             [ReadOnly]                            private ComponentLookup<ObjectGeometryData>              m_PrefabObjectGeometryData;
             [ReadOnly]                            private ComponentLookup<Native>                          m_NativeData;
-            [ReadOnly]                            private BufferLookup<Game.Areas.Node>                    m_AreaNodes;
+            [ReadOnly]                            private BufferLookup<Node>                               m_AreaNodes;
             [ReadOnly]                            private BufferLookup<Triangle>                           m_AreaTriangles;
             [NativeDisableParallelForRestriction] private BufferLookup<Cell>                               m_Cells;
             [NativeDisableParallelForRestriction] private ComponentLookup<ValidArea>                       m_ValidAreaData;
 
-            public UndoBlockedSizeOneCellsJob(NativeArray<SortedEntity> blocks, ComponentLookup<Block> blockData, ComponentLookup<ParcelOwner> parcelOwnerData, ComponentLookup<ParcelData> parcelDataData,
+            public UndoBlockedSizeOneCellsJob(NativeArray<SortedEntity> blocks, ComponentLookup<Block> blockData, ComponentLookup<ParcelOwner> parcelOwnerData,
+                                              ComponentLookup<ParcelData> parcelDataData,
                                               NativeQuadTree<Entity, QuadTreeBoundsXZ> netSearchTree,
                                               NativeQuadTree<AreaSearchItem, QuadTreeBoundsXZ> areaSearchTree, ComponentLookup<Owner> ownerData,
                                               ComponentLookup<Transform> transformData, ComponentLookup<EdgeGeometry> edgeGeometryData,
@@ -272,12 +281,12 @@ namespace Platter.Systems {
                                               ComponentLookup<RoadComposition> prefabRoadCompositionData,
                                               ComponentLookup<AreaGeometryData> prefabAreaGeometryData,
                                               ComponentLookup<ObjectGeometryData> prefabObjectGeometryData, ComponentLookup<Native> nativeData,
-                                              BufferLookup<Game.Areas.Node> areaNodes, BufferLookup<Triangle> areaTriangles, BufferLookup<Cell> cells,
+                                              BufferLookup<Node> areaNodes, BufferLookup<Triangle> areaTriangles, BufferLookup<Cell> cells,
                                               ComponentLookup<ValidArea> validAreaData) {
                 m_Blocks                    = blocks;
                 m_BlockData                 = blockData;
-                m_ParcelOwnerData                = parcelOwnerData;
-                m_ParcelDataData                = parcelDataData;
+                m_ParcelOwnerData           = parcelOwnerData;
+                m_ParcelDataData            = parcelDataData;
                 m_NetSearchTree             = netSearchTree;
                 m_AreaSearchTree            = areaSearchTree;
                 m_OwnerData                 = ownerData;
@@ -301,8 +310,8 @@ namespace Platter.Systems {
             public void Execute(int index) {
                 // Disable job until we can figure out a better solution
                 return;
-                var entity       = m_Blocks[index].m_Entity;
-                var block        = m_BlockData[entity];
+                var entity = m_Blocks[index].m_Entity;
+                var block  = m_BlockData[entity];
 
                 // Specifically only reevaluate blocks part of a parcel
                 if (!m_ParcelOwnerData.HasComponent(entity)) {
@@ -320,18 +329,18 @@ namespace Platter.Systems {
 
                 var cellBuffer = m_Cells[entity];
 
-                for (var col = 0; col < block.m_Size.x; col++) {
-                    for (var row = 0; row < block.m_Size.y; row++) {
-                        var i    = (row * block.m_Size.x) + col;
-                        var cell = cellBuffer[i];
+                for (var col = 0; col < block.m_Size.x; col++)
+                for (var row = 0; row < block.m_Size.y; row++) {
+                    var i    = row * block.m_Size.x + col;
+                    var cell = cellBuffer[i];
 
-                        if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
-                            cell.m_State |= CellFlags.Blocked;
-                        } else {
-                            cell.m_State &= ~CellFlags.Blocked;
-                        }
-                        cellBuffer[i] = cell;
+                    if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
+                        cell.m_State |= CellFlags.Blocked;
+                    } else {
+                        cell.m_State &= ~CellFlags.Blocked;
                     }
+
+                    cellBuffer[i] = cell;
                 }
 
                 // Create a copy of the block data and set it to our parcel size
@@ -340,11 +349,11 @@ namespace Platter.Systems {
                 actualBlock.m_Size.y = parcelData.m_LotSize.y;
 
                 // Rest of the code is similar to vanilla's BlockCellsJob
-                var validArea   = default(ValidArea);
+                var validArea = default(ValidArea);
                 validArea.m_Area = new int4(0, actualBlock.m_Size.x, 0, actualBlock.m_Size.y);
-                var bounds = ZoneUtils.CalculateBounds(actualBlock);
-                var corners   = ZoneUtils.CalculateCorners(actualBlock);
-                
+                var bounds  = ZoneUtils.CalculateBounds(actualBlock);
+                var corners = ZoneUtils.CalculateCorners(actualBlock);
+
                 // Iterate over nets and check overlaps
                 var netIterator = new NetIterator {
                     m_BlockEntity               = entity,
@@ -381,7 +390,7 @@ namespace Platter.Systems {
                     m_AreaTriangles          = m_AreaTriangles,
                 };
                 m_AreaSearchTree.Iterate(ref areaIterator);
-                
+
                 // Here we are skipping vailla's CleanBlockedCells
 
                 m_ValidAreaData[entity] = validArea;
@@ -407,7 +416,7 @@ namespace Platter.Systems {
                             if (m_PrefabObjectGeometryData.HasComponent(prefabRef.m_Prefab)) {
                                 var transform          = m_TransformData[owner.m_Owner];
                                 var objectGeometryData = m_PrefabObjectGeometryData[prefabRef.m_Prefab];
-                                if ((objectGeometryData.m_Flags & Game.Objects.GeometryFlags.Circular) != Game.Objects.GeometryFlags.None) {
+                                if ((objectGeometryData.m_Flags & GeometryFlags.Circular) != GeometryFlags.None) {
                                     var @float = math.max(objectGeometryData.m_Size - 0.16f, 0f);
                                     m_IgnoreCircle = new Circle2(@float.x * 0.5f, transform.m_Position.xz);
                                     m_HasIgnore.y  = true;
@@ -525,8 +534,8 @@ namespace Platter.Systems {
                         return;
                     }
 
-                    isEdge &= ((prefabRoadData.m_Flags                  & Game.Prefabs.RoadFlags.EnableZoning) > 0) &
-                              ((prefabCompositionData.m_Flags.m_General & CompositionFlags.General.Elevated)   == 0U);
+                    isEdge &= ((prefabRoadData.m_Flags                  & RoadFlags.EnableZoning)            > 0) &
+                              ((prefabCompositionData.m_Flags.m_General & CompositionFlags.General.Elevated) == 0U);
                     isEdge &= new bool2(
                         (prefabCompositionData.m_Flags.m_Left  & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) == 0U,
                         (prefabCompositionData.m_Flags.m_Right & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) == 0U);
@@ -562,7 +571,7 @@ namespace Platter.Systems {
 
                         corners.a = corners.d;
                         corners.b = corners.c;
-                        bounds = bounds2;
+                        bounds    = bounds2;
                     }
                 }
 
@@ -656,24 +665,24 @@ namespace Platter.Systems {
                     }
                 }
 
-                public Entity m_BlockEntity;
-                public Block m_BlockData;
-                public ValidArea m_ValidAreaData;
-                public Bounds2 m_Bounds;
-                public Quad2 m_Corners;
-                public Quad2 m_IgnoreQuad;
-                public Circle2 m_IgnoreCircle;
-                public bool2 m_HasIgnore;
-                public DynamicBuffer<Cell> m_Cells;
-                public ComponentLookup<Owner> m_OwnerData;
-                public ComponentLookup<Transform> m_TransformData;
-                public ComponentLookup<EdgeGeometry> m_EdgeGeometryData;
-                public ComponentLookup<StartNodeGeometry> m_StartNodeGeometryData;
-                public ComponentLookup<EndNodeGeometry> m_EndNodeGeometryData;
-                public ComponentLookup<Composition> m_CompositionData;
-                public ComponentLookup<PrefabRef> m_PrefabRefData;
+                public Entity                              m_BlockEntity;
+                public Block                               m_BlockData;
+                public ValidArea                           m_ValidAreaData;
+                public Bounds2                             m_Bounds;
+                public Quad2                               m_Corners;
+                public Quad2                               m_IgnoreQuad;
+                public Circle2                             m_IgnoreCircle;
+                public bool2                               m_HasIgnore;
+                public DynamicBuffer<Cell>                 m_Cells;
+                public ComponentLookup<Owner>              m_OwnerData;
+                public ComponentLookup<Transform>          m_TransformData;
+                public ComponentLookup<EdgeGeometry>       m_EdgeGeometryData;
+                public ComponentLookup<StartNodeGeometry>  m_StartNodeGeometryData;
+                public ComponentLookup<EndNodeGeometry>    m_EndNodeGeometryData;
+                public ComponentLookup<Composition>        m_CompositionData;
+                public ComponentLookup<PrefabRef>          m_PrefabRefData;
                 public ComponentLookup<NetCompositionData> m_PrefabCompositionData;
-                public ComponentLookup<RoadComposition> m_PrefabRoadCompositionData;
+                public ComponentLookup<RoadComposition>    m_PrefabRoadCompositionData;
                 public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
             }
 
@@ -775,43 +784,46 @@ namespace Platter.Systems {
                     }
                 }
 
-                public Entity m_BlockEntity;
-                public Block m_BlockData;
-                public ValidArea m_ValidAreaData;
-                public Bounds2 m_Bounds;
-                public Quad2 m_Corners;
-                public DynamicBuffer<Cell> m_Cells;
-                public ComponentLookup<Native> m_NativeData;
-                public ComponentLookup<PrefabRef> m_PrefabRefData;
+                public Entity                            m_BlockEntity;
+                public Block                             m_BlockData;
+                public ValidArea                         m_ValidAreaData;
+                public Bounds2                           m_Bounds;
+                public Quad2                             m_Corners;
+                public DynamicBuffer<Cell>               m_Cells;
+                public ComponentLookup<Native>           m_NativeData;
+                public ComponentLookup<PrefabRef>        m_PrefabRefData;
                 public ComponentLookup<AreaGeometryData> m_PrefabAreaGeometryData;
-                public BufferLookup<Game.Areas.Node> m_AreaNodes;
-                public BufferLookup<Triangle> m_AreaTriangles;
+                public BufferLookup<Node>                m_AreaNodes;
+                public BufferLookup<Triangle>            m_AreaTriangles;
             }
         }
 #if USE_BURST
         [BurstCompile]
 #endif
         public struct ClearBlocksJob : IJobParallelForDefer {
-            [ReadOnly]                            private NativeArray<OverlapGroup>              m_OverlapGroups;
-            [ReadOnly]                            private ComponentLookup<ParcelOwner>           m_ParcelOwnerLookup;
-            [ReadOnly]                            private ComponentLookup<ParcelData>            m_ParcelDataLookup;
-            [ReadOnly]                            private ComponentLookup<PrefabRef>             m_PrefabRefLookup;
-            [ReadOnly]                            private ComponentLookup<Block>                 m_BlockLookup;
-            [ReadOnly]                            private ComponentLookup<Game.Zones.BuildOrder> m_BuildOrderLookup;
-            [NativeDisableParallelForRestriction] private ComponentLookup<ValidArea>             m_ValidAreaLookup;
-            [NativeDisableParallelForRestriction] private NativeArray<BlockOverlap>              m_BlockOverlapArray;
-            [NativeDisableParallelForRestriction] private BufferLookup<Cell>                     m_CellLookup;
+            [ReadOnly]                            private NativeArray<OverlapGroup>    m_OverlapGroups;
+            [ReadOnly]                            private ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
+            [ReadOnly]                            private ComponentLookup<ParcelData>  m_ParcelDataLookup;
+            [ReadOnly]                            private ComponentLookup<PrefabRef>   m_PrefabRefLookup;
+            [ReadOnly]                            private ComponentLookup<Block>       m_BlockLookup;
+            [ReadOnly]                            private ComponentLookup<BuildOrder>  m_BuildOrderLookup;
+            [NativeDisableParallelForRestriction] private ComponentLookup<ValidArea>   m_ValidAreaLookup;
+            [NativeDisableParallelForRestriction] private NativeArray<BlockOverlap>    m_BlockOverlapArray;
+            [NativeDisableParallelForRestriction] private BufferLookup<Cell>           m_CellLookup;
 
-            public ClearBlocksJob(NativeArray<OverlapGroup> overlapGroups, ComponentLookup<ParcelOwner> parcelOwnerLookup, ComponentLookup<ParcelData> parcelDataLookup, ComponentLookup<PrefabRef> prefabRefLookup, ComponentLookup<Block> blockLookup, ComponentLookup<Game.Zones.BuildOrder> buildOrderLookup, ComponentLookup<ValidArea> validAreaLookup, NativeArray<BlockOverlap> blockOverlapArray, BufferLookup<Cell> cellLookup) {
-                m_OverlapGroups = overlapGroups;
+            public ClearBlocksJob(NativeArray<OverlapGroup>   overlapGroups,     ComponentLookup<ParcelOwner> parcelOwnerLookup,
+                                  ComponentLookup<ParcelData> parcelDataLookup,  ComponentLookup<PrefabRef> prefabRefLookup, ComponentLookup<Block> blockLookup,
+                                  ComponentLookup<BuildOrder> buildOrderLookup,  ComponentLookup<ValidArea> validAreaLookup,
+                                  NativeArray<BlockOverlap>   blockOverlapArray, BufferLookup<Cell> cellLookup) {
+                m_OverlapGroups     = overlapGroups;
                 m_ParcelOwnerLookup = parcelOwnerLookup;
-                m_ParcelDataLookup = parcelDataLookup;
-                m_PrefabRefLookup = prefabRefLookup;
-                m_BlockLookup = blockLookup;
-                m_BuildOrderLookup = buildOrderLookup;
-                m_ValidAreaLookup = validAreaLookup;
+                m_ParcelDataLookup  = parcelDataLookup;
+                m_PrefabRefLookup   = prefabRefLookup;
+                m_BlockLookup       = blockLookup;
+                m_BuildOrderLookup  = buildOrderLookup;
+                m_ValidAreaLookup   = validAreaLookup;
                 m_BlockOverlapArray = blockOverlapArray;
-                m_CellLookup = cellLookup;
+                m_CellLookup        = cellLookup;
             }
 
             public void Execute(int index) {
@@ -853,41 +865,41 @@ namespace Platter.Systems {
                     set => m_CurValidArea = value;
                 }
 
-                private ComponentLookup<ParcelOwner>           m_ParcelOwnerLookup;
-                private ComponentLookup<ParcelData>            m_ParcelDataLookup;
-                private ComponentLookup<PrefabRef>             m_PrefabRefLookup;
-                private ComponentLookup<Block>                 m_BlockLookup;
-                private ComponentLookup<ValidArea>             m_ValidAreaLookup;
-                private ComponentLookup<Game.Zones.BuildOrder> m_BuildOrderLookup;
-                private BufferLookup<Cell>                     m_CellBLook;
-                private Entity                                 m_CurBlockEntity;
-                private ValidArea                              m_CurValidArea;
-                private Bounds2                                m_CurBounds;
-                private Block                                  m_CurBlock;
-                private Game.Zones.BuildOrder                  m_CurBuildOrder;
-                private DynamicBuffer<Cell>                    m_CurCellBuffer;
-                private Quad2                                  m_CurCorners;
-                private bool                                   m_CurBlockIsParcel;
-                private int2                                   m_CurBlockParcelBounds;
-                private Entity                                 m_OtherBlockEntity;
-                private Block                                  m_OtherBlock;
-                private ValidArea                              m_OtherValidArea;
-                private Game.Zones.BuildOrder                  m_OtherBuildOrder;
-                private DynamicBuffer<Cell>                    m_OtherCells;
-                private bool                                   m_OtherBlockIsParcel;
-                private int2                                   m_OtherBlockParcelBounds;
+                private ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
+                private ComponentLookup<ParcelData>  m_ParcelDataLookup;
+                private ComponentLookup<PrefabRef>   m_PrefabRefLookup;
+                private ComponentLookup<Block>       m_BlockLookup;
+                private ComponentLookup<ValidArea>   m_ValidAreaLookup;
+                private ComponentLookup<BuildOrder>  m_BuildOrderLookup;
+                private BufferLookup<Cell>           m_CellBLook;
+                private Entity                       m_CurBlockEntity;
+                private ValidArea                    m_CurValidArea;
+                private Bounds2                      m_CurBounds;
+                private Block                        m_CurBlock;
+                private BuildOrder                   m_CurBuildOrder;
+                private DynamicBuffer<Cell>          m_CurCellBuffer;
+                private Quad2                        m_CurCorners;
+                private bool                         m_CurBlockIsParcel;
+                private int2                         m_CurBlockParcelBounds;
+                private Entity                       m_OtherBlockEntity;
+                private Block                        m_OtherBlock;
+                private ValidArea                    m_OtherValidArea;
+                private BuildOrder                   m_OtherBuildOrder;
+                private DynamicBuffer<Cell>          m_OtherCells;
+                private bool                         m_OtherBlockIsParcel;
+                private int2                         m_OtherBlockParcelBounds;
 
-                public OverlapIterator(ComponentLookup<ParcelOwner> parcelOwnerLookup, ComponentLookup<Block>                 blockLookup,
-                                       ComponentLookup<ValidArea>   validAreaLookup,   ComponentLookup<Game.Zones.BuildOrder> buildOrderLookup,
-                                       BufferLookup<Cell>           cellsBLook,        ComponentLookup<ParcelData>            parcelDataLookup,
+                public OverlapIterator(ComponentLookup<ParcelOwner> parcelOwnerLookup, ComponentLookup<Block>      blockLookup,
+                                       ComponentLookup<ValidArea>   validAreaLookup,   ComponentLookup<BuildOrder> buildOrderLookup,
+                                       BufferLookup<Cell>           cellsBLook,        ComponentLookup<ParcelData> parcelDataLookup,
                                        ComponentLookup<PrefabRef>   prefabRefLookup) : this() {
                     m_ParcelOwnerLookup = parcelOwnerLookup;
                     m_BlockLookup       = blockLookup;
                     m_ValidAreaLookup   = validAreaLookup;
                     m_BuildOrderLookup  = buildOrderLookup;
-                    m_CellBLook        = cellsBLook;
-                    m_ParcelDataLookup = parcelDataLookup;
-                    m_PrefabRefLookup = prefabRefLookup;
+                    m_CellBLook         = cellsBLook;
+                    m_ParcelDataLookup  = parcelDataLookup;
+                    m_PrefabRefLookup   = prefabRefLookup;
                 }
 
                 public void SetEntity(Entity curBlockEntity) {
@@ -914,12 +926,12 @@ namespace Platter.Systems {
                 }
 
                 public void Iterate(Entity otherBlock) {
-                    m_OtherBlockEntity     = otherBlock;
-                    m_OtherBlock           = m_BlockLookup[otherBlock];
-                    m_OtherValidArea       = m_ValidAreaLookup[otherBlock];
-                    m_OtherBuildOrder      = m_BuildOrderLookup[otherBlock];
-                    m_OtherCells           = m_CellBLook[otherBlock];
-                    m_OtherBlockIsParcel   = m_ParcelOwnerLookup.HasComponent(otherBlock);
+                    m_OtherBlockEntity       = otherBlock;
+                    m_OtherBlock             = m_BlockLookup[otherBlock];
+                    m_OtherValidArea         = m_ValidAreaLookup[otherBlock];
+                    m_OtherBuildOrder        = m_BuildOrderLookup[otherBlock];
+                    m_OtherCells             = m_CellBLook[otherBlock];
+                    m_OtherBlockIsParcel     = m_ParcelOwnerLookup.HasComponent(otherBlock);
                     m_OtherBlockParcelBounds = default;
 
                     if (m_OtherBlockIsParcel) {

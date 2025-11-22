@@ -3,22 +3,26 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Game.Common;
-using Game.Objects;
-using Game.Tools;
-using Unity.Collections;
-using Unity.Entities;
-using Unity.Jobs;
-
 namespace Platter.Systems {
+    #region Using Statements
+
+    using Game.Common;
+    using Game.Objects;
+    using Game.Tools;
+    using Unity.Collections;
+    using Unity.Entities;
+    using Unity.Jobs;
+
+    #endregion
+
     internal static class P_ParcelCreationDefinitionJob {
         internal struct ParcelCreationDefinitionJob : IJob {
-            [ReadOnly] public required Entity                                  m_ObjectPrefab;
-            [ReadOnly] public required RandomSeed                              m_RandomSeed;
-            [ReadOnly] public required ControlPoint                            m_ControlPoint;
-            [ReadOnly] public required ComponentLookup<Transform>              m_TransformLookup;
-            [ReadOnly] public required ComponentLookup<Game.Objects.Elevation> m_ElevationLookup;
-            public required            EntityCommandBuffer                     m_CommandBuffer;
+            [ReadOnly] public required Entity                     m_ObjectPrefab;
+            [ReadOnly] public required RandomSeed                 m_RandomSeed;
+            [ReadOnly] public required ControlPoint               m_ControlPoint;
+            [ReadOnly] public required ComponentLookup<Transform> m_TransformLookup;
+            [ReadOnly] public required ComponentLookup<Elevation> m_ElevationLookup;
+            public required            EntityCommandBuffer        m_CommandBuffer;
 
             public void Execute() {
                 var controlPoint = m_ControlPoint;
