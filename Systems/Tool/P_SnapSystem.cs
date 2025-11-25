@@ -6,6 +6,7 @@
 namespace Platter.Systems {
     #region Using Statements
 
+    using System;
     using Colossal.Collections;
     using Colossal.Entities;
     using Colossal.Mathematics;
@@ -35,6 +36,7 @@ namespace Platter.Systems {
     /// Ovverides object placement to snap parcels to road sides 
     /// </summary>
     public partial class P_SnapSystem : GameSystemBase {
+        [Flags]
         public enum SnapMode : uint {
             None,
             ZoneSide,
