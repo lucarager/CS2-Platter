@@ -28,11 +28,13 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
+    using HarmonyLib;
     using Newtonsoft.Json;
     using Settings;
     using Systems;
     using Unity.Entities;
     using UnityEngine;
+    using Utils;
     using StreamReader = System.IO.StreamReader;
 
     #endregion
@@ -50,6 +52,11 @@ namespace Platter {
         /// The mod's default actionName.
         /// </summary>
         public const string ModName = "Platter";
+
+        private static readonly string HarmonyPatchId = $"{nameof(Platter)}.{nameof(PlatterMod)}";
+
+        private Harmony        m_Harmony;
+        private PrefixedLogger m_Log;
 
         /// <summary>
         /// Sets mod to test mode
@@ -84,44 +91,60 @@ namespace Platter {
 
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem) {
-            // Set instance reference.
             Instance = this;
 
             // Initialize logger.
-            Log = LogManager.GetLogger(ModName);
-#if IS_DEBUG
-            Log.Info("[Platter] Setting logging level to Debug");
-            Log.effectivenessLevel = Level.Debug;
-#endif
-            Log.Info($"[Platter] Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
+            Log   = LogManager.GetLogger(ModName);
+            m_Log = new PrefixedLogger(nameof(PlatterMod));
+            m_Log.Info($"Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
-            // Initialize Settings
-            Settings = new PlatterModSettings(this);
-
-            // Load i18n
-            GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
-            Log.Info("[Platter] Loaded en-US.");
-            LoadNonEnglishLocalizations();
-            Log.Info("[Platter] Loaded localization files.");
-
-            // Generate i18n files
+            InitializeSettings();
 #if IS_DEBUG && EXPORT_EN_US
             GenerateLanguageFile();
 #endif
-
-            // Apply inflection patches.
             ModifyVabillaSubBlockSerialization(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
+            InitializeHarmonyPatches();
 
-            // Register mod settings to game options UI.
-            Settings.RegisterInOptionsUI();
+            RegisterSystems(updateSystem);
+#if IS_DEBUG
+            AddTests();
+#endif
 
-            // Load saved settings.
-            AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
+            if (RegisterAssets()) {
+                return;
+            }
 
-            // Apply input bindings.
-            Settings.RegisterKeyBindings();
+            m_Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
+        }
 
-            // Activate Systems
+        /// <inheritdoc/>
+        public void OnDispose() {
+            m_Log.Info("OnDispose()");
+            Instance = null;
+
+            if (Settings != null) {
+                Settings.UnregisterInOptionsUI();
+                Settings = null;
+            }
+
+            TeardownHarmonyPatches();
+        }
+
+        private bool RegisterAssets() {
+            m_Log.Debug("RegisterAssets()");
+            if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
+                m_Log.Error("Failed to get executable asset path. Exiting.");
+                return true;
+            }
+
+            var assemblyPath = Path.GetDirectoryName(modAsset.GetMeta().path);
+            UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
+            return false;
+        }
+
+        private void RegisterSystems(UpdateSystem updateSystem) {
+            m_Log.Debug("RegisterSystems()");
+
             // Serializaztion/Deserializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ParcelSubBlockDeserializeSystem>(SystemUpdatePhase.Deserialize);
@@ -151,6 +174,7 @@ namespace Platter {
             updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateBefore<P_RemoveOverriddenSystem>(SystemUpdatePhase.ModificationEnd); // Run after Mod5 when overrides are applied
+            updateSystem.UpdateAt<P_ParcelBlockClassifySystem>(SystemUpdatePhase.ModificationEnd); 
 
             // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);
@@ -165,37 +189,37 @@ namespace Platter {
             updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
-
-#if IS_DEBUG
-            AddTests();
-#endif
-
-            // Add mod UI resource directory to UI resource handler.
-            if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
-                Log.Error("Failed to get executable asset path. Exiting.");
-                return;
-            }
-
-            var assemblyPath = Path.GetDirectoryName(modAsset.GetMeta().path);
-            UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
-
-            Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
         }
 
-        /// <inheritdoc/>
-        public void OnDispose() {
-            Log.Info("[Platter] Disposing");
-            Instance = null;
+        private void InitializeSettings() {
+            m_Log.Debug("InitializeSettings()");
+            Settings = new PlatterModSettings(this);
+            Settings.RegisterInOptionsUI();
+            AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
+            Settings.RegisterKeyBindings();
+            GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
+            LoadNonEnglishLocalizations();
+        }
 
-            // Clear settings menu entry.
-            if (Settings != null) {
-                Settings.UnregisterInOptionsUI();
-                Settings = null;
+        private void InitializeHarmonyPatches() {
+            m_Log.Debug("InitializeHarmonyPatches()");
+
+            m_Harmony = new Harmony(HarmonyPatchId);
+            m_Harmony.PatchAll(typeof(PlatterMod).Assembly);
+            var patchedMethods = m_Harmony.GetPatchedMethods().ToArray();
+
+            foreach (var patchedMethod in patchedMethods) {
+                m_Log.Debug($"InitializeHarmonyPatches() -- Patched method: {patchedMethod.Module.ScopeName}:{patchedMethod.Name}");
             }
+        }
+
+        private void TeardownHarmonyPatches() {
+            m_Log.Debug("TeardownHarmonyPatches()");
+            m_Harmony.UnpatchAll(HarmonyPatchId);
         }
 
         private void GenerateLanguageFile() {
-            Log.Info("[Platter] Exporting localization");
+            m_Log.Debug("GenerateLanguageFile()");
             var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
                                                      .ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
@@ -208,15 +232,16 @@ namespace Platter {
                 File.WriteAllText(exportPath1, str);
                 File.WriteAllText(exportPath2, str);
             } catch (Exception ex) {
-                Log.Error(ex.ToString());
+                m_Log.Error(ex.ToString());
             }
         }
 
         private static string GetThisFilePath([CallerFilePath] string path = null) { return path; }
 
-        private static void AddTests() {
+        private void AddTests() {
+            m_Log.Info("AddTests()");
+
             var log = LogManager.GetLogger(ModName);
-            log.Debug("AddTests()");
 
             var field = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
             if (field == null) {
@@ -309,14 +334,14 @@ namespace Platter {
             var resourceNames = thisAssembly.GetManifestResourceNames();
 
             try {
-                Log.Debug("Reading localizations");
+                m_Log.Debug("Reading localizations");
 
                 foreach (var localeID in GameManager.instance.localizationManager.GetSupportedLocales()) {
                     var resourceName = $"{thisAssembly.GetName().Name}.lang.{localeID}.json";
                     if (resourceNames.Contains(resourceName)) {
-                        Log.Debug($"Found localization file {resourceName}");
+                        m_Log.Debug($"Found localization file {resourceName}");
                         try {
-                            Log.Debug($"Reading embedded translation file {resourceName}");
+                            m_Log.Debug($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
                             using StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
@@ -328,14 +353,14 @@ namespace Platter {
                             }
                         } catch (Exception e) {
                             // Don't let a single failure stop us.
-                            Log.Error(e, $"Exception reading localization from embedded file {resourceName}");
+                            m_Log.Error($"Exception reading localization from embedded file {resourceName}");
                         }
                     } else {
-                        Log.Debug($"Did not find localization file {resourceName}");
+                        m_Log.Debug($"Did not find localization file {resourceName}");
                     }
                 }
             } catch (Exception e) {
-                Log.Error(e, "Exception reading embedded settings localization files");
+                m_Log.Error("Exception reading embedded settings localization files");
             }
         }
     }
