@@ -89,6 +89,10 @@ const themePaths = [
         path: "game-ui/menu/components/whats-new-panel/whats-new-tab/whats-new-tab.module.scss",
         name: "whatsNewTab",
     },
+    {
+        path: "game-ui/game/components/tool-options/tool-options-panel.module.scss",
+        name: "toolOptionsPanel",
+    },
 ];
 
 export const VC = {} as IVanillaComponents;

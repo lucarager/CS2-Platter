@@ -63,8 +63,9 @@ namespace Platter.Systems {
             set => m_SnapSetback = value;
         }
 
-        public static float DefaultSnapDistance { get; } = 0f;
+        public static float MinSnapDistance     { get; } = 0f;
         public static float MaxSnapDistance     { get; } = 16f;
+        public static float DefaultSnapDistance { get; } = MinSnapDistance;
 
         // Props
         public SnapMode CurrentSnapMode {

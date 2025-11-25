@@ -33,6 +33,9 @@ namespace Platter.Systems {
             Plop     = 0,
             RoadEdge = 1,
         }
+        public ZoneType PreZoneType      { get; set; } = ZoneType.None;
+        public bool     ShowContourLines { get; set; } = false;
+        public bool     ShowZones        { get; set; } = false;
 
         private int2                             m_SelectedParcelSize = new(2, 2);
         private ObjectToolSystem                 m_ObjectToolSystem;
@@ -55,6 +58,8 @@ namespace Platter.Systems {
         private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
         private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
         private ValueBindingHelper<bool>         m_RenderParcelsBinding;
+        private ValueBindingHelper<bool>         m_ShowContourLinesBinding;
+        private ValueBindingHelper<bool>         m_ShowZonesBinding;
         private ValueBindingHelper<float>        m_SnapSpacingBinding;
         private ValueBindingHelper<int>          m_BlockDepthBinding;
         private ValueBindingHelper<int>          m_BlockDepthMaxBinding;
@@ -66,7 +71,6 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
-        public  ZoneType                         PreZoneType { get; set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -99,6 +103,8 @@ namespace Platter.Systems {
             m_ZoneDataBinding             = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
             m_RenderParcelsBinding        = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
             m_AllowSpawningBinding        = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
+            m_ShowContourLinesBinding     = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
+            m_ShowZonesBinding            = CreateBinding("SHOW_ZONES", false, SetShowZones);
             m_SnapModeBinding             = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
             m_SnapSpacingBinding          = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
             m_ModalFirstLaunchBinding     = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
@@ -172,6 +178,8 @@ namespace Platter.Systems {
             m_EnableCreateFromZoneBinding.Value = currentlyUsingZoneTool;
             m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
             m_ZoneBinding.Value                 = PreZoneType.m_Index;
+            m_ShowContourLinesBinding.Value     = ShowContourLines;
+            m_ShowZonesBinding.Value            = ShowZones;
 
             // Send down zone data
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
@@ -277,6 +285,22 @@ namespace Platter.Systems {
         /// <summary>
         /// Called from the UI.
         /// </summary>
+        private void SetShowContourLines(bool enabled) {
+            m_Log.Debug($"SetShowContourLines(enabled = {enabled})");
+            ShowContourLines = enabled;
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
+        private void SetShowZones(bool enabled) {
+            m_Log.Debug($"SetShowZones(enabled = {enabled})");
+            ShowZones = enabled;
+        }
+
+        /// <summary>
+        /// Called from the UI.
+        /// </summary>
         private void SetSnapMode(int snapMode) {
             m_Log.Debug($"SetSnapZoneside(snapMode = {snapMode})");
             m_SnapSystem.CurrentSnapMode = (SnapMode)snapMode;
@@ -298,11 +322,11 @@ namespace Platter.Systems {
         /// Called from the UI.
         /// </summary>
         private void SetSnapSpacing(float amount) {
-            m_Log.Debug($"SetSnapRoadside(enabled = {amount})");
-            if (amount < 1f) {
-                amount = 1f;
-            } else if (amount >= MaxSnapDistance) {
-                amount = 100f;
+            m_Log.Debug($"SetSnapSpacing(amount = {amount})");
+            if (amount < MinSnapDistance) {
+                amount = MinSnapDistance;
+            } else if (amount > MaxSnapDistance) {
+                amount = MaxSnapDistance;
             }
 
             m_SnapSystem.CurrentSnapSetback = amount;

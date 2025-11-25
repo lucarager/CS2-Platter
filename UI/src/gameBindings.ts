@@ -22,6 +22,9 @@ export const GAME_BINDINGS = {
     SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
     SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 0),
 
+    SHOW_ZONES: new TwoWayBinding<boolean>("SHOW_ZONES", false),
+    SHOW_CONTOUR_LINES: new TwoWayBinding<boolean>("SHOW_CONTOUR_LINES", false),
+
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ENABLE_CREATE_FROM_ZONE: new TwoWayBinding<boolean>("ENABLE_CREATE_FROM_ZONE", false),
 

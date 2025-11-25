@@ -1,6 +1,6 @@
 import { ModRegistrar, ModuleRegistry } from "cs2/modding";
 import { GAME_BINDINGS } from "gameBindings";
-import { PlatterMouseToolOptions } from "components/mouseToolOptions/mouseToolOptions";
+import { PlatterToolOptionsPanel } from "components/toolOptionsPanel/toolOptionsPanel";
 import { initialize } from "components/vanilla/Components";
 import { ParcelInfoPanelComponent } from "components/infoview/parcel";
 import { BuildingInfoPanelComponent } from "components/infoview/building";
@@ -19,9 +19,9 @@ const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     moduleRegistry.append("Game", WelcomeModal);
 
     moduleRegistry.extend(
-        "game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx",
-        "MouseToolOptions",
-        PlatterMouseToolOptions,
+        "game-ui/game/components/tool-options/tool-options-panel.tsx",
+        "ToolOptionsPanel",
+        PlatterToolOptionsPanel,
     );
 
     moduleRegistry.extend(

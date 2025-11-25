@@ -3,7 +3,7 @@ import { ModuleRegistryExtend } from "cs2/modding";
 import { VC, VT } from "components/vanilla/Components";
 import { useValue } from "cs2/api";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
-import styles from "./mouseToolOptions.module.scss";
+import styles from "./toolOptionsPanel.module.scss";
 import { Dropdown, DropdownToggle, Icon, DropdownItem, Tooltip } from "cs2/ui";
 import { c } from "utils/classes";
 import { VF } from "../vanilla/Components";
@@ -23,6 +23,41 @@ export const ToolModes = [
         icon: "",
     },
 ];
+
+export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
+    const PlatterToolOptionsPanelComponent = (props: any) => {
+        const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
+        const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
+
+        const { translate } = useLocalization();
+        const { children, ...otherProps } = props || {};
+
+        const ToolPanel = (
+            <div className={styles.wrapper}>
+                <div className={[VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection].join(" ")}>
+                    <FocusDisabled>
+                        {/* <ToolModeSection /> */}
+                        <PrezoningSection />
+                        <SnapModeSection />
+                        {snapModeBinding != SnapMode.None ? <SnapRoadsideSection /> : null}
+                        <ParcelWidthSection />
+                        <ParcelDepthSection />
+                        <ToolViewmodeSection />
+                    </FocusDisabled>
+                </div>
+            </div>
+        );
+
+        return (
+            <>
+                <Component {...otherProps}>{children}</Component>
+                {enabledBinding ? ToolPanel : null}
+            </>
+        );
+    };
+
+    return PlatterToolOptionsPanelComponent;
+};
 
 const ToolModeSection = () => {
     const toolModeBinding = useValue(GAME_BINDINGS.TOOL_MODE.binding);
@@ -45,6 +80,35 @@ const ToolModeSection = () => {
                 className={VT.toolButton.button}
                 focusKey={VF.FOCUS_DISABLED}
                 tooltip={translate("PlatterMod.UI.Tooltip.RoadPlatMode")}
+            />
+        </VC.Section>
+    );
+};
+
+const ToolViewmodeSection = () => {
+    const showZonesBinding = useValue(GAME_BINDINGS.SHOW_ZONES.binding);
+    const showContourBinding = useValue(GAME_BINDINGS.SHOW_CONTOUR_LINES.binding);
+    const { translate } = useLocalization();
+
+    return (
+        <VC.Section title={translate("PlatterMod.UI.SectionTitle.ViewLayers")}>
+            <VC.ToolButton
+                src={"Media/Tools/Snap Options/ZoneGrid.svg"}
+                onSelect={() => GAME_BINDINGS.SHOW_ZONES.set(!showZonesBinding)}
+                selected={showZonesBinding}
+                multiSelect={false}
+                className={VT.toolButton.button}
+                focusKey={VF.FOCUS_DISABLED}
+                tooltip={translate("PlatterMod.UI.Tooltip.ShowZones", "ShowZones")}
+            />
+            <VC.ToolButton
+                src={"Media/Tools/Snap Options/ContourLines.svg"}
+                onSelect={() => GAME_BINDINGS.SHOW_CONTOUR_LINES.set(!showContourBinding)}
+                selected={showContourBinding}
+                multiSelect={false}
+                className={VT.toolButton.button}
+                focusKey={VF.FOCUS_DISABLED}
+                tooltip={translate("PlatterMod.UI.Tooltip.ShowContourLines", "ShowContourLines")}
             />
         </VC.Section>
     );
@@ -260,41 +324,4 @@ const ParcelDepthSection = () => {
             />
         </VC.Section>
     );
-};
-
-export const PlatterMouseToolOptions: ModuleRegistryExtend = (Component) => {
-    const PlatterMouseToolOptionsComponent = (props: any) => {
-        const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
-        const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
-
-        const { translate } = useLocalization();
-        const { children, ...otherProps } = props || {};
-
-        const Toolbar = (
-            <div className={styles.moddedSection}>
-                <div className={styles.moddedSection_Header}>
-                    <h1 className={styles.moddedSection_Header_Title}>
-                        {translate("PlatterMod.UI.SectionTitle.ParcelControls")}
-                    </h1>
-                </div>
-                <FocusDisabled>
-                    <ToolModeSection />
-                    <PrezoningSection />
-                    <SnapModeSection />
-                    {snapModeBinding != SnapMode.None ? <SnapRoadsideSection /> : null}
-                    <ParcelWidthSection />
-                    <ParcelDepthSection />
-                </FocusDisabled>
-            </div>
-        );
-
-        return (
-            <>
-                <Component {...otherProps}>{children}</Component>
-                {enabledBinding ? Toolbar : null}
-            </>
-        );
-    };
-
-    return PlatterMouseToolOptionsComponent;
 };

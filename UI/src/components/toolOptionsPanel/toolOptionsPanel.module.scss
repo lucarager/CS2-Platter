@@ -1,8 +1,11 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
 .moddedSection {
-    border-top: 1px solid  rgba(255, 255, 255, .2);
-    padding: 8rem 0;
-    background: rgba(82, 174, 255, 0.15);
-    margin-bottom: -6px;
+    margin-top: 6rem;
 
     &_Header {
         display: flex;
