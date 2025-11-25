@@ -55,10 +55,8 @@ namespace Platter.Systems {
                 var parcelOwner    = EntityManager.GetComponentData<ParcelOwner>(entity);
                 var block          = EntityManager.GetComponentData<Block>(entity);
                 var cellBuffer     = EntityManager.GetBuffer<Cell>(entity);
-                var parcel         = EntityManager.GetComponentData<Parcel>(parcelOwner.m_Owner);
                 var prefabRef      = EntityManager.GetComponentData<PrefabRef>(parcelOwner.m_Owner);
                 var parcelData     = EntityManager.GetComponentData<ParcelData>(prefabRef.m_Prefab);
-                var containedZones = new Dictionary<ZoneType, int>();
 
                 for (var col = 0; col < block.m_Size.x; col++)
                 for (var row = 0; row < block.m_Size.y; row++) {
@@ -66,33 +64,12 @@ namespace Platter.Systems {
                     var cell  = cellBuffer[index];
 
                     // Set all cells outside of parcel bounds to occupied
-                    // todo move this out to its own system
                     if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
                         cell.m_State      = CellFlags.Blocked;
                         cellBuffer[index] = cell;
-                    } else {
-                        // Count cell zones if inside parcel
-                        if (containedZones.TryGetValue(cell.m_Zone, out var current)) {
-                            containedZones[cell.m_Zone] = current + 1;
-                        } else {
-                            containedZones[cell.m_Zone] = 1;
-                        }
                     }
                 }
 
-                if (containedZones.Count == 1) {
-                    // If we only have one zone, set the Parcel to that
-                    // Temporary fix, we should find the root cause for this
-                    if (parcelOwner.m_Owner == Entity.Null) {
-                        return;
-                    }
-
-                    parcel.m_PreZoneType = containedZones.Keys.ToList()[0];
-                    EntityManager.SetComponentData(parcelOwner.m_Owner, parcel);
-                } else {
-                    // Otherwise, set it to a "mix"
-                    parcel.m_ZoneFlags = ParcelZoneFlags.Mixed;
-                }
             }
         }
     }
