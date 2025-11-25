@@ -122,6 +122,7 @@ namespace Platter.Settings {
 
                 // UI
                 { "PlatterMod.UI.SectionTitle.ToolMode", "Tool Mode" },
+                { "PlatterMod.UI.SectionTitle.ViewLayers", "View Layers" },
                 { "PlatterMod.UI.SectionTitle.Prezoning", "Pre-Zone" },
                 { "PlatterMod.UI.SectionTitle.ParcelControls", "Parcel Controls" },
                 { "PlatterMod.UI.SectionTitle.RenderParcels", "Enable Parcels Overlay" },
@@ -148,6 +149,9 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Tooltip.BlockDepthNumber", "Parcel depth" },
                 { "PlatterMod.UI.Tooltip.ToggleRenderParcels", "Toggle Parcels Overlay" },
                 { "PlatterMod.UI.Tooltip.ToggleAllowSpawn", "Toggle allowing buildings to spawn on Parcels" },
+                { "PlatterMod.UI.Tooltip.ShowZonbes", "Toggle allowing buildings to spawn on Parcels" },
+                { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
+                { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
                 { "PlatterMod.UI.Tooltip.BuildingCount", "{COUNT} available {X}x{Y} buildings in the selected zone." }, {
                     "PlatterMod.UI.Tooltip.BuildingCountWarning",
                     "No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on this parcel."
