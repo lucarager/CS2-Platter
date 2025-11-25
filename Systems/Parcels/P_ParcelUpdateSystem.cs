@@ -72,26 +72,26 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             // Job to delete parcels marked for deletion
-            var deleteParcelJobHandle = new DeleteParcelJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
-                SystemAPI.GetBufferLookup<Cell>(),
-                m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
-            ).Schedule(m_DeletedQuery, Dependency);
+            var deleteParcelJobHandle = new DeleteParcelJob {
+                m_EntityTypeHandle         = SystemAPI.GetEntityTypeHandle(),
+                m_SubBlockBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
+                m_CellLookup               = SystemAPI.GetBufferLookup<Cell>(),
+                m_CommandBuffer            = m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
+            }.Schedule(m_DeletedQuery, Dependency);
 
             m_ModificationBarrier2.AddJobHandleForProducer(deleteParcelJobHandle);
 
             // Job to initialize a parcel after it has been replaced from a placeholder
-            var updateParcelJobHandle = new UpdateParcelJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetComponentTypeHandle<Parcel>(),
-                SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                SystemAPI.GetComponentTypeHandle<Transform>(),
-                SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
-                SystemAPI.GetComponentLookup<ParcelData>(),
-                SystemAPI.GetComponentLookup<ZoneBlockData>(),
-                m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
-            ).Schedule(m_UpdatedQuery, Dependency);
+            var updateParcelJobHandle = new UpdateParcelJob {
+                m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
+                m_ParcelTypeHandle               = SystemAPI.GetComponentTypeHandle<Parcel>(),
+                m_PrefabRefTypeHandle            = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                m_TransformTypeHandle            = SystemAPI.GetComponentTypeHandle<Transform>(),
+                m_ParcelSubBlockBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
+                m_ParcelDataLookup               = SystemAPI.GetComponentLookup<ParcelData>(),
+                m_ZoneBlockDataLookup            = SystemAPI.GetComponentLookup<ZoneBlockData>(),
+                m_CommandBuffer                  = m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
+            }.Schedule(m_UpdatedQuery, Dependency);
 
             m_ModificationBarrier2.AddJobHandleForProducer(updateParcelJobHandle);
 
@@ -102,18 +102,10 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct DeleteParcelJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                   m_EntityTypeHandle;
-            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>   m_SubBlockBufferTypeHandle;
-            [ReadOnly] private BufferLookup<Cell>                 m_CellLookup;
-            private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
-
-            public DeleteParcelJob(EntityTypeHandle entityTypeHandle, BufferTypeHandle<ParcelSubBlock> subBlocBufferTypeHandle, BufferLookup<Cell> cellLookup,
-                                   EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTypeHandle         = entityTypeHandle;
-                m_SubBlockBufferTypeHandle = subBlocBufferTypeHandle;
-                m_CellLookup               = cellLookup;
-                m_CommandBuffer            = commandBuffer;
-            }
+            [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
+            [ReadOnly] public required BufferTypeHandle<ParcelSubBlock>   m_SubBlockBufferTypeHandle;
+            [ReadOnly] public required BufferLookup<Cell>                 m_CellLookup;
+            public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
@@ -145,29 +137,14 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct UpdateParcelJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                   m_EntityTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<PrefabRef>     m_PrefabRefTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Transform>     m_TransformTypeHandle;
-            [ReadOnly] private BufferTypeHandle<ParcelSubBlock>   m_ParcelSubBlockBufferTypeHandle;
-            [ReadOnly] private ComponentLookup<ParcelData>        m_ParcelDataLookup;
-            [ReadOnly] private ComponentLookup<ZoneBlockData>     m_ZoneBlockDataLookup;
-            private            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
-
-            public UpdateParcelJob(EntityTypeHandle                   entityTypeHandle, ComponentTypeHandle<Parcel> parcelTypeHandle,
-                                   ComponentTypeHandle<PrefabRef>     prefabRefTypeHandle,
-                                   ComponentTypeHandle<Transform>     transformTypeHandle, BufferTypeHandle<ParcelSubBlock> subBlockBufferTypeHandle,
-                                   ComponentLookup<ParcelData>        parcelDataLookup,    ComponentLookup<ZoneBlockData>   zoneBlockDataLookup,
-                                   EntityCommandBuffer.ParallelWriter commandBuffer) {
-                m_EntityTypeHandle               = entityTypeHandle;
-                m_ParcelTypeHandle               = parcelTypeHandle;
-                m_PrefabRefTypeHandle            = prefabRefTypeHandle;
-                m_TransformTypeHandle            = transformTypeHandle;
-                m_ParcelSubBlockBufferTypeHandle = subBlockBufferTypeHandle;
-                m_ParcelDataLookup               = parcelDataLookup;
-                m_ZoneBlockDataLookup            = zoneBlockDataLookup;
-                m_CommandBuffer                  = commandBuffer;
-            }
+            [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<PrefabRef>     m_PrefabRefTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Transform>     m_TransformTypeHandle;
+            [ReadOnly] public required BufferTypeHandle<ParcelSubBlock>   m_ParcelSubBlockBufferTypeHandle;
+            [ReadOnly] public required ComponentLookup<ParcelData>        m_ParcelDataLookup;
+            [ReadOnly] public required ComponentLookup<ZoneBlockData>     m_ZoneBlockDataLookup;
+            public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int index, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
