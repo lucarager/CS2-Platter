@@ -24,12 +24,14 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
+
             m_Log = new PrefixedLogger(nameof(P_ParcelSubBlockDeserializeSystem));
             m_Log.Debug("OnCreate()");
 
             m_Query = GetEntityQuery(
                 ComponentType.ReadOnly<Block>(),
                 ComponentType.ReadOnly<ParcelOwner>());
+
             RequireForUpdate(m_Query);
         }
 
@@ -38,9 +40,9 @@ namespace Platter.Systems {
             m_Log.Debug("OnUpdate()");
 
             var deserializeJobHandle = new DeserializeJob {
-                m_EntityType            = SystemAPI.GetEntityTypeHandle(),
-                m_ParcelOwnerType       = SystemAPI.GetComponentTypeHandle<ParcelOwner>(true),
-                m_SubBlocksBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(),
+                EntityType            = SystemAPI.GetEntityTypeHandle(),
+                ParcelOwnerType       = SystemAPI.GetComponentTypeHandle<ParcelOwner>(true),
+                SubBlocksBufferLookup = SystemAPI.GetBufferLookup<ParcelSubBlock>(),
             }.Schedule(m_Query, Dependency);
 
             Dependency = deserializeJobHandle;
@@ -50,25 +52,19 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct DeserializeJob : IJobChunk {
-            [ReadOnly]
-            public required EntityTypeHandle m_EntityType;
+            [ReadOnly] public required EntityTypeHandle                 EntityType;
+            [ReadOnly] public required ComponentTypeHandle<ParcelOwner> ParcelOwnerType;
+            public required            BufferLookup<ParcelSubBlock>     SubBlocksBufferLookup;
 
-            [ReadOnly]
-            public required ComponentTypeHandle<ParcelOwner> m_ParcelOwnerType;
-
-            public required BufferLookup<ParcelSubBlock> m_SubBlocksBufferLookup;
-
-            public void Execute(in ArchetypeChunk chunk) {
-                var entityArray      = chunk.GetNativeArray(m_EntityType);
-                var parcelOwnerArray = chunk.GetNativeArray(ref m_ParcelOwnerType);
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
+                var entityArray      = chunk.GetNativeArray(EntityType);
+                var parcelOwnerArray = chunk.GetNativeArray(ref ParcelOwnerType);
                 for (var i = 0; i < parcelOwnerArray.Length; i++) {
                     var blockEntity = entityArray[i];
                     var parcelOwner = parcelOwnerArray[i];
-                    m_SubBlocksBufferLookup[parcelOwner.m_Owner].Add(new ParcelSubBlock(blockEntity));
+                    SubBlocksBufferLookup[parcelOwner.m_Owner].Add(new ParcelSubBlock(blockEntity));
                 }
             }
-
-            void IJobChunk.Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) { Execute(in chunk); }
         }
     }
 }
