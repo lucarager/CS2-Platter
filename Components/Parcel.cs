@@ -4,19 +4,25 @@
 // </copyright>
 
 namespace Platter.Components {
+    #region Using Statements
+
     using System;
     using Colossal.Serialization.Entities;
-    using Game.Prefabs;
     using Game.Zones;
     using Unity.Entities;
 
+    #endregion
+
     [Flags]
-    public enum ParcelZoneFlags : byte {
-        None  = 0,
-        Zoned = 1,
-        Mixed = 2,
+    public enum ParcelStateFlags : byte {
+        None          = 0,
+        ZoningUniform = 1,
+        ZoningMixed   = 2,
+        RoadLeft      = 4,
+        RoadRight     = 8,
+        RoadBack      = 16,
     }
-    
+
     /// <summary>
     /// A Parcel's primary data.
     /// </summary>
@@ -40,7 +46,8 @@ namespace Platter.Components {
         /// Zoning on this parcel.
         /// </summary>
         public ZoneType m_PreZoneType;
-        public ParcelZoneFlags m_ZoneFlags;
+
+        public ParcelStateFlags m_State;
 
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
@@ -48,6 +55,8 @@ namespace Platter.Components {
             writer.Write(m_PreZoneType);
             writer.Write(m_RoadEdge);
             writer.Write(m_CurvePosition);
+            writer.Write(m_Building);
+            writer.Write((byte)m_State);
         }
 
         /// <inheritdoc/>
@@ -56,6 +65,9 @@ namespace Platter.Components {
             reader.Read(out m_PreZoneType);
             reader.Read(out m_RoadEdge);
             reader.Read(out m_CurvePosition);
+            reader.Read(out m_Building);
+            reader.Read(out byte stateBytes);
+            m_State = (ParcelStateFlags)stateBytes;
         }
     }
 }
