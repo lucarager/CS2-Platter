@@ -63,7 +63,7 @@
   "PlatterMod.UI.Tooltip.BlockDepthNumber": "Profondeur de parcelle",
   "PlatterMod.UI.Tooltip.ToggleRenderParcels": "Activer/désactiver l’affichage en superposition des parcelles",
   "PlatterMod.UI.Tooltip.ToggleAllowSpawn": "Permettre aux bâtiments d'apparaître sur les parcelles",
-  "PlatterMod.UI.Tooltip.ShowZonbes": "Permettre aux bâtiments d'apparaître sur les colis",
+  "PlatterMod.UI.Tooltip.ShowZonbes": "Permettre aux bâtiments d'apparaître sur les parcelles",
   "PlatterMod.UI.Tooltip.ShowZones": "Afficher la grille vanilla",
   "PlatterMod.UI.Tooltip.ShowContourLines": "Afficher les lignes du countour",
   "PlatterMod.UI.Tooltip.BuildingCount": "{COUNT} bâtiments {X}x{Y} disponibles dans la zone sélectionnée.",
