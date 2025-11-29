@@ -88,17 +88,18 @@ namespace Platter.Systems {
                 }
 
                 // Todo split position calc, culling/render calc, and render step, into separate jobs for perf
-                var drawOverlaysJobData = new DrawOverlaysJob(
-                    m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferJobHandle),
-                    colorsMap,
-                    SystemAPI.GetEntityTypeHandle(),
-                    SystemAPI.GetComponentTypeHandle<Transform>(),
-                    SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                    SystemAPI.GetComponentTypeHandle<Parcel>(),
-                    SystemAPI.GetComponentLookup<ParcelData>(),
-                    SystemAPI.GetComponentLookup<ParcelSpawnable>(),
-                    m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle),
-                    SystemAPI.GetComponentTypeHandle<CullingInfo>());
+                var drawOverlaysJobData = new DrawOverlaysJob {
+                    m_OverlayRenderBuffer            = m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferJobHandle),
+                    m_ColorsMap                      = colorsMap,
+                    m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
+                    m_TransformComponentTypeHandle   = SystemAPI.GetComponentTypeHandle<Transform>(),
+                    m_PrefabRefComponentTypeHandle   = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                    m_ParcelComponentTypeHandle      = SystemAPI.GetComponentTypeHandle<Parcel>(),
+                    m_ParcelDataComponentLookup      = SystemAPI.GetComponentLookup<ParcelData>(),
+                    m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
+                    m_CullingData                    = m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle),
+                    m_CullingInfoComponentTypeHandle = SystemAPI.GetComponentTypeHandle<CullingInfo>(),
+                };
 
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(
                     m_ParcelQuery,
@@ -123,38 +124,16 @@ namespace Platter.Systems {
         /// Job to draw parcel overlays.
         /// </summary>
         protected struct DrawOverlaysJob : IJobChunk {
-            [ReadOnly] private OverlayRenderSystem.Buffer       m_OverlayRenderBuffer;
-            [ReadOnly] private NativeHashMap<ushort, Color>     m_ColorsMap;
-            [ReadOnly] private EntityTypeHandle                 m_EntityTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Transform>   m_TransformComponentTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<PrefabRef>   m_PrefabRefComponentTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Parcel>      m_ParcelComponentTypeHandle;
-            [ReadOnly] private ComponentLookup<ParcelData>      m_ParcelDataComponentLookup;
-            [ReadOnly] private ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
-            [ReadOnly] private NativeList<PreCullingData>       m_CullingData;
-            [ReadOnly] private ComponentTypeHandle<CullingInfo> m_CullingInfoComponentTypeHandle;
-
-            public DrawOverlaysJob(OverlayRenderSystem.Buffer       overlayRenderBuffer,
-                                   NativeHashMap<ushort, Color>     colorsMap,
-                                   EntityTypeHandle                 entityTypeHandle,
-                                   ComponentTypeHandle<Transform>   transformComponentTypeHandle,
-                                   ComponentTypeHandle<PrefabRef>   prefabRefComponentTypeHandle,
-                                   ComponentTypeHandle<Parcel>      parcelComponentTypeHandle,
-                                   ComponentLookup<ParcelData>      parcelDataComponentLookup,
-                                   ComponentLookup<ParcelSpawnable> parcelSpawnableComponentLookup,
-                                   NativeList<PreCullingData>       cullingData,
-                                   ComponentTypeHandle<CullingInfo> cullingInfoComponentTypeHandle) {
-                m_OverlayRenderBuffer            = overlayRenderBuffer;
-                m_ColorsMap                      = colorsMap;
-                m_EntityTypeHandle               = entityTypeHandle;
-                m_TransformComponentTypeHandle   = transformComponentTypeHandle;
-                m_PrefabRefComponentTypeHandle   = prefabRefComponentTypeHandle;
-                m_ParcelComponentTypeHandle      = parcelComponentTypeHandle;
-                m_ParcelDataComponentLookup      = parcelDataComponentLookup;
-                m_ParcelSpawnableComponentLookup = parcelSpawnableComponentLookup;
-                m_CullingData                    = cullingData;
-                m_CullingInfoComponentTypeHandle = cullingInfoComponentTypeHandle;
-            }
+            [ReadOnly] public required OverlayRenderSystem.Buffer       m_OverlayRenderBuffer;
+            [ReadOnly] public required NativeHashMap<ushort, Color>     m_ColorsMap;
+            [ReadOnly] public required EntityTypeHandle                 m_EntityTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Transform>   m_TransformComponentTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<PrefabRef>   m_PrefabRefComponentTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Parcel>      m_ParcelComponentTypeHandle;
+            [ReadOnly] public required ComponentLookup<ParcelData>      m_ParcelDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
+            [ReadOnly] public required NativeList<PreCullingData>       m_CullingData;
+            [ReadOnly] public required ComponentTypeHandle<CullingInfo> m_CullingInfoComponentTypeHandle;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk,
