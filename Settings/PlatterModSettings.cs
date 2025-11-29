@@ -27,6 +27,9 @@ namespace Platter.Settings {
     [SettingsUIKeyboardAction(DecreaseParcelWidthActionName, ActionType.Button, "Platter")]
     [SettingsUIKeyboardAction(IncreaseParcelDepthActionName, ActionType.Button, "Platter")]
     [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, "Platter")]
+    [SettingsUIKeyboardAction(ToggleRenderActionName, ActionType.Button, "Platter")]
+    [SettingsUIKeyboardAction(ToggleSpawnActionName, ActionType.Button, "Platter")]
+    [SettingsUIKeyboardAction(OpenPlatterPanelActionName, ActionType.Button, "Platter")]
     [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
@@ -41,6 +44,7 @@ namespace Platter.Settings {
         public const  string KeybindingsGroup              = "KeybindingsGroup";
         public const  string ToggleRenderActionName        = "ToggleRenderActionName";
         public const  string ToggleSpawnActionName         = "ToggleSpawnActionName";
+        public const  string OpenPlatterPanelActionName    = "OpenPlatterPanelActionName";
         public const  string UninstallGroup                = "UninstallGroup";
 
         [SettingsUIHidden]
@@ -102,12 +106,16 @@ namespace Platter.Settings {
         public ProxyBinding PlatterIncreaseParcelWidth { get; set; }
 
         [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleRenderActionName, ctrl: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleRenderActionName, ctrl: true, shift: true)]
         public ProxyBinding PlatterToggleRender { get; set; }
 
         [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.L, ToggleSpawnActionName, ctrl: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleSpawnActionName, ctrl: true, shift: true, alt: true)]
         public ProxyBinding PlatterToggleSpawn { get; set; }
+
+        [SettingsUISection(KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, OpenPlatterPanelActionName, ctrl: true)]
+        public ProxyBinding PlatterOpenPanel { get; set; }
 
         /// <summary>
         /// Gets or sets the Platter Tool apply action (copied from game action).

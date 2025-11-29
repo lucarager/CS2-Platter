@@ -51,6 +51,7 @@ namespace Platter.Systems {
         private ProxyAction                      m_IncreaseBlockWidthAction;
         private ProxyAction                      m_ToggleRender;
         private ProxyAction                      m_ToggleSpawn;
+        private ProxyAction                      m_OpenPlatterPanel;
         private ToolbarUISystem                  m_ToolbarUISystem;
         private ToolSystem                       m_ToolSystem;
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
@@ -122,6 +123,7 @@ namespace Platter.Systems {
             m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
             m_ToggleRender             = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
             m_ToggleSpawn              = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
+            m_OpenPlatterPanel         = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.OpenPlatterPanelActionName);
         }
 
         /// <inheritdoc/>
@@ -158,6 +160,10 @@ namespace Platter.Systems {
 
             if (m_ToggleSpawn.WasPerformedThisFrame()) {
                 ToggleAllowSpawning();
+            }
+
+            if (m_OpenPlatterPanel.WasPerformedThisFrame()) {
+                OpenPlatterPanel();
             }
 
             // Make sure we refresh the lot sizes if the Object Tool is active
@@ -271,6 +277,14 @@ namespace Platter.Systems {
         private void ToggleAllowSpawning() {
             m_Log.Debug("ToggleAllowSpawning()");
             SetAllowSpawning(!PlatterMod.Instance.Settings.AllowSpawn);
+        }
+
+        /// <summary>
+        /// Called from the shortcut to open the Platter panel with default parcel.
+        /// </summary>
+        private void OpenPlatterPanel() {
+            m_Log.Debug("OpenPlatterPanel()");
+            UpdateSelectedPrefab();
         }
 
         /// <summary>

@@ -63,6 +63,18 @@ namespace Platter.Settings {
                     "Shortcut to toggle allowing the spawning of buildings on parcels."
                 },
 
+                // OpenPlatterPanelActionName
+                {
+                    m_Setting.GetBindingKeyLocaleID(PlatterModSettings.OpenPlatterPanelActionName),
+                    "Open Platter Panel"
+                }, {
+                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterOpenPanel)),
+                    "Open Platter Panel"
+                }, {
+                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterOpenPanel)),
+                    "Shortcut to open the Platter panel."
+                },
+
                 // IncreaseParcelWidthActionName
                 { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.IncreaseParcelWidthActionName), "Increase Parcel width" }, {
                     m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelWidth)),
