@@ -28,13 +28,14 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
     const PlatterToolOptionsPanelComponent = (props: any) => {
         const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
         const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
-
-        const { translate } = useLocalization();
         const { children, ...otherProps } = props || {};
 
         const ToolPanel = (
             <div className={styles.wrapper}>
-                <div className={[VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection].join(" ")}>
+                <div
+                    className={[VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection].join(
+                        " ",
+                    )}>
                     <FocusDisabled>
                         {/* <ToolModeSection /> */}
                         <PrezoningSection />
@@ -50,8 +51,8 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
 
         return (
             <>
-                <Component {...otherProps}>{children}</Component>
                 {enabledBinding ? ToolPanel : null}
+                <Component {...otherProps}>{children}</Component>
             </>
         );
     };
