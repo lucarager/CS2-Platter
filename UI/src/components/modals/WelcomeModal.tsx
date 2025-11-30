@@ -20,9 +20,9 @@ export const WelcomeModal = () => {
         GAME_TRIGGERS.MODAL_DISMISS("first_launch");
     }, []);
 
-    // if (modalBinding) {
-    //     return <></>;
-    // }
+    if (modalBinding) {
+        return <></>;
+    }
 
     return (
         <div className={styles.wrapper}>
