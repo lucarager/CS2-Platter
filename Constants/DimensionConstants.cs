@@ -13,7 +13,7 @@ namespace Platter.Constants {
         public static readonly float GuidelinePrimaryWidth               = StandardLineWidth;
         public static readonly float GuidelineSecondaryWidth             = StandardLineWidth;
         public static readonly float ParcelCellOutlineWidth              = StandardLineWidth;
-        public static readonly float ParcelFrontIndicatorDiameter        = 3f;
+        public static readonly float ParcelFrontIndicatorDiameter        = 1f;
         public static readonly float ParcelFrontIndicatorHollowLineWidth = StandardLineWidth;
         public static readonly float ParcelHeight                        = 1f;
 

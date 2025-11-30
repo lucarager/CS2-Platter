@@ -11,6 +11,7 @@ namespace Platter.Systems {
     using Colossal.Entities;
     using Colossal.Mathematics;
     using Components;
+    using Extensions;
     using Game;
     using Game.Buildings;
     using Game.Common;
@@ -62,11 +63,14 @@ namespace Platter.Systems {
 
         public float CurrentSnapSetback {
             get => m_SnapSetback;
-            set => m_SnapSetback = value;
+            set {
+                m_SnapSetback = value;
+                m_ObjectToolSystem.SetMemberValue("m_ForceUpdate", true);
+            }
         }
 
         public static float MinSnapDistance     { get; } = 0f;
-        public static float MaxSnapDistance     { get; } = 16f;
+        public static float MaxSnapDistance     { get; } = 8f;
         public static float DefaultSnapDistance { get; } = MinSnapDistance;
 
         // Props
@@ -115,8 +119,16 @@ namespace Platter.Systems {
                 return;
             }
 
-            // Enable the zone overlay
-            //m_ObjectToolSystem.SetMemberValue("requireZones", true);
+            // Handle vanilla line tool
+            if (m_ObjectToolSystem.actualMode is ObjectToolSystem.Mode.Line or ObjectToolSystem.Mode.Curve &&
+                m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab parcelPrefab) {
+                // Override distance scale
+                var width        = parcelPrefab.m_LotWidth * 8f;
+                m_ObjectToolSystem.SetMemberValue("distanceScale", width);
+
+                // Exit, we don't want to snap in line mode
+                return;
+            }
 
             // Exit on disabled snap
             if (m_SnapMode != SnapMode.ZoneSide && m_SnapMode != SnapMode.RoadSide) {
