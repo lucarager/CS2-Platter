@@ -54,6 +54,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
         private ValueBindingHelper<bool>         m_EnableCreateFromZoneBinding;
         private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
+        private ValueBindingHelper<bool>         m_EnableSnappingOptionsBinding;
         private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
         private ValueBindingHelper<bool>         m_RenderParcelsBinding;
         private ValueBindingHelper<bool>         m_ShowContourLinesBinding;
@@ -92,24 +93,25 @@ namespace Platter.Systems {
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
 
             // Bindings
-            m_EnableToolButtonsBinding    = CreateBinding("ENABLE_TOOL_BUTTONS", false);
-            m_EnableCreateFromZoneBinding = CreateBinding("ENABLE_CREATE_FROM_ZONE", false);
-            m_ZoneBinding                 = CreateBinding("ZONE", 0, SetPreZone);
-            m_BlockWidthBinding           = CreateBinding("BLOCK_WIDTH", 2);
-            m_BlockWidthMinBinding        = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.BlockSizes.x);
-            m_BlockWidthMaxBinding        = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.BlockSizes.z);
-            m_BlockDepthBinding           = CreateBinding("BLOCK_DEPTH", 2);
-            m_BlockDepthMinBinding        = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
-            m_BlockDepthMaxBinding        = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
-            m_ZoneDataBinding             = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
-            m_RenderParcelsBinding        = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
-            m_AllowSpawningBinding        = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
-            m_ShowContourLinesBinding     = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
-            m_ShowZonesBinding            = CreateBinding("SHOW_ZONES", false, SetShowZones);
-            m_SnapModeBinding             = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
-            m_SnapSpacingBinding          = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
-            m_ModalFirstLaunchBinding     = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
-            m_ToolModeBinding             = CreateBinding("TOOL_MODE", 0, SetToolMode);
+            m_EnableToolButtonsBinding     = CreateBinding("ENABLE_TOOL_BUTTONS", false);
+            m_EnableSnappingOptionsBinding = CreateBinding("ENABLE_SNAPPING_OPTIONS", false);
+            m_EnableCreateFromZoneBinding  = CreateBinding("ENABLE_CREATE_FROM_ZONE", false);
+            m_ZoneBinding                  = CreateBinding("ZONE", 0, SetPreZone);
+            m_BlockWidthBinding            = CreateBinding("BLOCK_WIDTH", 2);
+            m_BlockWidthMinBinding         = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.BlockSizes.x);
+            m_BlockWidthMaxBinding         = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.BlockSizes.z);
+            m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2);
+            m_BlockDepthMinBinding         = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
+            m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
+            m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
+            m_RenderParcelsBinding         = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
+            m_AllowSpawningBinding         = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
+            m_ShowContourLinesBinding      = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
+            m_ShowZonesBinding             = CreateBinding("SHOW_ZONES", false, SetShowZones);
+            m_SnapModeBinding              = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
+            m_SnapSpacingBinding           = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
+            m_ModalFirstLaunchBinding      = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
+            m_ToolModeBinding              = CreateBinding("TOOL_MODE", 0, SetToolMode);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
@@ -157,17 +159,18 @@ namespace Platter.Systems {
         }
 
         private void UpdateBindings() {
-            m_RenderParcelsBinding.Value        = PlatterMod.Instance.Settings.RenderParcels;
-            m_AllowSpawningBinding.Value        = PlatterMod.Instance.Settings.AllowSpawn;
-            m_BlockWidthBinding.Value           = m_SelectedParcelSize.x;
-            m_BlockDepthBinding.Value           = m_SelectedParcelSize.y;
-            m_EnableToolButtonsBinding.Value    = CurrentlyUsingParcelsInObjectTool;
-            m_EnableCreateFromZoneBinding.Value = CurrentlyUsingZoneTool;
-            m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
-            m_ZoneBinding.Value                 = PreZoneType.m_Index;
-            m_ShowContourLinesBinding.Value     = ShowContourLines;
-            m_ShowZonesBinding.Value            = ShowZones;
-            m_SnapSpacingBinding.Value          = m_SnapSystem.CurrentSnapSetback;
+            m_RenderParcelsBinding.Value         = PlatterMod.Instance.Settings.RenderParcels;
+            m_AllowSpawningBinding.Value         = PlatterMod.Instance.Settings.AllowSpawn;
+            m_BlockWidthBinding.Value            = m_SelectedParcelSize.x;
+            m_BlockDepthBinding.Value            = m_SelectedParcelSize.y;
+            m_EnableToolButtonsBinding.Value     = CurrentlyUsingParcelsInObjectTool;
+            m_EnableSnappingOptionsBinding.Value = m_ObjectToolSystem.actualMode == ObjectToolSystem.Mode.Create;
+            m_EnableCreateFromZoneBinding.Value  = CurrentlyUsingZoneTool;
+            m_ModalFirstLaunchBinding.Value      = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
+            m_ZoneBinding.Value                  = PreZoneType.m_Index;
+            m_ShowContourLinesBinding.Value      = ShowContourLines;
+            m_ShowZonesBinding.Value             = ShowZones;
+            m_SnapSpacingBinding.Value           = m_SnapSystem.CurrentSnapSetback;
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
             Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
             m_ZoneDataBinding.Value = zoneData;

@@ -28,6 +28,7 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
     const PlatterToolOptionsPanelComponent = (props: any) => {
         const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
         const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
+        const snappingEnabled = useValue(GAME_BINDINGS.ENABLE_SNAPPING_OPTIONS.binding);
         const { children, ...otherProps } = props || {};
 
         const ToolPanel = (
@@ -39,8 +40,8 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
                     <FocusDisabled>
                         {/* <ToolModeSection /> */}
                         <PrezoningSection />
-                        <SnapModeSection />
-                        {snapModeBinding != SnapMode.None ? <SnapRoadsideSection /> : null}
+                        {snappingEnabled && <SnapModeSection />}
+                        {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
                         <ParcelWidthSection />
                         <ParcelDepthSection />
                         <ToolViewmodeSection />
