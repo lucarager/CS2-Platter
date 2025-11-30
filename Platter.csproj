@@ -39,14 +39,16 @@
 
 	<!--Additional Build Steps-->
 	<Target Name="BuildUI" AfterTargets="DeployWIP">
+		<Message Text="[BuildUI]" Importance="high" />
 		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/UI" />
 	</Target>
 
 	<Target Name="CopyIcons" AfterTargets="DeployWIP">
+		<Message Text="[CopyIcons]" Importance="high" />
 		<ItemGroup>
-			<_AssetsDir Include="$(ProjectDir)/UI/src/assets/*" />
+			<_AssetsDir Include="$(ProjectDir)/Assets/**/*.*" />
 		</ItemGroup>
-		<Copy SourceFiles="@(_AssetsDir)" DestinationFolder="$(DeployDir)/Assets" />
+		<Copy SourceFiles="@(_AssetsDir)" DestinationFolder="$(DeployDir)/Assets/%(RecursiveDir)" />
 	</Target>
 
 	<ItemGroup>
