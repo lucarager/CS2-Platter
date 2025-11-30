@@ -144,7 +144,9 @@ const PrezoningSection = () => {
                                 sounds={{ select: "select-item" }}
                                 onChange={(value) => GAME_BINDINGS.ZONE.set(value)}>
                                 <Icon className={styles.dropdownIcon} src={zoneData.thumbnail} />
-                                {translate(`Assets.NAME[${zoneData.name}]`, zoneData.name)}
+                                <span>
+                                    {translate(`Assets.NAME[${zoneData.name}]`, zoneData.name)}
+                                </span>
                             </DropdownItem>
                         ))}
                     </div>

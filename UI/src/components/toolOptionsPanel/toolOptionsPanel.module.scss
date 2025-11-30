@@ -15,17 +15,17 @@
         align-items: center;
         justify-content: space-between;
 
-    &_Image {
-        width: 24rem;
-        height: 24rem;
-        margin-right: 4rem;
+        &_Image {
+            width: 24rem;
+            height: 24rem;
+            margin-right: 4rem;
         }
 
         &_Title {
             font-weight: 600;
 
-            color:  var(--accentColorNormal) ;
-            font-size: var(--fontSizeM) ;
+            color: var(--accentColorNormal);
+            font-size: var(--fontSizeM);
             line-height: 1.25em;
         }
     }
@@ -34,13 +34,14 @@
 .button[disabled] {
     pointer-events: none;
     cursor: default;
-    opacity: .5;
+    opacity: 0.5;
 }
 
 .dropdownToggleInner {
     display: flex;
     align-items: center;
     flex-direction: row;
+    width: 100%;
 }
 
 .dropdownItem {
@@ -61,7 +62,6 @@
             height: 100%;
         }
 
-
         & > div {
             align-items: center;
             display: flex;
@@ -70,10 +70,10 @@
 }
 
 .dropdownMenu {
-    height: 75%;
-    background-color: var(--panelColorDark) ;
-    backdrop-filter: var(--panelBlur) ;
-    color:  var(--accentColorNormal) ;
+    height: 90%;
+    background-color: var(--panelColorDark);
+    backdrop-filter: var(--panelBlur);
+    color: var(--accentColorNormal);
 
     button {
         padding: 3rem 10rem;
@@ -84,7 +84,7 @@
         flex-direction: row;
 
         &:hover {
-            background-color: rgba(255, 255, 255, .1);
+            background-color: rgba(255, 255, 255, 0.1);
         }
     }
 }
@@ -107,6 +107,7 @@
     border-bottom-right-radius: 4rem;
     padding: 4rem 6rem;
     color: rgba(217, 217, 217, 1);
+    width: 90%;
 }
 
 .dropdownContent {
@@ -118,6 +119,7 @@
 
 .zoneCategory {
     width: 100%;
+    padding-left: 4rem;
 }
 
 .zoneCategoryZones {
@@ -128,6 +130,13 @@
     & > button {
         width: 33%;
         overflow: hidden;
+    }
+
+    span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
     }
 }
 
@@ -145,8 +154,11 @@
     margin-left: 4rem;
     color: rgba(217, 217, 217, 1);
     font-weight: 600;
-    max-width: 174rem;
+    // max-width: 174rem;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
 }
 
 .dropdownCategory {
@@ -155,7 +167,7 @@
     padding-right: 10rem;
     padding-bottom: 4rem;
     text-align: left;
-    color: rgba(217, 217, 217, .75);
+    color: rgba(217, 217, 217, 0.75);
     align-items: center;
     display: flex;
     flex-direction: row;
