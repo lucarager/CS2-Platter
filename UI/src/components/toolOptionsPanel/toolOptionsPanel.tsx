@@ -40,10 +40,10 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
                     <FocusDisabled>
                         {/* <ToolModeSection /> */}
                         <PrezoningSection />
-                        {snappingEnabled && <SnapModeSection />}
                         {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
                         <ParcelWidthSection />
                         <ParcelDepthSection />
+                        {snappingEnabled && <SnapModeSection />}
                         <ToolViewmodeSection />
                     </FocusDisabled>
                 </div>
@@ -95,7 +95,7 @@ const ToolViewmodeSection = () => {
     return (
         <VC.Section title={translate("PlatterMod.UI.SectionTitle.ViewLayers")}>
             <VC.ToolButton
-                src={"Media/Tools/Snap Options/ZoneGrid.svg"}
+                src={"Media/Tools/Net Tool/Grid.svg"}
                 onSelect={() => GAME_BINDINGS.SHOW_ZONES.set(!showZonesBinding)}
                 selected={showZonesBinding}
                 multiSelect={false}
