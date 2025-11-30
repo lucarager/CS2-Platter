@@ -7,6 +7,7 @@ import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import { useValue } from "cs2/api";
 import { useLocalization } from "cs2/l10n";
+import { c } from '../../utils/classes';
 
 export type BlockControlProps = Record<string, never>;
 
@@ -51,7 +52,7 @@ export const WelcomeModal = () => {
                     transitionStyles={VT.horizontalTransition}
                     activePage={activePage}>
                     {activePage != 0 ? null : (
-                        <VC.Page className={VT.whatsNewPage["whats-new-page"]} key={0}>
+                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={0}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
@@ -81,13 +82,13 @@ export const WelcomeModal = () => {
                         </VC.Page>
                     )}
                     {activePage != 1 ? null : (
-                        <VC.Page className={VT.whatsNewPage["whats-new-page"]} key={1}>
+                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={1}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
                                         <div className={styles.card__inner__image}>
                                             <img
-                                                src="coui://platter/tu3.png"
+                                                src="coui://platter/tu2.png"
                                                 className={styles.card__image}
                                             />
                                         </div>
@@ -109,7 +110,7 @@ export const WelcomeModal = () => {
                                     <div className={styles.card__inner}>
                                         <div className={styles.card__inner__image}>
                                             <img
-                                                src="coui://platter/tu3.png"
+                                                src="coui://platter/tu2-2.png"
                                                 className={styles.card__image}
                                             />
                                         </div>
@@ -133,7 +134,7 @@ export const WelcomeModal = () => {
                         </VC.Page>
                     )}
                     {activePage != 2 ? null : (
-                        <VC.Page className={VT.whatsNewPage["whats-new-page"]} key={2}>
+                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={2}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
@@ -175,7 +176,7 @@ export const WelcomeModal = () => {
                         </VC.Page>
                     )}
                     {activePage != 3 ? null : (
-                        <VC.Page className={VT.whatsNewPage["whats-new-page"]} key={3}>
+                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={3}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
@@ -210,13 +211,15 @@ export const WelcomeModal = () => {
                         </VC.Page>
                     )}
                 </VC.PageSwitcher>
-                <VC.PageSelector
-                    pages={4}
-                    selected={activePage}
-                    onSelect={(i) => {
-                        setActivePage(i);
-                    }}
-                />
+                <div className={styles.pageSelectorWrapper}>
+                    <VC.PageSelector
+                        pages={4}
+                        selected={activePage}
+                        onSelect={(i) => {
+                            setActivePage(i);
+                        }}
+                    />
+                </div>
             </Panel>
         </div>
     );
