@@ -24,13 +24,15 @@
 .panel {
     --panelRadius: 20rem;
 
+    opacity: 0;
+    transform: scale(0.9);
     height: 80vh;
     width: 900rem;
     max-width: 80vw;
     border-radius: 20rem;
 
     animation: 600ms fadeInScale ease-out forwards;
-    animation-delay: 2s;
+    animation-delay: 1s;
 
     p,
     li {

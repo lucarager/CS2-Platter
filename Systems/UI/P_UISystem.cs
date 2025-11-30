@@ -251,8 +251,7 @@ namespace Platter.Systems {
         /// <summary>
         /// </summary>
         private bool ShouldRenderOverlay() {
-            return m_ToolSystem.activeTool is ObjectToolSystem or BulldozeToolSystem or NetToolSystem or ZoneToolSystem ||
-                   m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+            return m_ToolSystem.activeTool is not DefaultToolSystem || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
         }
 
         /// <summary>
