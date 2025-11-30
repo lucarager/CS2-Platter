@@ -119,8 +119,8 @@ namespace Platter.Systems {
                 return;
             }
 
-            // Handle vanilla line tool
-            if (m_ObjectToolSystem.actualMode is ObjectToolSystem.Mode.Line or ObjectToolSystem.Mode.Curve &&
+            // Handle vanilla line tool when not in individual plop mode
+            if (m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create &&
                 m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab parcelPrefab) {
                 // Override distance scale
                 var width        = parcelPrefab.m_LotWidth * 8f;
