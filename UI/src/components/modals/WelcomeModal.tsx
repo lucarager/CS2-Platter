@@ -19,9 +19,9 @@ export const WelcomeModal = () => {
         GAME_TRIGGERS.MODAL_DISMISS("first_launch");
     }, []);
 
-    if (modalBinding) {
-        return <></>;
-    }
+    // if (modalBinding) {
+    //     return <></>;
+    // }
 
     return (
         <div className={styles.wrapper}>
@@ -87,7 +87,7 @@ export const WelcomeModal = () => {
                                     <div className={styles.card__inner}>
                                         <div className={styles.card__inner__image}>
                                             <img
-                                                src="coui://platter/tu2.png"
+                                                src="coui://platter/tu3.png"
                                                 className={styles.card__image}
                                             />
                                         </div>
@@ -101,6 +101,28 @@ export const WelcomeModal = () => {
                                                 <HighlightedText
                                                     text={translate(
                                                         "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text",
+                                                    )}
+                                                />
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className={styles.card__inner}>
+                                        <div className={styles.card__inner__image}>
+                                            <img
+                                                src="coui://platter/tu3.png"
+                                                className={styles.card__image}
+                                            />
+                                        </div>
+                                        <div className={styles.card__text_container}>
+                                            <h3>
+                                                {translate(
+                                                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title",
+                                                )}
+                                            </h3>
+                                            <p className={styles.card__text} cohinline="true">
+                                                <HighlightedText
+                                                    text={translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Text",
                                                     )}
                                                 />
                                             </p>
@@ -229,9 +251,7 @@ function parseHighlightedText(input: string) {
     return parts;
 }
 
-export const HighlightedText: React.FC<HighlightedTextProps> = ({
-    text,
-}) => {
+export const HighlightedText: React.FC<HighlightedTextProps> = ({ text }) => {
     if (text == null) return <></>;
 
     const parts = parseHighlightedText(text);
