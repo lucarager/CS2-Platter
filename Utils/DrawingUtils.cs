@@ -15,6 +15,8 @@ namespace Platter.Utils {
 
     #endregion
 
+
+    // todo check GizmoBatcher for lots of great drawing utils!
     public static class DrawingUtils {
         public static void DrawLineIcon(Buffer         buffer,
                                         IconDefinition iconDefinition) { }
@@ -93,6 +95,15 @@ namespace Platter.Utils {
                 ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
                 DimensionConstants.ParcelFrontIndicatorDiameter
             );
+
+            //buffer.DrawCustomMesh(
+            //    ColorConstants.ParcelFrontIndicator, 
+            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
+            //    10f, 
+            //    10f,
+            //    CustomMeshType.Arrow,
+            //    new Quaternion()
+            //);
         }
 
         public struct LineDef {
