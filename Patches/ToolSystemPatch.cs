@@ -51,5 +51,19 @@ namespace Platter.Patches {
                 }
             }
         }
+
+        [HarmonyPatch(typeof(ObjectToolSystem))]
+        [HarmonyPatch("GetAllowRotation")]
+        private class ObjectToolSystem_GetAllowRotation {
+            private static void Postfix(ObjectToolSystem __instance, ref bool __result) {
+                var m_PSnapSystem  = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_SnapSystem>();
+                var isSnapping     = m_PSnapSystem.CurrentSnapMode != P_SnapSystem.SnapMode.None;
+                var isUsingPlatter = __instance.GetPrefab() is ParcelPlaceholderPrefab;
+
+                if (isUsingPlatter && isSnapping) {
+                    __result = false;
+                }
+            }
+        }
     }
 }
