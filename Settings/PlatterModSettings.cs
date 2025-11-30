@@ -23,32 +23,76 @@ namespace Platter.Settings {
     /// The mod's settings.
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(PlatterMod) + "/" + nameof(PlatterMod))]
-    [SettingsUIKeyboardAction(IncreaseParcelWidthActionName, ActionType.Button, "Platter")]
-    [SettingsUIKeyboardAction(DecreaseParcelWidthActionName, ActionType.Button, "Platter")]
-    [SettingsUIKeyboardAction(IncreaseParcelDepthActionName, ActionType.Button, "Platter")]
-    [SettingsUIKeyboardAction(DecreaseParcelDepthActionName, ActionType.Button, "Platter")]
-    [SettingsUIKeyboardAction(ToggleRenderActionName, ActionType.Button, "Platter")]
-    [SettingsUIKeyboardAction(ToggleSpawnActionName, ActionType.Button, "Platter")]
-    [SettingsUIKeyboardAction(OpenPlatterPanelActionName, ActionType.Button, "Platter")]
     [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
-        public const  string AboutGroup                    = "AboutGroup";
-        public const  string ApplyActionName               = "PlatterToolApply";
-        public const  string CancelActionName              = "PlatterToolCancel";
-        private const string Credit                        = "Made with <3 by Luca.";
-        public const  string DecreaseParcelDepthActionName = "DecreaseParcelDepthActionName";
-        public const  string DecreaseParcelWidthActionName = "DecreaseParcelWidthActionName";
-        public const  string IncreaseParcelDepthActionName = "IncreaseParcelDepthActionName";
-        public const  string IncreaseParcelWidthActionName = "IncreaseParcelWidthActionName";
-        public const  string KeybindingsGroup              = "KeybindingsGroup";
-        public const  string ToggleRenderActionName        = "ToggleRenderActionName";
-        public const  string ToggleSpawnActionName         = "ToggleSpawnActionName";
-        public const  string OpenPlatterPanelActionName    = "OpenPlatterPanelActionName";
-        public const  string UninstallGroup                = "UninstallGroup";
+        // Groups
+        public const string AboutGroup        = "AboutGroup";
+        public const string KeybindingsGroup  = "KeybindingsGroup";
+        public const string UninstallGroup    = "UninstallGroup";
+        // Actions
+        public const string OpenPanelName     = nameof(PlatterOpenPanel);
+        public const string ToggleRenderName  = nameof(PlatterToggleRender);
+        public const string ToggleSpawnName   = nameof(PlatterToggleSpawn);
+        public const string DepthScrollName   = nameof(PlatterDepthScrollAction);
+        public const string WidthScrollName   = nameof(PlatterWidthScrollAction);
+        public const string SetbackScrollName = nameof(PlatterSetbackScrollAction);
+        public const string RemoveParcelsName = nameof(RemoveParcels);
+        // Statics
+        private const string Credit                    = "Made with <3 by Luca.";
 
         [SettingsUIHidden]
         public bool AllowSpawn { get; set; } = true;
+
+        [SettingsUIHidden]
+        public bool Modals_FirstLaunchTutorial { get; set; }
+
+        [SettingsUISection(UninstallGroup)]
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
+        public bool RemoveParcels {
+            set {
+                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
+                uninstallSystem.UninstallPlatter();
+            }
+        }
+
+        [SettingsUIHidden]
+        public bool RenderParcels { get; set; }
+
+        // Fake binding to show in settings UI
+        [SettingsUISection(KeybindingsGroup)]
+        public string PlatterDepthScrollAction => "Alt + ScrollWheel";
+
+        // Fake binding to show in settings UI
+        [SettingsUISection(KeybindingsGroup)]
+        public string PlatterWidthScrollAction => "Ctrl + ScrollWheel";
+
+        // Fake binding to show in settings UI
+        [SettingsUISection(KeybindingsGroup)]
+        public string PlatterSetbackScrollAction => "Ctrl + Shift + ScrollWheel";
+
+        [SettingsUISection(KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, OpenPanelName, ctrl: true)]
+        public ProxyBinding PlatterOpenPanel { get; set; }
+
+        [SettingsUISection(KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleRenderName, ctrl: true, shift: true)]
+        public ProxyBinding PlatterToggleRender { get; set; }
+
+        [SettingsUISection(KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleSpawnName, ctrl: true, shift: true, alt: true)]
+        public ProxyBinding PlatterToggleSpawn { get; set; }
+
+        [SettingsUISection(AboutGroup)]
+        public string InformationalVersion => PlatterMod.InformationalVersion;
+
+        [SettingsUISection(AboutGroup)]
+        public string Version => PlatterMod.Version;
+
+        [SettingsUISection(AboutGroup)]
+        public string Credits => Credit;
 
         [SettingsUISection(AboutGroup)]
         public bool Discord {
@@ -72,75 +116,11 @@ namespace Platter.Settings {
             }
         }
 
-        [SettingsUIHidden]
-        public bool Modals_FirstLaunchTutorial { get; set; }
-
-        [SettingsUISection(UninstallGroup)]
+        [SettingsUISection(AboutGroup)]
         [SettingsUIButton]
-        [SettingsUIConfirmation]
-        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
-        public bool RemoveParcels {
-            set {
-                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
-                uninstallSystem.UninstallPlatter();
-            }
+        public bool ResetTutorial {
+            set => Modals_FirstLaunchTutorial = false;
         }
-
-        [SettingsUIHidden]
-        public bool RenderParcels { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.X, DecreaseParcelDepthActionName, true)]
-        public ProxyBinding PlatterDecreaseParcelDepth { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.X, DecreaseParcelWidthActionName, ctrl: true)]
-        public ProxyBinding PlatterDecreaseParcelWidth { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z, IncreaseParcelDepthActionName, true)]
-        public ProxyBinding PlatterIncreaseParcelDepth { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z, IncreaseParcelWidthActionName, ctrl: true)]
-        public ProxyBinding PlatterIncreaseParcelWidth { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleRenderActionName, ctrl: true, shift: true)]
-        public ProxyBinding PlatterToggleRender { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleSpawnActionName, ctrl: true, shift: true, alt: true)]
-        public ProxyBinding PlatterToggleSpawn { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, OpenPlatterPanelActionName, ctrl: true)]
-        public ProxyBinding PlatterOpenPanel { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Platter Tool apply action (copied from game action).
-        /// </summary>
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIHidden]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        public ProxyBinding PlatterToolApply { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Platter Tool cancel action (copied from game action).
-        /// </summary>
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIHidden]
-        [SettingsUIBindingMimic(InputManager.kShortcutsMap, "Cancel")]
-        public ProxyBinding PlatterToolCancel { get; set; }
-
-        [SettingsUISection(AboutGroup)]
-        public string Credits => Credit;
-
-        [SettingsUISection(AboutGroup)]
-        public string InformationalVersion => PlatterMod.InformationalVersion;
-
-        [SettingsUISection(AboutGroup)]
-        public string Version => PlatterMod.Version;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -148,6 +128,8 @@ namespace Platter.Settings {
         /// <param name="mod"><see cref="IMod"/> instance.</param>
         public PlatterModSettings(IMod mod)
             : base(mod) { }
+
+        public bool AlwaysDisabled() { return true; }
 
         /// <summary>
         /// Restores mod settings to default.

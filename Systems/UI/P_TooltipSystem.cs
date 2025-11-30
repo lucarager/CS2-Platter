@@ -20,18 +20,13 @@ namespace Platter.Systems {
     /// Tooltip System.
     /// </summary>
     public partial class P_TooltipSystem : TooltipSystemBase {
-        private InputHintTooltip      m_Tooltip_DecreaseDepth;
-        private InputHintTooltip      m_Tooltip_DecreaseWidth;
-        private InputHintTooltip      m_Tooltip_IncreaseDepth;
-        private InputHintTooltip      m_Tooltip_IncreaseWidth;
+        private InputHintTooltip      m_Tooltip_Depth;
+        private InputHintTooltip      m_Tooltip_Width;
+        private InputHintTooltip      m_Tooltip_Setback;
+        private StringTooltip         m_Tooltip_BuildingCount;
         private ObjectToolSystem      m_ObjectToolSystem;
         private P_BuildingCacheSystem m_BuildingCacheSystem;
         private P_UISystem            m_UISystem;
-        private ProxyAction           m_DecreaseDepthAction;
-        private ProxyAction           m_DecreaseWidthAction;
-        private ProxyAction           m_IncreaseDepthAction;
-        private ProxyAction           m_IncreaseWidthAction;
-        private StringTooltip         m_Tooltip_BuildingCount;
         private ToolSystem            m_ToolSystem;
 
         /// <inheritdoc/>
@@ -42,23 +37,17 @@ namespace Platter.Systems {
             m_ObjectToolSystem    = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_BuildingCacheSystem = World.GetOrCreateSystemManaged<P_BuildingCacheSystem>();
             m_UISystem            = World.GetOrCreateSystemManaged<P_UISystem>();
-            m_IncreaseWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
-            m_DecreaseWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
-            m_IncreaseDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
-            m_DecreaseDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
 
-            m_Tooltip_IncreaseWidth = new InputHintTooltip(
-                m_IncreaseDepthAction,
-                InputManager.DeviceType.Keyboard);
-            m_Tooltip_DecreaseWidth = new InputHintTooltip(
-                m_DecreaseDepthAction,
-                InputManager.DeviceType.Keyboard);
-            m_Tooltip_IncreaseDepth = new InputHintTooltip(
-                m_IncreaseWidthAction,
-                InputManager.DeviceType.Keyboard);
-            m_Tooltip_DecreaseDepth = new InputHintTooltip(
-                m_DecreaseWidthAction,
-                InputManager.DeviceType.Keyboard);
+            m_Tooltip_Depth = new InputHintTooltip(
+                InputManager.instance.FindAction("Platter", "BlockDepthAction"),
+                InputManager.DeviceType.Mouse);
+            m_Tooltip_Width = new InputHintTooltip(
+                InputManager.instance.FindAction("Platter", "BlockWidthAction"),
+                InputManager.DeviceType.Mouse);
+            m_Tooltip_Setback = new InputHintTooltip(
+                InputManager.instance.FindAction("Platter", "SetbackAction"),
+                InputManager.DeviceType.Mouse);
+
             m_Tooltip_BuildingCount = new StringTooltip();
         }
 
@@ -68,10 +57,9 @@ namespace Platter.Systems {
                 return;
             }
 
-            AddMouseTooltip(m_Tooltip_IncreaseWidth);
-            AddMouseTooltip(m_Tooltip_DecreaseWidth);
-            AddMouseTooltip(m_Tooltip_IncreaseDepth);
-            AddMouseTooltip(m_Tooltip_DecreaseDepth);
+            AddMouseTooltip(m_Tooltip_Depth);
+            AddMouseTooltip(m_Tooltip_Width);
+            AddMouseTooltip(m_Tooltip_Setback);
 
             var prezone = m_UISystem.PreZoneType;
 

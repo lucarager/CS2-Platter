@@ -21,7 +21,9 @@ namespace Platter {
     using Colossal.TestFramework;
     using Colossal.UI;
     using Components;
+    using Extensions;
     using Game;
+    using Game.Input;
     using Game.Modding;
     using Game.Prefabs;
     using Game.SceneFlow;
@@ -193,12 +195,77 @@ namespace Platter {
 
         private void InitializeSettings() {
             m_Log.Debug("InitializeSettings()");
+            RegisterCustomInputActions();
             Settings = new PlatterModSettings(this);
             Settings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
             Settings.RegisterKeyBindings();
             GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
             LoadNonEnglishLocalizations();
+        }
+
+        private void RegisterCustomInputActions() {
+            m_Log.Debug("RegisterCustomInputActions()");
+
+            RegisterCustomScrollAction("BlockDepthAction", new Tuple<string, string>[] {
+                new Tuple<string, string>("alt", "<Keyboard>/alt"),
+            });
+            RegisterCustomScrollAction("BlockWidthAction", new Tuple<string, string>[] {
+                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+            });
+            RegisterCustomScrollAction("BlockSizeAction", new Tuple<string, string>[] {
+                new Tuple<string, string>("alt", "<Keyboard>/alt"),
+                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+            });
+            RegisterCustomScrollAction("SetbackAction", new Tuple<string, string>[] {
+                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+                new Tuple<string, string>("shift", "<Keyboard>/shift"),
+            });
+        }
+
+        private void RegisterCustomScrollAction(string name, Tuple<string, string>[] modifiers) {
+            var preciseRotation = InputManager.instance.FindAction("Tool", "Precise Rotation");
+            if (preciseRotation == null) {
+                m_Log.Error("RegisterCustomInputActions() -- Could not find Precise Rotation action");
+                return;
+            }
+
+            var composites = preciseRotation.composites;
+
+            var blockWidthCustomAction = new ProxyAction.Info {
+                m_Name = name,
+                m_Map  = "Platter",
+                m_Type = ActionType.Vector2,
+                m_Composites = composites.Select(keyValuePair => {
+                    var device     = keyValuePair.Key;
+                    var composite  = keyValuePair.Value;
+                    var source     = (CompositeInstance)composite.GetMemberValue("m_Source");
+                    source.builtIn = false;
+
+                    // Get the original bindings and modify them to use Alt modifier only
+                    var modifiedBindings = composite.bindings.Values.Select(binding => {
+                        return binding.WithModifiers(modifiers.Select(m => new ProxyModifier {
+                            m_Component = binding.component,
+                            m_Name      = m.Item1,
+                            m_Path      = m.Item2,
+                        }).ToList());
+                    }).ToList();
+
+                    return new ProxyComposite.Info {
+                        m_Device   = device,
+                        m_Source   = source,
+                        m_Bindings = modifiedBindings,
+                    };
+                }).ToList(),
+            };
+
+            // Use reflection extension to call the internal AddActions instance method
+            if (!InputManager.instance.TryInvokeMethod("AddActions", out _, new[] { blockWidthCustomAction })) {
+                m_Log.Error("RegisterCustomInputActions() -- Could not find or invoke InputManager.AddActions method");
+                return;
+            }
+
+            m_Log.Debug($"RegisterCustomInputActions() -- Registered custom action {name}");
         }
 
         private void InitializeHarmonyPatches() {
@@ -360,7 +427,7 @@ namespace Platter {
                     }
                 }
             } catch (Exception e) {
-                m_Log.Error("Exception reading embedded settings localization files");
+                m_Log.Error($"Exception reading embedded settings localization files {e}");
             }
         }
     }

@@ -33,9 +33,6 @@ namespace Platter.Systems {
             Plop     = 0,
             RoadEdge = 1,
         }
-        public ZoneType PreZoneType      { get; set; } = ZoneType.None;
-        public bool     ShowContourLines { get; set; } = false;
-        public bool     ShowZones        { get; set; } = false;
 
         private int2                             m_SelectedParcelSize = new(2, 2);
         private ObjectToolSystem                 m_ObjectToolSystem;
@@ -45,13 +42,13 @@ namespace Platter.Systems {
         private P_ZoneCacheSystem                m_ZoneCacheSystem;
         private PrefabSystem                     m_PrefabSystem;
         private PrefixedLogger                   m_Log;
-        private ProxyAction                      m_DecreaseBlockDepthAction;
-        private ProxyAction                      m_DecreaseBlockWidthAction;
-        private ProxyAction                      m_IncreaseBlockDepthAction;
-        private ProxyAction                      m_IncreaseBlockWidthAction;
+        private ProxyAction                      m_BlockWidthAction;
+        private ProxyAction                      m_BlockDepthAction;
+        private ProxyAction                      m_BlockSizeAction;
+        private ProxyAction                      m_SetbackAction;
+        private ProxyAction                      m_OpenPlatterPanel;
         private ProxyAction                      m_ToggleRender;
         private ProxyAction                      m_ToggleSpawn;
-        private ProxyAction                      m_OpenPlatterPanel;
         private ToolbarUISystem                  m_ToolbarUISystem;
         private ToolSystem                       m_ToolSystem;
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
@@ -72,6 +69,9 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
+        public  bool                             ShowContourLines { get; set; }
+        public  bool                             ShowZones        { get; set; }
+        public  ZoneType                         PreZoneType      { get; set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -117,43 +117,63 @@ namespace Platter.Systems {
             CreateTrigger("CREATE_PARCEL_WITH_ZONE", HandleCreateParcelWithZone);
 
             // Shortcuts
-            m_IncreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelWidthActionName);
-            m_IncreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.IncreaseParcelDepthActionName);
-            m_DecreaseBlockWidthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelWidthActionName);
-            m_DecreaseBlockDepthAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.DecreaseParcelDepthActionName);
-            m_ToggleRender             = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderActionName);
-            m_ToggleSpawn              = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnActionName);
-            m_OpenPlatterPanel         = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.OpenPlatterPanelActionName);
+            m_ToggleRender     = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderName);
+            m_ToggleSpawn      = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnName);
+            m_OpenPlatterPanel = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.OpenPanelName);
+            m_BlockWidthAction = InputManager.instance.FindAction("Platter", "BlockWidthAction");
+            m_BlockDepthAction = InputManager.instance.FindAction("Platter", "BlockDepthAction");
+            m_BlockSizeAction  = InputManager.instance.FindAction("Platter", "BlockSizeAction");
+            m_SetbackAction    = InputManager.instance.FindAction("Platter", "SetbackAction");
+
+            // Always enable
+            m_OpenPlatterPanel.shouldBeEnabled = true;
         }
+
+        private bool CurrentlyUsingParcelsInObjectTool => m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+        private bool CurrentlyUsingZoneTool            => m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem;
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            var currentlyUsingParcelsInObjectTool = m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
-            var currentlyUsingZoneTool            = m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem;
-
             // Enable Tool Shortcuts
-            m_IncreaseBlockWidthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
-            m_IncreaseBlockDepthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
-            m_DecreaseBlockWidthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
-            m_DecreaseBlockDepthAction.shouldBeEnabled = currentlyUsingParcelsInObjectTool;
+            m_BlockWidthAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
+            m_BlockDepthAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
+            m_BlockSizeAction.shouldBeEnabled  = CurrentlyUsingParcelsInObjectTool;
+            m_SetbackAction.shouldBeEnabled    = CurrentlyUsingParcelsInObjectTool;
 
             // Handle Shortcuts
-            if (m_IncreaseBlockWidthAction.WasPerformedThisFrame()) {
-                IncreaseBlockWidth();
+            HandleProxyActions();
+
+            // Make sure we refresh the lot sizes if the Object Tool is active
+            if (CurrentlyUsingParcelsInObjectTool) {
+                m_SelectedParcelSize.x = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotWidth;
+                m_SelectedParcelSize.y = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
             }
 
-            if (m_IncreaseBlockDepthAction.WasPerformedThisFrame()) {
-                IncreaseBlockDepth();
-            }
+            // Rendering should be on when using a tool
+            m_PlatterOverlaySystem.RenderParcelsOverride = ShouldRenderOverlay();
 
-            if (m_DecreaseBlockWidthAction.WasPerformedThisFrame()) {
-                DecreaseBlockWidth();
-            }
+            // Update Bindings
+            UpdateBindings();
+        }
 
-            if (m_DecreaseBlockDepthAction.WasPerformedThisFrame()) {
-                DecreaseBlockDepth();
-            }
+        private void UpdateBindings() {
+            m_RenderParcelsBinding.Value        = PlatterMod.Instance.Settings.RenderParcels;
+            m_AllowSpawningBinding.Value        = PlatterMod.Instance.Settings.AllowSpawn;
+            m_BlockWidthBinding.Value           = m_SelectedParcelSize.x;
+            m_BlockDepthBinding.Value           = m_SelectedParcelSize.y;
+            m_EnableToolButtonsBinding.Value    = CurrentlyUsingParcelsInObjectTool;
+            m_EnableCreateFromZoneBinding.Value = CurrentlyUsingZoneTool;
+            m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
+            m_ZoneBinding.Value                 = PreZoneType.m_Index;
+            m_ShowContourLinesBinding.Value     = ShowContourLines;
+            m_ShowZonesBinding.Value            = ShowZones;
+            m_SnapSpacingBinding.Value          = m_SnapSystem.CurrentSnapSetback;
+            var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
+            Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
+            m_ZoneDataBinding.Value = zoneData;
+        }
 
+        private void HandleProxyActions() {
             if (m_ToggleRender.WasPerformedThisFrame()) {
                 ToggleRenderParcels();
             }
@@ -166,32 +186,54 @@ namespace Platter.Systems {
                 OpenPlatterPanel();
             }
 
-            // Make sure we refresh the lot sizes if the Object Tool is active
-            if (currentlyUsingParcelsInObjectTool) {
-                m_SelectedParcelSize.x = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotWidth;
-                m_SelectedParcelSize.y = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
+            if (m_BlockWidthAction.IsInProgress()) {
+                var scrollValue = m_BlockWidthAction.ReadValue<float>();
+
+                if (scrollValue > 0) {
+                    IncreaseBlockWidth();
+                } else if (scrollValue < 0) {
+                    DecreaseBlockWidth();
+                }
             }
 
-            // Rendering should be on when using a tool
-            m_PlatterOverlaySystem.RenderParcelsOverride = ShouldRenderOverlay();
+            if (m_BlockDepthAction.IsInProgress()) {
+                var scrollValue = m_BlockDepthAction.ReadValue<float>();
 
-            // Update Bindings
-            m_RenderParcelsBinding.Value        = PlatterMod.Instance.Settings.RenderParcels;
-            m_AllowSpawningBinding.Value        = PlatterMod.Instance.Settings.AllowSpawn;
-            m_BlockWidthBinding.Value           = m_SelectedParcelSize.x;
-            m_BlockDepthBinding.Value           = m_SelectedParcelSize.y;
-            m_EnableToolButtonsBinding.Value    = currentlyUsingParcelsInObjectTool;
-            m_EnableCreateFromZoneBinding.Value = currentlyUsingZoneTool;
-            m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
-            m_ZoneBinding.Value                 = PreZoneType.m_Index;
-            m_ShowContourLinesBinding.Value     = ShowContourLines;
-            m_ShowZonesBinding.Value            = ShowZones;
+                if (scrollValue > 0) {
+                    IncreaseBlockDepth();
+                } else if (scrollValue < 0) {
+                    DecreaseBlockDepth();
+                }
+            }
 
-            // Send down zone data
-            var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
-            Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
-            m_ZoneDataBinding.Value = zoneData;
+            if (m_SetbackAction.IsInProgress()) {
+                var scrollValue = m_SetbackAction.ReadValue<float>();
+                var currentSnap = m_SnapSystem.CurrentSnapSetback;
+
+                if (scrollValue > 0) {
+                    SetSnapSpacing(currentSnap + 1f);
+                } else if (scrollValue < 0) {
+                    SetSnapSpacing(currentSnap - 1f);
+                }
+            }
+
+            if (m_BlockSizeAction.IsInProgress()) {
+                var scrollValue = m_BlockSizeAction.ReadValue<float>();
+
+                if (scrollValue > 0) {
+                    IncreaseBlockDepth();
+                    IncreaseBlockWidth();
+                } else if (scrollValue < 0) {
+                    DecreaseBlockDepth();
+                    DecreaseBlockWidth();
+                }
+            }
         }
+
+        /// <summary>
+        /// Listen to mouswheel input for adjusting block size.
+        /// </summary>
+        private void HandleMousewheelInput() { }
 
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose  purpose,

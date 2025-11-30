@@ -25,109 +25,95 @@ namespace Platter.Settings {
         public EnUsConfig(PlatterModSettings setting) {
             m_Setting = setting;
 
-            m_Localization = new Dictionary<string, string> {
+            m_Localization = new Dictionary<string, string>
+            {
                 { m_Setting.GetSettingsLocaleID(), PlatterMod.Id },
 
                 // Sections
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(nameof(PlatterModSettings.KeybindingsGroup)), "Key Bindings" },
-                { m_Setting.GetOptionGroupLocaleID(nameof(PlatterModSettings.UninstallGroup)), "Uninstall" },
-                { m_Setting.GetOptionGroupLocaleID(nameof(PlatterModSettings.AboutGroup)), "About" },
+                { m_Setting.GetOptionGroupLocaleID(PlatterModSettings.KeybindingsGroup), "Key Bindings" },
+                { m_Setting.GetOptionGroupLocaleID(PlatterModSettings.UninstallGroup), "Uninstall" },
+                { m_Setting.GetOptionGroupLocaleID(PlatterModSettings.AboutGroup), "About" },
 
                 // Uninstaller
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.RemoveParcels)), "Delete all Parcels" }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.RemoveParcels)),
+                { m_Setting.GetOptionLabelLocaleID(PlatterModSettings.RemoveParcelsName), "Delete all Parcels" },
+                {
+                    m_Setting.GetOptionDescLocaleID(PlatterModSettings.RemoveParcelsName),
                     "Removes all parcels from the map, permanently. Buildings that are not on a vanilla zone grid will despawn, unless you have a mod that prevents that."
-                }, {
-                    m_Setting.GetOptionWarningLocaleID(nameof(PlatterModSettings.RemoveParcels)),
+                },
+                {
+                    m_Setting.GetOptionWarningLocaleID(PlatterModSettings.RemoveParcelsName),
                     "WARNING: Permanently remove all parcels from this save?"
                 },
 
                 // ToggleRenderActionName
-                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.ToggleRenderActionName), "Toggle \"Parcel Overlay\"" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterToggleRender)), "Toggle \"Parcel Overlay\"" }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterToggleRender)),
+                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.ToggleRenderName), "Toggle \"Parcel Overlay\"" },
+                { m_Setting.GetOptionLabelLocaleID(PlatterModSettings.ToggleRenderName), "Toggle \"Parcel Overlay\"" },
+                {
+                    m_Setting.GetOptionDescLocaleID(PlatterModSettings.ToggleRenderName),
                     "Shortcut to toggle the rendering of parcel overlays on or off."
                 },
 
+                // Block Width Scrollers
+                { m_Setting.GetOptionLabelLocaleID(PlatterModSettings.DepthScrollName), "Increase/Decrease Parcel Depth" },
+                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.DepthScrollName), "Increase/Decrease Parcel Depth" },
+                { m_Setting.GetOptionDescLocaleID(PlatterModSettings.DepthScrollName), "Shortcut to increase/decrease a Parcel's depth" },
+                { "Common.ACTION[Platter/BlockDepthAction]", "Increase/Decrease Parcel Depth" },
+
+                // Block Depth Scrollers
+                { m_Setting.GetOptionLabelLocaleID(PlatterModSettings.WidthScrollName), "Increase/Decrease Parcel Width" },
+                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.WidthScrollName), "Increase/Decrease Parcel Width" },
+                { m_Setting.GetOptionDescLocaleID(PlatterModSettings.WidthScrollName), "Shortcut to increase/decrease a Parcel's depth" },
+                { "Common.ACTION[Platter/BlockWidthAction]", "Increase/Decrease Parcel Width" },
+
+                // Setback scroller
+                { m_Setting.GetOptionLabelLocaleID(PlatterModSettings.SetbackScrollName), "Increase/Decrease Road setback" },
+                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.SetbackScrollName), "Increase/Decrease Road setback" },
+                { m_Setting.GetOptionDescLocaleID(PlatterModSettings.SetbackScrollName), "Shortcut to increase/decrease a Parcel's setback from the road." },
+                { "Common.ACTION[Platter/SetbackAction]", "Increase/Decrease Setback" },
+
                 // ToggleSpawnActionName
                 {
-                    m_Setting.GetBindingKeyLocaleID(PlatterModSettings.ToggleSpawnActionName),
+                    m_Setting.GetBindingKeyLocaleID(PlatterModSettings.ToggleSpawnName),
                     "Toggle \"Allow Spawning on Parcels\""
-                }, {
-                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterToggleSpawn)),
+                },
+                {
+                    m_Setting.GetOptionLabelLocaleID(PlatterModSettings.ToggleSpawnName),
                     "Toggle \"Allow Spawning on Parcels\""
-                }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterToggleSpawn)),
+                },
+                {
+                    m_Setting.GetOptionDescLocaleID(PlatterModSettings.ToggleSpawnName),
                     "Shortcut to toggle allowing the spawning of buildings on parcels."
                 },
 
                 // OpenPlatterPanelActionName
                 {
-                    m_Setting.GetBindingKeyLocaleID(PlatterModSettings.OpenPlatterPanelActionName),
+                    m_Setting.GetBindingKeyLocaleID(PlatterModSettings.OpenPanelName),
                     "Open Platter Panel"
-                }, {
-                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterOpenPanel)),
+                },
+                {
+                    m_Setting.GetOptionLabelLocaleID(PlatterModSettings.OpenPanelName),
                     "Open Platter Panel"
-                }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterOpenPanel)),
+                },
+                {
+                    m_Setting.GetOptionDescLocaleID(PlatterModSettings.OpenPanelName),
                     "Shortcut to open the Platter panel."
-                },
-
-                // IncreaseParcelWidthActionName
-                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.IncreaseParcelWidthActionName), "Increase Parcel width" }, {
-                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelWidth)),
-                    "Increase Parcel width"
-                }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelWidth)),
-                    "Shortcut to increase Parcel width while plopping Parcels"
-                }, {
-                    m_Setting.GetBindingKeyHintLocaleID(PlatterModSettings.IncreaseParcelWidthActionName), "Increase Parcel width"
-                },
-
-                // DecreaseParcelWidthActionName
-                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.DecreaseParcelWidthActionName), "Decrease Parcel width" }, {
-                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelWidth)),
-                    "Decrease Parcel width"
-                }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelWidth)),
-                    "Shortcut to decrease Parcel width while plopping Parcels"
-                }, {
-                    m_Setting.GetBindingKeyHintLocaleID(PlatterModSettings.DecreaseParcelWidthActionName), "Decrease Parcel width"
-                },
-
-                // IncreaseParcelDepthActionName
-                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.IncreaseParcelDepthActionName), "Increase Parcel depth" }, {
-                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelDepth)),
-                    "Increase Parcel depth"
-                }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterIncreaseParcelDepth)),
-                    "Shortcut to increase Parcel depth while plopping Parcels"
-                }, {
-                    m_Setting.GetBindingKeyHintLocaleID(PlatterModSettings.IncreaseParcelDepthActionName), "Increase Parcel depth"
-                },
-
-                // DecreaseParcelDepthActionName
-                { m_Setting.GetBindingKeyLocaleID(PlatterModSettings.DecreaseParcelDepthActionName), "Decrease Parcel depth" }, {
-                    m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelDepth)),
-                    "Decrease Parcel depth"
-                }, {
-                    m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.PlatterDecreaseParcelDepth)),
-                    "Shortcut to decrease Parcel depth while plopping Parcels"
-                }, {
-                    m_Setting.GetBindingKeyHintLocaleID(PlatterModSettings.DecreaseParcelDepthActionName), "Decrease Parcel depth"
                 },
 
                 // About
                 { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Version)), "Version" },
                 { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.InformationalVersion)), "Informational Version" },
                 { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Credits)), string.Empty },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Github)), "GitHub" }, {
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Github)), "GitHub" },
+                {
                     m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.Github)),
                     "Opens a browser window to https://github.com/lucarager/CS2-Platter"
                 },
-                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Discord)), "Discord" }, {
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.Discord)), "Discord" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(PlatterModSettings.ResetTutorial)), "Reset Tutorial" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.ResetTutorial)), "Reset Tutorial" },
+                {
                     m_Setting.GetOptionDescLocaleID(nameof(PlatterModSettings.Discord)),
                     "Opens link to join the CS:2 Modding Discord"
                 },
@@ -164,7 +150,8 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Tooltip.ShowZonbes", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
-                { "PlatterMod.UI.Tooltip.BuildingCount", "{COUNT} available {X}x{Y} buildings in the selected zone." }, {
+                { "PlatterMod.UI.Tooltip.BuildingCount", "{COUNT} available {X}x{Y} buildings in the selected zone." },
+                {
                     "PlatterMod.UI.Tooltip.BuildingCountWarning",
                     "No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on this parcel."
                 },
@@ -172,19 +159,28 @@ namespace Platter.Settings {
                 // FirstLaunch Modal
                 { "PlatterMod.UI.Modals.FirstLaunch.Title", "Thanks for installing Platter!" },
                 { "PlatterMod.UI.Modals.FirstLaunch.Subtitle", "Here's a quick intro to get you started" },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title", "Platter adds \"Parcels\" to the game" }, {
+                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title", "Platter adds \"Parcels\" to the game" },
+                {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text",
-                    "You can find ploppable parcels in __the new Platter tab__ in the zone toolbar.\r\n Oh, and no need to block or remove vanilla blocks, plop parcels right on top!"
+                    "You can find ploppable parcels in __the new Platter tab__ in the zone toolbar __(CTRL+P)__.\r\nSelect a parcel, and start plopping them wherever you'd like.\r\n\r\nNo need to block vanilla blocks - you can place parcels right on top."
                 },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title", "Parcels work just like vanilla blocks." }, {
+                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title", "Zoning Parcels" },
+                {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text",
-                    "You can use the tools familiar to you to zone and grow buildings.\r\n __Use the Fill zone tool for best results__ - it will limit the flood area to a parcel."
-                }, {
+                    "Use the __Pre-Zone__ option to zone parcels and get information about your selected zone and parcel combo.\r\nParcels work just like vanilla blocks - You can also use the vanilla zone tools."
+                },
+                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title", "Additional Tools" },
+                {
+                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Text",
+                    "You can configure options like __Road Setback__ and __Parcel depth and width__ with the scrollwheel shortcuts, or in the tool options panel."
+                },
+                {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text",
                     "The __top left Platter menu__ allows you to toggle the parcel overlay and temporarily block buildings growing on parcels."
                 },
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial4.Text", "__Advanced Line Tool__ and __MoveIt__ are great mods to use with Platter!" },
-                { "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title", "Disclaimer" }, {
+                { "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title", "Disclaimer" },
+                {
                     "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text",
                     "Platter is an experimental beta mod. Should you wish to uninstall it, the Settings page contains an uninstall button that will safely remove all custom parcels from your save."
                 },
