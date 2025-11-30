@@ -7,7 +7,7 @@ import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import { useValue } from "cs2/api";
 import { useLocalization } from "cs2/l10n";
-import { c } from '../../utils/classes';
+import { c } from "../../utils/classes";
 
 export type BlockControlProps = Record<string, never>;
 
@@ -20,9 +20,9 @@ export const WelcomeModal = () => {
         GAME_TRIGGERS.MODAL_DISMISS("first_launch");
     }, []);
 
-    if (modalBinding) {
-        return <></>;
-    }
+    // if (modalBinding) {
+    //     return <></>;
+    // }
 
     return (
         <div className={styles.wrapper}>
@@ -52,7 +52,9 @@ export const WelcomeModal = () => {
                     transitionStyles={VT.horizontalTransition}
                     activePage={activePage}>
                     {activePage != 0 ? null : (
-                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={0}>
+                        <VC.Page
+                            className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)}
+                            key={0}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
@@ -62,6 +64,10 @@ export const WelcomeModal = () => {
                                                 className={styles.card__image}
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                                <div className={styles.card}>
+                                    <div className={styles.card__inner}>
                                         <div className={styles.card__text_container}>
                                             <h3>
                                                 {translate(
@@ -82,7 +88,9 @@ export const WelcomeModal = () => {
                         </VC.Page>
                     )}
                     {activePage != 1 ? null : (
-                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={1}>
+                        <VC.Page
+                            className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)}
+                            key={1}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
@@ -92,6 +100,18 @@ export const WelcomeModal = () => {
                                                 className={styles.card__image}
                                             />
                                         </div>
+                                    </div>
+                                    <div className={styles.card__inner}>
+                                        <div className={styles.card__inner__image}>
+                                            <img
+                                                src="coui://platter/tu2-2.png"
+                                                className={styles.card__image}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.card}>
+                                    <div className={styles.card__inner}>
                                         <div className={styles.card__text_container}>
                                             <h3>
                                                 {translate(
@@ -107,34 +127,14 @@ export const WelcomeModal = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className={styles.card__inner}>
-                                        <div className={styles.card__inner__image}>
-                                            <img
-                                                src="coui://platter/tu2-2.png"
-                                                className={styles.card__image}
-                                            />
-                                        </div>
-                                        <div className={styles.card__text_container}>
-                                            <h3>
-                                                {translate(
-                                                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title",
-                                                )}
-                                            </h3>
-                                            <p className={styles.card__text} cohinline="true">
-                                                <HighlightedText
-                                                    text={translate(
-                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Text",
-                                                    )}
-                                                />
-                                            </p>
-                                        </div>
-                                    </div>
                                 </div>
                             </VC.Scrollable>
                         </VC.Page>
                     )}
                     {activePage != 2 ? null : (
-                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={2}>
+                        <VC.Page
+                            className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)}
+                            key={2}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
@@ -144,28 +144,28 @@ export const WelcomeModal = () => {
                                                 className={styles.card__image}
                                             />
                                         </div>
-                                        <div className={styles.card__text_container}>
-                                            <p className={styles.card__text} cohinline="true">
-                                                <HighlightedText
-                                                    text={translate(
-                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text",
-                                                    )}
-                                                />
-                                            </p>
-                                        </div>
                                     </div>
                                     <div className={styles.card__inner}>
                                         <div className={styles.card__inner__image}>
                                             <img
-                                                src="coui://platter/tu4.png"
+                                                src="coui://platter/tu3-2.png"
                                                 className={styles.card__image}
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                                <div className={styles.card}>
+                                    <div className={styles.card__inner}>
                                         <div className={styles.card__text_container}>
+                                            <h3>
+                                                {translate(
+                                                    "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Title",
+                                                )}
+                                            </h3>
                                             <p className={styles.card__text} cohinline="true">
                                                 <HighlightedText
                                                     text={translate(
-                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial4.Text",
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text",
                                                     )}
                                                 />
                                             </p>
@@ -176,25 +176,26 @@ export const WelcomeModal = () => {
                         </VC.Page>
                     )}
                     {activePage != 3 ? null : (
-                        <VC.Page className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)} key={3}>
+                        <VC.Page
+                            className={c(VT.whatsNewPage["whats-new-page"], styles.whatsNewPage)}
+                            key={3}>
                             <VC.Scrollable>
                                 <div className={styles.card}>
                                     <div className={styles.card__inner}>
-                                        {/* <img
-                                        src="coui://platter/placeholder.png"
-                                        className={styles.card__image}
-                                    /> */}
-                                        <div className={styles.card__text_container}>
+                                        <div className={c(styles.card__text_container, styles.disclaimer_container)}>
                                             <h3>
                                                 {translate(
                                                     "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title",
                                                 )}
                                             </h3>
-                                            <p className={styles.alert}>
-                                                {translate(
-                                                    "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text",
-                                                )}
-                                            </p>
+                                            <div className={styles.alert}>
+                                                <p cohinline="true">
+                                                    {translate(
+                                                        "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text",
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div style={{flex: 2}}></div>
                                             <div className={styles.action}>
                                                 <Button
                                                     variant="primary"

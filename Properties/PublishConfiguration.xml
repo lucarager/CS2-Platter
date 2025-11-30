@@ -8,19 +8,17 @@
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Platter mod long" /-->
 	<LongDescription>
-Private alpha for Platter.
+# Private alpha for Platter.
 
-**Disclaimer:**
-
+## Disclaimer:
 This is an experimental, potentially unstable release. Expect issues and bugs, not everything may work as it should. Always backup your saves. Use at your own risk.
 
-Please report any issues and share feedback on Discord.
-
+## Please report any issues and share feedback on Discord.  
 Include the following logs:
 
-`C:\Users\AppData\LocalLow\Colossal Order\Cities Skylines II\logs\Platter.log `
-
-`C:\Users\AppData\LocalLow\Colossal Order\Cities Skylines II\logs\Player.log`
+- `%localappdata%low\Colossal Order\Cities Skylines II\logs\Platter.log`
+- `%localappdata%low\Colossal Order\Cities Skylines II\logs\Player.log`
+		
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />

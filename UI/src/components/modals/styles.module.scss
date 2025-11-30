@@ -10,14 +10,30 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .panel {
+    --panelRadius: 20rem;
+
+    height: 80vh;
     width: 900rem;
     max-width: 80vw;
     border-radius: 20rem;
 
-    --panelRadius: 20rem;
+    animation: 600ms fadeInScale ease-out forwards;
+    animation-delay: 2s;
 
-    p, li {
+    p,
+    li {
         font-size: 1.1em;
     }
 }
@@ -32,6 +48,7 @@
 
     h2 {
         margin-top: 0;
+        margin-bottom: 8rem;
         font-weight: bold;
     }
 
@@ -50,16 +67,15 @@
         align-items: center;
         justify-content: space-between;
         width: 100%;
-        padding-top: 16rem;
+        padding-top: 4rem;
         padding-left: 64rem;
         padding-right: 64rem;
-        padding-bottom: 16rem;
+        padding-bottom: 4rem;
     }
 }
 
 .whatsNewPage {
-    padding-left: 54rem;
-    padding-right: 54rem;
+    padding-top: 32rem;
 }
 
 .intro {
@@ -84,16 +100,14 @@
 }
 
 .pageSwitcher {
-    height: 50vh;
+    flex: 2;
+    height: 100%;
 }
 
 .card {
     width: 100%;
     display: flex;
     flex-direction: row;
-    height: 100%;
-    padding-top: 32rem;
-    padding-bottom: 32rem;
 
     &__inner {
         flex: 1;
@@ -138,7 +152,7 @@
     h3 {
         margin-top: 10rem;
         margin-bottom: 0;
-        color:  var(--accentColorLighter) ;
+        color: var(--accentColorLighter);
     }
 
     p {
@@ -147,7 +161,7 @@
 }
 
 .highlight {
-    color:  var(--accentColorLight);
+    color: var(--accentColorLight);
 }
 
 .pageSelectorWrapper {
@@ -185,4 +199,14 @@
     color: orange;
     padding: 16rem;
     border-radius: 6rem;
+    margin-top: 32rem;
+
+    p {
+        margin: 0;
+    }
+}
+
+.disclaimer_container {
+    height: 100%;
+    margin: 0;
 }
