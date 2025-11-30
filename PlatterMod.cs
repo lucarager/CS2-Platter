@@ -208,10 +208,10 @@ namespace Platter {
             m_Log.Debug("RegisterCustomInputActions()");
 
             RegisterCustomScrollAction("BlockDepthAction", new Tuple<string, string>[] {
-                new Tuple<string, string>("alt", "<Keyboard>/alt"),
+                new Tuple<string, string>("ctrl", "<Keyboard>/alt"),
             });
             RegisterCustomScrollAction("BlockWidthAction", new Tuple<string, string>[] {
-                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+                new Tuple<string, string>("alt", "<Keyboard>/ctrl"),
             });
             RegisterCustomScrollAction("BlockSizeAction", new Tuple<string, string>[] {
                 new Tuple<string, string>("alt", "<Keyboard>/alt"),

@@ -63,11 +63,11 @@ namespace Platter.Settings {
 
         // Fake binding to show in settings UI
         [SettingsUISection(KeybindingsGroup)]
-        public string PlatterDepthScrollAction => "Alt + ScrollWheel";
+        public string PlatterDepthScrollAction => "Ctrl + ScrollWheel";
 
         // Fake binding to show in settings UI
         [SettingsUISection(KeybindingsGroup)]
-        public string PlatterWidthScrollAction => "Ctrl + ScrollWheel";
+        public string PlatterWidthScrollAction => "Alt + ScrollWheel";
 
         // Fake binding to show in settings UI
         [SettingsUISection(KeybindingsGroup)]
