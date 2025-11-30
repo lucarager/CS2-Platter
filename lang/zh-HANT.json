@@ -74,7 +74,7 @@
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title": "Platter adds \"Parcels\" to the game",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text": "Access parcels via the __Platter tab__ in the zone toolbar __(CTRL+P)__.\r\nSelect a parcel to start plopping.\r\n\r\nNo need to manually block the vanilla grid — you can place parcels directly on top.",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title": "Zoning Parcels",
-  "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text": "Select __Pre-Zone__ to automatically zone parcels and get information about your zone/size combination.\r\n\r\nParcels also fully support the vanilla zoning tools.",
+  "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text": "Select __Pre-Zone__ to automatically zone parcels and get information about your zone/size combination.\r\nParcels also fully support the vanilla zoning tools.",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title": "Configuration",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Text": "Adjust __Road Setback__, __Depth__, and __Width__ using scrollwheel shortcuts or the tool options panel.",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text": "Use the __top-left menu__ to toggle the parcel overlay or temporarily halt buildings spawning on empty parcels.",
