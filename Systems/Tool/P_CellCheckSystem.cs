@@ -310,90 +310,90 @@ namespace Platter.Systems {
             public void Execute(int index) {
                 // Disable job until we can figure out a better solution
                 return;
-                var entity = m_Blocks[index].m_Entity;
-                var block  = m_BlockData[entity];
+                //var entity = m_Blocks[index].m_Entity;
+                //var block  = m_BlockData[entity];
 
-                // Specifically only reevaluate blocks part of a parcel
-                if (!m_ParcelOwnerData.HasComponent(entity)) {
-                    return;
-                }
+                //// Specifically only reevaluate blocks part of a parcel
+                //if (!m_ParcelOwnerData.HasComponent(entity)) {
+                //    return;
+                //}
 
-                var parcelOwner  = m_ParcelOwnerData[entity];
-                var parcelPrefab = m_PrefabRefData[parcelOwner.m_Owner];
-                var parcelData   = m_ParcelDataData[parcelPrefab.m_Prefab];
+                //var parcelOwner  = m_ParcelOwnerData[entity];
+                //var parcelPrefab = m_PrefabRefData[parcelOwner.m_Owner];
+                //var parcelData   = m_ParcelDataData[parcelPrefab.m_Prefab];
 
-                // Specifically only reevaluate parcels of width 1
-                if (parcelData.m_LotSize.x != 1) {
-                    return;
-                }
+                //// Specifically only reevaluate parcels of width 1
+                //if (parcelData.m_LotSize.x != 1) {
+                //    return;
+                //}
 
-                var cellBuffer = m_Cells[entity];
+                //var cellBuffer = m_Cells[entity];
 
-                for (var col = 0; col < block.m_Size.x; col++)
-                for (var row = 0; row < block.m_Size.y; row++) {
-                    var i    = row * block.m_Size.x + col;
-                    var cell = cellBuffer[i];
+                //for (var col = 0; col < block.m_Size.x; col++)
+                //for (var row = 0; row < block.m_Size.y; row++) {
+                //    var i    = row * block.m_Size.x + col;
+                //    var cell = cellBuffer[i];
 
-                    if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
-                        cell.m_State |= CellFlags.Blocked;
-                    } else {
-                        cell.m_State &= ~CellFlags.Blocked;
-                    }
+                //    if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
+                //        cell.m_State |= CellFlags.Blocked;
+                //    } else {
+                //        cell.m_State &= ~CellFlags.Blocked;
+                //    }
 
-                    cellBuffer[i] = cell;
-                }
+                //    cellBuffer[i] = cell;
+                //}
 
-                // Create a copy of the block data and set it to our parcel size
-                var actualBlock = block;
-                actualBlock.m_Size.x = parcelData.m_LotSize.x;
-                actualBlock.m_Size.y = parcelData.m_LotSize.y;
+                //// Create a copy of the block data and set it to our parcel size
+                //var actualBlock = block;
+                //actualBlock.m_Size.x = parcelData.m_LotSize.x;
+                //actualBlock.m_Size.y = parcelData.m_LotSize.y;
 
-                // Rest of the code is similar to vanilla's BlockCellsJob
-                var validArea = default(ValidArea);
-                validArea.m_Area = new int4(0, actualBlock.m_Size.x, 0, actualBlock.m_Size.y);
-                var bounds  = ZoneUtils.CalculateBounds(actualBlock);
-                var corners = ZoneUtils.CalculateCorners(actualBlock);
+                //// Rest of the code is similar to vanilla's BlockCellsJob
+                //var validArea = default(ValidArea);
+                //validArea.m_Area = new int4(0, actualBlock.m_Size.x, 0, actualBlock.m_Size.y);
+                //var bounds  = ZoneUtils.CalculateBounds(actualBlock);
+                //var corners = ZoneUtils.CalculateCorners(actualBlock);
 
-                // Iterate over nets and check overlaps
-                var netIterator = new NetIterator {
-                    m_BlockEntity               = entity,
-                    m_BlockData                 = actualBlock,
-                    m_Bounds                    = bounds,
-                    m_Corners                   = corners,
-                    m_ValidAreaData             = validArea,
-                    m_Cells                     = cellBuffer,
-                    m_OwnerData                 = m_OwnerData,
-                    m_TransformData             = m_TransformData,
-                    m_EdgeGeometryData          = m_EdgeGeometryData,
-                    m_StartNodeGeometryData     = m_StartNodeGeometryData,
-                    m_EndNodeGeometryData       = m_EndNodeGeometryData,
-                    m_CompositionData           = m_CompositionData,
-                    m_PrefabRefData             = m_PrefabRefData,
-                    m_PrefabCompositionData     = m_PrefabCompositionData,
-                    m_PrefabRoadCompositionData = m_PrefabRoadCompositionData,
-                    m_PrefabObjectGeometryData  = m_PrefabObjectGeometryData,
-                };
-                m_NetSearchTree.Iterate(ref netIterator);
+                //// Iterate over nets and check overlaps
+                //var netIterator = new NetIterator {
+                //    m_BlockEntity               = entity,
+                //    m_BlockData                 = actualBlock,
+                //    m_Bounds                    = bounds,
+                //    m_Corners                   = corners,
+                //    m_ValidAreaData             = validArea,
+                //    m_Cells                     = cellBuffer,
+                //    m_OwnerData                 = m_OwnerData,
+                //    m_TransformData             = m_TransformData,
+                //    m_EdgeGeometryData          = m_EdgeGeometryData,
+                //    m_StartNodeGeometryData     = m_StartNodeGeometryData,
+                //    m_EndNodeGeometryData       = m_EndNodeGeometryData,
+                //    m_CompositionData           = m_CompositionData,
+                //    m_PrefabRefData             = m_PrefabRefData,
+                //    m_PrefabCompositionData     = m_PrefabCompositionData,
+                //    m_PrefabRoadCompositionData = m_PrefabRoadCompositionData,
+                //    m_PrefabObjectGeometryData  = m_PrefabObjectGeometryData,
+                //};
+                //m_NetSearchTree.Iterate(ref netIterator);
 
-                // Iterate over areas and check overlap
-                var areaIterator = new AreaIterator {
-                    m_BlockEntity            = entity,
-                    m_BlockData              = actualBlock,
-                    m_Bounds                 = bounds,
-                    m_Corners                = corners,
-                    m_ValidAreaData          = validArea,
-                    m_Cells                  = cellBuffer,
-                    m_NativeData             = m_NativeData,
-                    m_PrefabRefData          = m_PrefabRefData,
-                    m_PrefabAreaGeometryData = m_PrefabAreaGeometryData,
-                    m_AreaNodes              = m_AreaNodes,
-                    m_AreaTriangles          = m_AreaTriangles,
-                };
-                m_AreaSearchTree.Iterate(ref areaIterator);
+                //// Iterate over areas and check overlap
+                //var areaIterator = new AreaIterator {
+                //    m_BlockEntity            = entity,
+                //    m_BlockData              = actualBlock,
+                //    m_Bounds                 = bounds,
+                //    m_Corners                = corners,
+                //    m_ValidAreaData          = validArea,
+                //    m_Cells                  = cellBuffer,
+                //    m_NativeData             = m_NativeData,
+                //    m_PrefabRefData          = m_PrefabRefData,
+                //    m_PrefabAreaGeometryData = m_PrefabAreaGeometryData,
+                //    m_AreaNodes              = m_AreaNodes,
+                //    m_AreaTriangles          = m_AreaTriangles,
+                //};
+                //m_AreaSearchTree.Iterate(ref areaIterator);
 
-                // Here we are skipping vailla's CleanBlockedCells
+                //// Here we are skipping vailla's CleanBlockedCells
 
-                m_ValidAreaData[entity] = validArea;
+                //m_ValidAreaData[entity] = validArea;
             }
 
             private struct NetIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>, IUnsafeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
@@ -576,8 +576,8 @@ namespace Platter.Systems {
                 }
 
                 private static Bounds3 SetHeightRange(Bounds3 bounds, Bounds1 heightRange) {
-                    bounds.min.y = bounds.min.y + heightRange.min;
-                    bounds.max.y = bounds.max.y + heightRange.max;
+                    bounds.min.y += heightRange.min;
+                    bounds.max.y += heightRange.max;
                     return bounds;
                 }
 
