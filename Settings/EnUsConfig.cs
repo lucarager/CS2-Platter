@@ -167,7 +167,7 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title", "Zoning Parcels" },
                 {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text",
-                    "Select __Pre-Zone__ to automatically zone parcels and get information about your zone/size combination.\r\n\r\nParcels also fully support the vanilla zoning tools."
+                    "Select __Pre-Zone__ to automatically zone parcels and get information about your zone/size combination.\r\nParcels also fully support the vanilla zoning tools."
                 },
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title", "Configuration" },
                 {
