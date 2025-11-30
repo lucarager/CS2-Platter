@@ -30,6 +30,7 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
+    using Game.Zones;
     using HarmonyLib;
     using Newtonsoft.Json;
     using Settings;
@@ -189,7 +190,7 @@ namespace Platter {
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
             updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateAfter<P_CellCheckSystem, CellCheckSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
         }
 
@@ -208,10 +209,10 @@ namespace Platter {
             m_Log.Debug("RegisterCustomInputActions()");
 
             RegisterCustomScrollAction("BlockDepthAction", new Tuple<string, string>[] {
-                new Tuple<string, string>("ctrl", "<Keyboard>/alt"),
+                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
             });
             RegisterCustomScrollAction("BlockWidthAction", new Tuple<string, string>[] {
-                new Tuple<string, string>("alt", "<Keyboard>/ctrl"),
+                new Tuple<string, string>("alt", "<Keyboard>/alt"),
             });
             RegisterCustomScrollAction("BlockSizeAction", new Tuple<string, string>[] {
                 new Tuple<string, string>("alt", "<Keyboard>/alt"),
