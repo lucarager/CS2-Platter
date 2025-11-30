@@ -162,27 +162,27 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title", "Platter adds \"Parcels\" to the game" },
                 {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text",
-                    "You can find ploppable parcels in __the new Platter tab__ in the zone toolbar __(CTRL+P)__.\r\nSelect a parcel, and start plopping them wherever you'd like.\r\n\r\nNo need to block vanilla blocks - you can place parcels right on top."
+                    "Access parcels via the __Platter tab__ in the zone toolbar __(CTRL+P)__.\r\nSelect a parcel to start plopping.\r\n\r\nNo need to manually block the vanilla grid — you can place parcels directly on top."
                 },
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title", "Zoning Parcels" },
                 {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text",
-                    "Use the __Pre-Zone__ option to zone parcels and get information about your selected zone and parcel combo.\r\nParcels work just like vanilla blocks - You can also use the vanilla zone tools."
+                    "Select __Pre-Zone__ to automatically zone parcels and get information about your zone/size combination.\r\n\r\nParcels also fully support the vanilla zoning tools."
                 },
-                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title", "Additional Tools" },
+                { "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Title", "Configuration" },
                 {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial2-2.Text",
-                    "You can configure options like __Road Setback__ and __Parcel depth and width__ with the scrollwheel shortcuts, or in the tool options panel."
+                    "Adjust __Road Setback__, __Depth__, and __Width__ using scrollwheel shortcuts or the tool options panel."
                 },
                 {
                     "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text",
-                    "The __top left Platter menu__ allows you to toggle the parcel overlay and temporarily block buildings growing on parcels."
+                    "Use the __top-left menu__ to toggle the parcel overlay or temporarily halt buildings spawning on empty parcels."
                 },
                 { "PlatterMod.UI.Modals.FirstLaunch.Tutorial4.Text", "__Advanced Line Tool__ and __MoveIt__ are great mods to use with Platter!" },
-                { "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title", "Disclaimer" },
+                { "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title", "Beta Disclaimer" },
                 {
                     "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text",
-                    "Platter is an experimental beta mod. Should you wish to uninstall it, the Settings page contains an uninstall button that will safely remove all custom parcels from your save."
+                    "Platter is an experimental beta mod.\r\n\r\nTo uninstall: You must use the button in the Settings page to safely remove custom parcels from your save before removing the mod."
                 },
                 { "PlatterMod.UI.Modals.FirstLaunch.Button", "Get plattin'!" },
 
