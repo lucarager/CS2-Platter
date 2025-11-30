@@ -13,7 +13,6 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
-    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -72,17 +71,19 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             // Job to delete parcels marked for deletion
-            var deleteParcelJobHandle = new DeleteParcelJob {
+            var deleteParcelJobHandle = new DeleteParcelJob
+            {
                 m_EntityTypeHandle         = SystemAPI.GetEntityTypeHandle(),
                 m_SubBlockBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
                 m_CellLookup               = SystemAPI.GetBufferLookup<Cell>(),
-                m_CommandBuffer            = m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
+                m_CommandBuffer            = m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter(),
             }.Schedule(m_DeletedQuery, Dependency);
 
             m_ModificationBarrier2.AddJobHandleForProducer(deleteParcelJobHandle);
 
             // Job to initialize a parcel after it has been replaced from a placeholder
-            var updateParcelJobHandle = new UpdateParcelJob {
+            var updateParcelJobHandle = new UpdateParcelJob
+            {
                 m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
                 m_ParcelTypeHandle               = SystemAPI.GetComponentTypeHandle<Parcel>(),
                 m_PrefabRefTypeHandle            = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
@@ -90,7 +91,7 @@ namespace Platter.Systems {
                 m_ParcelSubBlockBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(),
                 m_ParcelDataLookup               = SystemAPI.GetComponentLookup<ParcelData>(),
                 m_ZoneBlockDataLookup            = SystemAPI.GetComponentLookup<ZoneBlockData>(),
-                m_CommandBuffer                  = m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter()
+                m_CommandBuffer                  = m_ModificationBarrier2.CreateCommandBuffer().AsParallelWriter(),
             }.Schedule(m_UpdatedQuery, Dependency);
 
             m_ModificationBarrier2.AddJobHandleForProducer(updateParcelJobHandle);
@@ -169,6 +170,10 @@ namespace Platter.Systems {
                         m_CommandBuffer.SetComponent(index, blockEntity, new PrefabRef(parcelData.m_ZoneBlockPrefab));
                         m_CommandBuffer.SetComponent(index, blockEntity, default(CurvePosition));
                         m_CommandBuffer.SetComponent(index, blockEntity, new BuildOrder { m_Order = 0 });
+                        m_CommandBuffer.SetComponent(
+                            index,
+                            blockEntity,
+                            new ValidArea { m_Area = new int4(0, parcelData.m_LotSize.x, 0, parcelData.m_LotSize.y) });
                         m_CommandBuffer.AddComponent(index, blockEntity, default(Updated));
                         continue;
                     }
@@ -178,7 +183,8 @@ namespace Platter.Systems {
                     var parcelBlockWidth = math.max(MinBlockWidth, parcelData.m_LotSize.x);
                     var parcelBlockDepth = math.max(MinBlockDepth, parcelData.m_LotSize.y);
                     var blockCenter      = ParcelGeometryUtils.GetBlockCenter(parcelData.m_LotSize);
-                    var block = new Block {
+                    var block = new Block
+                    {
                         m_Position  = ParcelUtils.GetWorldPosition(transform, blockCenter),
                         m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
                         m_Size      = new int2(parcelBlockWidth, parcelBlockDepth),
@@ -188,6 +194,10 @@ namespace Platter.Systems {
                     m_CommandBuffer.SetComponent(index, blockEntity, block);
                     m_CommandBuffer.SetComponent(index, blockEntity, default(CurvePosition));
                     m_CommandBuffer.SetComponent(index, blockEntity, new BuildOrder { m_Order = 0 });
+                    m_CommandBuffer.SetComponent(
+                        index,
+                        blockEntity,
+                        new ValidArea { m_Area = new int4(0, parcelData.m_LotSize.x, 0, parcelData.m_LotSize.y) });
                     m_CommandBuffer.AddComponent(index, blockEntity, new ParcelOwner(parcelEntity));
                     m_CommandBuffer.AddComponent<Initialized>(index, parcelEntity);
                     var cellBuffer = m_CommandBuffer.SetBuffer<Cell>(index, blockEntity);
@@ -207,7 +217,8 @@ namespace Platter.Systems {
                     for (var col = 0; col < block.m_Size.x; col++) {
                         var isBlocked = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
                         cellBuffer.Add(
-                            new Cell {
+                            new Cell
+                            {
                                 m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
                                 m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
                             });

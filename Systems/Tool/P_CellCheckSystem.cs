@@ -6,14 +6,10 @@
 namespace Platter.Systems {
     #region Using Statements
 
-    using Colossal.Collections;
     using Colossal.Mathematics;
     using Components;
     using Game;
-    using Game.Areas;
     using Game.Common;
-    using Game.Net;
-    using Game.Objects;
     using Game.Prefabs;
     using Game.Zones;
     using Unity.Burst;
@@ -21,16 +17,13 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
-    using UnityEngine;
     using Utils;
     using static Game.Zones.CellCheckHelpers;
     using Block = Game.Zones.Block;
+    using BlockOverlap = Game.Zones.CellCheckHelpers.BlockOverlap;
     using BuildOrder = Game.Zones.BuildOrder;
-    using GeometryFlags = Game.Objects.GeometryFlags;
-    using Node = Game.Areas.Node;
-    using RoadFlags = Game.Prefabs.RoadFlags;
+    using OverlapGroup = Game.Zones.CellCheckHelpers.OverlapGroup;
     using SearchSystem = Game.Areas.SearchSystem;
-    using Transform = Game.Objects.Transform;
     using UpdateCollectSystem = Game.Areas.UpdateCollectSystem;
 
     #endregion
@@ -53,6 +46,8 @@ namespace Platter.Systems {
         private Game.Net.UpdateCollectSystem     m_NetUpdateCollectSystem;
         private Game.Objects.UpdateCollectSystem m_ObjectUpdateCollectSystem;
         private Game.Zones.UpdateCollectSystem   m_ZoneUpdateCollectSystem;
+        private ZoneSystem                       m_ZoneSystem;
+        private ModificationBarrier5             m_ModificationBarrier5;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -66,6 +61,8 @@ namespace Platter.Systems {
             m_ZoneSearchSystem          = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
             m_NetSearchSystem           = World.GetOrCreateSystemManaged<Game.Net.SearchSystem>();
             m_AreaSearchSystem          = World.GetOrCreateSystemManaged<SearchSystem>();
+            m_ZoneSystem                = World.GetOrCreateSystemManaged<ZoneSystem>();
+            m_ModificationBarrier5      = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_CellCheckSystem));
@@ -83,77 +80,88 @@ namespace Platter.Systems {
                 return;
             }
 
-            var updateBlocksList  = new NativeList<SortedEntity>(Allocator.TempJob);
-            var blockOverlapQueue = new NativeQueue<BlockOverlap>(Allocator.TempJob);
-            var blockOverlapList  = new NativeList<BlockOverlap>(Allocator.TempJob);
-            var overlapGroupsList = new NativeList<OverlapGroup>(Allocator.TempJob);
-            var sortedEntityArray = updateBlocksList.AsDeferredJobArray();
-            var blocksArray       = updateBlocksList.AsDeferredJobArray();
+            var updatedBlocksList  = new NativeList<SortedEntity>(Allocator.TempJob);
+            var blockOverlapQueue  = new NativeQueue<BlockOverlap>(Allocator.TempJob);
+            var blockOverlapList   = new NativeList<BlockOverlap>(Allocator.TempJob);
+            var overlapGroupsList  = new NativeList<OverlapGroup>(Allocator.TempJob);
+            var updatedBlocksArray = updatedBlocksList.AsDeferredJobArray();
+            var zoneSearchTree     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle);
+            var boundsQueue        = new NativeQueue<Bounds2>(Allocator.TempJob);
 
-            Dependency = JobHandle.CombineDependencies(Dependency, CollectUpdatedBlocks(updateBlocksList));
+            Dependency = JobHandle.CombineDependencies(Dependency, CollectUpdatedBlocks(updatedBlocksList));
 
-            var undoBlockedCellsJobHandle = new UndoBlockedSizeOneCellsJob(
-                blocksArray,
-                SystemAPI.GetComponentLookup<Block>(),
-                SystemAPI.GetComponentLookup<ParcelOwner>(),
-                SystemAPI.GetComponentLookup<ParcelData>(),
-                m_NetSearchSystem.GetNetSearchTree(true, out var netSearchJobHandle),
-                m_AreaSearchSystem.GetSearchTree(true, out var areaSearchJobHandle),
-                SystemAPI.GetComponentLookup<Owner>(),
-                SystemAPI.GetComponentLookup<Transform>(),
-                SystemAPI.GetComponentLookup<EdgeGeometry>(),
-                SystemAPI.GetComponentLookup<StartNodeGeometry>(),
-                SystemAPI.GetComponentLookup<EndNodeGeometry>(),
-                SystemAPI.GetComponentLookup<Composition>(),
-                SystemAPI.GetComponentLookup<PrefabRef>(),
-                SystemAPI.GetComponentLookup<NetCompositionData>(),
-                SystemAPI.GetComponentLookup<RoadComposition>(),
-                SystemAPI.GetComponentLookup<AreaGeometryData>(),
-                SystemAPI.GetComponentLookup<ObjectGeometryData>(),
-                SystemAPI.GetComponentLookup<Native>(),
-                SystemAPI.GetBufferLookup<Node>(),
-                SystemAPI.GetBufferLookup<Triangle>(),
-                SystemAPI.GetBufferLookup<Cell>(),
-                SystemAPI.GetComponentLookup<ValidArea>()
-            ).Schedule(updateBlocksList, 1, JobHandle.CombineDependencies(Dependency, netSearchJobHandle, areaSearchJobHandle));
-            m_NetSearchSystem.AddNetSearchTreeReader(undoBlockedCellsJobHandle);
-            m_AreaSearchSystem.AddSearchTreeReader(undoBlockedCellsJobHandle);
+            var undoBlockedCellsJobHandle = new SanitizeCellsJob {
+                m_Blocks            = updatedBlocksArray,
+                m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
+                m_ParcelDataLookup  = SystemAPI.GetComponentLookup<ParcelData>(),
+                m_PrefabRefLookup   = SystemAPI.GetComponentLookup<PrefabRef>(),
+                m_ValidAreaLookup   = SystemAPI.GetComponentLookup<ValidArea>(),
+            }.Schedule(updatedBlocksList, 1, Dependency);
 
-            var findOverlappingBlocksJobHandle = new FindOverlappingBlocksJob {
-                m_Blocks         = sortedEntityArray,
-                m_SearchTree     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle),
+            var findOverlappingBlocksJobHandle = new CellCheckHelpers.FindOverlappingBlocksJob {
+                m_Blocks         = updatedBlocksArray,
+                m_SearchTree     = zoneSearchTree,
                 m_BlockData      = SystemAPI.GetComponentLookup<Block>(),
                 m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(),
                 m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(),
                 m_ResultQueue    = blockOverlapQueue.AsParallelWriter(),
-            }.Schedule(updateBlocksList, 1, JobHandle.CombineDependencies(undoBlockedCellsJobHandle, zoneSearchJobHandle));
+            }.Schedule(updatedBlocksList, 1, JobHandle.CombineDependencies(undoBlockedCellsJobHandle, zoneSearchJobHandle));
             m_ZoneSearchSystem.AddSearchTreeReader(findOverlappingBlocksJobHandle);
 
-            var groupOverlappingBlocksJobHandle = new GroupOverlappingBlocksJob {
-                m_Blocks        = sortedEntityArray,
+            var groupOverlappingBlocksJobHandle = new CellCheckHelpers.GroupOverlappingBlocksJob {
+                m_Blocks        = updatedBlocksArray,
                 m_OverlapQueue  = blockOverlapQueue,
                 m_BlockOverlaps = blockOverlapList,
                 m_OverlapGroups = overlapGroupsList,
             }.Schedule(findOverlappingBlocksJobHandle);
-
-            var clearBlocksJobHandle = new ClearBlocksJob(
-                overlapGroupsList.AsDeferredJobArray(),
-                SystemAPI.GetComponentLookup<ParcelOwner>(),
-                SystemAPI.GetComponentLookup<ParcelData>(),
-                SystemAPI.GetComponentLookup<PrefabRef>(),
-                SystemAPI.GetComponentLookup<Block>(),
-                SystemAPI.GetComponentLookup<BuildOrder>(),
-                SystemAPI.GetComponentLookup<ValidArea>(),
-                blockOverlapList.AsDeferredJobArray(),
-                SystemAPI.GetBufferLookup<Cell>()
-            ).Schedule(overlapGroupsList, 1, groupOverlappingBlocksJobHandle);
-
-            updateBlocksList.Dispose(groupOverlappingBlocksJobHandle);
             blockOverlapQueue.Dispose(groupOverlappingBlocksJobHandle);
+
+            var clearBlocksJobHandle = new ClearBlocksJob {
+                m_OverlapGroups = overlapGroupsList.AsDeferredJobArray(),
+                m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
+                m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
+                m_BlockLookup = SystemAPI.GetComponentLookup<Block>(),
+                m_BuildOrderLookup = SystemAPI.GetComponentLookup<BuildOrder>(),
+                m_ValidAreaLookup = SystemAPI.GetComponentLookup<ValidArea>(),
+                m_BlockOverlapArray = blockOverlapList.AsDeferredJobArray(),
+                m_CellLookup = SystemAPI.GetBufferLookup<Cell>(),
+            }.Schedule(overlapGroupsList, 1, groupOverlappingBlocksJobHandle);
             blockOverlapList.Dispose(clearBlocksJobHandle);
             overlapGroupsList.Dispose(clearBlocksJobHandle);
 
-            Dependency = clearBlocksJobHandle;
+            var updateBlocksJobHandle = new CellCheckHelpers.UpdateBlocksJob {
+                m_Blocks    = updatedBlocksArray,
+                m_BlockData = SystemAPI.GetComponentLookup<Block>(),
+                m_Cells     = SystemAPI.GetBufferLookup<Cell>(),
+            }.Schedule(updatedBlocksList, 1, clearBlocksJobHandle);
+
+            var updateLotSizeJobHandle = new LotSizeJobs.UpdateLotSizeJob {
+                m_Blocks         = updatedBlocksArray,
+                m_ZonePrefabs    = m_ZoneSystem.GetPrefabs(),
+                m_BlockData      = SystemAPI.GetComponentLookup<Block>(),
+                m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(),
+                m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(),
+                m_UpdatedData    = SystemAPI.GetComponentLookup<Updated>(),
+                m_ZoneData       = SystemAPI.GetComponentLookup<ZoneData>(),
+                m_Cells          = SystemAPI.GetBufferLookup<Cell>(),
+                m_SearchTree     = zoneSearchTree,
+                m_VacantLots     = SystemAPI.GetBufferLookup<VacantLot>(),
+                m_CommandBuffer  = m_ModificationBarrier5.CreateCommandBuffer().AsParallelWriter(),
+                m_BoundsQueue    = boundsQueue.AsParallelWriter(),
+            }.Schedule(updatedBlocksList, 1, updateBlocksJobHandle);
+            m_ZoneSearchSystem.AddSearchTreeReader(updateLotSizeJobHandle);
+            updatedBlocksList.Dispose(updateLotSizeJobHandle);
+            updatedBlocksArray.Dispose(updateLotSizeJobHandle);
+
+            var updateBoundsJobHandle = new LotSizeJobs.UpdateBoundsJob {
+                m_BoundsList  = m_ZoneUpdateCollectSystem.GetUpdatedBounds(false, out var updatedBoundsJobHandle),
+                m_BoundsQueue = boundsQueue,
+            }.Schedule(JobHandle.CombineDependencies(updateLotSizeJobHandle, updatedBoundsJobHandle));
+            m_ZoneUpdateCollectSystem.AddBoundsWriter(updateBoundsJobHandle);
+            boundsQueue.Dispose(updateBoundsJobHandle);
+
+            Dependency = updateLotSizeJobHandle;
         }
 
         private JobHandle CollectUpdatedBlocks(NativeList<SortedEntity> updateBlocksList) {
@@ -246,585 +254,44 @@ namespace Platter.Systems {
 #if USE_BURST
         [BurstCompile]
 #endif
-        public struct UndoBlockedSizeOneCellsJob : IJobParallelForDefer {
-            [ReadOnly]                            private NativeArray<SortedEntity>                        m_Blocks;
-            [ReadOnly]                            private ComponentLookup<Block>                           m_BlockData;
-            [ReadOnly]                            private ComponentLookup<ParcelOwner>                     m_ParcelOwnerData;
-            [ReadOnly]                            private ComponentLookup<ParcelData>                      m_ParcelDataData;
-            [ReadOnly]                            private NativeQuadTree<Entity, QuadTreeBoundsXZ>         m_NetSearchTree;
-            [ReadOnly]                            private NativeQuadTree<AreaSearchItem, QuadTreeBoundsXZ> m_AreaSearchTree;
-            [ReadOnly]                            private ComponentLookup<Owner>                           m_OwnerData;
-            [ReadOnly]                            private ComponentLookup<Transform>                       m_TransformData;
-            [ReadOnly]                            private ComponentLookup<EdgeGeometry>                    m_EdgeGeometryData;
-            [ReadOnly]                            private ComponentLookup<StartNodeGeometry>               m_StartNodeGeometryData;
-            [ReadOnly]                            private ComponentLookup<EndNodeGeometry>                 m_EndNodeGeometryData;
-            [ReadOnly]                            private ComponentLookup<Composition>                     m_CompositionData;
-            [ReadOnly]                            private ComponentLookup<PrefabRef>                       m_PrefabRefData;
-            [ReadOnly]                            private ComponentLookup<NetCompositionData>              m_PrefabCompositionData;
-            [ReadOnly]                            private ComponentLookup<RoadComposition>                 m_PrefabRoadCompositionData;
-            [ReadOnly]                            private ComponentLookup<AreaGeometryData>                m_PrefabAreaGeometryData;
-            [ReadOnly]                            private ComponentLookup<ObjectGeometryData>              m_PrefabObjectGeometryData;
-            [ReadOnly]                            private ComponentLookup<Native>                          m_NativeData;
-            [ReadOnly]                            private BufferLookup<Node>                               m_AreaNodes;
-            [ReadOnly]                            private BufferLookup<Triangle>                           m_AreaTriangles;
-            [NativeDisableParallelForRestriction] private BufferLookup<Cell>                               m_Cells;
-            [NativeDisableParallelForRestriction] private ComponentLookup<ValidArea>                       m_ValidAreaData;
-
-            public UndoBlockedSizeOneCellsJob(NativeArray<SortedEntity> blocks, ComponentLookup<Block> blockData, ComponentLookup<ParcelOwner> parcelOwnerData,
-                                              ComponentLookup<ParcelData> parcelDataData,
-                                              NativeQuadTree<Entity, QuadTreeBoundsXZ> netSearchTree,
-                                              NativeQuadTree<AreaSearchItem, QuadTreeBoundsXZ> areaSearchTree, ComponentLookup<Owner> ownerData,
-                                              ComponentLookup<Transform> transformData, ComponentLookup<EdgeGeometry> edgeGeometryData,
-                                              ComponentLookup<StartNodeGeometry> startNodeGeometryData, ComponentLookup<EndNodeGeometry> endNodeGeometryData,
-                                              ComponentLookup<Composition> compositionData, ComponentLookup<PrefabRef> prefabRefData,
-                                              ComponentLookup<NetCompositionData> prefabCompositionData,
-                                              ComponentLookup<RoadComposition> prefabRoadCompositionData,
-                                              ComponentLookup<AreaGeometryData> prefabAreaGeometryData,
-                                              ComponentLookup<ObjectGeometryData> prefabObjectGeometryData, ComponentLookup<Native> nativeData,
-                                              BufferLookup<Node> areaNodes, BufferLookup<Triangle> areaTriangles, BufferLookup<Cell> cells,
-                                              ComponentLookup<ValidArea> validAreaData) {
-                m_Blocks                    = blocks;
-                m_BlockData                 = blockData;
-                m_ParcelOwnerData           = parcelOwnerData;
-                m_ParcelDataData            = parcelDataData;
-                m_NetSearchTree             = netSearchTree;
-                m_AreaSearchTree            = areaSearchTree;
-                m_OwnerData                 = ownerData;
-                m_TransformData             = transformData;
-                m_EdgeGeometryData          = edgeGeometryData;
-                m_StartNodeGeometryData     = startNodeGeometryData;
-                m_EndNodeGeometryData       = endNodeGeometryData;
-                m_CompositionData           = compositionData;
-                m_PrefabRefData             = prefabRefData;
-                m_PrefabCompositionData     = prefabCompositionData;
-                m_PrefabRoadCompositionData = prefabRoadCompositionData;
-                m_PrefabAreaGeometryData    = prefabAreaGeometryData;
-                m_PrefabObjectGeometryData  = prefabObjectGeometryData;
-                m_NativeData                = nativeData;
-                m_AreaNodes                 = areaNodes;
-                m_AreaTriangles             = areaTriangles;
-                m_Cells                     = cells;
-                m_ValidAreaData             = validAreaData;
-            }
+        public struct SanitizeCellsJob : IJobParallelForDefer {
+            [ReadOnly] public required NativeArray<SortedEntity>    m_Blocks;
+            [ReadOnly] public required ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
+            [ReadOnly] public required ComponentLookup<ParcelData>  m_ParcelDataLookup;
+            [ReadOnly] public required ComponentLookup<PrefabRef>   m_PrefabRefLookup;
+            public required            ComponentLookup<ValidArea>   m_ValidAreaLookup;
 
             public void Execute(int index) {
-                // Disable job until we can figure out a better solution
-                return;
-                //var entity = m_Blocks[index].m_Entity;
-                //var block  = m_BlockData[entity];
+                var entity = m_Blocks[index].m_Entity;
 
-                //// Specifically only reevaluate blocks part of a parcel
-                //if (!m_ParcelOwnerData.HasComponent(entity)) {
-                //    return;
-                //}
-
-                //var parcelOwner  = m_ParcelOwnerData[entity];
-                //var parcelPrefab = m_PrefabRefData[parcelOwner.m_Owner];
-                //var parcelData   = m_ParcelDataData[parcelPrefab.m_Prefab];
-
-                //// Specifically only reevaluate parcels of width 1
-                //if (parcelData.m_LotSize.x != 1) {
-                //    return;
-                //}
-
-                //var cellBuffer = m_Cells[entity];
-
-                //for (var col = 0; col < block.m_Size.x; col++)
-                //for (var row = 0; row < block.m_Size.y; row++) {
-                //    var i    = row * block.m_Size.x + col;
-                //    var cell = cellBuffer[i];
-
-                //    if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
-                //        cell.m_State |= CellFlags.Blocked;
-                //    } else {
-                //        cell.m_State &= ~CellFlags.Blocked;
-                //    }
-
-                //    cellBuffer[i] = cell;
-                //}
-
-                //// Create a copy of the block data and set it to our parcel size
-                //var actualBlock = block;
-                //actualBlock.m_Size.x = parcelData.m_LotSize.x;
-                //actualBlock.m_Size.y = parcelData.m_LotSize.y;
-
-                //// Rest of the code is similar to vanilla's BlockCellsJob
-                //var validArea = default(ValidArea);
-                //validArea.m_Area = new int4(0, actualBlock.m_Size.x, 0, actualBlock.m_Size.y);
-                //var bounds  = ZoneUtils.CalculateBounds(actualBlock);
-                //var corners = ZoneUtils.CalculateCorners(actualBlock);
-
-                //// Iterate over nets and check overlaps
-                //var netIterator = new NetIterator {
-                //    m_BlockEntity               = entity,
-                //    m_BlockData                 = actualBlock,
-                //    m_Bounds                    = bounds,
-                //    m_Corners                   = corners,
-                //    m_ValidAreaData             = validArea,
-                //    m_Cells                     = cellBuffer,
-                //    m_OwnerData                 = m_OwnerData,
-                //    m_TransformData             = m_TransformData,
-                //    m_EdgeGeometryData          = m_EdgeGeometryData,
-                //    m_StartNodeGeometryData     = m_StartNodeGeometryData,
-                //    m_EndNodeGeometryData       = m_EndNodeGeometryData,
-                //    m_CompositionData           = m_CompositionData,
-                //    m_PrefabRefData             = m_PrefabRefData,
-                //    m_PrefabCompositionData     = m_PrefabCompositionData,
-                //    m_PrefabRoadCompositionData = m_PrefabRoadCompositionData,
-                //    m_PrefabObjectGeometryData  = m_PrefabObjectGeometryData,
-                //};
-                //m_NetSearchTree.Iterate(ref netIterator);
-
-                //// Iterate over areas and check overlap
-                //var areaIterator = new AreaIterator {
-                //    m_BlockEntity            = entity,
-                //    m_BlockData              = actualBlock,
-                //    m_Bounds                 = bounds,
-                //    m_Corners                = corners,
-                //    m_ValidAreaData          = validArea,
-                //    m_Cells                  = cellBuffer,
-                //    m_NativeData             = m_NativeData,
-                //    m_PrefabRefData          = m_PrefabRefData,
-                //    m_PrefabAreaGeometryData = m_PrefabAreaGeometryData,
-                //    m_AreaNodes              = m_AreaNodes,
-                //    m_AreaTriangles          = m_AreaTriangles,
-                //};
-                //m_AreaSearchTree.Iterate(ref areaIterator);
-
-                //// Here we are skipping vailla's CleanBlockedCells
-
-                //m_ValidAreaData[entity] = validArea;
-            }
-
-            private struct NetIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>, IUnsafeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
-                public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds); }
-
-                public void Iterate(QuadTreeBoundsXZ bounds, Entity edgeEntity) {
-                    if (!MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds)) {
-                        return;
-                    }
-
-                    if (!m_EdgeGeometryData.HasComponent(edgeEntity)) {
-                        return;
-                    }
-
-                    m_HasIgnore = false;
-                    if (m_OwnerData.HasComponent(edgeEntity)) {
-                        var owner = m_OwnerData[edgeEntity];
-                        if (m_TransformData.HasComponent(owner.m_Owner)) {
-                            var prefabRef = m_PrefabRefData[owner.m_Owner];
-                            if (m_PrefabObjectGeometryData.HasComponent(prefabRef.m_Prefab)) {
-                                var transform          = m_TransformData[owner.m_Owner];
-                                var objectGeometryData = m_PrefabObjectGeometryData[prefabRef.m_Prefab];
-                                if ((objectGeometryData.m_Flags & GeometryFlags.Circular) != GeometryFlags.None) {
-                                    var @float = math.max(objectGeometryData.m_Size - 0.16f, 0f);
-                                    m_IgnoreCircle = new Circle2(@float.x * 0.5f, transform.m_Position.xz);
-                                    m_HasIgnore.y  = true;
-                                } else {
-                                    var bounds2 = MathUtils.Expand(objectGeometryData.m_Bounds, -0.08f);
-                                    var float2  = MathUtils.Center(bounds2);
-                                    var @bool   = bounds2.min > bounds2.max;
-                                    bounds2.min   = math.select(bounds2.min, float2, @bool);
-                                    bounds2.max   = math.select(bounds2.max, float2, @bool);
-                                    m_IgnoreQuad  = ObjectUtils.CalculateBaseCorners(transform.m_Position, transform.m_Rotation, bounds2).xz;
-                                    m_HasIgnore.x = true;
-                                }
-                            }
-                        }
-                    }
-
-                    var composition       = m_CompositionData[edgeEntity];
-                    var edgeGeometry      = m_EdgeGeometryData[edgeEntity];
-                    var startNodeGeometry = m_StartNodeGeometryData[edgeEntity];
-                    var endNodeGeometry   = m_EndNodeGeometryData[edgeEntity];
-                    if (MathUtils.Intersect(m_Bounds, edgeGeometry.m_Bounds.xz)) {
-                        var netCompositionData = m_PrefabCompositionData[composition.m_Edge];
-                        var roadComposition    = default(RoadComposition);
-                        if (m_PrefabRoadCompositionData.HasComponent(composition.m_Edge)) {
-                            roadComposition = m_PrefabRoadCompositionData[composition.m_Edge];
-                        }
-
-                        CheckSegment(edgeGeometry.m_Start.m_Left, edgeGeometry.m_Start.m_Right, netCompositionData, roadComposition, new bool2(true, true));
-                        CheckSegment(edgeGeometry.m_End.m_Left, edgeGeometry.m_End.m_Right, netCompositionData, roadComposition, new bool2(true, true));
-                    }
-
-                    if (MathUtils.Intersect(m_Bounds, startNodeGeometry.m_Geometry.m_Bounds.xz)) {
-                        var netCompositionData2 = m_PrefabCompositionData[composition.m_StartNode];
-                        var roadComposition2    = default(RoadComposition);
-                        if (m_PrefabRoadCompositionData.HasComponent(composition.m_StartNode)) {
-                            roadComposition2 = m_PrefabRoadCompositionData[composition.m_StartNode];
-                        }
-
-                        if (startNodeGeometry.m_Geometry.m_MiddleRadius > 0f) {
-                            CheckSegment(
-                                startNodeGeometry.m_Geometry.m_Left.m_Left,
-                                startNodeGeometry.m_Geometry.m_Left.m_Right,
-                                netCompositionData2,
-                                roadComposition2,
-                                new bool2(true, true));
-                            var bezier4x = MathUtils.Lerp(startNodeGeometry.m_Geometry.m_Right.m_Left, startNodeGeometry.m_Geometry.m_Right.m_Right, 0.5f);
-                            bezier4x.d = startNodeGeometry.m_Geometry.m_Middle.d;
-                            CheckSegment(startNodeGeometry.m_Geometry.m_Right.m_Left, bezier4x, netCompositionData2, roadComposition2, new bool2(true, false));
-                            CheckSegment(bezier4x, startNodeGeometry.m_Geometry.m_Right.m_Right, netCompositionData2, roadComposition2, new bool2(false, true));
-                        } else {
-                            CheckSegment(
-                                startNodeGeometry.m_Geometry.m_Left.m_Left,
-                                startNodeGeometry.m_Geometry.m_Middle,
-                                netCompositionData2,
-                                roadComposition2,
-                                new bool2(true, false));
-                            CheckSegment(
-                                startNodeGeometry.m_Geometry.m_Middle,
-                                startNodeGeometry.m_Geometry.m_Right.m_Right,
-                                netCompositionData2,
-                                roadComposition2,
-                                new bool2(false, true));
-                        }
-                    }
-
-                    if (MathUtils.Intersect(m_Bounds, endNodeGeometry.m_Geometry.m_Bounds.xz)) {
-                        var netCompositionData3 = m_PrefabCompositionData[composition.m_EndNode];
-                        var roadComposition3    = default(RoadComposition);
-                        if (m_PrefabRoadCompositionData.HasComponent(composition.m_EndNode)) {
-                            roadComposition3 = m_PrefabRoadCompositionData[composition.m_EndNode];
-                        }
-
-                        if (endNodeGeometry.m_Geometry.m_MiddleRadius > 0f) {
-                            CheckSegment(
-                                endNodeGeometry.m_Geometry.m_Left.m_Left,
-                                endNodeGeometry.m_Geometry.m_Left.m_Right,
-                                netCompositionData3,
-                                roadComposition3,
-                                new bool2(true, true));
-                            var bezier4x2 = MathUtils.Lerp(endNodeGeometry.m_Geometry.m_Right.m_Left, endNodeGeometry.m_Geometry.m_Right.m_Right, 0.5f);
-                            bezier4x2.d = endNodeGeometry.m_Geometry.m_Middle.d;
-                            CheckSegment(endNodeGeometry.m_Geometry.m_Right.m_Left, bezier4x2, netCompositionData3, roadComposition3, new bool2(true, false));
-                            CheckSegment(bezier4x2, endNodeGeometry.m_Geometry.m_Right.m_Right, netCompositionData3, roadComposition3, new bool2(false, true));
-                            return;
-                        }
-
-                        CheckSegment(
-                            endNodeGeometry.m_Geometry.m_Left.m_Left,
-                            endNodeGeometry.m_Geometry.m_Middle,
-                            netCompositionData3,
-                            roadComposition3,
-                            new bool2(true, false));
-                        CheckSegment(
-                            endNodeGeometry.m_Geometry.m_Middle,
-                            endNodeGeometry.m_Geometry.m_Right.m_Right,
-                            netCompositionData3,
-                            roadComposition3,
-                            new bool2(false, true));
-                    }
+                // Specifically only reevaluate blocks part of a parcel
+                if (!m_ParcelOwnerLookup.TryGetComponent(entity, out var parcelOwner)) {
+                    return;
                 }
 
-                private void CheckSegment(Bezier4x3 left, Bezier4x3 right, NetCompositionData prefabCompositionData, RoadComposition prefabRoadData,
-                                          bool2     isEdge) {
-                    if ((prefabCompositionData.m_Flags.m_General & CompositionFlags.General.Tunnel) != 0U) {
-                        return;
-                    }
-
-                    if ((prefabCompositionData.m_State & CompositionState.BlockZone) == 0) {
-                        return;
-                    }
-
-                    var flag = (prefabCompositionData.m_Flags.m_General & CompositionFlags.General.Elevated) > 0U;
-                    flag |= (prefabCompositionData.m_State & CompositionState.ExclusiveGround) == 0;
-                    if (!MathUtils.Intersect((MathUtils.Bounds(left) | MathUtils.Bounds(right)).xz, m_Bounds)) {
-                        return;
-                    }
-
-                    isEdge &= ((prefabRoadData.m_Flags                  & RoadFlags.EnableZoning)            > 0) &
-                              ((prefabCompositionData.m_Flags.m_General & CompositionFlags.General.Elevated) == 0U);
-                    isEdge &= new bool2(
-                        (prefabCompositionData.m_Flags.m_Left  & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) == 0U,
-                        (prefabCompositionData.m_Flags.m_Right & (CompositionFlags.Side.Raised | CompositionFlags.Side.Lowered)) == 0U);
-                    Quad3 corners;
-                    corners.a = left.a;
-                    corners.b = right.a;
-                    var bounds = SetHeightRange(MathUtils.Bounds(corners.a, corners.b), prefabCompositionData.m_HeightRange);
-                    for (var i = 1; i <= 8; i++) {
-                        var num = i / 8f;
-                        corners.d = MathUtils.Position(left, num);
-                        corners.c = MathUtils.Position(right, num);
-                        var bounds2 = SetHeightRange(MathUtils.Bounds(corners.d, corners.c), prefabCompositionData.m_HeightRange);
-                        var bounds3 = bounds | bounds2;
-                        if (MathUtils.Intersect(bounds3.xz, m_Bounds) && MathUtils.Intersect(m_Corners, corners.xz)) {
-                            //var cellFlags = CellFlags.Blocked;
-                            var cellFlags = CellFlags.None;
-                            if (isEdge.x) {
-                                var block = new Block {
-                                    m_Direction = math.normalizesafe(MathUtils.Right(corners.d.xz - corners.a.xz)),
-                                };
-                                cellFlags |= ZoneUtils.GetRoadDirection(m_BlockData, block);
-                            }
-
-                            if (isEdge.y) {
-                                var block2 = new Block {
-                                    m_Direction = math.normalizesafe(MathUtils.Left(corners.c.xz - corners.b.xz)),
-                                };
-                                cellFlags |= ZoneUtils.GetRoadDirection(m_BlockData, block2);
-                            }
-
-                            CheckOverlapX(m_Bounds, bounds3, m_Corners, corners, m_ValidAreaData.m_Area, cellFlags, flag);
-                        }
-
-                        corners.a = corners.d;
-                        corners.b = corners.c;
-                        bounds    = bounds2;
-                    }
-                }
-
-                private static Bounds3 SetHeightRange(Bounds3 bounds, Bounds1 heightRange) {
-                    bounds.min.y += heightRange.min;
-                    bounds.max.y += heightRange.max;
-                    return bounds;
-                }
-
-                private void CheckOverlapX(Bounds2 bounds1, Bounds3 bounds2, Quad2 quad1, Quad3 quad2, int4 xxzz1, CellFlags flags, bool isElevated) {
-                    if (xxzz1.y - xxzz1.x >= 2) {
-                        var @int = xxzz1;
-                        var int2 = xxzz1;
-                        @int.y = (xxzz1.x + xxzz1.y) >> 1;
-                        int2.x = @int.y;
-                        var quad3 = quad1;
-                        var quad4 = quad1;
-                        var num   = (@int.y - xxzz1.x) / (float)(xxzz1.y - xxzz1.x);
-                        quad3.b = math.lerp(quad1.a, quad1.b, num);
-                        quad3.c = math.lerp(quad1.d, quad1.c, num);
-                        quad4.a = quad3.b;
-                        quad4.d = quad3.c;
-                        var bounds3 = MathUtils.Bounds(quad3);
-                        var bounds4 = MathUtils.Bounds(quad4);
-                        if (MathUtils.Intersect(bounds3, bounds2.xz)) {
-                            CheckOverlapZ(bounds3, bounds2, quad3, quad2, @int, flags, isElevated);
-                        }
-
-                        if (MathUtils.Intersect(bounds4, bounds2.xz)) {
-                            CheckOverlapZ(bounds4, bounds2, quad4, quad2, int2, flags, isElevated);
-                        }
-                    } else {
-                        CheckOverlapZ(bounds1, bounds2, quad1, quad2, xxzz1, flags, isElevated);
-                    }
-                }
-
-                private void CheckOverlapZ(Bounds2 bounds1, Bounds3 bounds2, Quad2 quad1, Quad3 quad2, int4 xxzz1, CellFlags flags, bool isElevated) {
-                    if (xxzz1.w - xxzz1.z >= 2) {
-                        var @int = xxzz1;
-                        var int2 = xxzz1;
-                        @int.w = (xxzz1.z + xxzz1.w) >> 1;
-                        int2.z = @int.w;
-                        var quad3 = quad1;
-                        var quad4 = quad1;
-                        var num   = (@int.w - xxzz1.z) / (float)(xxzz1.w - xxzz1.z);
-                        quad3.d = math.lerp(quad1.a, quad1.d, num);
-                        quad3.c = math.lerp(quad1.b, quad1.c, num);
-                        quad4.a = quad3.d;
-                        quad4.b = quad3.c;
-                        var bounds3 = MathUtils.Bounds(quad3);
-                        var bounds4 = MathUtils.Bounds(quad4);
-                        if (MathUtils.Intersect(bounds3, bounds2.xz)) {
-                            CheckOverlapX(bounds3, bounds2, quad3, quad2, @int, flags, isElevated);
-                        }
-
-                        if (MathUtils.Intersect(bounds4, bounds2.xz)) {
-                            CheckOverlapX(bounds4, bounds2, quad4, quad2, int2, flags, isElevated);
-                        }
-                    } else {
-                        if (xxzz1.y - xxzz1.x >= 2) {
-                            CheckOverlapX(bounds1, bounds2, quad1, quad2, xxzz1, flags, isElevated);
-                            return;
-                        }
-
-                        var num2 = xxzz1.z * m_BlockData.m_Size.x + xxzz1.x;
-                        var cell = m_Cells[num2];
-                        if ((cell.m_State & flags) == flags) {
-                            return;
-                        }
-
-                        quad1 = MathUtils.Expand(quad1, -0.0625f);
-                        if (MathUtils.Intersect(quad1, quad2.xz)) {
-                            if (math.any(m_HasIgnore)) {
-                                if (m_HasIgnore.x && MathUtils.Intersect(quad1, m_IgnoreQuad)) {
-                                    return;
-                                }
-
-                                if (m_HasIgnore.y && MathUtils.Intersect(quad1, m_IgnoreCircle)) {
-                                    return;
-                                }
-                            }
-
-                            if (isElevated) {
-                                cell.m_Height = (short)math.clamp(Mathf.FloorToInt(bounds2.min.y), -32768, math.min(cell.m_Height, 32767));
-                            } else {
-                                cell.m_State |= flags;
-                            }
-
-                            m_Cells[num2] = cell;
-                        }
-                    }
-                }
-
-                public Entity                              m_BlockEntity;
-                public Block                               m_BlockData;
-                public ValidArea                           m_ValidAreaData;
-                public Bounds2                             m_Bounds;
-                public Quad2                               m_Corners;
-                public Quad2                               m_IgnoreQuad;
-                public Circle2                             m_IgnoreCircle;
-                public bool2                               m_HasIgnore;
-                public DynamicBuffer<Cell>                 m_Cells;
-                public ComponentLookup<Owner>              m_OwnerData;
-                public ComponentLookup<Transform>          m_TransformData;
-                public ComponentLookup<EdgeGeometry>       m_EdgeGeometryData;
-                public ComponentLookup<StartNodeGeometry>  m_StartNodeGeometryData;
-                public ComponentLookup<EndNodeGeometry>    m_EndNodeGeometryData;
-                public ComponentLookup<Composition>        m_CompositionData;
-                public ComponentLookup<PrefabRef>          m_PrefabRefData;
-                public ComponentLookup<NetCompositionData> m_PrefabCompositionData;
-                public ComponentLookup<RoadComposition>    m_PrefabRoadCompositionData;
-                public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
-            }
-
-            private struct AreaIterator : INativeQuadTreeIterator<AreaSearchItem, QuadTreeBoundsXZ>, IUnsafeQuadTreeIterator<AreaSearchItem, QuadTreeBoundsXZ> {
-                public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds); }
-
-                public void Iterate(QuadTreeBoundsXZ bounds, AreaSearchItem areaItem) {
-                    if (!MathUtils.Intersect(bounds.m_Bounds.xz, m_Bounds)) {
-                        return;
-                    }
-
-                    var prefabRef        = m_PrefabRefData[areaItem.m_Area];
-                    var areaGeometryData = m_PrefabAreaGeometryData[prefabRef.m_Prefab];
-                    if ((areaGeometryData.m_Flags & (Game.Areas.GeometryFlags.PhysicalGeometry | Game.Areas.GeometryFlags.ProtectedArea)) == 0) {
-                        return;
-                    }
-
-                    if ((areaGeometryData.m_Flags & Game.Areas.GeometryFlags.ProtectedArea) != 0 && !m_NativeData.HasComponent(areaItem.m_Area)) {
-                        return;
-                    }
-
-                    var dynamicBuffer  = m_AreaNodes[areaItem.m_Area];
-                    var dynamicBuffer2 = m_AreaTriangles[areaItem.m_Area];
-                    if (dynamicBuffer2.Length <= areaItem.m_Triangle) {
-                        return;
-                    }
-
-                    var triangle = AreaUtils.GetTriangle3(dynamicBuffer, dynamicBuffer2[areaItem.m_Triangle]);
-                    CheckOverlapX(m_Bounds, bounds.m_Bounds.xz, m_Corners, triangle.xz, m_ValidAreaData.m_Area);
-                }
-
-                private void CheckOverlapX(Bounds2 bounds1, Bounds2 bounds2, Quad2 quad1, Triangle2 triangle2, int4 xxzz1) {
-                    if (xxzz1.y - xxzz1.x >= 2) {
-                        var @int = xxzz1;
-                        var int2 = xxzz1;
-                        @int.y = (xxzz1.x + xxzz1.y) >> 1;
-                        int2.x = @int.y;
-                        var quad2 = quad1;
-                        var quad3 = quad1;
-                        var num   = (@int.y - xxzz1.x) / (float)(xxzz1.y - xxzz1.x);
-                        quad2.b = math.lerp(quad1.a, quad1.b, num);
-                        quad2.c = math.lerp(quad1.d, quad1.c, num);
-                        quad3.a = quad2.b;
-                        quad3.d = quad2.c;
-                        var bounds3 = MathUtils.Bounds(quad2);
-                        var bounds4 = MathUtils.Bounds(quad3);
-                        if (MathUtils.Intersect(bounds3, bounds2)) {
-                            CheckOverlapZ(bounds3, bounds2, quad2, triangle2, @int);
-                        }
-
-                        if (MathUtils.Intersect(bounds4, bounds2)) {
-                            CheckOverlapZ(bounds4, bounds2, quad3, triangle2, int2);
-                        }
-                    } else {
-                        CheckOverlapZ(bounds1, bounds2, quad1, triangle2, xxzz1);
-                    }
-                }
-
-                private void CheckOverlapZ(Bounds2 bounds1, Bounds2 bounds2, Quad2 quad1, Triangle2 triangle2, int4 xxzz1) {
-                    if (xxzz1.w - xxzz1.z >= 2) {
-                        var @int = xxzz1;
-                        var int2 = xxzz1;
-                        @int.w = (xxzz1.z + xxzz1.w) >> 1;
-                        int2.z = @int.w;
-                        var quad2 = quad1;
-                        var quad3 = quad1;
-                        var num   = (@int.w - xxzz1.z) / (float)(xxzz1.w - xxzz1.z);
-                        quad2.d = math.lerp(quad1.a, quad1.d, num);
-                        quad2.c = math.lerp(quad1.b, quad1.c, num);
-                        quad3.a = quad2.d;
-                        quad3.b = quad2.c;
-                        var bounds3 = MathUtils.Bounds(quad2);
-                        var bounds4 = MathUtils.Bounds(quad3);
-                        if (MathUtils.Intersect(bounds3, bounds2)) {
-                            CheckOverlapX(bounds3, bounds2, quad2, triangle2, @int);
-                        }
-
-                        if (MathUtils.Intersect(bounds4, bounds2)) {
-                            CheckOverlapX(bounds4, bounds2, quad3, triangle2, int2);
-                        }
-                    } else {
-                        if (xxzz1.y - xxzz1.x >= 2) {
-                            CheckOverlapX(bounds1, bounds2, quad1, triangle2, xxzz1);
-                            return;
-                        }
-
-                        var num2 = xxzz1.z * m_BlockData.m_Size.x + xxzz1.x;
-                        var cell = m_Cells[num2];
-                        if ((cell.m_State & CellFlags.Blocked) != CellFlags.None) {
-                            return;
-                        }
-
-                        quad1 = MathUtils.Expand(quad1, -0.02f);
-
-                        if (MathUtils.Intersect(quad1, triangle2)) {
-                            cell.m_State  |= CellFlags.Blocked;
-                            m_Cells[num2] =  cell;
-                        }
-                    }
-                }
-
-                public Entity                            m_BlockEntity;
-                public Block                             m_BlockData;
-                public ValidArea                         m_ValidAreaData;
-                public Bounds2                           m_Bounds;
-                public Quad2                             m_Corners;
-                public DynamicBuffer<Cell>               m_Cells;
-                public ComponentLookup<Native>           m_NativeData;
-                public ComponentLookup<PrefabRef>        m_PrefabRefData;
-                public ComponentLookup<AreaGeometryData> m_PrefabAreaGeometryData;
-                public BufferLookup<Node>                m_AreaNodes;
-                public BufferLookup<Triangle>            m_AreaTriangles;
+                // Reset the valid area for all parcels
+                var validArea  = m_ValidAreaLookup[entity];
+                var prefabRef  = m_PrefabRefLookup[parcelOwner.m_Owner];
+                var parcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
+                validArea.m_Area.y = parcelData.m_LotSize.x;
+                validArea.m_Area.w = parcelData.m_LotSize.y;
+                m_ValidAreaLookup[entity] = validArea;
             }
         }
+
 #if USE_BURST
         [BurstCompile]
 #endif
         public struct ClearBlocksJob : IJobParallelForDefer {
-            [ReadOnly]                            private NativeArray<OverlapGroup>    m_OverlapGroups;
-            [ReadOnly]                            private ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
-            [ReadOnly]                            private ComponentLookup<ParcelData>  m_ParcelDataLookup;
-            [ReadOnly]                            private ComponentLookup<PrefabRef>   m_PrefabRefLookup;
-            [ReadOnly]                            private ComponentLookup<Block>       m_BlockLookup;
-            [ReadOnly]                            private ComponentLookup<BuildOrder>  m_BuildOrderLookup;
-            [NativeDisableParallelForRestriction] private ComponentLookup<ValidArea>   m_ValidAreaLookup;
-            [NativeDisableParallelForRestriction] private NativeArray<BlockOverlap>    m_BlockOverlapArray;
-            [NativeDisableParallelForRestriction] private BufferLookup<Cell>           m_CellLookup;
-
-            public ClearBlocksJob(NativeArray<OverlapGroup>   overlapGroups,     ComponentLookup<ParcelOwner> parcelOwnerLookup,
-                                  ComponentLookup<ParcelData> parcelDataLookup,  ComponentLookup<PrefabRef> prefabRefLookup, ComponentLookup<Block> blockLookup,
-                                  ComponentLookup<BuildOrder> buildOrderLookup,  ComponentLookup<ValidArea> validAreaLookup,
-                                  NativeArray<BlockOverlap>   blockOverlapArray, BufferLookup<Cell> cellLookup) {
-                m_OverlapGroups     = overlapGroups;
-                m_ParcelOwnerLookup = parcelOwnerLookup;
-                m_ParcelDataLookup  = parcelDataLookup;
-                m_PrefabRefLookup   = prefabRefLookup;
-                m_BlockLookup       = blockLookup;
-                m_BuildOrderLookup  = buildOrderLookup;
-                m_ValidAreaLookup   = validAreaLookup;
-                m_BlockOverlapArray = blockOverlapArray;
-                m_CellLookup        = cellLookup;
-            }
+            [ReadOnly]                            public required NativeArray<OverlapGroup>    m_OverlapGroups;
+            [ReadOnly]                            public required ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
+            [ReadOnly]                            public required ComponentLookup<ParcelData>  m_ParcelDataLookup;
+            [ReadOnly]                            public required ComponentLookup<PrefabRef>   m_PrefabRefLookup;
+            [ReadOnly]                            public required ComponentLookup<Block>       m_BlockLookup;
+            [ReadOnly]                            public required ComponentLookup<BuildOrder>  m_BuildOrderLookup;
+            [NativeDisableParallelForRestriction] public required ComponentLookup<ValidArea>   m_ValidAreaLookup;
+            [NativeDisableParallelForRestriction] public required NativeArray<BlockOverlap>    m_BlockOverlapArray;
+            [NativeDisableParallelForRestriction] public required BufferLookup<Cell>           m_CellLookup;
 
             public void Execute(int index) {
                 var overlapGroup = m_OverlapGroups[index];
@@ -1145,10 +612,10 @@ namespace Platter.Systems {
 
                     if (m_CurBlockIsParcel) {
                         otherCell.m_Zone  = ZoneType.None;
-                        otherCell.m_State = CellFlags.Redundant;
+                        otherCell.m_State = CellFlags.Redundant | CellFlags.Blocked;
                     } else if (m_OtherBlockIsParcel) {
                         curCell.m_Zone  = ZoneType.None;
-                        curCell.m_State = CellFlags.Redundant;
+                        curCell.m_State = CellFlags.Redundant | CellFlags.Blocked;
                     }
 
                     m_CurCellBuffer[curIndex] = curCell;
