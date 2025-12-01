@@ -78,7 +78,7 @@
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Title": "Zaawansowane zastosowania",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Text": "Użyj __górnego lewego menu__ aby przełączyć widoczność parcel lub tymczasowo zablokować pojawianie się budynków na pustych parcelach.",
   "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Title": "Zastrzeżenie",
-  "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text": "Platter jest eksperymentalnym modem w fazie beta.\n\nPrzed usunięciem tego moda, musisz kliknąć przycisk w Ustawieniach moda, aby bezpiecznie usunąć wszystkie parcele z zapisu.",
+  "PlatterMod.UI.Modals.FirstLaunch.Disclaimer.Text": "Platter jest eksperymentalnym modem w fazie beta.\n\nPrzed usunięciem tego moda, musisz kliknąć przycisk „Usuń wszystkie Parcele” w Ustawieniach moda, aby bezpiecznie usunąć wszystkie parcele z zapisu.",
   "PlatterMod.UI.Modals.FirstLaunch.Button": "Zacznij plattować!",
   "Assets.NAME[PlatterCat]": "Platter — Parcele",
   "Assets.DESCRIPTION[PlatterCat]": "Parcele z siatką stref, na których można wyznaczyć strefy.",
