@@ -21,15 +21,19 @@ Include the following logs:
 		
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/Thumbnail.png" />
+	<Thumbnail Value="Properties/logo.jpg" />
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="Properties/alpha.png" />
+	<Screenshot Value="Properties/preview1.jpg" />
+	<Screenshot Value="Properties/preview2.jpg" />
+	<Screenshot Value="Properties/preview3.jpg" />
+	<Screenshot Value="Properties/preview4.jpg" />
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.0.6" />
+	<ModVersion Value="1.0.7" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple-->
@@ -37,7 +41,7 @@ Include the following logs:
 	<!--<Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.3" />-->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-- **Fix infinite spawning**: Reworked internal cell checker system to prevent phantom lots and buildings infinitely spawning on parcels placed uniformly with the vanilla grid.
+Update assets and translations.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
