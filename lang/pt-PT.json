@@ -1,5 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platina",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Teclas de atalho",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Desinstalar",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Sobre",
