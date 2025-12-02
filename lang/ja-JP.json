@@ -1,5 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "プラター",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Key Bindings",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Uninstall",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "About",
