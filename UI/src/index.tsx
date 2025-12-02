@@ -4,7 +4,7 @@ import { PlatterToolOptionsPanel } from "components/toolOptionsPanel/toolOptions
 import { initialize } from "components/vanilla/Components";
 import { ParcelInfoPanelComponent } from "components/infoview/parcel";
 import { BuildingInfoPanelComponent } from "components/infoview/building";
-import { ToolButton } from "components/toolButton/toolButton";
+import { ToolButtonWrapper } from "components/toolButton/toolButton";
 import { WelcomeModal } from "components/modals/WelcomeModal";
 import { PlatterCreateParcelFromZone } from "components/createParcelFromZone/createParcelFromZone";
 import mod from "../mod.json";
@@ -15,7 +15,7 @@ GAME_BINDINGS.BLOCK_DEPTH;
 const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     initialize(moduleRegistry);
 
-    moduleRegistry.append("GameTopLeft", ToolButton);
+    moduleRegistry.append("GameTopLeft", ToolButtonWrapper);
     moduleRegistry.append("Game", WelcomeModal);
 
     moduleRegistry.extend(

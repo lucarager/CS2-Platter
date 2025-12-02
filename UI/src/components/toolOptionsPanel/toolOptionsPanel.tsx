@@ -1,7 +1,6 @@
-import React from "react";
+import React, { memo } from "react";
 import { ModuleRegistryExtend } from "cs2/modding";
 import { VC, VT } from "components/vanilla/Components";
-import { useValue } from "cs2/api";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import styles from "./toolOptionsPanel.module.scss";
 import { Dropdown, DropdownToggle, Icon, DropdownItem, Tooltip } from "cs2/ui";
@@ -10,6 +9,7 @@ import { VF } from "../vanilla/Components";
 import { FocusDisabled } from "cs2/input";
 import { useLocalization } from "cs2/l10n";
 import { SnapMode } from "types";
+import { useRenderTracker, useValueWrap } from "../../debug";
 
 export type BlockControlProps = Record<string, never>;
 
@@ -25,44 +25,48 @@ export const ToolModes = [
 ];
 
 export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
-    const PlatterToolOptionsPanelComponent = (props: any) => {
-        const enabledBinding = useValue(GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding);
-        const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
-        const snappingEnabled = useValue(GAME_BINDINGS.ENABLE_SNAPPING_OPTIONS.binding);
-        const { children, ...otherProps } = props || {};
-
-        const ToolPanel = (
-            <div className={styles.wrapper}>
-                <div
-                    className={[VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection].join(
-                        " ",
-                    )}>
-                    <FocusDisabled>
-                        {/* <ToolModeSection /> */}
-                        <PrezoningSection />
-                        {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
-                        <ParcelWidthSection />
-                        <ParcelDepthSection />
-                        <SnapModeSection />
-                        <ToolViewmodeSection />
-                    </FocusDisabled>
-                </div>
-            </div>
+    const PlatterToolOptionsPanelComponentWrapper = (props: any) => {
+        const enabledBinding = useValueWrap(
+            GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding,
+            "EnableToolButtons",
         );
+        const { children, ...otherProps } = props || {};
 
         return (
             <>
-                {enabledBinding ? ToolPanel : null}
+                {enabledBinding && <ToolPanel />}
                 <Component {...otherProps}>{children}</Component>
             </>
         );
     };
 
-    return PlatterToolOptionsPanelComponent;
+    return PlatterToolOptionsPanelComponentWrapper;
 };
 
-const ToolModeSection = () => {
-    const toolModeBinding = useValue(GAME_BINDINGS.TOOL_MODE.binding);
+const ToolPanel = memo(function ToolPanel() {
+    useRenderTracker("ToolPanel/ToolPanel");
+    const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
+
+    return (
+        <div className={styles.wrapper}>
+            <div className={c(VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection)}>
+                <FocusDisabled>
+                    {/* <ToolModeSection /> */}
+                    <PrezoningSection />
+                    {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
+                    <ParcelWidthSection />
+                    <ParcelDepthSection />
+                    <SnapModeSection />
+                    <ToolViewmodeSection />
+                </FocusDisabled>
+            </div>
+        </div>
+    );
+});
+
+const ToolModeSection = memo(function ToolModeSection() {
+    useRenderTracker("ToolPanel/ToolModeSection");
+    const toolModeBinding = useValueWrap(GAME_BINDINGS.TOOL_MODE.binding, "ToolMode");
     const { translate } = useLocalization();
 
     return (
@@ -85,11 +89,15 @@ const ToolModeSection = () => {
             />
         </VC.Section>
     );
-};
+});
 
-const ToolViewmodeSection = () => {
-    const showZonesBinding = useValue(GAME_BINDINGS.SHOW_ZONES.binding);
-    const showContourBinding = useValue(GAME_BINDINGS.SHOW_CONTOUR_LINES.binding);
+const ToolViewmodeSection = memo(function ToolViewmodeSection() {
+    useRenderTracker("ToolPanel/ToolViewmodeSection");
+    const showZonesBinding = useValueWrap(GAME_BINDINGS.SHOW_ZONES.binding, "ShowZones");
+    const showContourBinding = useValueWrap(
+        GAME_BINDINGS.SHOW_CONTOUR_LINES.binding,
+        "ShowContourLines",
+    );
     const { translate } = useLocalization();
 
     return (
@@ -114,11 +122,12 @@ const ToolViewmodeSection = () => {
             />
         </VC.Section>
     );
-};
+});
 
-const PrezoningSection = () => {
-    const zoneBinding = useValue(GAME_BINDINGS.ZONE.binding);
-    const zoneDataBinding = useValue(GAME_BINDINGS.ZONE_DATA.binding);
+const PrezoningSection = memo(function PrezoningSection() {
+    useRenderTracker("ToolPanel/PrezoningSection");
+    const zoneBinding = useValueWrap(GAME_BINDINGS.ZONE.binding, "Zone");
+    const zoneDataBinding = useValueWrap(GAME_BINDINGS.ZONE_DATA.binding, "ZoneData");
     const { translate } = useLocalization();
     const categories = ["None", "Residential", "Commercial", "Industrial", "Office"];
     const zones = categories.map((category) => {
@@ -191,11 +200,11 @@ const PrezoningSection = () => {
             </Dropdown>
         </VC.Section>
     );
-};
+});
 
-const SnapModeSection = () => {
-    const snapModeBinding = useValue(GAME_BINDINGS.SNAP_MODE.binding);
-
+const SnapModeSection = memo(function SnapModeSection() {
+    useRenderTracker("ToolPanel/SnapModeSection");
+    const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
     const { translate } = useLocalization();
 
     return (
@@ -232,10 +241,11 @@ const SnapModeSection = () => {
             />
         </VC.Section>
     );
-};
+});
 
-const SnapRoadsideSection = () => {
-    const snapSpacingBinding = useValue(GAME_BINDINGS.SNAP_SPACING.binding);
+const SnapRoadsideSection = memo(function SnapRoadsideSection() {
+    useRenderTracker("ToolPanel/SnapRoadsideSection");
+    const snapSpacingBinding = useValueWrap(GAME_BINDINGS.SNAP_SPACING.binding, "SnapSpacing");
     const { translate } = useLocalization();
 
     return (
@@ -261,13 +271,20 @@ const SnapRoadsideSection = () => {
             />
         </VC.Section>
     );
-};
+});
 
-const ParcelWidthSection = () => {
+const ParcelWidthSection = memo(function ParcelWidthSection() {
+    useRenderTracker("ToolPanel/ParcelWidthSection");
     const { translate } = useLocalization();
-    const blockWidthBinding = useValue(GAME_BINDINGS.BLOCK_WIDTH.binding);
-    const blockWidthMinBinding = useValue(GAME_BINDINGS.BLOCK_WIDTH_MIN.binding);
-    const blockWidthMaxBinding = useValue(GAME_BINDINGS.BLOCK_WIDTH_MAX.binding);
+    const blockWidthBinding = useValueWrap(GAME_BINDINGS.BLOCK_WIDTH.binding, "BlockWidth");
+    const blockWidthMinBinding = useValueWrap(
+        GAME_BINDINGS.BLOCK_WIDTH_MIN.binding,
+        "BlockWidthMin",
+    );
+    const blockWidthMaxBinding = useValueWrap(
+        GAME_BINDINGS.BLOCK_WIDTH_MAX.binding,
+        "BlockWidthMax",
+    );
 
     return (
         <VC.Section title={translate("PlatterMod.UI.SectionTitle.ParcelWidth")}>
@@ -294,12 +311,19 @@ const ParcelWidthSection = () => {
             />
         </VC.Section>
     );
-};
+});
 
-const ParcelDepthSection = () => {
-    const blockDepthBinding = useValue(GAME_BINDINGS.BLOCK_DEPTH.binding);
-    const blockDepthMinBinding = useValue(GAME_BINDINGS.BLOCK_DEPTH_MIN.binding);
-    const blockDepthMaxBinding = useValue(GAME_BINDINGS.BLOCK_DEPTH_MAX.binding);
+const ParcelDepthSection = memo(function ParcelDepthSection() {
+    useRenderTracker("ToolPanel/ParcelDepthSection");
+    const blockDepthBinding = useValueWrap(GAME_BINDINGS.BLOCK_DEPTH.binding, "BlockDepth");
+    const blockDepthMinBinding = useValueWrap(
+        GAME_BINDINGS.BLOCK_DEPTH_MIN.binding,
+        "BlockDepthMin",
+    );
+    const blockDepthMaxBinding = useValueWrap(
+        GAME_BINDINGS.BLOCK_DEPTH_MAX.binding,
+        "BlockDepthMax",
+    );
 
     const { translate } = useLocalization();
 
@@ -328,4 +352,4 @@ const ParcelDepthSection = () => {
             />
         </VC.Section>
     );
-};
+});
