@@ -1,5 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Wypchany",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Sterowanie",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Odinstalowywanie",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "O modyfikacji",
