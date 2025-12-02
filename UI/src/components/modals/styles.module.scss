@@ -98,7 +98,6 @@
     flex-direction: row;
     flex-wrap: wrap;
     padding: 16rem 0;
-    gap: 16rem;
 }
 
 .pageSwitcher {
@@ -144,7 +143,6 @@
 
     &__text {
         flex-wrap: wrap;
-        word-break: break-all;
 
         span {
             white-space: pre-wrap;
