@@ -57,10 +57,10 @@ namespace Platter.Patches {
         private class ObjectToolSystem_GetAllowRotation {
             private static void Postfix(ObjectToolSystem __instance, ref bool __result) {
                 var m_PSnapSystem  = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_SnapSystem>();
-                var isSnapping     = m_PSnapSystem.CurrentSnapMode != P_SnapSystem.SnapMode.None;
+                var isSnapped      = m_PSnapSystem.IsSnapped.Value;
                 var isUsingPlatter = __instance.GetPrefab() is ParcelPlaceholderPrefab;
 
-                if (isUsingPlatter && isSnapping) {
+                if (isUsingPlatter && isSnapped) {
                     __result = false;
                 }
             }

@@ -24,6 +24,7 @@ namespace Platter.Systems {
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using Unity.Mathematics;
     using Utils;
@@ -44,17 +45,12 @@ namespace Platter.Systems {
             RoadSide,
         }
 
-        // Data
-        private EntityQuery      m_Query;
-        private float            m_SnapSetback;
-        private ObjectToolSystem m_ObjectToolSystem;
-        private PrefabSystem     m_PrefabSystem;
-
-        // Logger
-        private PrefixedLogger m_Log;
-        private SearchSystem   m_NetSearchSystem;
-
-        // Systems
+        private EntityQuery             m_Query;
+        private float                   m_SnapSetback;
+        private ObjectToolSystem        m_ObjectToolSystem;
+        private PrefabSystem            m_PrefabSystem;
+        private PrefixedLogger          m_Log;
+        private SearchSystem            m_NetSearchSystem;
         private Game.Zones.SearchSystem m_ZoneSearchSystem;
         private SnapMode                m_SnapMode;
         private TerrainSystem           m_TerrainSystem;
@@ -68,6 +64,8 @@ namespace Platter.Systems {
                 m_ObjectToolSystem.SetMemberValue("m_ForceUpdate", true);
             }
         }
+
+        public NativeReference<bool> IsSnapped;
 
         public static float MinSnapDistance     { get; } = 0f;
         public static float MaxSnapDistance     { get; } = 8f;
@@ -104,10 +102,17 @@ namespace Platter.Systems {
                                .Build();
 
             // Data
-            m_SnapSetback = DefaultSnapDistance;
-            m_SnapMode    = SnapMode.RoadSide;
+            m_SnapSetback   = DefaultSnapDistance;
+            m_SnapMode      = SnapMode.RoadSide;
+            IsSnapped       = new NativeReference<bool>(Allocator.Persistent, NativeArrayOptions.ClearMemory);
+            IsSnapped.Value = false;
 
             RequireForUpdate(m_Query);
+        }
+
+        protected override void OnDestroy() {
+            IsSnapped.Dispose();
+            base.OnDestroy();
         }
 
         /// <inheritdoc/>
@@ -126,8 +131,8 @@ namespace Platter.Systems {
                 var width        = parcelPrefab.m_LotWidth * 8f;
                 m_ObjectToolSystem.SetMemberValue("distanceScale", width);
 
-                // Exit, we don't want to snap in line mode
-                return;
+                //// Exit, we don't want to snap in line mode
+                //return;
             }
 
             // Exit on disabled snap
@@ -177,6 +182,7 @@ namespace Platter.Systems {
                 m_SnapSetback                  = m_SnapSetback,
                 m_EntityTypeHandle             = SystemAPI.GetEntityTypeHandle(),
                 m_ConnectedParcelLookup        = SystemAPI.GetBufferLookup<ConnectedParcel>(true),
+                m_IsSnapped                    = IsSnapped,
             }.ScheduleParallel(
                 m_Query,
                 JobUtils.CombineDependencies(Dependency, zoneTreeJobHandle, netTreeJobHandle, waterSurfaceJobHandle)
@@ -226,100 +232,122 @@ namespace Platter.Systems {
             public required            NativeList<Bezier4x3>                    m_CurvesList;
             public required            NativeList<bool>                         m_CurvesFilter;
             public required            ComponentTypeHandle<ObjectDefinition>    m_ObjectDefinitionTypeHandle;
+            public required            NativeReference<bool>                    m_IsSnapped;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
                 var entityArray             = chunk.GetNativeArray(m_EntityTypeHandle);
                 var objectDefinitionArray   = chunk.GetNativeArray(ref m_ObjectDefinitionTypeHandle);
                 var creationDefinitionArray = chunk.GetNativeArray(ref m_CreationDefinitionTypeHandle);
+                m_IsSnapped.Value = false;
 
+                // Not sure if needed
+                if (entityArray.Length == 0) {
+                    return;
+                }
+
+                // For now, only do this to the first object in the chunk
+                var creationDefinition = creationDefinitionArray[0];
+
+                // Get some data
+                var parcelData = m_ParcelDataComponentLookup[creationDefinition.m_Prefab];
+
+                // Calculate geometry
+                var searchRadius = parcelData.m_LotSize.y * 4f + 16f;
+                var minValue = float.MinValue;
+                var controlPoint = m_ControlPoints[0];
+
+                var bounds = new Bounds3(
+                    controlPoint.m_Position - searchRadius,
+                    controlPoint.m_Position + searchRadius
+                );
+                var totalBounds = bounds;
+                totalBounds.min -= 64f;
+                totalBounds.max += 64f;
+
+                // At minimum, the distance to snap must be
+                var minDistance = math.cmin(parcelData.m_LotSize) * 4f + 16f;
+
+                // Default to our control point as a start
+                var bestSnapPosition = controlPoint;
+
+                switch (m_SnapMode) {
+                    case SnapMode.ZoneSide: {
+                            var iterator = new BlockSnapIterator(
+                                controlPoint: controlPoint,
+                                bestSnapPosition: bestSnapPosition,
+                                bounds: bounds.xz,
+                                blockComponentLookup: m_BlockComponentLookup,
+                                parcelOwnerComponentLookup: m_ParcelOwnerComponentLookup,
+                                bestDistance: minDistance,
+                                lotSize: parcelData.m_LotSize,
+                                snapSetback: m_SnapSetback
+                            );
+                            m_ZoneTree.Iterate(ref iterator);
+                            bestSnapPosition = iterator.BestSnapPosition;
+                            break;
+                        }
+                    case SnapMode.RoadSide: {
+                            var iterator = new EdgeSnapIterator(
+                                minDistance,
+                                m_CurvesList,
+                                m_CurvesFilter,
+                                totalBounds,
+                                bounds,
+                                20f,
+                                controlPoint.m_Elevation,
+                                bestSnapPosition: bestSnapPosition,
+                                lotSize: parcelData.m_LotSize,
+                                heightRange: new Bounds1(-50f, 50f),
+                                netData: default,
+                                controlPoint: controlPoint,
+                                terrainHeightData: m_TerrainHeightData,
+                                waterSurfaceData: m_WaterSurfaceData,
+                                nodeLookup: m_NodeLookup,
+                                edgeLookup: m_EdgeLookup,
+                                curveLookup: m_CurveLookup,
+                                compositionLookup: m_CompositionLookup,
+                                prefabRefLookup: m_PrefabRefLookup,
+                                prefabNetLookup: m_NetDataLookup,
+                                netGeometryDataLookup: m_NetGeometryDataLookup,
+                                netCompositionDataLookup: m_NetCompositionDataLookup,
+                                edgeGeoLookup: m_EdgeGeoLookup,
+                                startNodeGeoLookup: m_StartNodeGeoLookup,
+                                endNodeGeoLookup: m_EndNodeGeoLookup,
+                                connectedEdgeLookup: m_ConnectedEdgeLookup,
+                                snapSetback: m_SnapSetback,
+                                connectedParcelLookup: m_ConnectedParcelLookup
+                            );
+                            m_NetTree.Iterate(ref iterator);
+
+                            bestSnapPosition = iterator.BestSnapPosition;
+                            break;
+                        }
+                    case SnapMode.None:
+                    default:
+                        return;
+                }
+
+                var hasSnap = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position);
+                m_IsSnapped.Value = hasSnap;
+
+                // Height Calc
+                CalculateHeight(ref bestSnapPosition, parcelData, minValue);
+
+                // If we found a snapping point, modify the object definition
+                if (!hasSnap) {
+                    return;
+                }
+
+                // Calculate difference
+                var firstObjDef = objectDefinitionArray[0];
+                var positionDiff = bestSnapPosition.m_Position - firstObjDef.m_Position;
+
+                // Apply diff to all objects in chunk
                 for (var i = 0; i < entityArray.Length; i++) {
-                    var creationDefinition = creationDefinitionArray[i];
-                    var objectDefinition   = objectDefinitionArray[i];
-
-                    // Get some data
-                    var parcelData = m_ParcelDataComponentLookup[creationDefinition.m_Prefab];
-
-                    // Calculate geometry
-                    var searchRadius = parcelData.m_LotSize.y * 4f + 16f;
-                    var minValue     = float.MinValue;
-                    var controlPoint = m_ControlPoints[0];
-
-                    var bounds = new Bounds3(
-                        controlPoint.m_Position - searchRadius,
-                        controlPoint.m_Position + searchRadius
-                    );
-                    var totalBounds = bounds;
-                    totalBounds.min -= 64f;
-                    totalBounds.max += 64f;
-
-                    // At minimum, the distance to snap must be
-                    var minDistance = math.cmin(parcelData.m_LotSize) * 4f + 16f;
-
-                    // Default to our control point as a start
-                    var bestSnapPosition = controlPoint;
-
-                    if (m_SnapMode == SnapMode.ZoneSide) {
-                        var iterator = new BlockSnapIterator(
-                            controlPoint: controlPoint,
-                            bestSnapPosition: bestSnapPosition,
-                            bounds: bounds.xz,
-                            blockComponentLookup: m_BlockComponentLookup,
-                            parcelOwnerComponentLookup: m_ParcelOwnerComponentLookup,
-                            bestDistance: minDistance,
-                            lotSize: parcelData.m_LotSize,
-                            snapSetback: m_SnapSetback
-                        );
-                        m_ZoneTree.Iterate(ref iterator);
-                        bestSnapPosition = iterator.BestSnapPosition;
-                    } else if (m_SnapMode == SnapMode.RoadSide) {
-                        var iterator = new EdgeSnapIterator(
-                            minDistance,
-                            m_CurvesList,
-                            m_CurvesFilter,
-                            totalBounds,
-                            bounds,
-                            20f,
-                            controlPoint.m_Elevation,
-                            bestSnapPosition: bestSnapPosition,
-                            lotSize: parcelData.m_LotSize,
-                            heightRange: new Bounds1(-50f, 50f),
-                            netData: default,
-                            controlPoint: controlPoint,
-                            terrainHeightData: m_TerrainHeightData,
-                            waterSurfaceData: m_WaterSurfaceData,
-                            nodeLookup: m_NodeLookup,
-                            edgeLookup: m_EdgeLookup,
-                            curveLookup: m_CurveLookup,
-                            compositionLookup: m_CompositionLookup,
-                            prefabRefLookup: m_PrefabRefLookup,
-                            prefabNetLookup: m_NetDataLookup,
-                            netGeometryDataLookup: m_NetGeometryDataLookup,
-                            netCompositionDataLookup: m_NetCompositionDataLookup,
-                            edgeGeoLookup: m_EdgeGeoLookup,
-                            startNodeGeoLookup: m_StartNodeGeoLookup,
-                            endNodeGeoLookup: m_EndNodeGeoLookup,
-                            connectedEdgeLookup: m_ConnectedEdgeLookup,
-                            snapSetback: m_SnapSetback,
-                            connectedParcelLookup: m_ConnectedParcelLookup
-                        );
-                        m_NetTree.Iterate(ref iterator);
-
-                        bestSnapPosition = iterator.BestSnapPosition;
-                    }
-
-                    var hasSnap = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position);
-
-                    // Height Calc
-                    CalculateHeight(ref bestSnapPosition, parcelData, minValue);
-
-                    // If we found a snapping point, modify the object definition
-                    if (!hasSnap) {
-                        continue;
-                    }
-
-                    objectDefinition.m_Position      = bestSnapPosition.m_Position;
-                    objectDefinition.m_LocalPosition = bestSnapPosition.m_Position;
+                    var objectDefinition = objectDefinitionArray[i];
+                    objectDefinition.m_Position      += positionDiff;
+                    objectDefinition.m_LocalPosition += positionDiff;
                     objectDefinition.m_Rotation      = bestSnapPosition.m_Rotation;
                     objectDefinition.m_LocalRotation = bestSnapPosition.m_Rotation;
 
