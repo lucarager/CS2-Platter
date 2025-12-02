@@ -164,12 +164,22 @@ namespace Platter.Systems {
                     var    subBlockBuffer     = subBlockBufferArray[i];
                     var    parcelData         = m_ParcelDataLookup[prefabRef.m_Prefab];
                     var    isUpdatingExisting = subBlockBuffer.Length > 0;
+                    var    blockCenter      = ParcelGeometryUtils.GetBlockCenter(parcelData.m_LotSize);
+                    var    parcelBlockWidth = math.max(MinBlockWidth, parcelData.m_LotSize.x);
+                    var    parcelBlockDepth = math.max(MinBlockDepth, parcelData.m_LotSize.y);
+                    var block = new Block {
+                        m_Position  = ParcelUtils.GetWorldPosition(transform, blockCenter),
+                        m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
+                        m_Size      = new int2(parcelBlockWidth, parcelBlockDepth),
+                    };
+                    var    zoneBlockData = m_ZoneBlockDataLookup[parcelData.m_ZoneBlockPrefab];
                     Entity blockEntity;
 
                     if (isUpdatingExisting) {
                         blockEntity = subBlockBuffer[0].m_SubBlock;
                         m_CommandBuffer.SetComponent(index, blockEntity, new PrefabRef(parcelData.m_ZoneBlockPrefab));
                         m_CommandBuffer.SetComponent(index, blockEntity, default(CurvePosition));
+                        m_CommandBuffer.SetComponent(index, blockEntity, block);
                         m_CommandBuffer.SetComponent(index, blockEntity, new BuildOrder { m_Order = 0 });
                         m_CommandBuffer.SetComponent(
                             index,
@@ -179,18 +189,7 @@ namespace Platter.Systems {
                         continue;
                     }
 
-                    var zoneBlockData = m_ZoneBlockDataLookup[parcelData.m_ZoneBlockPrefab];
                     blockEntity = m_CommandBuffer.CreateEntity(index, zoneBlockData.m_Archetype);
-                    var parcelBlockWidth = math.max(MinBlockWidth, parcelData.m_LotSize.x);
-                    var parcelBlockDepth = math.max(MinBlockDepth, parcelData.m_LotSize.y);
-                    var blockCenter      = ParcelGeometryUtils.GetBlockCenter(parcelData.m_LotSize);
-                    var block = new Block
-                    {
-                        m_Position  = ParcelUtils.GetWorldPosition(transform, blockCenter),
-                        m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
-                        m_Size      = new int2(parcelBlockWidth, parcelBlockDepth),
-                    };
-
                     m_CommandBuffer.SetComponent(index, blockEntity, new PrefabRef(parcelData.m_ZoneBlockPrefab));
                     m_CommandBuffer.SetComponent(index, blockEntity, block);
                     m_CommandBuffer.SetComponent(index, blockEntity, default(CurvePosition));
