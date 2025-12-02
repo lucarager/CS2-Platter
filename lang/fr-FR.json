@@ -1,5 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Plateforme",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Raccourcis clavier",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Désinstaller",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "À propos",
