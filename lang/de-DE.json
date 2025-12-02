@@ -1,5 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Tafel",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Tastenbelegungen",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Deinstallieren",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Über",
