@@ -8,7 +8,6 @@ namespace Platter.Settings {
 
     using System.Collections.Generic;
     using Colossal;
-    using Colossal.IO.AssetDatabase.Internal;
     using PS = PlatterModSettings;
 
     #endregion
@@ -18,7 +17,7 @@ namespace Platter.Settings {
     /// </summary>
     public class EnUsConfig : IDictionarySource {
         private readonly Dictionary<string, string> m_Localization;
-        private readonly PlatterModSettings         m_Setting;
+        private readonly PS                         m_Setting;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnUsConfig"/> class.
@@ -30,6 +29,7 @@ namespace Platter.Settings {
             m_Localization = new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), PlatterMod.Id },
+                { m_Setting.GetBindingMapLocaleID(), PlatterMod.Id },
 
                 // Tabs
 
