@@ -43,7 +43,7 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
                         {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
                         <ParcelWidthSection />
                         <ParcelDepthSection />
-                        {snappingEnabled && <SnapModeSection />}
+                        <SnapModeSection />
                         <ToolViewmodeSection />
                     </FocusDisabled>
                 </div>
