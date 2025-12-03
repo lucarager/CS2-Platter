@@ -668,6 +668,5 @@ namespace Platter.Systems {
                 //PlatterMod.Instance.Log.Debug(sb.ToString());
             }
         }
-
     }
 }
