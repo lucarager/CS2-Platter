@@ -93,6 +93,18 @@ const themePaths = [
         path: "game-ui/game/components/tool-options/tool-options-panel.module.scss",
         name: "toolOptionsPanel",
     },
+    {
+        path: "game-ui/game/components/asset-menu/asset-category-tab-bar/category-item.module.scss",
+        name: "assetCategoryTabItem",
+    },
+    {
+        path: "game-ui/game/components/asset-menu/asset-category-tab-bar/asset-category-tab-bar.module.scss",
+        name: "assetCategoryTabBar",
+    },
+    {
+        path: "game-ui/game/components/item-grid/item-grid.module.scss",
+        name: "itemGrid",
+    }
 ];
 
 export const VC = {} as IVanillaComponents;

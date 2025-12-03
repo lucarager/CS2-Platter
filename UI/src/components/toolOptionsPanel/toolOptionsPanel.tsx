@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { useEffect } from "react";
 import { ModuleRegistryExtend } from "cs2/modding";
 import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
@@ -6,10 +6,10 @@ import styles from "./toolOptionsPanel.module.scss";
 import { Dropdown, DropdownToggle, Icon, DropdownItem, Tooltip } from "cs2/ui";
 import { c } from "utils/classes";
 import { VF } from "../vanilla/Components";
-import { FocusDisabled } from "cs2/input";
 import { useLocalization } from "cs2/l10n";
 import { SnapMode } from "types";
 import { useRenderTracker, useValueWrap } from "../../debug";
+import { useRef } from "react";
 
 export type BlockControlProps = Record<string, never>;
 
@@ -24,73 +24,103 @@ export const ToolModes = [
     },
 ];
 
-export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component) => {
+export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component: any) => {
     const PlatterToolOptionsPanelComponentWrapper = (props: any) => {
+        props.children?.unshift(<div>Hello?</div>);
+        const { children, ...otherProps } = props || {};
         const enabledBinding = useValueWrap(
             GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding,
             "EnableToolButtons",
         );
-        const { children, ...otherProps } = props || {};
 
-        return (
-            <>
-                {enabledBinding && <ToolPanel />}
-                <Component {...otherProps}>{children}</Component>
-            </>
-        );
+        const stylesheet = useRef(document.createElement("style"));
+        stylesheet.current.type = "text/css";
+        stylesheet.current.innerHTML = `
+            .${VT.itemGrid.item.split(" ").join(".")}.selected {
+                background-color: rgba(0, 0, 0, 0);
+                background-image: linear-gradient(to top left, rgba(255, 213, 210, .5), rgba(253, 189, 203, .5));
+            }
+
+            .${VT.assetCategoryTabBar.assetCategoryTabBar} {
+                border-bottom-color: rgba(255, 98, 182, 0.69);
+            }
+
+            .${VT.assetCategoryTabItem.button}.selected {
+                background-image: linear-gradient(to top left, rgba(255, 98, 182, 0.25), rgba(253, 189, 203, .5));
+            }
+        `;
+
+        // This gets the original component that we may alter and return.
+        const result: JSX.Element = Component();
+
+        if (enabledBinding) {
+            result.props.children?.unshift(<ToolPanel />);
+        }
+
+        useEffect(() => {
+            if (enabledBinding) {
+                document.head.appendChild(stylesheet.current);
+            } else if (document.head.contains(stylesheet.current)) {
+                document.head.removeChild(stylesheet.current);
+            }
+
+            return () => {
+                if (document.head.contains(stylesheet.current)) {
+                    document.head.removeChild(stylesheet.current);
+                }
+            };
+        }, [enabledBinding]);
+
+        return result;
     };
 
     return PlatterToolOptionsPanelComponentWrapper;
 };
 
-const ToolPanel = memo(function ToolPanel() {
+const ToolPanel = function ToolPanel() {
     useRenderTracker("ToolPanel/ToolPanel");
     const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
 
     return (
-        <div className={styles.wrapper}>
-            <div className={c(VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection)}>
-                <FocusDisabled>
-                    <PrezoningSection />
-                    {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
-                    <ParcelWidthSection />
-                    <ParcelDepthSection />
-                    <SnapModeSection />
-                    <ToolViewmodeSection />
-                </FocusDisabled>
-            </div>
+        <div className={c(styles.moddedSection)}>
+            <PrezoningSection />
+            {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
+            <ParcelWidthSection />
+            <ParcelDepthSection />
+            <SnapModeSection />
+            <ToolViewmodeSection />
         </div>
     );
-});
+};
 
-const ToolModeSection = memo(function ToolModeSection() {
-    useRenderTracker("ToolPanel/ToolModeSection");
-    const toolModeBinding = useValueWrap(GAME_BINDINGS.TOOL_MODE.binding, "ToolMode");
-    const { translate } = useLocalization();
+// const ToolModeSection = function ToolModeSection() {
+//     useRenderTracker("ToolPanel/ToolModeSection");
+//     const toolModeBinding = useValueWrap(GAME_BINDINGS.TOOL_MODE.binding, "ToolMode");
+//     const { translate } = useLocalization();
 
-    return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.ToolMode")}>
-            <VC.ToolButton
-                src={"coui://uil/Standard/ArrowDownTriangleNotch.svg"}
-                onSelect={() => GAME_BINDINGS.TOOL_MODE.set(0)}
-                selected={toolModeBinding == 0}
-                multiSelect={false}
-                className={VT.toolButton.button}
-                focusKey={VF.FOCUS_DISABLED}
-                tooltip={translate("PlatterMod.UI.Tooltip.PlopMode")}
-            />
-            <VC.ToolButton
-                src={"coui://uil/Standard/Road.svg"}
-                multiSelect={false}
-                className={VT.toolButton.button}
-                focusKey={VF.FOCUS_DISABLED}
-                tooltip={translate("PlatterMod.UI.Tooltip.RoadPlatMode")}
-            />
-        </VC.Section>
-    );
-});
+//     return (
+//         <VC.Section title={translate("PlatterMod.UI.SectionTitle.ToolMode")}>
+//             <VC.ToolButton
+//                 src={"coui://uil/Standard/ArrowDownTriangleNotch.svg"}
+//                 onSelect={() => GAME_BINDINGS.TOOL_MODE.set(0)}
+//                 selected={toolModeBinding == 0}
+//                 multiSelect={false}
+//                 className={VT.toolButton.button}
+//                 focusKey={VF.FOCUS_DISABLED}
+//                 tooltip={translate("PlatterMod.UI.Tooltip.PlopMode")}
+//             />
+//             <VC.ToolButton
+//                 src={"coui://uil/Standard/Road.svg"}
+//                 multiSelect={false}
+//                 className={VT.toolButton.button}
+//                 focusKey={VF.FOCUS_DISABLED}
+//                 tooltip={translate("PlatterMod.UI.Tooltip.RoadPlatMode")}
+//             />
+//         </VC.Section>
+//     );
+// };
 
-const ToolViewmodeSection = memo(function ToolViewmodeSection() {
+const ToolViewmodeSection = function ToolViewmodeSection() {
     useRenderTracker("ToolPanel/ToolViewmodeSection");
     const showZonesBinding = useValueWrap(GAME_BINDINGS.SHOW_ZONES.binding, "ShowZones");
     const showContourBinding = useValueWrap(
@@ -121,9 +151,9 @@ const ToolViewmodeSection = memo(function ToolViewmodeSection() {
             />
         </VC.Section>
     );
-});
+};
 
-const PrezoningSection = memo(function PrezoningSection() {
+const PrezoningSection = function PrezoningSection() {
     useRenderTracker("ToolPanel/PrezoningSection");
     const zoneBinding = useValueWrap(GAME_BINDINGS.ZONE.binding, "Zone");
     const zoneDataBinding = useValueWrap(GAME_BINDINGS.ZONE_DATA.binding, "ZoneData");
@@ -152,7 +182,10 @@ const PrezoningSection = memo(function PrezoningSection() {
                                 closeOnSelect={true}
                                 sounds={{ select: "select-item" }}
                                 onChange={(value) => GAME_BINDINGS.ZONE.set(value)}>
-                                <Icon className={styles.dropdownIcon} src={zoneData.thumbnail} />
+                                <Icon
+                                    className={c(styles.dropdownZoneIcon, styles.dropdownIcon)}
+                                    src={zoneData.thumbnail}
+                                />
                                 <span>
                                     {translate(`Assets.NAME[${zoneData.name}]`, zoneData.name)}
                                 </span>
@@ -199,9 +232,9 @@ const PrezoningSection = memo(function PrezoningSection() {
             </Dropdown>
         </VC.Section>
     );
-});
+};
 
-const SnapModeSection = memo(function SnapModeSection() {
+const SnapModeSection = function SnapModeSection() {
     useRenderTracker("ToolPanel/SnapModeSection");
     const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
     const { translate } = useLocalization();
@@ -240,9 +273,9 @@ const SnapModeSection = memo(function SnapModeSection() {
             />
         </VC.Section>
     );
-});
+};
 
-const SnapRoadsideSection = memo(function SnapRoadsideSection() {
+const SnapRoadsideSection = function SnapRoadsideSection() {
     useRenderTracker("ToolPanel/SnapRoadsideSection");
     const snapSpacingBinding = useValueWrap(GAME_BINDINGS.SNAP_SPACING.binding, "SnapSpacing");
     const { translate } = useLocalization();
@@ -270,9 +303,9 @@ const SnapRoadsideSection = memo(function SnapRoadsideSection() {
             />
         </VC.Section>
     );
-});
+};
 
-const ParcelWidthSection = memo(function ParcelWidthSection() {
+const ParcelWidthSection = function ParcelWidthSection() {
     useRenderTracker("ToolPanel/ParcelWidthSection");
     const { translate } = useLocalization();
     const blockWidthBinding = useValueWrap(GAME_BINDINGS.BLOCK_WIDTH.binding, "BlockWidth");
@@ -310,9 +343,9 @@ const ParcelWidthSection = memo(function ParcelWidthSection() {
             />
         </VC.Section>
     );
-});
+};
 
-const ParcelDepthSection = memo(function ParcelDepthSection() {
+const ParcelDepthSection = function ParcelDepthSection() {
     useRenderTracker("ToolPanel/ParcelDepthSection");
     const blockDepthBinding = useValueWrap(GAME_BINDINGS.BLOCK_DEPTH.binding, "BlockDepth");
     const blockDepthMinBinding = useValueWrap(
@@ -351,4 +384,4 @@ const ParcelDepthSection = memo(function ParcelDepthSection() {
             />
         </VC.Section>
     );
-});
+};

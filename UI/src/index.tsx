@@ -18,11 +18,13 @@ const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     moduleRegistry.append("GameTopLeft", ToolButtonWrapper);
     moduleRegistry.append("Game", WelcomeModal);
 
-    moduleRegistry.extend(
-        "game-ui/game/components/tool-options/tool-options-panel.tsx",
-        "ToolOptionsPanel",
-        PlatterToolOptionsPanel,
-    );
+    // moduleRegistry.extend(
+    //     "game-ui/game/components/tool-options/tool-options-panel.tsx",
+    //     "ToolOptions",
+    //     PlatterToolOptionsPanel,
+    // );
+
+    moduleRegistry.extend("game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx", 'MouseToolOptions', PlatterToolOptionsPanel);
 
     moduleRegistry.extend(
         "game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx",
