@@ -294,11 +294,8 @@ namespace Platter {
             try {
                 var path      = GetThisFilePath();
                 var directory = Path.GetDirectoryName(path);
-
-                var exportPath1 = $@"{directory}\lang\en-US.json";
-                var exportPath2 = $@"{directory}\UI\src\lang\en-US.json";
-                File.WriteAllText(exportPath1, str);
-                File.WriteAllText(exportPath2, str);
+                var exportPath = $@"{directory}\lang\en-US.json";
+                File.WriteAllText(exportPath, str);
             } catch (Exception ex) {
                 m_Log.Error(ex.ToString());
             }
