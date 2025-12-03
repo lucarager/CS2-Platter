@@ -5,7 +5,7 @@
         "node": ">=18"
     },
     "scripts": {
-        "prebuild": "npm install",
+        "prebuild": "npm install --no-audit --no-fund",
         "build": "webpack",
         "build-dev": "webpack --mode development",
         "dev": "webpack --mode development --watch",
