@@ -58,9 +58,14 @@ namespace Platter.Patches {
             private static void Postfix(ObjectToolSystem __instance, ref bool __result) {
                 var m_PSnapSystem  = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_SnapSystem>();
                 var isSnapped      = m_PSnapSystem.IsSnapped.Value;
+                var isInSnapMode   = m_PSnapSystem.CurrentSnapMode is not P_SnapSystem.SnapMode.None;
                 var isUsingPlatter = __instance.GetPrefab() is ParcelPlaceholderPrefab;
 
-                if (isUsingPlatter && isSnapped) {
+                if (!isUsingPlatter) {
+                    return;
+                }
+
+                if (isInSnapMode && isSnapped) {
                     __result = false;
                 }
             }

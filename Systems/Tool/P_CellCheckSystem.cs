@@ -6,6 +6,8 @@
 namespace Platter.Systems {
     #region Using Statements
 
+    using System.Text;
+    using Colossal.Collections;
     using Colossal.Mathematics;
     using Components;
     using Game;
@@ -130,12 +132,19 @@ namespace Platter.Systems {
             blockOverlapList.Dispose(clearBlocksJobHandle);
             overlapGroupsList.Dispose(clearBlocksJobHandle);
 
-            var updateBlocksJobHandle = new CellCheckHelpers.UpdateBlocksJob {
+            var debugJobHandle1 = new DebugBlockCellsJob {
                 m_Blocks    = updatedBlocksArray,
                 m_BlockData = SystemAPI.GetComponentLookup<Block>(),
                 m_Cells     = SystemAPI.GetBufferLookup<Cell>(),
             }.Schedule(updatedBlocksList, 1, clearBlocksJobHandle);
 
+            var updateBlocksJobHandle = new CellCheckHelpers.UpdateBlocksJob {
+                m_Blocks    = updatedBlocksArray,
+                m_BlockData = SystemAPI.GetComponentLookup<Block>(),
+                m_Cells     = SystemAPI.GetBufferLookup<Cell>(),
+            }.Schedule(updatedBlocksList, 1, debugJobHandle1);
+
+            var ecb = new EntityCommandBuffer(Allocator.TempJob);
             var updateLotSizeJobHandle = new LotSizeJobs.UpdateLotSizeJob {
                 m_Blocks         = updatedBlocksArray,
                 m_ZonePrefabs    = m_ZoneSystem.GetPrefabs(),
@@ -147,10 +156,11 @@ namespace Platter.Systems {
                 m_Cells          = SystemAPI.GetBufferLookup<Cell>(),
                 m_SearchTree     = zoneSearchTree,
                 m_VacantLots     = SystemAPI.GetBufferLookup<VacantLot>(),
-                m_CommandBuffer  = m_ModificationBarrier5.CreateCommandBuffer().AsParallelWriter(),
+                m_CommandBuffer  = ecb.AsParallelWriter(),
                 m_BoundsQueue    = boundsQueue.AsParallelWriter(),
             }.Schedule(updatedBlocksList, 1, updateBlocksJobHandle);
             m_ZoneSearchSystem.AddSearchTreeReader(updateLotSizeJobHandle);
+            m_ZoneSystem.AddPrefabsReader(updateLotSizeJobHandle);
             updatedBlocksList.Dispose(updateLotSizeJobHandle);
             updatedBlocksArray.Dispose(updateLotSizeJobHandle);
 
@@ -162,6 +172,9 @@ namespace Platter.Systems {
             boundsQueue.Dispose(updateBoundsJobHandle);
 
             Dependency = updateLotSizeJobHandle;
+            Dependency.Complete();
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private JobHandle CollectUpdatedBlocks(NativeList<SortedEntity> updateBlocksList) {
@@ -300,7 +313,7 @@ namespace Platter.Systems {
                     blockLookup: m_BlockLookup,
                     validAreaLookup: m_ValidAreaLookup,
                     buildOrderLookup: m_BuildOrderLookup,
-                    cellsBLook: m_CellLookup,
+                    cellsBufferLookup: m_CellLookup,
                     parcelOwnerLookup: m_ParcelOwnerLookup,
                     parcelDataLookup: m_ParcelDataLookup,
                     prefabRefLookup: m_PrefabRefLookup
@@ -338,7 +351,7 @@ namespace Platter.Systems {
                 private ComponentLookup<Block>       m_BlockLookup;
                 private ComponentLookup<ValidArea>   m_ValidAreaLookup;
                 private ComponentLookup<BuildOrder>  m_BuildOrderLookup;
-                private BufferLookup<Cell>           m_CellBLook;
+                private BufferLookup<Cell>           m_CellBufferLookup;
                 private Entity                       m_CurBlockEntity;
                 private ValidArea                    m_CurValidArea;
                 private Bounds2                      m_CurBounds;
@@ -352,19 +365,19 @@ namespace Platter.Systems {
                 private Block                        m_OtherBlock;
                 private ValidArea                    m_OtherValidArea;
                 private BuildOrder                   m_OtherBuildOrder;
-                private DynamicBuffer<Cell>          m_OtherCells;
+                private DynamicBuffer<Cell>          m_OtherCellBuffer;
                 private bool                         m_OtherBlockIsParcel;
                 private int2                         m_OtherBlockParcelBounds;
 
                 public OverlapIterator(ComponentLookup<ParcelOwner> parcelOwnerLookup, ComponentLookup<Block>      blockLookup,
                                        ComponentLookup<ValidArea>   validAreaLookup,   ComponentLookup<BuildOrder> buildOrderLookup,
-                                       BufferLookup<Cell>           cellsBLook,        ComponentLookup<ParcelData> parcelDataLookup,
+                                       BufferLookup<Cell>           cellsBufferLookup, ComponentLookup<ParcelData> parcelDataLookup,
                                        ComponentLookup<PrefabRef>   prefabRefLookup) : this() {
                     m_ParcelOwnerLookup = parcelOwnerLookup;
                     m_BlockLookup       = blockLookup;
                     m_ValidAreaLookup   = validAreaLookup;
                     m_BuildOrderLookup  = buildOrderLookup;
-                    m_CellBLook         = cellsBLook;
+                    m_CellBufferLookup  = cellsBufferLookup;
                     m_ParcelDataLookup  = parcelDataLookup;
                     m_PrefabRefLookup   = prefabRefLookup;
                 }
@@ -381,7 +394,7 @@ namespace Platter.Systems {
                     m_CurBounds            = MathUtils.Bounds(curCorners);
                     m_CurBlock             = curBlock;
                     m_CurBuildOrder        = m_BuildOrderLookup[curBlockEntity];
-                    m_CurCellBuffer        = m_CellBLook[curBlockEntity];
+                    m_CurCellBuffer        = m_CellBufferLookup[curBlockEntity];
                     m_CurBlockIsParcel     = m_ParcelOwnerLookup.HasComponent(curBlockEntity);
                     m_CurBlockParcelBounds = default;
 
@@ -397,7 +410,7 @@ namespace Platter.Systems {
                     m_OtherBlock             = m_BlockLookup[otherBlock];
                     m_OtherValidArea         = m_ValidAreaLookup[otherBlock];
                     m_OtherBuildOrder        = m_BuildOrderLookup[otherBlock];
-                    m_OtherCells             = m_CellBLook[otherBlock];
+                    m_OtherCellBuffer        = m_CellBufferLookup[otherBlock];
                     m_OtherBlockIsParcel     = m_ParcelOwnerLookup.HasComponent(otherBlock);
                     m_OtherBlockParcelBounds = default;
 
@@ -603,7 +616,7 @@ namespace Platter.Systems {
                     var otherIndex = otherValidArea.z * m_OtherBlock.m_Size.x + otherValidArea.x;
 
                     var curCell   = m_CurCellBuffer[curIndex];
-                    var otherCell = m_OtherCells[otherIndex];
+                    var otherCell = m_OtherCellBuffer[otherIndex];
 
                     // In sharing mode we only allow sharing when cell centers are very close.
                     if (!(math.lengthsq(MathUtils.Center(blockCorners) - MathUtils.Center(otherCorners)) < 16f)) {
@@ -618,10 +631,43 @@ namespace Platter.Systems {
                         curCell.m_State = CellFlags.Redundant | CellFlags.Blocked;
                     }
 
-                    m_CurCellBuffer[curIndex] = curCell;
-                    m_OtherCells[otherIndex]  = otherCell;
+                    m_CurCellBuffer[curIndex]     = curCell;
+                    m_OtherCellBuffer[otherIndex] = otherCell;
                 }
             }
         }
+
+#if USE_BURST
+        [BurstCompile]
+#endif
+        public struct DebugBlockCellsJob : IJobParallelForDefer {
+            [ReadOnly] public required NativeArray<SortedEntity> m_Blocks;
+            [ReadOnly] public required ComponentLookup<Block>    m_BlockData;
+            [ReadOnly] public required BufferLookup<Cell>        m_Cells;
+
+            public void Execute(int index) {
+                //var entity     = m_Blocks[index].m_Entity;
+                //var block      = m_BlockData[entity];
+                //var cellBuffer = m_Cells[entity];
+
+                //var sb = new StringBuilder();
+                //sb.AppendLine("=======");
+                //sb.AppendLine($"Block Entity ID: {entity.Index}");
+                //sb.AppendLine($"Block Size: {block.m_Size.x}x{block.m_Size.y}");
+                //sb.AppendLine($"Total Cells: {cellBuffer.Length}");
+
+                //for (var row = 0; row < block.m_Size.y; row++)
+                //for (var col = 0; col < block.m_Size.x; col++) {
+                //    var cellIndex = row * block.m_Size.x + col;
+                //    var cell      = cellBuffer[cellIndex];
+                //    sb.AppendLine($"  Cell[{row},{col}] Zone = {cell.m_Zone.m_Index} State = {cell.m_State}");
+                //}
+
+                //sb.AppendLine("=======");
+
+                //PlatterMod.Instance.Log.Debug(sb.ToString());
+            }
+        }
+
     }
 }

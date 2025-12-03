@@ -10,6 +10,7 @@ namespace Platter.Systems {
     using Game;
     using Game.Common;
     using Game.Tools;
+    using Unity.Collections;
     using Unity.Entities;
     using Utils;
 
@@ -51,13 +52,22 @@ namespace Platter.Systems {
 
         public void UpdateSpawning(bool allowSpawn = true) {
             m_Log.Debug($"UpdateSpawning(allowSpawn={allowSpawn})");
-            if (allowSpawn) {
-                EntityManager.AddComponent<ParcelSpawnable>(m_NotSpawnableQuery);
-                EntityManager.AddComponent<Updated>(m_NotSpawnableQuery);
-            } else {
-                EntityManager.RemoveComponent<ParcelSpawnable>(m_SpawnableQuery);
-                EntityManager.AddComponent<Updated>(m_SpawnableQuery);
+
+            var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
+            var query         = allowSpawn ? m_NotSpawnableQuery : m_SpawnableQuery;
+            var entities      = query.ToEntityArray(Allocator.Temp);
+
+            foreach (var entity in entities) {
+                if (allowSpawn) {
+                    commandBuffer.AddComponent<ParcelSpawnable>(entity);
+                } else {
+                    commandBuffer.RemoveComponent<ParcelSpawnable>(entity);
+                }
+                commandBuffer.AddComponent<Updated>(entity);
             }
+
+            commandBuffer.Playback(EntityManager);
+            commandBuffer.Dispose();
         }
     }
 }

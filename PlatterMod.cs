@@ -190,7 +190,7 @@ namespace Platter {
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
             updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAfter<P_CellCheckSystem, CellCheckSystem>(SystemUpdatePhase.Modification5);
+            updateSystem.UpdateBefore<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
         }
 
