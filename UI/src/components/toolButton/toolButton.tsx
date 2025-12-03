@@ -11,7 +11,7 @@ export const buttonId = "platterToolButton";
 const iconSrc = "coui://platter/logo.svg";
 
 export const ToolButtonWrapper = () => {
-    return  <ToolButton />;
+    return <ToolButton />;
 };
 
 export const ToolButton = memo(function ToolButton() {
@@ -39,7 +39,10 @@ export const ToolButton = memo(function ToolButton() {
 export const ToolPanel = memo(function ToolPanel() {
     useRenderTracker("ToolPanel");
     const renderParcelBinding = useValueWrap(GAME_BINDINGS.RENDER_PARCELS.binding, "RenderParcels");
-    const allowSpawningBinding = useValueWrap(GAME_BINDINGS.ALLOW_SPAWNING.binding, "AllowSpawning");
+    const allowSpawningBinding = useValueWrap(
+        GAME_BINDINGS.ALLOW_SPAWNING.binding,
+        "AllowSpawning",
+    );
     const { translate } = useLocalization();
 
     return (

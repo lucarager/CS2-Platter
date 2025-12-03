@@ -2,12 +2,14 @@ import React from "react";
 import { VC, VF } from "components/vanilla/Components";
 import { useValue } from "cs2/api";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
+import { useLocalization } from "cs2/l10n";
 
 export const ParcelInfoPanelComponent = (componentList: any) => {
     const Component: React.FC = () => {
         const dataBinding = useValue(GAME_BINDINGS.INFOPANEL_PARCEL_DATA.binding);
         const buildingDataBinding = useValue(GAME_BINDINGS.INFOPANEL_PARCEL_DATA_BUILDING.binding);
         const roadDataBinding = useValue(GAME_BINDINGS.INFOPANEL_PARCEL_DATA_ROAD.binding);
+        const { translate } = useLocalization();
 
         return (
             <VC.InfoSection focusKey={VF.FOCUS_DISABLED} disableFocus={true}>
@@ -28,13 +30,16 @@ export const ParcelInfoPanelComponent = (componentList: any) => {
                         left={"Building"}
                         link={
                             <VC.InfoLink
-                                tooltip="Hey"
+                                tooltip={
+                                    translate("PlatterMod.UI.Tooltip.Infopanel.InspectBuilding") ||
+                                    ""
+                                }
                                 onSelect={() => {
                                     GAME_TRIGGERS.INFOPANEL_SELECT_PARCEL_ENTITY(
                                         buildingDataBinding,
                                     );
                                 }}>
-                                Inspect Building
+                                {translate("PlatterMod.UI.Button.Infopanel.InspectBuilding")}
                             </VC.InfoLink>
                         }
                         uppercase={true}
@@ -47,11 +52,13 @@ export const ParcelInfoPanelComponent = (componentList: any) => {
                         left={"Connected Road"}
                         link={
                             <VC.InfoLink
-                                tooltip="Hey"
+                                tooltip={
+                                    translate("PlatterMod.UI.Tooltip.Infopanel.InspectRoad") || ""
+                                }
                                 onSelect={() => {
                                     GAME_TRIGGERS.INFOPANEL_SELECT_PARCEL_ENTITY(roadDataBinding);
                                 }}>
-                                Inspect Road
+                                {translate("PlatterMod.UI.Button.Infopanel.InspectRoad")}
                             </VC.InfoLink>
                         }
                         uppercase={true}

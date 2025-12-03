@@ -125,10 +125,10 @@ namespace Platter.Systems {
             m_ToggleRender     = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderName);
             m_ToggleSpawn      = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnName);
             m_OpenPlatterPanel = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.OpenPanelName);
-            m_BlockWidthAction = InputManager.instance.FindAction("Platter", "BlockWidthAction");
-            m_BlockDepthAction = InputManager.instance.FindAction("Platter", "BlockDepthAction");
-            m_BlockSizeAction  = InputManager.instance.FindAction("Platter", "BlockSizeAction");
-            m_SetbackAction    = InputManager.instance.FindAction("Platter", "SetbackAction");
+            m_BlockWidthAction = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockWidthAction");
+            m_BlockDepthAction = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockDepthAction");
+            m_BlockSizeAction  = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockSizeAction");
+            m_SetbackAction    = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction");
 
             // Always enable
             m_OpenPlatterPanel.shouldBeEnabled = true;

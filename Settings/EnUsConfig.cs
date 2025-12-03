@@ -52,19 +52,19 @@ namespace Platter.Settings {
                 { m_Setting.GetOptionLabelLocaleID(PS.DepthScrollName), "Increase/Decrease Parcel depth" },
                 { m_Setting.GetBindingKeyLocaleID(PS.DepthScrollName), "Increase/Decrease Parcel depth" },
                 { m_Setting.GetOptionDescLocaleID(PS.DepthScrollName), "Shortcut to increase/decrease a Parcel's depth" },
-                { "Common.ACTION[Platter/BlockDepthAction]", "Increase/Decrease Parcel depth" },
+                { "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]", "Increase/Decrease Parcel depth" },
 
                 // Block Depth Scrollers
                 { m_Setting.GetOptionLabelLocaleID(PS.WidthScrollName), "Increase/Decrease Parcel width" },
                 { m_Setting.GetBindingKeyLocaleID(PS.WidthScrollName), "Increase/Decrease Parcel width" },
                 { m_Setting.GetOptionDescLocaleID(PS.WidthScrollName), "Shortcut to increase/decrease a Parcel's depth" },
-                { "Common.ACTION[Platter/BlockWidthAction]", "Increase/Decrease Parcel width" },
+                { "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]", "Increase/Decrease Parcel width" },
 
                 // Setback scroller
                 { m_Setting.GetOptionLabelLocaleID(PS.SetbackScrollName), "Increase/Decrease road setback" },
                 { m_Setting.GetBindingKeyLocaleID(PS.SetbackScrollName), "Increase/Decrease road setback" },
                 { m_Setting.GetOptionDescLocaleID(PS.SetbackScrollName), "Shortcut to increase/decrease a Parcel's setback from the road." },
-                { "Common.ACTION[Platter/SetbackAction]", "Increase/Decrease setback" },
+                { "Common.ACTION[Platter.Platter.PlatterMod/SetbackAction]", "Increase/Decrease setback" },
 
                 // ToggleSpawnActionName
                 { m_Setting.GetBindingKeyLocaleID(PS.ToggleSpawnName), "Toggle \"Allow Spawning on Parcels\"" },
@@ -88,6 +88,9 @@ namespace Platter.Settings {
                 { m_Setting.GetOptionDescLocaleID(nameof(PS.Discord)), "Opens link to join the CS:2 Modding Discord" },
 
                 // UI
+                { "PlatterMod.UI.Button.Infopanel.InspectParcel", "Inspect connected Parcel" },
+                { "PlatterMod.UI.Button.Infopanel.InspectBuilding", "Inspect connected Building" },
+                { "PlatterMod.UI.Button.Infopanel.InspectRoad", "Inspect connected Road" },
                 { "PlatterMod.UI.SectionTitle.ToolMode", "Tool Mode" },
                 { "PlatterMod.UI.SectionTitle.ViewLayers", "View Layers" },
                 { "PlatterMod.UI.SectionTitle.Prezoning", "Pre-Zone" },
@@ -100,6 +103,9 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.SectionTitle.ParcelDepth", "Parcel Depth" },
                 { "PlatterMod.UI.Label.ParcelSizeUnit", "cells" },
                 { "PlatterMod.UI.Button.CreateParcelFromZone", "Create Parcel with this Zone" },
+                { "PlatterMod.UI.Tooltip.Infopanel.InspectParcel", "Inspect Parcel" },
+                { "PlatterMod.UI.Tooltip.Infopanel.InspectBuilding", "Inspect Building" },
+                { "PlatterMod.UI.Tooltip.Infopanel.InspectRoad", "Inspect Road" },
                 { "PlatterMod.UI.Tooltip.PlopMode", "Plop Mode" },
                 { "PlatterMod.UI.Tooltip.RoadPlatMode", "Road Platting Mode is development. Stay tuned!" },
                 { "PlatterMod.UI.Tooltip.SnapModeNone", "No Snapping" },

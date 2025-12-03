@@ -39,13 +39,13 @@ namespace Platter.Systems {
             m_UISystem            = World.GetOrCreateSystemManaged<P_UISystem>();
 
             m_Tooltip_Depth = new InputHintTooltip(
-                InputManager.instance.FindAction("Platter", "BlockDepthAction"),
+                InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockDepthAction"),
                 InputManager.DeviceType.Mouse);
             m_Tooltip_Width = new InputHintTooltip(
-                InputManager.instance.FindAction("Platter", "BlockWidthAction"),
+                InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockWidthAction"),
                 InputManager.DeviceType.Mouse);
             m_Tooltip_Setback = new InputHintTooltip(
-                InputManager.instance.FindAction("Platter", "SetbackAction"),
+                InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction"),
                 InputManager.DeviceType.Mouse);
 
             m_Tooltip_BuildingCount = new StringTooltip();

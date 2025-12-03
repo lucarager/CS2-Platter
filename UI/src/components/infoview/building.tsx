@@ -2,10 +2,12 @@ import React from "react";
 import { VC, VF } from "components/vanilla/Components";
 import { useValue } from "cs2/api";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
+import { useLocalization } from "cs2/l10n";
 
 export const BuildingInfoPanelComponent = (componentList: any) => {
     const Component: React.FC = () => {
         const parcelBinding = useValue(GAME_BINDINGS.INFOPANEL_BUILDING_PARCEL_ENTITY.binding);
+        const { translate } = useLocalization();
 
         return (
             <VC.InfoSection focusKey={VF.FOCUS_DISABLED} disableFocus={true}>
@@ -13,11 +15,13 @@ export const BuildingInfoPanelComponent = (componentList: any) => {
                     left={"Parcel"}
                     link={
                         <VC.InfoLink
-                            tooltip="Hey"
+                            tooltip={
+                                translate("PlatterMod.UI.Tooltip.Infopanel.InspectParcel") || ""
+                            }
                             onSelect={() => {
                                 GAME_TRIGGERS.INFOPANEL_SELECT_PARCEL_ENTITY(parcelBinding);
                             }}>
-                            Go to Parcel
+                            {translate("PlatterMod.UI.Button.Infopanel.InspectParcel")}
                         </VC.InfoLink>
                     }
                     uppercase={true}

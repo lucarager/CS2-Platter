@@ -51,7 +51,6 @@ const ToolPanel = memo(function ToolPanel() {
         <div className={styles.wrapper}>
             <div className={c(VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection)}>
                 <FocusDisabled>
-                    {/* <ToolModeSection /> */}
                     <PrezoningSection />
                     {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
                     <ParcelWidthSection />
@@ -148,7 +147,7 @@ const PrezoningSection = memo(function PrezoningSection() {
                             <DropdownItem<number>
                                 key={idx}
                                 className={styles.dropdownItem}
-                                focusKey={VF.FOCUS_AUTO}
+                                focusKey={VF.FOCUS_DISABLED}
                                 value={zoneData.index}
                                 closeOnSelect={true}
                                 sounds={{ select: "select-item" }}

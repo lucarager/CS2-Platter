@@ -15,9 +15,9 @@
     }
 }
 
-
 .moddedSection {
     margin-bottom: 8rem;
+    animation: 300ms fadeInScale ease forwards;
 
     &_Header {
         display: flex;
@@ -41,8 +41,6 @@
             line-height: 1.25em;
         }
     }
-
-    animation: 300ms fadeInScale ease forwards;
 }
 
 .button[disabled] {
@@ -168,7 +166,6 @@
     margin-left: 4rem;
     color: rgba(217, 217, 217, 1);
     font-weight: 600;
-    // max-width: 174rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

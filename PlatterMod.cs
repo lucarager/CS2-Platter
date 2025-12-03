@@ -196,9 +196,9 @@ namespace Platter {
 
         private void InitializeSettings() {
             m_Log.Debug("InitializeSettings()");
-            RegisterCustomInputActions();
             Settings = new PlatterModSettings(this);
             Settings.RegisterInOptionsUI();
+            RegisterCustomInputActions();
             AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
             Settings.RegisterKeyBindings();
             GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
@@ -208,17 +208,17 @@ namespace Platter {
         private void RegisterCustomInputActions() {
             m_Log.Debug("RegisterCustomInputActions()");
 
-            RegisterCustomScrollAction("BlockDepthAction", new Tuple<string, string>[] {
+            RegisterCustomScrollAction("BlockDepthAction", new[] {
                 new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
             });
-            RegisterCustomScrollAction("BlockWidthAction", new Tuple<string, string>[] {
+            RegisterCustomScrollAction("BlockWidthAction", new[] {
                 new Tuple<string, string>("alt", "<Keyboard>/alt"),
             });
-            RegisterCustomScrollAction("BlockSizeAction", new Tuple<string, string>[] {
+            RegisterCustomScrollAction("BlockSizeAction", new[] {
                 new Tuple<string, string>("alt", "<Keyboard>/alt"),
                 new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
             });
-            RegisterCustomScrollAction("SetbackAction", new Tuple<string, string>[] {
+            RegisterCustomScrollAction("SetbackAction", new[] {
                 new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
                 new Tuple<string, string>("shift", "<Keyboard>/shift"),
             });
@@ -235,7 +235,7 @@ namespace Platter {
 
             var blockWidthCustomAction = new ProxyAction.Info {
                 m_Name = name,
-                m_Map  = "Platter",
+                m_Map  = "Platter.Platter.PlatterMod",
                 m_Type = ActionType.Vector2,
                 m_Composites = composites.Select(keyValuePair => {
                     var device     = keyValuePair.Key;

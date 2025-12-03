@@ -39,7 +39,7 @@ namespace Platter.Settings {
         public const string SetbackScrollName = nameof(PlatterSetbackScrollAction);
         public const string RemoveParcelsName = nameof(RemoveParcels);
         // Statics
-        private const string Credit                    = "Made with <3 by Luca.";
+        private const string Credit = "Made with <3 by Luca.";
 
         [SettingsUIHidden]
         public bool AllowSpawn { get; set; } = true;
