@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useEffect } from "react";
 import { Button, Panel, PanelSection, Tooltip } from "cs2/ui";
 import styles from "./toolButton.module.scss";
 import { VF, VC, VT } from "../vanilla/Components";
@@ -18,6 +18,20 @@ export const ToolButton = memo(function ToolButton() {
     useRenderTracker("ToolButton");
     const [enabled, setIsEnabled] = React.useState(false);
     const { translate } = useLocalization();
+
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setIsEnabled(false);
+            }
+        };
+
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, []);
 
     return (
         <>

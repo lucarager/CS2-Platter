@@ -17,7 +17,7 @@ export const PlatterCreateParcelFromZone: ModuleRegistryExtend = (Component: any
         const result: JSX.Element = Component();
 
         if (enabledBinding) {
-            result.props.children?.unshift(<Toolbar key="Platter/CreateParcelFromZone" />);
+            result.props.children?.push(<Toolbar key="Platter/CreateParcelFromZone" />);
         }
 
         return result;

@@ -19,8 +19,8 @@ const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
     moduleRegistry.append("Game", WelcomeModal);
 
     moduleRegistry.extend(
-        "game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx",
-        "MouseToolOptions",
+        "game-ui/game/components/tool-options/tool-options-panel.tsx",
+        "ToolOptionsPanel",
         PlatterToolOptionsPanel,
     );
 
