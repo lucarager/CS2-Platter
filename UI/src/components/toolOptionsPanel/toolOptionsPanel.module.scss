@@ -5,6 +5,10 @@
 }
 
 .moddedSection {
+    --sidePanelWidth: calc(380rem*(1+( var(--fontScale) -1)/2));
+    --mainPanelWidth: calc( var(--assetMenuColumns) *( var(--assetMenuItemSize) + var(--assetMenuItemGap) )- var(--assetMenuItemGap) +40rem);
+    --rightSpacing: calc(100vw - var(--mainPanelWidth) - var(--sidePanelWidth));
+
     box-shadow: inset 2rem 0 0 0 rgba(255, 98, 183, 0.5);
     background-color: rgba(255, 98, 183, 0.1);
 

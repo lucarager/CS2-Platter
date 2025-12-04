@@ -26,50 +26,16 @@ export const ToolModes = [
 
 export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component: any) => {
     const PlatterToolOptionsPanelComponentWrapper = (props: any) => {
-        props.children?.unshift(<div>Hello?</div>);
-        const { children, ...otherProps } = props || {};
         const enabledBinding = useValueWrap(
             GAME_BINDINGS.ENABLE_TOOL_BUTTONS.binding,
             "EnableToolButtons",
         );
 
-        const stylesheet = useRef(document.createElement("style"));
-        stylesheet.current.type = "text/css";
-        stylesheet.current.innerHTML = `
-            .${VT.itemGrid.item.split(" ").join(".")}.selected {
-                background-color: rgba(0, 0, 0, 0);
-                background-image: linear-gradient(to top left, rgba(255, 213, 210, .5), rgba(253, 189, 203, .5));
-            }
-
-            .${VT.assetCategoryTabBar.assetCategoryTabBar} {
-                border-bottom-color: rgba(255, 98, 182, 0.69);
-            }
-
-            .${VT.assetCategoryTabItem.button}.selected {
-                background-image: linear-gradient(to top left, rgba(255, 98, 182, 0.25), rgba(253, 189, 203, .5));
-            }
-        `;
-
-        // This gets the original component that we may alter and return.
         const result: JSX.Element = Component();
 
         if (enabledBinding) {
-            result.props.children?.unshift(<ToolPanel />);
+            result.props.children?.unshift(<ToolPanel key="Platter/ToolPanel" />);
         }
-
-        useEffect(() => {
-            if (enabledBinding) {
-                document.head.appendChild(stylesheet.current);
-            } else if (document.head.contains(stylesheet.current)) {
-                document.head.removeChild(stylesheet.current);
-            }
-
-            return () => {
-                if (document.head.contains(stylesheet.current)) {
-                    document.head.removeChild(stylesheet.current);
-                }
-            };
-        }, [enabledBinding]);
 
         return result;
     };
@@ -80,6 +46,32 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component: any) =>
 const ToolPanel = function ToolPanel() {
     useRenderTracker("ToolPanel/ToolPanel");
     const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
+    const stylesheet = useRef(document.createElement("style"));
+    stylesheet.current.type = "text/css";
+    stylesheet.current.innerHTML = `
+        .${VT.itemGrid.item.split(" ").join(".")}.selected {
+            background-color: rgba(0, 0, 0, 0);
+            background-image: linear-gradient(to top left, rgba(255, 213, 210, .5), rgba(253, 189, 203, .5));
+        }
+
+        .${VT.assetCategoryTabBar.assetCategoryTabBar} {
+            border-bottom-color: rgba(255, 98, 182, 0.69);
+        }
+
+        .${VT.assetCategoryTabItem.button}.selected {
+            background-image: linear-gradient(to top left, rgba(255, 98, 182, 0.25), rgba(253, 189, 203, .5));
+        }
+    `;
+
+    useEffect(() => {
+        document.head.appendChild(stylesheet.current);
+
+        return () => {
+            if (document.head.contains(stylesheet.current)) {
+                document.head.removeChild(stylesheet.current);
+            }
+        };
+    }, []);
 
     return (
         <div className={c(styles.moddedSection)}>
@@ -93,33 +85,6 @@ const ToolPanel = function ToolPanel() {
     );
 };
 
-// const ToolModeSection = function ToolModeSection() {
-//     useRenderTracker("ToolPanel/ToolModeSection");
-//     const toolModeBinding = useValueWrap(GAME_BINDINGS.TOOL_MODE.binding, "ToolMode");
-//     const { translate } = useLocalization();
-
-//     return (
-//         <VC.Section title={translate("PlatterMod.UI.SectionTitle.ToolMode")}>
-//             <VC.ToolButton
-//                 src={"coui://uil/Standard/ArrowDownTriangleNotch.svg"}
-//                 onSelect={() => GAME_BINDINGS.TOOL_MODE.set(0)}
-//                 selected={toolModeBinding == 0}
-//                 multiSelect={false}
-//                 className={VT.toolButton.button}
-//                 focusKey={VF.FOCUS_DISABLED}
-//                 tooltip={translate("PlatterMod.UI.Tooltip.PlopMode")}
-//             />
-//             <VC.ToolButton
-//                 src={"coui://uil/Standard/Road.svg"}
-//                 multiSelect={false}
-//                 className={VT.toolButton.button}
-//                 focusKey={VF.FOCUS_DISABLED}
-//                 tooltip={translate("PlatterMod.UI.Tooltip.RoadPlatMode")}
-//             />
-//         </VC.Section>
-//     );
-// };
-
 const ToolViewmodeSection = function ToolViewmodeSection() {
     useRenderTracker("ToolPanel/ToolViewmodeSection");
     const showZonesBinding = useValueWrap(GAME_BINDINGS.SHOW_ZONES.binding, "ShowZones");
@@ -130,7 +95,9 @@ const ToolViewmodeSection = function ToolViewmodeSection() {
     const { translate } = useLocalization();
 
     return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.ViewLayers")}>
+        <VC.Section
+            title={translate("PlatterMod.UI.SectionTitle.ViewLayers")}
+            focusKey={VF.FOCUS_DISABLED}>
             <VC.ToolButton
                 src={"Media/Tools/Net Tool/Grid.svg"}
                 onSelect={() => GAME_BINDINGS.SHOW_ZONES.set(!showZonesBinding)}
@@ -198,7 +165,7 @@ const PrezoningSection = function PrezoningSection() {
     );
 
     return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
+        <VC.Section focusKey={VF.FOCUS_DISABLED} title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
             <Dropdown
                 focusKey={VF.FOCUS_DISABLED}
                 initialFocused={"Test"}
@@ -240,7 +207,7 @@ const SnapModeSection = function SnapModeSection() {
     const { translate } = useLocalization();
 
     return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.SnapMode")}>
+        <VC.Section focusKey={VF.FOCUS_DISABLED} title={translate("PlatterMod.UI.SectionTitle.SnapMode")}>
             <VC.ToolButton
                 className={VT.toolButton.button}
                 src={"coui://uil/Standard/XClose.svg"}
@@ -281,7 +248,7 @@ const SnapRoadsideSection = function SnapRoadsideSection() {
     const { translate } = useLocalization();
 
     return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.SnapSpacing")}>
+        <VC.Section focusKey={VF.FOCUS_DISABLED} title={translate("PlatterMod.UI.SectionTitle.SnapSpacing")}>
             <VC.ToolButton
                 onSelect={() => GAME_BINDINGS.SNAP_SPACING.set(snapSpacingBinding - 1)}
                 src="Media/Glyphs/ThickStrokeArrowLeft.svg"
@@ -319,7 +286,7 @@ const ParcelWidthSection = function ParcelWidthSection() {
     );
 
     return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.ParcelWidth")}>
+        <VC.Section focusKey={VF.FOCUS_DISABLED} title={translate("PlatterMod.UI.SectionTitle.ParcelWidth")}>
             <VC.ToolButton
                 onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_WIDTH_DECREASE")}
                 src="Media/Glyphs/ThickStrokeArrowLeft.svg"
@@ -360,7 +327,7 @@ const ParcelDepthSection = function ParcelDepthSection() {
     const { translate } = useLocalization();
 
     return (
-        <VC.Section title={translate("PlatterMod.UI.SectionTitle.ParcelDepth")}>
+        <VC.Section focusKey={VF.FOCUS_DISABLED} title={translate("PlatterMod.UI.SectionTitle.ParcelDepth")}>
             <VC.ToolButton
                 onSelect={() => GAME_TRIGGERS.ADJUST_BLOCK_SIZE("BLOCK_DEPTH_DECREASE")}
                 src="Media/Glyphs/ThickStrokeArrowLeft.svg"
