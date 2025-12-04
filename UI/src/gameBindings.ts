@@ -1,5 +1,5 @@
 import { TwoWayBinding } from "utils/bidirectionalBinding";
-import { ParcelUIData, PrefabData, SnapMode, ZoneData } from "types";
+import { AssetPackData, ParcelUIData, PrefabData, SnapMode, ZoneData } from "types";
 import { Entity } from "cs2/bindings";
 import TriggerBuilder from "utils/trigger";
 
@@ -16,21 +16,21 @@ export const GAME_BINDINGS = {
         name: undefined,
         thumbnail: undefined,
     }),
+    ASSET_PACK_DATA: new TwoWayBinding<AssetPackData[]>("ASSET_PACK_DATA", []),
     ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
     SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
     SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 0),
     ENABLE_SNAPPING_OPTIONS: new TwoWayBinding<boolean>("ENABLE_SNAPPING_OPTIONS", false),
-
     SHOW_ZONES: new TwoWayBinding<boolean>("SHOW_ZONES", false),
     SHOW_CONTOUR_LINES: new TwoWayBinding<boolean>("SHOW_CONTOUR_LINES", false),
+    ZONE: new TwoWayBinding<number>("ZONE", 0),
+    TOOL_MODE: new TwoWayBinding<number>("TOOL_MODE"),
+    MAX_SNAP_SPACING: new TwoWayBinding<number>("MAX_SNAP_SPACING", 8),
 
     ENABLE_TOOL_BUTTONS: new TwoWayBinding<boolean>("ENABLE_TOOL_BUTTONS", true),
     ENABLE_CREATE_FROM_ZONE: new TwoWayBinding<boolean>("ENABLE_CREATE_FROM_ZONE", false),
-
-    ZONE: new TwoWayBinding<number>("ZONE", 0),
-    TOOL_MODE: new TwoWayBinding<number>("TOOL_MODE"),
 
     MODAL__FIRST_LAUNCH: new TwoWayBinding<boolean>("MODAL__FIRST_LAUNCH", false),
 
@@ -38,10 +38,6 @@ export const GAME_BINDINGS = {
     INFOPANEL_PARCEL_DATA: new TwoWayBinding<ParcelUIData>("INFOPANEL_PARCEL_DATA"),
     INFOPANEL_PARCEL_DATA_BUILDING: new TwoWayBinding<Entity>("INFOPANEL_PARCEL_DATA_BUILDING"),
     INFOPANEL_PARCEL_DATA_ROAD: new TwoWayBinding<Entity>("INFOPANEL_PARCEL_DATA_ROAD"),
-
-    ROAD_SIDE__SIDES: new TwoWayBinding<number>("ROAD_SIDE__SIDES"),
-    ROAD_SIDE__SPACING: new TwoWayBinding<number>("ROAD_SIDE__SPACING"),
-    ROAD_SIDE__OFFSET: new TwoWayBinding<number>("ROAD_SIDE__OFFSET"),
 };
 
 export const GAME_TRIGGERS = {

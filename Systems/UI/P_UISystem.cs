@@ -22,6 +22,8 @@ namespace Platter.Systems {
     using Unity.Mathematics;
     using Utils;
     using static P_SnapSystem;
+    using ZoneUIDataModel = P_ZoneCacheSystem.ZoneUIDataModel;
+    using AssetPackUIDataModel = P_ZoneCacheSystem.AssetPackUIDataModel;
 
     #endregion
 
@@ -69,7 +71,9 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_SnapModeBinding;
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
-        private ValueBindingHelper<ZoneUIData[]> m_ZoneDataBinding;
+        private ValueBindingHelper<ZoneUIDataModel[]> m_ZoneDataBinding;
+        private ValueBindingHelper<AssetPackUIDataModel[]> m_AssetPackDataBinding;
+        private ValueBindingHelper<float>        m_MaxSnapSpacingBinding;
         private bool                             CurrentlyUsingParcelsInObjectTool => m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
         private bool                             CurrentlyUsingZoneTool => m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem;
 
@@ -106,13 +110,15 @@ namespace Platter.Systems {
             m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2);
             m_BlockDepthMinBinding         = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
             m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
-            m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIData[] { });
+            m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIDataModel[] { });
+            m_AssetPackDataBinding         = CreateBinding("ASSET_PACK_DATA", new AssetPackUIDataModel[] { });
             m_RenderParcelsBinding         = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
             m_AllowSpawningBinding         = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
             m_ShowContourLinesBinding      = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
             m_ShowZonesBinding             = CreateBinding("SHOW_ZONES", false, SetShowZones);
             m_SnapModeBinding              = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
             m_SnapSpacingBinding           = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
+            m_MaxSnapSpacingBinding        = CreateBinding("MAX_SNAP_SPACING", MaxSnapDistance);
             m_ModalFirstLaunchBinding      = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
             m_ToolModeBinding              = CreateBinding("TOOL_MODE", 0, SetToolMode);
 
@@ -175,6 +181,7 @@ namespace Platter.Systems {
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
             Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
             m_ZoneDataBinding.Value = zoneData;
+            m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.ToArray();
         }
 
         private void HandleProxyActions() {
@@ -489,48 +496,6 @@ namespace Platter.Systems {
 
                     break;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Struct to store and send Zone Data and to the React UI.
-        /// </summary>
-        public readonly struct ZoneUIData : IJsonWritable {
-            public readonly string Name;
-            public readonly string Thumbnail;
-            public readonly string Category;
-            public readonly int    Index;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ZoneUIData"/> struct.
-            /// </summary>
-            public ZoneUIData(string name,
-                              string thumbnail,
-                              string category,
-                              int    index) {
-                Name      = name;
-                Thumbnail = thumbnail;
-                Category  = category;
-                Index     = index;
-            }
-
-            /// <inheritdoc/>
-            public void Write(IJsonWriter writer) {
-                writer.TypeBegin(GetType().FullName);
-
-                writer.PropertyName("name");
-                writer.Write(Name);
-
-                writer.PropertyName("thumbnail");
-                writer.Write(Thumbnail);
-
-                writer.PropertyName("category");
-                writer.Write(Category);
-
-                writer.PropertyName("index");
-                writer.Write(Index);
-
-                writer.TypeEnd();
             }
         }
     }
