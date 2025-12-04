@@ -6,16 +6,20 @@ const { CSSPresencePlugin } = require("./tools/css-presence");
 const TerserPlugin = require("terser-webpack-plugin");
 const gray = (text) => `\x1b[90m${text}\x1b[0m`;
 
+const PATH_MODE = process.env.BUILD_PATH;
 const CSII_USERDATAPATH = process.env.CSII_USERDATAPATH;
 const CSII_GAMEPATH = process.env.CSII_PDXMODSPATH;
 
 if (!CSII_USERDATAPATH) {
     throw "CSII_USERDATAPATH environment variable is not set, ensure the CSII Modding Toolchain is installed correctly";
 }
-const OUTPUT_DIR_NORMAL = `${CSII_USERDATAPATH}\\Mods\\${MOD.id}`;
-const OUTPUT_DIR_RELEASE_OVERRIDE = `${CSII_GAMEPATH}\\mods_subscribed\\125278_14`;
 
-const OUTPUT_DIR = OUTPUT_DIR_NORMAL;
+console.log(`Building in path mode: ${PATH_MODE}`);
+
+const OUTPUT_DIR_NORMAL = `${CSII_USERDATAPATH}\\Mods\\${MOD.id}`;
+const OUTPUT_DIR_RELEASE_OVERRIDE = `${CSII_GAMEPATH}\\mods_subscribed\\125278_15`;
+
+const OUTPUT_DIR = PATH_MODE === "cs2" ? OUTPUT_DIR_RELEASE_OVERRIDE : OUTPUT_DIR_NORMAL;
 
 const banner = `
  * Cities: Skylines II UI Module
