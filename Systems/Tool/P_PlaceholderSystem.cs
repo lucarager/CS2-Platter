@@ -20,7 +20,6 @@ namespace Platter.Systems {
     #endregion
 
     public partial class P_PlaceholderSystem : PlatterGameSystemBase {
-        private EntityCommandBuffer   m_CommandBuffer;
         private EntityQuery           m_PlacedQuery;
         private EntityQuery           m_TempQuery;
         private ModificationBarrier1  m_ModificationBarrier1;

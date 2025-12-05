@@ -38,15 +38,9 @@ namespace Platter.Systems {
             m_BuildingCacheSystem = World.GetOrCreateSystemManaged<P_BuildingCacheSystem>();
             m_UISystem            = World.GetOrCreateSystemManaged<P_UISystem>();
 
-            m_Tooltip_Depth = new InputHintTooltip(
-                InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockDepthAction"),
-                InputManager.DeviceType.Mouse);
-            m_Tooltip_Width = new InputHintTooltip(
-                InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockWidthAction"),
-                InputManager.DeviceType.Mouse);
-            m_Tooltip_Setback = new InputHintTooltip(
-                InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction"),
-                InputManager.DeviceType.Mouse);
+            m_Tooltip_Depth = new InputHintTooltip(InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockDepthAction"));
+            m_Tooltip_Width = new InputHintTooltip(InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockWidthAction"));
+            m_Tooltip_Setback = new InputHintTooltip(InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction"));
 
             m_Tooltip_BuildingCount = new StringTooltip();
         }
@@ -56,6 +50,16 @@ namespace Platter.Systems {
             if (!CurrentlyUsingParcelsInObjectTool()) {
                 return;
             }
+
+            var controlScheme = InputManager.instance.activeControlScheme;
+
+            if (controlScheme is not InputManager.ControlScheme.KeyboardAndMouse) {
+                return;
+            }
+
+            m_Tooltip_Depth.Refresh(InputManager.DeviceType.Mouse);
+            m_Tooltip_Width.Refresh(InputManager.DeviceType.Mouse);
+            m_Tooltip_Setback.Refresh(InputManager.DeviceType.Mouse);
 
             AddMouseTooltip(m_Tooltip_Depth);
             AddMouseTooltip(m_Tooltip_Width);
