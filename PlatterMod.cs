@@ -56,7 +56,7 @@ namespace Platter {
         /// </summary>
         public const string ModName = "Platter";
 
-        private static readonly string HarmonyPatchId = $"{nameof(Platter)}.{nameof(PlatterMod)}";
+        private const string HarmonyPatchId = $"{nameof(Platter)}.{nameof(PlatterMod)}";
 
         private Harmony        m_Harmony;
         private PrefixedLogger m_Log;
@@ -314,7 +314,7 @@ namespace Platter {
                 return;
             }
 
-            var m_Scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)field.GetValue(TestScenarioSystem.instance);
+            var scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)field.GetValue(TestScenarioSystem.instance);
 
             foreach (var type in GetTests()) {
                 if (!type.IsClass || type.IsAbstract || type.IsInterface || !type.TryGetAttribute(
@@ -324,7 +324,7 @@ namespace Platter {
 
                 log.Debug($"AddTests() -- {testDescriptorAttribute.description}");
 
-                m_Scenarios.Add(
+                scenarios.Add(
                     testDescriptorAttribute.description,
                     new TestScenarioSystem.Scenario {
                         category  = testDescriptorAttribute.category,
@@ -334,9 +334,9 @@ namespace Platter {
                     });
             }
 
-            m_Scenarios = TestScenarioSystem.SortScenarios(m_Scenarios);
+            scenarios = TestScenarioSystem.SortScenarios(scenarios);
 
-            field.SetValue(TestScenarioSystem.instance, m_Scenarios);
+            field.SetValue(TestScenarioSystem.instance, scenarios);
         }
 
         private static IEnumerable<Type> GetTests() {
@@ -418,7 +418,7 @@ namespace Platter {
                             }
                         } catch (Exception e) {
                             // Don't let a single failure stop us.
-                            m_Log.Error($"Exception reading localization from embedded file {resourceName}");
+                            m_Log.Error($"Exception reading localization from embedded file {resourceName}: {e}");
                         }
                     } else {
                         m_Log.Debug($"Did not find localization file {resourceName}");
