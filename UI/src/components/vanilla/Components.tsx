@@ -38,6 +38,10 @@ const modulePaths = [
         path: "game-ui/common/scrolling/scrollable.tsx",
         components: ["Scrollable"],
     },
+    {
+        path: "game-ui/common/input/text/text-input.tsx",
+        components: ["TextInput"],
+    },
 ];
 
 const themePaths = [
@@ -104,7 +108,11 @@ const themePaths = [
     {
         path: "game-ui/game/components/item-grid/item-grid.module.scss",
         name: "itemGrid",
-    }
+    },
+    {
+        path: "game-ui/editor/widgets/item/editor-item.module.scss",
+        name: "textInput",
+    },
 ];
 
 export const VC = {} as IVanillaComponents;

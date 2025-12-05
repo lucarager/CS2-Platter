@@ -20,6 +20,7 @@
     margin-bottom: 4rem;
     animation: 300ms fadeInScale ease forwards;
     padding-bottom: 2rem;
+    z-index: 10; // lift it over the central tool panel
 
     &_Header {
         display: flex;
@@ -56,6 +57,7 @@
     align-items: center;
     flex-direction: row;
     width: 100%;
+    flex: 1;
 }
 
 .dropdownItem {
@@ -101,17 +103,28 @@
     }
 }
 
-.dropdownMenu {
-    height: 90%;
-    background-color: var(--panelColorDark);
-    backdrop-filter: var(--panelBlur);
-    color: var(--accentColorNormal);
-}
-
 .modeButton {
     padding: 10rem;
     width: auto;
     height: auto;
+}
+
+.dropdownMenu {
+    position: absolute;
+    height: 40vh;
+    background-color: var(--panelColorDark);
+    backdrop-filter: var(--panelBlur);
+    color: var(--accentColorNormal);
+    bottom: 100%;
+    z-index: 10;
+    left: 118rem;
+    width: calc(
+        var(--assetMenuColumns) *
+        ( var(--assetMenuItemSize) + var(--assetMenuItemGap) )
+        - var(--assetMenuItemGap) + 40rem
+    );
+    transform: translate(0, -3rem);
+    border-radius: 8rem;
 }
 
 .dropdownToggle {
@@ -132,17 +145,36 @@
 }
 
 .dropdownContent {
-    width: 1040rem;
-    max-width: 80vw;
+    flex: 1;
     display: flex;
     flex-direction: row;
+    position: relative;
 
     &__sidebar {
-        width: 48rem;
-        padding: 8rem;
-        border-right: 1rem solid rgba(255, 255, 255, 0.1);
-        height: 35vh;
-        position: fixed;
+        width: 173rem;
+        padding: 16rem;
+        border-right: 1rem solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(0, 0, 0, 0.25);
+
+        &__row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16rem;
+
+            &__label {
+                font-size:  var(--fontSizeM) ;
+                font-weight: bold;
+                white-space: normal;
+                color: rgba(217, 217, 217, .5);
+                margin-bottom: 4rem;
+            }
+
+            &__buttons {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
     }
 
     &__content {
@@ -150,23 +182,27 @@
         flex-direction: column;
         overflow-y: auto;
         flex: 1;
-        padding-bottom: 32rem;
-        padding-left: 48rem;
+
+        &__inner {
+            padding-top: 8rem;
+            padding-bottom: 32rem;
+        }
     }
 }
 
 .noZonesMessage {
-    color: rgba(217, 217, 217, 0.5);
+    color: rgba(217, 217, 217, 0.75);
     font-style: italic;
     padding: 4rem;
     font-size: 0.85em;
 }
 
-.packButton {
-    margin-bottom: 4rem;
+.filterButton {
+    margin-bottom: 2rem;
+    margin-right: 2rem;
 }
 
-.packButton + .packButton {
+.filterButton + .filterButton {
     margin-left: 0;
 }
 
@@ -174,6 +210,7 @@
     width: 100%;
     padding-left: 4rem;
     min-height: 48rem;
+    margin-bottom: 8rem;
 }
 
 .zoneCategoryZones {
@@ -183,7 +220,7 @@
     padding: 0 10rem;
 
     & > button {
-        width: 33%;
+        width: 50%;
         overflow: hidden;
     }
 

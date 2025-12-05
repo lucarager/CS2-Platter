@@ -8,6 +8,7 @@ namespace Platter.Settings {
 
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
     using PS = PlatterModSettings;
 
     #endregion
@@ -101,7 +102,11 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.SectionTitle.SnapSpacing", "Road Setback" },
                 { "PlatterMod.UI.SectionTitle.ParcelWidth", "Parcel Width" },
                 { "PlatterMod.UI.SectionTitle.ParcelDepth", "Parcel Depth" },
+                { "PlatterMod.UI.SectionTitle.Search", "Search" },
+                { "PlatterMod.UI.SectionTitle.Category", "Category" },
+                { "PlatterMod.UI.SectionTitle.AssetPacks", "Asset Packs" },
                 { "PlatterMod.UI.Label.ParcelSizeUnit", "cells" },
+                { "PlatterMod.UI.Label.NoZoneMatchesFilter", "No zone matches filter" },
                 { "PlatterMod.UI.Button.CreateParcelFromZone", "Create Parcel with this Zone" },
                 { "PlatterMod.UI.Tooltip.Infopanel.InspectParcel", "Inspect Parcel" },
                 { "PlatterMod.UI.Tooltip.Infopanel.InspectBuilding", "Inspect Building" },
@@ -211,6 +216,7 @@ namespace Platter.Settings {
                 { "Assets.DESCRIPTION[Parcel 6x5]", "A Parcel with zone blocks. 6 cells wide, 5 cells deep" },
                 { "Assets.NAME[Parcel 6x6]", "Parcel (6x6)" },
                 { "Assets.DESCRIPTION[Parcel 6x6]", "A Parcel with zone blocks. 6 cells wide, 6 cells deep" },
+                { "Assets.NAME[Unzoned]", "Unzoned" },
             };
         }
 

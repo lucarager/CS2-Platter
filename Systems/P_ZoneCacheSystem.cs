@@ -153,7 +153,7 @@ namespace Platter.Systems {
                         EdgeColors[zoneData.m_ZoneType.m_Index]    = zonePrefab.m_Edge;
                         ZoneUIData[zoneData.m_ZoneType.m_Index] = new ZoneUIDataModel(
                             zonePrefab.name,
-                            ImageSystem.GetThumbnail(zonePrefab),
+                            GetThumbnail(zonePrefab),
                             category,
                             zoneData.m_ZoneType.m_Index,
                             assetPacks
@@ -163,6 +163,10 @@ namespace Platter.Systems {
             }
 
             chunkArray.Dispose();
+        }
+
+        private static string GetThumbnail(ZonePrefab zonePrefab) {
+            return zonePrefab.name == "Unzoned" ? "coui://platter/Unzoned.svg" : ImageSystem.GetThumbnail(zonePrefab);
         }
 
         /// <summary>
