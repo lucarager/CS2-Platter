@@ -30,7 +30,6 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
-    using Game.Zones;
     using HarmonyLib;
     using Newtonsoft.Json;
     using Settings;
@@ -46,6 +45,8 @@ namespace Platter {
     /// Mod entry point.
     /// </summary>
     public class PlatterMod : IMod {
+        private const string HarmonyPatchId = $"{nameof(Platter)}.{nameof(PlatterMod)}";
+
         /// <summary>
         /// An id used for bindings between UI and C#.
         /// </summary>
@@ -55,8 +56,6 @@ namespace Platter {
         /// The mod's default actionName.
         /// </summary>
         public const string ModName = "Platter";
-
-        private const string HarmonyPatchId = $"{nameof(Platter)}.{nameof(PlatterMod)}";
 
         private Harmony        m_Harmony;
         private PrefixedLogger m_Log;
@@ -177,7 +176,7 @@ namespace Platter {
             updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateBefore<P_RemoveOverriddenSystem>(SystemUpdatePhase.ModificationEnd); // Run after Mod5 when overrides are applied
-            updateSystem.UpdateAt<P_ParcelBlockClassifySystem>(SystemUpdatePhase.ModificationEnd); 
+            updateSystem.UpdateAt<P_ParcelBlockClassifySystem>(SystemUpdatePhase.ModificationEnd);
 
             // UI/Rendering
             updateSystem.UpdateAt<P_UISystem>(SystemUpdatePhase.UIUpdate);
@@ -208,20 +207,32 @@ namespace Platter {
         private void RegisterCustomInputActions() {
             m_Log.Debug("RegisterCustomInputActions()");
 
-            RegisterCustomScrollAction("BlockDepthAction", new[] {
-                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
-            });
-            RegisterCustomScrollAction("BlockWidthAction", new[] {
-                new Tuple<string, string>("alt", "<Keyboard>/alt"),
-            });
-            RegisterCustomScrollAction("BlockSizeAction", new[] {
-                new Tuple<string, string>("alt", "<Keyboard>/alt"),
-                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
-            });
-            RegisterCustomScrollAction("SetbackAction", new[] {
-                new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
-                new Tuple<string, string>("shift", "<Keyboard>/shift"),
-            });
+            RegisterCustomScrollAction(
+                "BlockDepthAction",
+                new[]
+                {
+                    new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+                });
+            RegisterCustomScrollAction(
+                "BlockWidthAction",
+                new[]
+                {
+                    new Tuple<string, string>("alt", "<Keyboard>/alt"),
+                });
+            RegisterCustomScrollAction(
+                "BlockSizeAction",
+                new[]
+                {
+                    new Tuple<string, string>("alt", "<Keyboard>/alt"),
+                    new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+                });
+            RegisterCustomScrollAction(
+                "SetbackAction",
+                new[]
+                {
+                    new Tuple<string, string>("ctrl", "<Keyboard>/ctrl"),
+                    new Tuple<string, string>("shift", "<Keyboard>/shift"),
+                });
         }
 
         private void RegisterCustomScrollAction(string name, Tuple<string, string>[] modifiers) {
@@ -233,26 +244,33 @@ namespace Platter {
 
             var composites = preciseRotation.composites;
 
-            var blockWidthCustomAction = new ProxyAction.Info {
+            var blockWidthCustomAction = new ProxyAction.Info
+            {
                 m_Name = name,
                 m_Map  = "Platter.Platter.PlatterMod",
                 m_Type = ActionType.Vector2,
-                m_Composites = composites.Select(keyValuePair => {
-                    var device     = keyValuePair.Key;
-                    var composite  = keyValuePair.Value;
-                    var source     = (CompositeInstance)composite.GetMemberValue("m_Source");
+                m_Composites = composites
+                               .Where(keyValuePair => keyValuePair.Key == InputManager.DeviceType.Mouse)
+                               .Select(keyValuePair => {
+                    var device    = keyValuePair.Key;
+                    var composite = keyValuePair.Value;
+                    var source    = (CompositeInstance)composite.GetMemberValue("m_Source");
                     source.builtIn = false;
 
                     // Get the original bindings and modify them to use Alt modifier only
-                    var modifiedBindings = composite.bindings.Values.Select(binding => {
-                        return binding.WithModifiers(modifiers.Select(m => new ProxyModifier {
-                            m_Component = binding.component,
-                            m_Name      = m.Item1,
-                            m_Path      = m.Item2,
-                        }).ToList());
-                    }).ToList();
+                    var modifiedBindings = composite.bindings.Values
+                                                    .Select(binding => {
+                                                        return binding.WithModifiers(
+                                                            modifiers.Select(m => new ProxyModifier
+                                                            {
+                                                                m_Component = binding.component,
+                                                                m_Name      = m.Item1,
+                                                                m_Path      = m.Item2,
+                                                            }).ToList());
+                                                    }).ToList();
 
-                    return new ProxyComposite.Info {
+                    return new ProxyComposite.Info
+                    {
                         m_Device   = device,
                         m_Source   = source,
                         m_Bindings = modifiedBindings,
@@ -292,8 +310,8 @@ namespace Platter {
                                                      .ToDictionary(pair => pair.Key, pair => pair.Value);
             var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
             try {
-                var path      = GetThisFilePath();
-                var directory = Path.GetDirectoryName(path);
+                var path       = GetThisFilePath();
+                var directory  = Path.GetDirectoryName(path);
                 var exportPath = $@"{directory}\lang\en-US.json";
                 File.WriteAllText(exportPath, str);
             } catch (Exception ex) {
@@ -326,7 +344,8 @@ namespace Platter {
 
                 scenarios.Add(
                     testDescriptorAttribute.description,
-                    new TestScenarioSystem.Scenario {
+                    new TestScenarioSystem.Scenario
+                    {
                         category  = testDescriptorAttribute.category,
                         testPhase = testDescriptorAttribute.testPhase,
                         test      = type,
