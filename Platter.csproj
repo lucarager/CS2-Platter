@@ -59,13 +59,28 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="lang\*.json" />
+		<EmbeddedResource Include="Internationalization\*.json" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Remove="UI\**" />
 	  <EmbeddedResource Remove="UI\**" />
 	  <None Remove="UI\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Internationalization\lang\de-DE.json" />
+	  <EmbeddedResource Include="Internationalization\lang\en-US.json" />
+	  <EmbeddedResource Include="Internationalization\lang\es-ES.json" />
+	  <EmbeddedResource Include="Internationalization\lang\fr-FR.json" />
+	  <EmbeddedResource Include="Internationalization\lang\it-IT.json" />
+	  <EmbeddedResource Include="Internationalization\lang\ja-JP.json" />
+	  <EmbeddedResource Include="Internationalization\lang\ko-KR.json" />
+	  <EmbeddedResource Include="Internationalization\lang\pl-PL.json" />
+	  <EmbeddedResource Include="Internationalization\lang\pt-PT.json" />
+	  <EmbeddedResource Include="Internationalization\lang\ru-RU.json" />
+	  <EmbeddedResource Include="Internationalization\lang\zh-HANS.json" />
+	  <EmbeddedResource Include="Internationalization\lang\zh-HANT.json" />
 	</ItemGroup>
 
 	<ItemGroup>
