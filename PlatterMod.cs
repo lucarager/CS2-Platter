@@ -262,10 +262,6 @@ namespace Platter {
         /// </summary>
         /// <param name="name">The name of the action to register.</param>
         /// <param name="modifiers">Array of modifier key tuples (name, path) to apply to the action.</param>
-        /// <remarks>
-        /// Uses reflection to invoke the internal InputManager.AddActions method. 
-        /// Creates a proxy action that mirrors the "Precise Rotation" action's mouse composite bindings.
-        /// </remarks>
         private void RegisterCustomScrollAction(string name, Tuple<string, string>[] modifiers) {
             var preciseRotation = InputManager.instance.FindAction("Tool", "Precise Rotation");
             if (preciseRotation == null) {
@@ -321,10 +317,6 @@ namespace Platter {
         /// <summary>
         /// Initializes Harmony patches for the assembly and logs all patched methods.
         /// </summary>
-        /// <remarks>
-        /// Uses Harmony to patch all methods marked with Harmony patch attributes across the assembly.
-        /// All patched methods are logged for debugging purposes.
-        /// </remarks>
         private void InitializeHarmonyPatches() {
             m_Log.Debug("InitializeHarmonyPatches()");
 
@@ -349,10 +341,6 @@ namespace Platter {
         /// Generates an en-US localization JSON file from the current localization dictionary.
         /// Only executed in debug builds with EXPORT_EN_US compiler directive.
         /// </summary>
-        /// <remarks>
-        /// Exports all localization strings from EnUsConfig to a JSON file in the lang directory.
-        /// Useful for testing and generating language files for translation workflows.
-        /// </remarks>
         private void GenerateLanguageFile() {
             m_Log.Debug("GenerateLanguageFile()");
             var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
@@ -379,10 +367,6 @@ namespace Platter {
         /// Adds test scenarios from the assembly to the test framework.
         /// Only executed in debug builds.
         /// </summary>
-        /// <remarks>
-        /// Uses reflection to discover all test classes that implement TestScenario and are decorated with TestDescriptorAttribute.
-        /// Registers them with the TestScenarioSystem for execution in the test framework.
-        /// </remarks>
         private void AddTests() {
             m_Log.Info("AddTests()");
 
@@ -434,11 +418,6 @@ namespace Platter {
         /// Modifies the vanilla SubBlockSystem's entity query to exclude parcels from serialization.
         /// </summary>
         /// <param name="originalSystem">The SubBlockSystem to modify.</param>
-        /// <remarks>
-        /// Uses reflection to access and modify the internal entity query of the vanilla SubBlockSystem.
-        /// Adds a "None" filter for ParcelOwner components to prevent vanilla systems from processing parcel entities.
-        /// This ensures parcels are serialized only by Platter systems.
-        /// </remarks>
         private static void ModifyVabillaSubBlockSerialization(ComponentSystemBase originalSystem) {
             var log = LogManager.GetLogger(ModName);
             log.Debug("ModifyVabillaSubBlockSerialization()");
@@ -491,10 +470,6 @@ namespace Platter {
         /// <summary>
         /// Loads non-English localization files from embedded resources and registers them with the localization manager.
         /// </summary>
-        /// <remarks>
-        /// Searches for embedded JSON files matching the pattern "Platter.lang.{localeID}.json" for all supported locales.
-        /// Files that fail to load are logged but do not prevent other localizations from loading.
-        /// </remarks>
         private void LoadNonEnglishLocalizations() {
             var thisAssembly  = Assembly.GetExecutingAssembly();
             var resourceNames = thisAssembly.GetManifestResourceNames();
