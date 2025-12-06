@@ -98,7 +98,7 @@
   "Assets.NAME[Parcel 2x2]": "Участок (2х2)",
   "Assets.DESCRIPTION[Parcel 2x2]": "Участок для зонирования 2 клетки в ширину, 2 клетки в глубину",
   "Assets.NAME[Parcel 2x3]": "Участок (2х3)",
-  "Assets.DESCRIPTION[Parcel 2x3]": "A Parcel with zone blocks. 2 cells wide, 3 cells deep",
+  "Assets.DESCRIPTION[Parcel 2x3]": "Участок для зонирования 2 клетки в ширину, 3 клетки в глубину",
   "Assets.NAME[Parcel 2x4]": "Участок (2х4)",
   "Assets.DESCRIPTION[Parcel 2x4]": "Участок для зонирования 2 клетки в ширину, 4 клетки в глубину",
   "Assets.NAME[Parcel 2x5]": "Участок (2х5)",
