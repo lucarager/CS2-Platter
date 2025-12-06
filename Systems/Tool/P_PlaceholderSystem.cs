@@ -135,7 +135,7 @@ namespace Platter.Systems {
 
                     var parcelData     = m_ParcelDataLookup[prefabRef.m_Prefab];
                     var parcelPrefabID = ParcelUtils.GetPrefabID(parcelData.m_LotSize.x, parcelData.m_LotSize.y);
-                    var cacheKey       = parcelPrefabID.GetHashCode();
+                    var cacheKey       = ParcelUtils.GetCustomHashCode(parcelPrefabID, false);
 
                     if (!m_PrefabCache.TryGetValue(cacheKey, out var newPrefabEntity)) {
                         continue;

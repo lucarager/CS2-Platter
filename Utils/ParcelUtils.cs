@@ -8,9 +8,10 @@ namespace Platter.Utils {
 
     using Components;
     using Constants;
-    using Game.Objects;
     using Game.Prefabs;
     using Unity.Mathematics;
+    using UnityEngine;
+    using Transform = Game.Objects.Transform;
 
     #endregion
 
@@ -31,6 +32,10 @@ namespace Platter.Utils {
         }
 
         public static PrefabID GetPrefabID(int2 size, bool placeholder = false) { return GetPrefabID(size.x, size.y, placeholder); }
+
+        public static int GetCustomHashCode(PrefabID prefabID, bool placeholder = false) {
+            return Hash128.Compute(prefabID.GetType() + prefabID.GetName() + placeholder.ToString()).GetHashCode();
+        }
 
         public static float3 NodeMult(ParcelNode node) {
             return node switch {

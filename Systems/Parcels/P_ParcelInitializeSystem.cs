@@ -23,7 +23,9 @@ namespace Platter.Systems {
     /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
     /// </summary>
     public partial class P_ParcelInitializeSystem : GameSystemBase {
-        private const GeometryFlags PermGeometryFlags        = GeometryFlags.Overridable | GeometryFlags.Brushable | GeometryFlags.LowCollisionPriority | GeometryFlags.OccupyZone;
+        // GeometryFlags.Overridable: Allows buildings and objects to grow over the parcel.
+        private const GeometryFlags PermGeometryFlags        = GeometryFlags.Overridable | GeometryFlags.LowCollisionPriority;
+        // GeometryFlags.Brushable: Necessary for ObjectTool to include linetool options.
         private const GeometryFlags PlaceholderGeometryFlags = GeometryFlags.WalkThrough | GeometryFlags.Brushable;
         private       EntityQuery   m_ParcelPlaceholderPrefabQuery;
 

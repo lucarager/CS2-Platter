@@ -207,7 +207,9 @@ namespace Platter.Systems {
             if (m_PrefabSystem.AddPrefab(prefabBase)) {
                 var prefabEntity = m_PrefabSystem.GetEntity(prefabBase);
                 var prefabID     = prefabBase.GetPrefabID();
-                var cacheKey     = prefabID.GetHashCode();
+                var cacheKey     = ParcelUtils.GetCustomHashCode(prefabID, placeholder);
+
+                m_Log.Debug($"Populating Prefab Cache. Type: Parcel Key: {cacheKey} prefabID: {prefabID} placeholder: {placeholder.ToString()}");
 
                 m_PrefabCache[cacheKey] = prefabEntity;
                 return true;
@@ -238,7 +240,9 @@ namespace Platter.Systems {
 
             if (success) {
                 var prefabID = uiCategoryPrefabBase.GetPrefabID();
-                var cacheKey = prefabID.GetHashCode();
+                var cacheKey = ParcelUtils.GetCustomHashCode(prefabID);
+
+                m_Log.Debug($"Populating Prefab Cache. Type: Category Key: {cacheKey} prefabID: {prefabID}");
                 m_PrefabCache[cacheKey] = m_PrefabSystem.GetEntity(uiCategoryPrefabBase);
             }
 
@@ -259,7 +263,10 @@ namespace Platter.Systems {
 
             if (success) {
                 var prefabID = parecelAreaPrefab.GetPrefabID();
-                var cacheKey = prefabID.GetHashCode();
+                var cacheKey = ParcelUtils.GetCustomHashCode(prefabID);
+
+                m_Log.Debug($"Populating Prefab Cache. Type: ParcelArea Key: {cacheKey} prefabID: {prefabID}");
+
                 m_PrefabCache[cacheKey] = m_PrefabSystem.GetEntity(parecelAreaPrefab);
                 areaPrefab              = parecelAreaPrefab;
                 return true;
