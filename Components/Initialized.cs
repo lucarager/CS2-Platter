@@ -7,6 +7,9 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    /// <summary>
+    /// Marker component indicating that an entity has been initialized and is ready for processing.
+    /// </summary>
     public struct Initialized : IComponentData, IEmptySerializable {
     }
 }

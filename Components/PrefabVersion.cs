@@ -8,9 +8,12 @@ namespace Platter.Components {
     using Unity.Entities;
 
     /// <summary>
-    /// Component holding the version of a prefab. Used for migrations.
+    /// Component holding the version of a prefab. Used for migrations and compatibility checking.
     /// </summary>
     public struct PrefabVersion : IComponentData, ISerializable {
+        /// <summary>
+        /// The version number of the prefab.
+        /// </summary>
         public int m_Version;
 
         /// <inheritdoc/>

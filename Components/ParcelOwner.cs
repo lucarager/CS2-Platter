@@ -7,13 +7,20 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    /// <summary>
+    /// Component that marks an entity as owned by a parcel.
+    /// Used to link zone blocks or buildings to their parent parcel.
+    /// </summary>
     public struct ParcelOwner : IComponentData, ISerializable {
+        /// <summary>
+        /// Entity reference to the owning parcel.
+        /// </summary>
         public Entity m_Owner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelOwner"/> struct.
         /// </summary>
-        /// <param name="owner"></param>
+        /// <param name="owner">The entity reference of the owning parcel.</param>
         public ParcelOwner(Entity owner) {
             m_Owner = owner;
         }

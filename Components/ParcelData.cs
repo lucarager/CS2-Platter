@@ -8,8 +8,18 @@ namespace Platter.Components {
     using Unity.Entities;
     using Unity.Mathematics;
 
+    /// <summary>
+    /// Stores parcel-specific data including lot size and associated zone block prefab.
+    /// </summary>
     public struct ParcelData : IComponentData, ISerializable {
+        /// <summary>
+        /// The lot size dimensions as (width, depth) in cells.
+        /// </summary>
         public int2 m_LotSize;
+
+        /// <summary>
+        /// Entity reference to the zone block prefab used for this parcel.
+        /// </summary>
         public Entity m_ZoneBlockPrefab;
 
         /// <inheritdoc/>

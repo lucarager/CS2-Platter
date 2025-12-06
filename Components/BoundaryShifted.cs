@@ -7,6 +7,9 @@ using Colossal.Serialization.Entities;
 using Unity.Entities;
 
 namespace Platter.Components {
+    /// <summary>
+    /// Marker component indicating that a parcel's boundaries have been shifted.
+    /// </summary>
     public struct BoundaryShifted : IComponentData, IEmptySerializable {
     }
 }

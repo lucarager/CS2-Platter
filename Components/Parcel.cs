@@ -13,13 +13,39 @@ namespace Platter.Components {
 
     #endregion
 
+    /// <summary>
+    /// Flags used to track the state of a parcel (zoning type, road connections).
+    /// </summary>
     [Flags]
     public enum ParcelStateFlags : byte {
+        /// <summary>
+        /// No state flags set.
+        /// </summary>
         None          = 0,
+
+        /// <summary>
+        /// Parcel has uniform zoning (single zone type).
+        /// </summary>
         ZoningUniform = 1,
+
+        /// <summary>
+        /// Parcel has mixed zoning (multiple zone types).
+        /// </summary>
         ZoningMixed   = 2,
+
+        /// <summary>
+        /// Parcel is connected to a road on the left.
+        /// </summary>
         RoadLeft      = 4,
+
+        /// <summary>
+        /// Parcel is connected to a road on the right.
+        /// </summary>
         RoadRight     = 8,
+
+        /// <summary>
+        /// Parcel is connected to a road at the back.
+        /// </summary>
         RoadBack      = 16,
     }
 
@@ -38,15 +64,18 @@ namespace Platter.Components {
         public Entity m_Building;
 
         /// <summary>
-        /// Position of this parcel on the road edge.
+        /// Position of this parcel on the road edge (as a curve parameter from 0 to 1).
         /// </summary>
         public float m_CurvePosition;
 
         /// <summary>
-        /// Zoning on this parcel.
+        /// Zoning type applied to this parcel.
         /// </summary>
         public ZoneType m_PreZoneType;
 
+        /// <summary>
+        /// State flags indicating zoning type and road connections.
+        /// </summary>
         public ParcelStateFlags m_State;
 
         /// <inheritdoc/>

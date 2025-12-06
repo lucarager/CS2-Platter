@@ -57,7 +57,14 @@ namespace Platter {
         /// </summary>
         public const string ModName = "Platter";
 
-        private Harmony        m_Harmony;
+        /// <summary>
+        /// Harmony instance used for patching vanilla methods.
+        /// </summary>
+        private Harmony m_Harmony;
+
+        /// <summary>
+        /// Prefixed logger for module-level logging.
+        /// </summary>
         private PrefixedLogger m_Log;
 
         /// <summary>
@@ -132,6 +139,10 @@ namespace Platter {
             TeardownHarmonyPatches();
         }
 
+        /// <summary>
+        /// Registers the mod's asset files, such as icon and model assets, with the game.
+        /// </summary>
+        /// <returns>True if assets were successfully registered, false otherwise.</returns>
         private bool RegisterAssets() {
             m_Log.Debug("RegisterAssets()");
             if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
@@ -144,6 +155,11 @@ namespace Platter {
             return false;
         }
 
+        /// <summary>
+        /// Registers all systems that handle deserialization, prefabs, buildings, roads, parcels, UI/rendering, and tools.
+        /// Systems are registered in a specific order to ensure proper initialization and update dependencies.
+        /// </summary>
+        /// <param name="updateSystem">The update system to register systems into.</param>
         private void RegisterSystems(UpdateSystem updateSystem) {
             m_Log.Debug("RegisterSystems()");
 
@@ -193,6 +209,9 @@ namespace Platter {
             updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
         }
 
+        /// <summary>
+        /// Initializes mod settings, localizations, and key bindings.
+        /// </summary>
         private void InitializeSettings() {
             m_Log.Debug("InitializeSettings()");
             Settings = new PlatterModSettings(this);
@@ -204,6 +223,9 @@ namespace Platter {
             LoadNonEnglishLocalizations();
         }
 
+        /// <summary>
+        /// Registers custom input actions for parcel manipulation (depth, width, and setback adjustments).
+        /// </summary>
         private void RegisterCustomInputActions() {
             m_Log.Debug("RegisterCustomInputActions()");
 
@@ -235,6 +257,15 @@ namespace Platter {
                 });
         }
 
+        /// <summary>
+        /// Registers a custom scroll-based input action with the specified name and modifier keys.
+        /// </summary>
+        /// <param name="name">The name of the action to register.</param>
+        /// <param name="modifiers">Array of modifier key tuples (name, path) to apply to the action.</param>
+        /// <remarks>
+        /// Uses reflection to invoke the internal InputManager.AddActions method. 
+        /// Creates a proxy action that mirrors the "Precise Rotation" action's mouse composite bindings.
+        /// </remarks>
         private void RegisterCustomScrollAction(string name, Tuple<string, string>[] modifiers) {
             var preciseRotation = InputManager.instance.FindAction("Tool", "Precise Rotation");
             if (preciseRotation == null) {
@@ -287,6 +318,13 @@ namespace Platter {
             m_Log.Debug($"RegisterCustomInputActions() -- Registered custom action {name}");
         }
 
+        /// <summary>
+        /// Initializes Harmony patches for the assembly and logs all patched methods.
+        /// </summary>
+        /// <remarks>
+        /// Uses Harmony to patch all methods marked with Harmony patch attributes across the assembly.
+        /// All patched methods are logged for debugging purposes.
+        /// </remarks>
         private void InitializeHarmonyPatches() {
             m_Log.Debug("InitializeHarmonyPatches()");
 
@@ -299,11 +337,22 @@ namespace Platter {
             }
         }
 
+        /// <summary>
+        /// Removes all Harmony patches applied by this mod.
+        /// </summary>
         private void TeardownHarmonyPatches() {
             m_Log.Debug("TeardownHarmonyPatches()");
             m_Harmony.UnpatchAll(HarmonyPatchId);
         }
 
+        /// <summary>
+        /// Generates an en-US localization JSON file from the current localization dictionary.
+        /// Only executed in debug builds with EXPORT_EN_US compiler directive.
+        /// </summary>
+        /// <remarks>
+        /// Exports all localization strings from EnUsConfig to a JSON file in the lang directory.
+        /// Useful for testing and generating language files for translation workflows.
+        /// </remarks>
         private void GenerateLanguageFile() {
             m_Log.Debug("GenerateLanguageFile()");
             var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
@@ -319,8 +368,21 @@ namespace Platter {
             }
         }
 
+        /// <summary>
+        /// Gets the file path of the calling source file using the CallerFilePath attribute.
+        /// </summary>
+        /// <param name="path">The path provided by the compiler via CallerFilePath attribute.</param>
+        /// <returns>The file path of the calling code.</returns>
         private static string GetThisFilePath([CallerFilePath] string path = null) { return path; }
 
+        /// <summary>
+        /// Adds test scenarios from the assembly to the test framework.
+        /// Only executed in debug builds.
+        /// </summary>
+        /// <remarks>
+        /// Uses reflection to discover all test classes that implement TestScenario and are decorated with TestDescriptorAttribute.
+        /// Registers them with the TestScenarioSystem for execution in the test framework.
+        /// </remarks>
         private void AddTests() {
             m_Log.Info("AddTests()");
 
@@ -358,12 +420,25 @@ namespace Platter {
             field.SetValue(TestScenarioSystem.instance, scenarios);
         }
 
+        /// <summary>
+        /// Retrieves all test types from the assembly that implement the TestScenario interface.
+        /// </summary>
+        /// <returns>An enumerable collection of test scenario types.</returns>
         private static IEnumerable<Type> GetTests() {
             return from t in Assembly.GetExecutingAssembly().GetTypes()
                 where typeof(TestScenario).IsAssignableFrom(t)
                 select t;
         }
 
+        /// <summary>
+        /// Modifies the vanilla SubBlockSystem's entity query to exclude parcels from serialization.
+        /// </summary>
+        /// <param name="originalSystem">The SubBlockSystem to modify.</param>
+        /// <remarks>
+        /// Uses reflection to access and modify the internal entity query of the vanilla SubBlockSystem.
+        /// Adds a "None" filter for ParcelOwner components to prevent vanilla systems from processing parcel entities.
+        /// This ensures parcels are serialized only by Platter systems.
+        /// </remarks>
         private static void ModifyVabillaSubBlockSerialization(ComponentSystemBase originalSystem) {
             var log = LogManager.GetLogger(ModName);
             log.Debug("ModifyVabillaSubBlockSerialization()");
@@ -413,6 +488,13 @@ namespace Platter {
             log.Debug("ModifyVabillaSubBlockSerialization() -- Patching complete.");
         }
 
+        /// <summary>
+        /// Loads non-English localization files from embedded resources and registers them with the localization manager.
+        /// </summary>
+        /// <remarks>
+        /// Searches for embedded JSON files matching the pattern "Platter.lang.{localeID}.json" for all supported locales.
+        /// Files that fail to load are logged but do not prevent other localizations from loading.
+        /// </remarks>
         private void LoadNonEnglishLocalizations() {
             var thisAssembly  = Assembly.GetExecutingAssembly();
             var resourceNames = thisAssembly.GetManifestResourceNames();

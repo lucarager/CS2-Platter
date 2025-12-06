@@ -7,6 +7,9 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    /// <summary>
+    /// Marker component indicating that an entity is a temporary placeholder for a parcel that is being placed or manipulated.
+    /// </summary>
     public struct ParcelPlaceholder : IComponentData, IEmptySerializable {
     }
 }

@@ -8,10 +8,21 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    /// <summary>
+    /// Buffer element storing a reference to a sub-block entity that belongs to a parcel.
+    /// A parcel typically contains multiple zone sub-blocks.
+    /// </summary>
     [InternalBufferCapacity(1)]
     public struct ParcelSubBlock : IBufferElementData, IEquatable<ParcelSubBlock>, IEmptySerializable {
+        /// <summary>
+        /// Entity reference to the sub-block.
+        /// </summary>
         public Entity m_SubBlock;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParcelSubBlock"/> struct.
+        /// </summary>
+        /// <param name="block">The entity reference of the sub-block.</param>
         public ParcelSubBlock(Entity block) {
             m_SubBlock = block;
         }

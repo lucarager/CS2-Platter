@@ -29,7 +29,7 @@ namespace Platter.Components {
         public Game.Objects.Transform Transform => new(m_Position, m_Rotation);
 
         /// <summary>
-        /// Evaluates equualitiy between a transform record and a transform.
+        /// Evaluates equality between a transform record and a transform.
         /// </summary>
         /// <param name="other">A transform struct.</param>
         /// <returns>True if transform record matches the transform.</returns>
@@ -49,10 +49,14 @@ namespace Platter.Components {
         }
 
         /// <summary>
-        /// Deserializes the transform record.
+        /// Deserializes the transform record and validates its data.
         /// </summary>
-        /// <typeparam name="TReader">Part of deserialization.</typeparam>
+        /// <typeparam name="TReader">Type of the deserialization reader.</typeparam>
         /// <param name="reader">Reader for deserialization.</param>
+        /// <remarks>
+        /// Validates that position coordinates and rotation values are finite and within the valid game world bounds (-100000 to 100000).
+        /// If validation fails, reverts to default (origin position with identity rotation).
+        /// </remarks>
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader {
             reader.Read(out m_Position);

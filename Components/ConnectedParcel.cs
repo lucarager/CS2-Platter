@@ -8,14 +8,21 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    /// <summary>
+    /// Buffer element storing a reference to a connected parcel.
+    /// Used to track parcels connected to roads or other entities.
+    /// </summary>
     [InternalBufferCapacity(1)]
     public struct ConnectedParcel : IBufferElementData, IEquatable<ConnectedParcel>, IEmptySerializable, ISerializable {
+        /// <summary>
+        /// Entity reference to the connected parcel.
+        /// </summary>
         public Entity m_Parcel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectedParcel"/> struct.
         /// </summary>
-        /// <param name="parcel"></param>
+        /// <param name="parcel">The entity reference of the connected parcel.</param>
         public ConnectedParcel(Entity parcel) {
             m_Parcel = parcel;
         }

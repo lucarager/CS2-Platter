@@ -7,15 +7,21 @@ namespace Platter.Components {
     using Colossal.Serialization.Entities;
     using Unity.Entities;
 
+    /// <summary>
+    /// Component that links an entity to a parcel (e.g., a zone block or building linked to its parent parcel).
+    /// </summary>
     public struct LinkedParcel : IComponentData, ISerializable {
+        /// <summary>
+        /// Entity reference to the linked parcel.
+        /// </summary>
         public Entity m_Parcel;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ParcelOwner"/> struct.
+        /// Initializes a new instance of the <see cref="LinkedParcel"/> struct.
         /// </summary>
-        /// <param name="owner"></param>
-        public LinkedParcel(Entity owner) {
-            m_Parcel = owner;
+        /// <param name="parcel">The entity reference of the linked parcel.</param>
+        public LinkedParcel(Entity parcel) {
+            m_Parcel = parcel;
         }
 
         /// <inheritdoc/>

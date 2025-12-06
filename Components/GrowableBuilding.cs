@@ -7,6 +7,9 @@ using Colossal.Serialization.Entities;
 using Unity.Entities;
 
 namespace Platter.Components {
+    /// <summary>
+    /// Marker component indicating that a building is growable (can grow naturally over time).
+    /// </summary>
     public struct GrowableBuilding : IComponentData, IEmptySerializable {
     }
 }
