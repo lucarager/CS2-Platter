@@ -3,7 +3,7 @@ import { ModuleRegistryExtend } from "cs2/modding";
 import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import styles from "./toolOptionsPanel.module.scss";
-import { Icon, DropdownItem, Tooltip } from "cs2/ui";
+import { Icon, DropdownItem, Tooltip, DropdownToggle, Dropdown } from "cs2/ui";
 import { c } from "utils/classes";
 import { VF } from "../vanilla/Components";
 import { useLocalization } from "cs2/l10n";
@@ -139,6 +139,22 @@ const PrezoningSection = function PrezoningSection() {
         setActivezone(zone);
     }, [zoneBinding, zoneDataBinding]);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setDropdownOpen(false);
+            }
+        };
+
+        if (dropdownOpen) {
+            window.addEventListener("keydown", handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [dropdownOpen]);
+
     const categories = [
         { asFilter: false, name: "None", icon: "Media/Editor/Thumbnails/Fallback_Generic.svg" },
         { asFilter: true, name: "Residential", icon: "Media/Game/Icons/ZoneResidential.svg" },
@@ -205,10 +221,7 @@ const PrezoningSection = function PrezoningSection() {
                 if (zoneData.category != category.name) return false;
 
                 if (searchQuery) {
-                    const localizedName = translate(
-                        `Assets.NAME[${zoneData.name}]`,
-                        zoneData.name,
-                    );
+                    const localizedName = translate(`Assets.NAME[${zoneData.name}]`, zoneData.name);
                     if (!localizedName?.toLowerCase().includes(searchQuery.toLowerCase()))
                         return false;
                 }
@@ -220,21 +233,178 @@ const PrezoningSection = function PrezoningSection() {
             .sort((a, b) => a.name.localeCompare(b.name));
     });
 
+    const DropdownContent = (
+        <div className={styles.dropdownContent}>
+            <div className={styles.dropdownContent__sidebar}>
+                <VC.Scrollable>
+                    <div className={styles.dropdownContent__sidebar__inner}>
+                        <div className={styles.dropdownContent__sidebar__row}>
+                            <div className={styles.dropdownContent__sidebar__row__label}>
+                                {translate("PlatterMod.UI.Label.Search", "Search")}
+                            </div>
+                            <VC.TextInput
+                                multiline={1}
+                                disabled={false}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    setSearchQuery(e?.target?.value)
+                                }
+                                type="text"
+                                value={searchQuery}
+                                className={c(VT.textInput.input, styles.textInput)}
+                                focusKey={VF.FOCUS_DISABLED}
+                            />
+                        </div>
+                        <div className={styles.dropdownContent__sidebar__row}>
+                            <div className={styles.dropdownContent__sidebar__row__label}>
+                                {translate("PlatterMod.UI.SectionTitle.Category", "Category")}
+                            </div>
+                            <div className={styles.dropdownContent__sidebar__row__buttons}>
+                                <VC.ToolButton
+                                    className={c(VT.toolButton.button, styles.filterButton)}
+                                    src={"Media/Tools/Snap Options/All.svg"}
+                                    multiSelect={true}
+                                    selected={isAllCategoriesSelected}
+                                    onSelect={selectAllCategories}
+                                    disabled={false}
+                                    focusKey={VF.FOCUS_DISABLED}
+                                    tooltip={"All"}
+                                />
+                                {categories
+                                    .filter((c) => c.asFilter)
+                                    .map((category, index) => (
+                                        <VC.ToolButton
+                                            key={index}
+                                            className={c(VT.toolButton.button, styles.filterButton)}
+                                            // Temporary hardcoded icons for zone categories
+                                            src={category.icon}
+                                            multiSelect={true}
+                                            selected={isCategorySelected(category.name)}
+                                            onSelect={() => toggleCategory(category.name)}
+                                            disabled={false}
+                                            focusKey={VF.FOCUS_DISABLED}
+                                            tooltip={category.name}
+                                        />
+                                    ))}
+                            </div>
+                        </div>
+                        <div className={styles.dropdownContent__sidebar__row}>
+                            <div className={styles.dropdownContent__sidebar__row__label}>
+                                {translate("PlatterMod.UI.SectionTitle.AssetPacks", "Asset Packs")}
+                            </div>
+                            <div className={styles.dropdownContent__sidebar__row__buttons}>
+                                <VC.ToolButton
+                                    className={c(VT.toolButton.button, styles.filterButton)}
+                                    src={"Media/Tools/Snap Options/All.svg"}
+                                    multiSelect={true}
+                                    selected={isAllSelected}
+                                    onSelect={selectAll}
+                                    disabled={false}
+                                    focusKey={VF.FOCUS_DISABLED}
+                                    tooltip={"All"}
+                                />
+                                {assetPackBinding.map((pack, index) => (
+                                    <VC.ToolButton
+                                        key={index}
+                                        className={c(VT.toolButton.button, styles.filterButton)}
+                                        src={pack.icon}
+                                        multiSelect={true}
+                                        selected={isPackSelected(pack.entity)}
+                                        onSelect={() => togglePack(pack.entity)}
+                                        disabled={false}
+                                        focusKey={VF.FOCUS_DISABLED}
+                                        tooltip={pack.name}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </VC.Scrollable>
+            </div>
+            <div className={styles.dropdownContent__content}>
+                <VC.Scrollable>
+                    <div className={styles.dropdownContent__content__inner}>
+                        {categories.map((category, index) => {
+                            if (!selectedCategories.includes(category.name)) return null;
+
+                            return (
+                                <div className={styles.zoneCategory} key={category.name}>
+                                    <div className={styles.dropdownCategory}>
+                                        {category.name != "None" ? category.name : ""}
+                                    </div>
+                                    <div className={styles.zoneCategoryZones}>
+                                        {zones[index].length === 0 && (
+                                            <span className={styles.noZonesMessage}>
+                                                {translate(
+                                                    "PlatterMod.UI.Label.NoZoneMatchesFilter",
+                                                    "No zone matches filter",
+                                                )}
+                                            </span>
+                                        )}
+                                        {zones[index].map((zoneData, idx) => (
+                                            <DropdownItem<number>
+                                                key={idx}
+                                                className={styles.dropdownItem}
+                                                focusKey={VF.FOCUS_DISABLED}
+                                                value={zoneData.index}
+                                                closeOnSelect={true}
+                                                sounds={{ select: "select-item" }}
+                                                onChange={(value) => {
+                                                    GAME_BINDINGS.ZONE.set(value);
+                                                    setDropdownOpen(false);
+                                                }}>
+                                                <div className={styles.dropdownItem__inner}>
+                                                    <Icon
+                                                        className={c(
+                                                            styles.dropdownZoneIcon,
+                                                            styles.dropdownIcon,
+                                                        )}
+                                                        src={zoneData.thumbnail}
+                                                    />
+                                                    <div className={styles.zoneName}>
+                                                        {translate(
+                                                            `Assets.NAME[${zoneData.name}]`,
+                                                            zoneData.name,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </DropdownItem>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </VC.Scrollable>
+            </div>
+        </div>
+    );
+
     return (
-        <>
-            <VC.Section
+        <VC.Section
+            focusKey={VF.FOCUS_DISABLED}
+            title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
+            <Dropdown
                 focusKey={VF.FOCUS_DISABLED}
-                title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
-                <VC.ToolButton
-                    src={activeZone?.thumbnail || "Media/Editor/Thumbnails/Fallback_Generic.svg"}
-                    onSelect={() => setDropdownOpen(!dropdownOpen)}
-                    multiSelect={false}
-                    className={c(VT.toolButton.button, styles.dropdownToggle)}
-                    focusKey={VF.FOCUS_DISABLED}>
+                initialFocused={"Test"}
+                alignment="left"
+                theme={{
+                    ...VT.dropdown,
+                    dropdownMenu: styles.dropdownMenu,
+                }}
+                content={DropdownContent}>
+                <DropdownToggle
+                    openIconComponent
+                    className={c(VT.dropdown.dropdownToggle, styles.dropdownToggle)}>
                     <div className={styles.dropdownToggleInner}>
+                        <Icon
+                            className={c(styles.dropdownZoneIcon, styles.dropdownIcon)}
+                            src={`${
+                                zoneDataBinding.find((z) => z.index == zoneBinding)?.thumbnail
+                            }`}
+                        />
                         <div className={styles.dropdownToggleLabel}>
                             {translate(
-                                `Assets.NAME[${activeZone?.name}]`,
+                                `Assets.NAME[${zoneDataBinding.find((z) => z.index == zoneBinding)?.name}]`,
                             )}
                         </div>
                         <Icon
@@ -242,158 +412,30 @@ const PrezoningSection = function PrezoningSection() {
                             src={"Media/Glyphs/ThickStrokeArrowDown.svg"}
                         />
                     </div>
-                </VC.ToolButton>
-            </VC.Section>
-            {dropdownOpen && (
-                <div className={styles.dropdownMenu}>
-                    <div className={styles.dropdownContent}>
-                        <div className={styles.dropdownContent__sidebar}>
-                            <div className={styles.dropdownContent__sidebar__row}>
-                                <div className={styles.dropdownContent__sidebar__row__label}>
-                                    {translate("PlatterMod.UI.Label.Search", "Search")}
-                                </div>
-                                <VC.TextInput
-                                    multiline={1}
-                                    disabled={false}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e?.target?.value)}
-                                    type="text"
-                                    value={searchQuery}
-                                    className={c(VT.textInput.input, styles.textInput)}
-                                    focusKey={VF.FOCUS_DISABLED}
-                                />
-                            </div>
-                            <div className={styles.dropdownContent__sidebar__row}>
-                                <div className={styles.dropdownContent__sidebar__row__label}>
-                                    {translate("PlatterMod.UI.SectionTitle.Category", "Category")}
-                                </div>
-                                <div className={styles.dropdownContent__sidebar__row__buttons}>
-                                    <VC.ToolButton
-                                        className={c(VT.toolButton.button, styles.filterButton)}
-                                        src={"Media/Tools/Snap Options/All.svg"}
-                                        multiSelect={true}
-                                        selected={isAllCategoriesSelected}
-                                        onSelect={selectAllCategories}
-                                        disabled={false}
-                                        focusKey={VF.FOCUS_DISABLED}
-                                        tooltip={"All"}
-                                    />
-                                    {categories
-                                        .filter((c) => c.asFilter)
-                                        .map((category, index) => (
-                                            <VC.ToolButton
-                                                key={index}
-                                                className={c(
-                                                    VT.toolButton.button,
-                                                    styles.filterButton,
-                                                )}
-                                                // Temporary hardcoded icons for zone categories
-                                                src={category.icon}
-                                                multiSelect={true}
-                                                selected={isCategorySelected(category.name)}
-                                                onSelect={() => toggleCategory(category.name)}
-                                                disabled={false}
-                                                focusKey={VF.FOCUS_DISABLED}
-                                                tooltip={category.name}
-                                            />
-                                        ))}
-                                </div>
-                            </div>
-                            <div className={styles.dropdownContent__sidebar__row}>
-                                <div className={styles.dropdownContent__sidebar__row__label}>
-                                    {translate("PlatterMod.UI.SectionTitle.AssetPacks", "Asset Packs")}
-                                </div>
-                                <div className={styles.dropdownContent__sidebar__row__buttons}>
-                                    <VC.ToolButton
-                                        className={c(VT.toolButton.button, styles.filterButton)}
-                                        src={"Media/Tools/Snap Options/All.svg"}
-                                        multiSelect={true}
-                                        selected={isAllSelected}
-                                        onSelect={selectAll}
-                                        disabled={false}
-                                        focusKey={VF.FOCUS_DISABLED}
-                                        tooltip={"All"}
-                                    />
-                                    {assetPackBinding.map((pack, index) => (
-                                        <VC.ToolButton
-                                            key={index}
-                                            className={c(VT.toolButton.button, styles.filterButton)}
-                                            src={pack.icon}
-                                            multiSelect={true}
-                                            selected={isPackSelected(pack.entity)}
-                                            onSelect={() => togglePack(pack.entity)}
-                                            disabled={false}
-                                            focusKey={VF.FOCUS_DISABLED}
-                                            tooltip={pack.name}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div className={styles.dropdownContent__content}>
-                            <VC.Scrollable>
-                                <div className={styles.dropdownContent__content__inner}>
-                                    {categories.map((category, index) => {
-                                        if (!selectedCategories.includes(category.name))
-                                            return null;
+                </DropdownToggle>
+            </Dropdown>
+        </VC.Section>
 
-                                        return (
-                                            <div
-                                                className={styles.zoneCategory}
-                                                key={category.name}>
-                                                <div className={styles.dropdownCategory}>
-                                                    {category.name != "None" ? category.name : ""}
-                                                </div>
-                                                <div className={styles.zoneCategoryZones}>
-                                                    {zones[index].length === 0 && (
-                                                        <span className={styles.noZonesMessage}>
-                                                            {translate(
-                                                                "PlatterMod.UI.Label.NoZoneMatchesFilter",
-                                                                "No zone matches filter",
-                                                            )}
-                                                        </span>
-                                                    )}
-                                                    {zones[index].map((zoneData, idx) => (
-                                                        <DropdownItem<number>
-                                                            key={idx}
-                                                            className={styles.dropdownItem}
-                                                            focusKey={VF.FOCUS_DISABLED}
-                                                            value={zoneData.index}
-                                                            closeOnSelect={true}
-                                                            sounds={{ select: "select-item" }}
-                                                            onChange={(value) =>
-                                                                GAME_BINDINGS.ZONE.set(value)
-                                                            }>
-                                                            <div
-                                                                className={
-                                                                    styles.dropdownItem__inner
-                                                                }>
-                                                                <Icon
-                                                                    className={c(
-                                                                        styles.dropdownZoneIcon,
-                                                                        styles.dropdownIcon,
-                                                                    )}
-                                                                    src={zoneData.thumbnail}
-                                                                />
-                                                                <div className={styles.zoneName}>
-                                                                    {translate(
-                                                                        `Assets.NAME[${zoneData.name}]`,
-                                                                        zoneData.name,
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </DropdownItem>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </VC.Scrollable>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
+        // <VC.Section
+        //     focusKey={VF.FOCUS_DISABLED}
+        //     title={translate("PlatterMod.UI.SectionTitle.Prezoning")}>
+        //     <VC.ToolButton
+        //         src={activeZone?.thumbnail || "Media/Editor/Thumbnails/Fallback_Generic.svg"}
+        //         onSelect={() => setDropdownOpen(!dropdownOpen)}
+        //         multiSelect={false}
+        //         className={c(VT.toolButton.button, styles.dropdownToggle)}
+        //         focusKey={VF.FOCUS_DISABLED}>
+        //         <div className={styles.dropdownToggleInner}>
+        //             <div className={styles.dropdownToggleLabel}>
+        //                 {translate(`Assets.NAME[${activeZone?.name}]`)}
+        //             </div>
+        //             <Icon
+        //                 className={c(styles.dropdownToggleIcon, styles.dropdownIcon)}
+        //                 src={"Media/Glyphs/ThickStrokeArrowDown.svg"}
+        //             />
+        //         </div>
+        //     </VC.ToolButton>
+        // </VC.Section>
     );
 };
 
