@@ -92,7 +92,7 @@ namespace Platter.Systems {
             public required            ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
             public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
+            public void Execute(in ArchetypeChunk chunk, int index, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
                 var entityArray = chunk.GetNativeArray(m_EntityTypeHandle);
                 var parcelArray = chunk.GetNativeArray(ref m_ParcelTypeHandle);
@@ -104,10 +104,10 @@ namespace Platter.Systems {
                     parcelArray[i]       = parcel;
 
                     if (m_AllowSpawn) {
-                        m_CommandBuffer.AddComponent<ParcelSpawnable>(unfilteredChunkIndex, entity);
+                        m_CommandBuffer.AddComponent<ParcelSpawnable>(index, entity);
                     }
 
-                    //m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, entity);
+                    m_CommandBuffer.AddComponent<Updated>(index, entity);
                 }
             }
         }

@@ -96,7 +96,7 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.SectionTitle.ViewLayers", "View Layers" },
                 { "PlatterMod.UI.SectionTitle.Prezoning", "Pre-Zone" },
                 { "PlatterMod.UI.SectionTitle.ParcelControls", "Parcel Controls" },
-                { "PlatterMod.UI.SectionTitle.RenderParcels", "Enable Parcels Overlay" },
+                { "PlatterMod.UI.SectionTitle.RenderParcels", "Always show Parcel Overlay" },
                 { "PlatterMod.UI.SectionTitle.AllowSpawn", "Allow spawning buildings on Parcels" },
                 { "PlatterMod.UI.SectionTitle.SnapMode", "Snapping" },
                 { "PlatterMod.UI.SectionTitle.SnapSpacing", "Road Setback" },

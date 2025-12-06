@@ -212,50 +212,59 @@ namespace Platter.Systems {
                     if (startGeometry.m_MiddleRadius > 0f) {
                         CheckDistance(startGeometry.m_Left.m_Left, startGeometry.m_Left.m_Right, position, ref maxDistance);
                         CheckDistance(startGeometry.m_Right.m_Left, startGeometry.m_Middle, position, ref maxDistance);
-                        CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
                     } else {
                         CheckDistance(startGeometry.m_Left.m_Left, startGeometry.m_Middle, position, ref maxDistance);
-                        CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
                     }
+
+                    CheckDistance(startGeometry.m_Middle, startGeometry.m_Right.m_Right, position, ref maxDistance);
                 }
             }
 
-            if (MathUtils.DistanceSquared(endGeometry.m_Bounds.xz, position.xz) < maxDistance * maxDistance) {
-                CheckDistance(endGeometry.m_Left.m_Left, position, ref maxDistance);
-                CheckDistance(endGeometry.m_Right.m_Right, position, ref maxDistance);
-                if (endGeometry.m_MiddleRadius > 0f) {
-                    CheckDistance(endGeometry.m_Left.m_Right, position, ref maxDistance);
-                    CheckDistance(endGeometry.m_Right.m_Left, position, ref maxDistance);
-                }
-
-                if (canBeOnRoad) {
-                    if (endGeometry.m_MiddleRadius > 0f) {
-                        CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Left.m_Right, position, ref maxDistance);
-                        CheckDistance(endGeometry.m_Right.m_Left, endGeometry.m_Middle, position, ref maxDistance);
-                        CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
-                        return;
-                    }
-
-                    CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Middle, position, ref maxDistance);
-                    CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
-                }
+            if (!(MathUtils.DistanceSquared(endGeometry.m_Bounds.xz, position.xz) < maxDistance * maxDistance)) {
+                return;
             }
+
+            CheckDistance(endGeometry.m_Left.m_Left, position, ref maxDistance);
+            CheckDistance(endGeometry.m_Right.m_Right, position, ref maxDistance);
+
+            if (endGeometry.m_MiddleRadius > 0f) {
+                CheckDistance(endGeometry.m_Left.m_Right, position, ref maxDistance);
+                CheckDistance(endGeometry.m_Right.m_Left, position, ref maxDistance);
+            }
+
+            if (!canBeOnRoad) {
+                return;
+            }
+
+            if (endGeometry.m_MiddleRadius > 0f) {
+                CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Left.m_Right, position, ref maxDistance);
+                CheckDistance(endGeometry.m_Right.m_Left, endGeometry.m_Middle, position, ref maxDistance);
+                CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
+                return;
+            }
+
+            CheckDistance(endGeometry.m_Left.m_Left, endGeometry.m_Middle, position, ref maxDistance);
+            CheckDistance(endGeometry.m_Middle, endGeometry.m_Right.m_Right, position, ref maxDistance);
         }
 
         private static void CheckDistance(Bezier4x3 curve1, Bezier4x3 curve2, float3 position, ref float maxDistance) {
-            if (MathUtils.DistanceSquared(MathUtils.Bounds(curve1.xz) | MathUtils.Bounds(curve2.xz), position.xz) < maxDistance * maxDistance) {
-                _ = MathUtils.Distance(MathUtils.Lerp(curve1.xz, curve2.xz, 0.5f), position.xz, out var t);
-
-                var x = MathUtils.Distance(new Line2.Segment(MathUtils.Position(curve1.xz, t), MathUtils.Position(curve2.xz, t)), position.xz, out _);
-                maxDistance = math.min(x, maxDistance);
+            if (!(MathUtils.DistanceSquared(MathUtils.Bounds(curve1.xz) | MathUtils.Bounds(curve2.xz), position.xz) < maxDistance * maxDistance)) {
+                return;
             }
+
+            _ = MathUtils.Distance(MathUtils.Lerp(curve1.xz, curve2.xz, 0.5f), position.xz, out var t);
+
+            var x = MathUtils.Distance(new Line2.Segment(MathUtils.Position(curve1.xz, t), MathUtils.Position(curve2.xz, t)), position.xz, out _);
+            maxDistance = math.min(x, maxDistance);
         }
 
         private static void CheckDistance(Bezier4x3 curve, float3 position, ref float maxDistance) {
-            if (MathUtils.DistanceSquared(MathUtils.Bounds(curve.xz), position.xz) < maxDistance * maxDistance) {
-                var x = MathUtils.Distance(curve.xz, position.xz, out _);
-                maxDistance = math.min(x, maxDistance);
+            if (!(MathUtils.DistanceSquared(MathUtils.Bounds(curve.xz), position.xz) < maxDistance * maxDistance)) {
+                return;
             }
+
+            var x = MathUtils.Distance(curve.xz, position.xz, out _);
+            maxDistance = math.min(x, maxDistance);
         }
     }
 }

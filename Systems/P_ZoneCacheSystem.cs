@@ -36,6 +36,9 @@ namespace Platter.Systems {
         public  List<AssetPackUIDataModel>          AssetPackUIData { get; private set; }
         public  NativeHashMap<ushort, Entity>       ZonePrefabs     => m_ZonePrefabs;
 
+        private bool m_Zones_InitialCacheComplete = false;
+        private bool m_Packs_InitialCacheComplete = false;
+
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -88,11 +91,18 @@ namespace Platter.Systems {
             base.OnGameLoaded(context);
             m_Log.Debug($"OnGameLoaded(context={context})");
 
-            CacheAssetPacks();
-            CacheZonePrefabs(m_AllQuery);
+
+            if (!m_Zones_InitialCacheComplete) {
+                CacheZonePrefabs(m_AllQuery);
+            }
+            if (!m_Packs_InitialCacheComplete) {
+                CacheAssetPacks();
+            }
         }
 
         private void CacheAssetPacks() {
+            m_Packs_InitialCacheComplete = true;
+
             var assetPacksArray = m_AssetPackQuery.ToEntityArray(Allocator.Temp);
             foreach (var assetPackEntity in assetPacksArray) {
                 var prefab = m_PrefabSystem.GetPrefab<AssetPackPrefab>(assetPackEntity);
@@ -103,12 +113,14 @@ namespace Platter.Systems {
         }
 
         private void CacheZonePrefabs(EntityQuery query) {
+            m_Zones_InitialCacheComplete = true;
+
             var chunkArray        = query.ToArchetypeChunkArray(Allocator.Temp);
             var prefabDataTh      = SystemAPI.GetComponentTypeHandle<PrefabData>();
             var zoneDataTh        = SystemAPI.GetComponentTypeHandle<ZoneData>();
             var deletedTh         = SystemAPI.GetComponentTypeHandle<Deleted>();
             var uIObjectDataTh    = SystemAPI.GetComponentTypeHandle<UIObjectData>();
-            var assetPackBufferTH = SystemAPI.GetBufferTypeHandle<AssetPackElement>();
+            var assetPackBufferTh = SystemAPI.GetBufferTypeHandle<AssetPackElement>();
 
             CompleteDependency();
 
@@ -116,7 +128,7 @@ namespace Platter.Systems {
                 var entityArray             = chunk.GetNativeArray(SystemAPI.GetEntityTypeHandle());
                 var prefabDataArray         = chunk.GetNativeArray(ref prefabDataTh);
                 var zoneDataArray           = chunk.GetNativeArray(ref zoneDataTh);
-                var assetPackBufferAccessor = chunk.GetBufferAccessor(ref assetPackBufferTH);
+                var assetPackBufferAccessor = chunk.GetBufferAccessor(ref assetPackBufferTh);
 
                 for (var k = 0; k < zoneDataArray.Length; k++) {
                     var entity          = entityArray[k];
@@ -124,7 +136,7 @@ namespace Platter.Systems {
                     var zoneData        = zoneDataArray[k];
 
                     var assetPacks = new List<Entity> { };
-                    if (chunk.Has(ref assetPackBufferTH)) {
+                    if (chunk.Has(ref assetPackBufferTh)) {
                         var assetPackBuffer = assetPackBufferAccessor[k];
                         for (var i = 0; i < assetPackBuffer.Length; i++) {
                             var pack = assetPackBuffer[i];
