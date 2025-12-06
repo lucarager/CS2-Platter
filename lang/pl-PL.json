@@ -52,9 +52,9 @@
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Głębokość Parceli",
   "PlatterMod.UI.SectionTitle.Search": "Szukaj",
   "PlatterMod.UI.SectionTitle.Category": "Kategoria",
-  "PlatterMod.UI.SectionTitle.AssetPacks": "Pakiety zasobów",
+  "PlatterMod.UI.SectionTitle.AssetPacks": "Pakiet",
   "PlatterMod.UI.Label.ParcelSizeUnit": "kratki",
-  "PlatterMod.UI.Label.NoZoneMatchesFilter": "Brak pasujących stref filtrów",
+  "PlatterMod.UI.Label.NoZoneMatchesFilter": "Brak dostępnych stref w tym filtrze",
   "PlatterMod.UI.Button.CreateParcelFromZone": "Stwórz parcele z tą strefą",
   "PlatterMod.UI.Tooltip.Infopanel.InspectParcel": "Wybierz parcele",
   "PlatterMod.UI.Tooltip.Infopanel.InspectBuilding": "Wybierz budynek",
@@ -145,5 +145,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Parcela z siatką na strefy. 6 kratek szerokości, 5 kratek głębokości",
   "Assets.NAME[Parcel 6x6]": "Parcela (6×6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Parcela z siatką na strefy. 6 kratek szerokości, 6 kratek głębokości",
-  "Assets.NAME[Unzoned]": "Niestrefowy"
+  "Assets.NAME[Unzoned]": "Pusty obszar"
 }
