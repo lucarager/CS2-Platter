@@ -44,7 +44,7 @@
   "PlatterMod.UI.SectionTitle.ViewLayers": "Afficher les calques",
   "PlatterMod.UI.SectionTitle.Prezoning": "Pré-zonage",
   "PlatterMod.UI.SectionTitle.ParcelControls": "Contrôles de parcelle",
-  "PlatterMod.UI.SectionTitle.RenderParcels": "Afficher les parcelles en superposition",
+  "PlatterMod.UI.SectionTitle.RenderParcels": "Toujours afficher les parcelles en superposition",
   "PlatterMod.UI.SectionTitle.AllowSpawn": "Autoriser le spawn sur les parcelles",
   "PlatterMod.UI.SectionTitle.SnapMode": "Snapping",
   "PlatterMod.UI.SectionTitle.SnapSpacing": "Retrait à la route",
