@@ -52,17 +52,15 @@ namespace Platter.Systems {
             { "netLane", new PrefabID("NetLaneGeometryPrefab", "Gravel Pavement Transition") },
         };
 
-        private Dictionary<PrefabBase, Entity> m_PrefabEntities;
-
-        /// <summary>
-        /// Cache for prefabs.
-        /// </summary>
-        private List<PrefabBase> m_PrefabBases;
-
         /// <summary>
         /// Cache for prefab entities indexed by PrefabID hash.
         /// </summary>
         private NativeHashMap<int, Entity> m_PrefabCache;
+
+        /// <summary>
+        /// Reverse cache mapping from Entity to PrefabBase for quick lookup.
+        /// </summary>
+        private Dictionary<Entity, PrefabBase> m_PrefabBaseCache;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -76,10 +74,9 @@ namespace Platter.Systems {
 
             // Initialize native hash map (initial capacity for 2x6x6 = 72 parcels + 1 category + 1 area)
             m_PrefabCache = new NativeHashMap<int, Entity>(100, Allocator.Persistent);
-
-            // Storage
-            m_PrefabBases    = new List<PrefabBase>();
-            m_PrefabEntities = new Dictionary<PrefabBase, Entity>();
+            
+            // Initialize reverse cache for Entity -> PrefabBase lookup
+            m_PrefabBaseCache = new Dictionary<Entity, PrefabBase>(100);
 
             // Systems
             m_PrefabSystem             = World.GetOrCreateSystemManaged<PrefabSystem>();
@@ -91,6 +88,9 @@ namespace Platter.Systems {
             base.OnDestroy();
             if (m_PrefabCache.IsCreated) {
                 m_PrefabCache.Dispose();
+            }
+            if (m_PrefabBaseCache != null) {
+                m_PrefabBaseCache.Clear();
             }
         }
 
@@ -212,6 +212,7 @@ namespace Platter.Systems {
                 m_Log.Debug($"Populating Prefab Cache. Type: Parcel Key: {cacheKey} prefabID: {prefabID} placeholder: {placeholder.ToString()}");
 
                 m_PrefabCache[cacheKey] = prefabEntity;
+                m_PrefabBaseCache[prefabEntity] = prefabBase;
                 return true;
             }
 
@@ -241,9 +242,11 @@ namespace Platter.Systems {
             if (success) {
                 var prefabID = uiCategoryPrefabBase.GetPrefabID();
                 var cacheKey = ParcelUtils.GetCustomHashCode(prefabID);
+                var prefabEntity = m_PrefabSystem.GetEntity(uiCategoryPrefabBase);
 
                 m_Log.Debug($"Populating Prefab Cache. Type: Category Key: {cacheKey} prefabID: {prefabID}");
-                m_PrefabCache[cacheKey] = m_PrefabSystem.GetEntity(uiCategoryPrefabBase);
+                m_PrefabCache[cacheKey] = prefabEntity;
+                m_PrefabBaseCache[prefabEntity] = uiCategoryPrefabBase;
             }
 
             return success;
@@ -264,10 +267,12 @@ namespace Platter.Systems {
             if (success) {
                 var prefabID = parecelAreaPrefab.GetPrefabID();
                 var cacheKey = ParcelUtils.GetCustomHashCode(prefabID);
+                var prefabEntity = m_PrefabSystem.GetEntity(parecelAreaPrefab);
 
                 m_Log.Debug($"Populating Prefab Cache. Type: ParcelArea Key: {cacheKey} prefabID: {prefabID}");
 
-                m_PrefabCache[cacheKey] = m_PrefabSystem.GetEntity(parecelAreaPrefab);
+                m_PrefabCache[cacheKey] = prefabEntity;
+                m_PrefabBaseCache[prefabEntity] = parecelAreaPrefab;
                 areaPrefab              = parecelAreaPrefab;
                 return true;
             }
@@ -275,15 +280,20 @@ namespace Platter.Systems {
             areaPrefab = null;
             return false;
         }
-
+        
         /// <summary>
         /// Get a cached prefab entity by PrefabID.
         /// </summary>
-        public bool TryGetCachedPrefab(PrefabID prefabID, out Entity entity) { return m_PrefabCache.TryGetValue(prefabID.GetHashCode(), out entity); }
+        public bool TryGetCachedPrefab(int hash, out Entity entity) { return m_PrefabCache.TryGetValue(hash, out entity); }
 
         /// <summary>
         /// Get a readonly version of the cache for use in Burst jobs.
         /// </summary>
         public NativeHashMap<int, Entity>.ReadOnly GetReadOnlyPrefabCache() { return m_PrefabCache.AsReadOnly(); }
+
+        /// <summary>
+        /// Get a cached PrefabBase from a Prefab Entity.
+        /// </summary>
+        public bool TryGetCachedPrefabBase(Entity entity, out PrefabBase prefabBase) { return m_PrefabBaseCache.TryGetValue(entity, out prefabBase); }
     }
 }
