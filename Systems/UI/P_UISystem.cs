@@ -258,7 +258,21 @@ namespace Platter.Systems {
 
         /// <summary>
         /// </summary>
-        private bool ShouldRenderOverlay() { return m_ToolSystem.activeTool is not DefaultToolSystem || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab; }
+        private bool ShouldRenderOverlay() {
+            // Should generally show parcels unless the active tool is specifically called out here
+            var toolCheck = m_ToolSystem.activeTool is not DefaultToolSystem &&
+                            m_ToolSystem.activeTool is not AreaToolSystem    &&
+                            m_ToolSystem.activeTool is not WaterToolSystem   &&
+                            m_ToolSystem.activeTool is not UpgradeToolSystem &&
+                            // Object tool only when using parcel prefabs
+                            m_ToolSystem.activeTool is not ObjectToolSystem
+                            {
+                                prefab: not ParcelPlaceholderPrefab,
+                            };
+
+            // Also catch any other tool using parcel prefabs
+            return toolCheck || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+        }
 
         /// <summary>
         /// Open the panel.
