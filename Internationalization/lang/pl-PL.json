@@ -44,7 +44,7 @@
   "PlatterMod.UI.SectionTitle.ViewLayers": "Wyświetlanie",
   "PlatterMod.UI.SectionTitle.Prezoning": "Strefa",
   "PlatterMod.UI.SectionTitle.ParcelControls": "Narzędzia Parcel",
-  "PlatterMod.UI.SectionTitle.RenderParcels": "Włącz widoczność Parcel",
+  "PlatterMod.UI.SectionTitle.RenderParcels": "Zawsze wyświetlaj Parcele",
   "PlatterMod.UI.SectionTitle.AllowSpawn": "Pozwalaj pojawiać się budynkom na Parcelach",
   "PlatterMod.UI.SectionTitle.SnapMode": "Przyciąganie",
   "PlatterMod.UI.SectionTitle.SnapSpacing": "Odstęp od drogi",
