@@ -13,6 +13,7 @@ namespace Platter.Systems {
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
