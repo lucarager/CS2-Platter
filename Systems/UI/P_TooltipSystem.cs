@@ -74,12 +74,12 @@ namespace Platter.Systems {
             // Retrieve current prezone and parcel sizes
             var parcel = (ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab;
 
-            var count = m_BuildingCacheSystem.GetBuildingCount(
+            var fullCount = m_BuildingCacheSystem.GetBuildingAccessCount(
                 prezone.m_Index,
                 parcel.m_LotWidth,
                 parcel.m_LotDepth);
 
-            if (count == 0) {
+            if (fullCount.Total == 0) {
                 // Add warning tooltip
                 m_Tooltip_BuildingCount.value = new LocalizedString(
                     "PlatterMod.UI.Tooltip.BuildingCountWarning",
@@ -87,7 +87,7 @@ namespace Platter.Systems {
                     new Dictionary<string, ILocElement> {
                         {
                             "COUNT",
-                            LocalizedString.Value(count.ToString())
+                            LocalizedString.Value("0")
                         }, {
                             "X",
                             LocalizedString.Value(parcel.m_LotWidth.ToString())
@@ -105,7 +105,7 @@ namespace Platter.Systems {
                     new Dictionary<string, ILocElement> {
                         {
                             "COUNT",
-                            LocalizedString.Value(count.ToString())
+                            LocalizedString.Value(fullCount.Total.ToString())
                         }, {
                             "X",
                             LocalizedString.Value(parcel.m_LotWidth.ToString())
