@@ -63,14 +63,35 @@ namespace Platter.Systems {
                 var parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
                 var parcelData      = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
                 var parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
+                var parcelSize      = ParcelUtils.GetParcelSize(parcelData);
 
-                // The "front position" is the point where a parcel is expected to connect to a road.
-                var size          = ParcelUtils.GetParcelSize(parcelData);
-                var frontNode     = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.Front) * size;
-                var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, frontNode);
+                // Find best road for front access
+                FindBestRoadForAccessNode(
+                    ParcelUtils.ParcelNode.FrontAccess, parcelSize, parcelTransform,
+                    out currentEntityData.m_FrontRoad, out currentEntityData.m_FrontPos, out currentEntityData.m_FrontCurvePos);
 
-                // Initializes a FindRoadConnectionIterator, used to iterate through potential road connections.
-                var findRoadConnectionIterator = new FindRoadConnectionIterator(
+                // Find best road for left access
+                FindBestRoadForAccessNode(
+                    ParcelUtils.ParcelNode.LeftAccess, parcelSize, parcelTransform,
+                    out currentEntityData.m_LeftRoad, out currentEntityData.m_LeftPos, out currentEntityData.m_LeftCurvePos);
+
+                // Find best road for right access
+                FindBestRoadForAccessNode(
+                    ParcelUtils.ParcelNode.RightAccess, parcelSize, parcelTransform,
+                    out currentEntityData.m_RightRoad, out currentEntityData.m_RightPos, out currentEntityData.m_RightCurvePos);
+
+                // Update the data in the list with what we found
+                m_ParcelEntitiesList[index] = currentEntityData;
+            }
+
+            private void FindBestRoadForAccessNode(
+                ParcelUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform,
+                out Entity road, out float3 position, out float curvePos) {
+
+                var nodeOffset     = ParcelUtils.NodeMult(accessNode) * parcelSize;
+                var accessPosition = ParcelUtils.GetWorldPosition(parcelTransform, nodeOffset);
+
+                var iterator = new FindRoadConnectionIterator(
                     bestCurvePos: 0f,
                     bestRoad: Entity.Null,
                     canBeOnRoad: true,
@@ -82,29 +103,23 @@ namespace Platter.Systems {
                     endNodeGeometryDataComponentLookup: m_EndNodeGeometryDataComponentLookup,
                     prefabNetCompositionDataComponentLookup: m_PrefabNetCompositionDataComponentLookup,
                     deletedDataComponentLookup: m_DeletedDataComponentLookup,
-                    bounds: new Bounds3(
-                        frontPosition - MaxDistance,
-                        frontPosition + MaxDistance
-                    ),
+                    bounds: new Bounds3(accessPosition - MaxDistance, accessPosition + MaxDistance),
                     minDistance: MaxDistance,
-                    frontPosition: frontPosition
+                    frontPosition: accessPosition
                 );
 
-                // Find suitable roads, iterate over roads and check which is best
-                m_NetSearchTree.Iterate(ref findRoadConnectionIterator);
+                // Find suitable roads via quad tree
+                m_NetSearchTree.Iterate(ref iterator);
 
+                // Also check updated net chunks
                 for (var k = 0; k < m_UpdatedNetChunks.Length; k++) {
                     var netArray = m_UpdatedNetChunks[k].GetNativeArray(m_EntityTypeHandle);
-                    foreach (var net in netArray) findRoadConnectionIterator.CheckEdge(net);
+                    foreach (var net in netArray) iterator.CheckEdge(net);
                 }
 
-                // Update our BuildingRoadUpdateData struct with the new info
-                currentEntityData.m_NewRoad  = findRoadConnectionIterator.BestRoad;
-                currentEntityData.m_FrontPos = findRoadConnectionIterator.FrontPosition;
-                currentEntityData.m_CurvePos = findRoadConnectionIterator.BestCurvePos;
-
-                // Update the data in the list with what we found
-                m_ParcelEntitiesList[index] = currentEntityData;
+                road     = iterator.BestRoad;
+                position = iterator.FrontPosition;
+                curvePos = iterator.BestCurvePos;
             }
 
             public struct FindRoadConnectionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {

@@ -21,8 +21,10 @@ namespace Platter.Utils {
             CornerLeftBack,
             CornerRightFront,
             CornerRightBack,
-            Front,
-            Back,
+            FrontAccess,
+            RightAccess,
+            LeftAccess,
+            BackAccess,
         }
 
         public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
@@ -43,8 +45,10 @@ namespace Platter.Utils {
                 ParcelNode.CornerLeftFront => new float3(-0.5f, 0f, -0.5f),
                 ParcelNode.CornerLeftBack => new float3(-0.5f, 0f, 0.5f),
                 ParcelNode.CornerRightBack => new float3(0.5f, 0f, 0.5f),
-                ParcelNode.Front => new float3(0f, 0f, 0.5f),
-                ParcelNode.Back => new float3(0f, 0f, -0.5f),
+                ParcelNode.FrontAccess => new float3(0f, 0f, 0.5f),
+                ParcelNode.RightAccess => new float3(0.5f, 0f, 0f),
+                ParcelNode.LeftAccess => new float3(-0.5f, 0f, 0f),
+                ParcelNode.BackAccess => new float3(0f, 0f, -0.5f),
                 _ => new float3(0f, 0f, 0f),
             };
         }
@@ -57,9 +61,13 @@ namespace Platter.Utils {
             );
         }
 
-        public static float4x4 GetTransformMatrix(Transform transform) { return new float4x4(transform.m_Rotation, transform.m_Position); }
+        public static float4x4 GetTransformMatrix(Transform transform) {
+            return new float4x4(transform.m_Rotation, transform.m_Position);
+        }
 
-        public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) { return math.transform(trs, center + position); }
+        public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) {
+            return math.transform(trs, center + position);
+        }
 
         public static float3 GetWorldPosition(Transform transform, float3 center) {
             var trs = GetTransformMatrix(transform);

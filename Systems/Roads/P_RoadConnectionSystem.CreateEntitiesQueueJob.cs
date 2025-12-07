@@ -14,6 +14,7 @@ namespace Platter.Systems {
     using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
+    using Game.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -32,6 +33,7 @@ namespace Platter.Systems {
         public struct CreateEntitiesQueueJob : IJobChunk {
             [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
             [ReadOnly] public required BufferTypeHandle<ConnectedParcel>        m_ConnectedParcelBufferTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Temp>                m_TempTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<Deleted>             m_DeletedTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<EdgeGeometry>        m_EdgeGeometryTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<StartNodeGeometry>   m_StartNodeGeometryTypeHandle;
@@ -101,7 +103,21 @@ namespace Platter.Systems {
                 }
 
                 // Otherwise, it's a parcel - enqueue it.
-                foreach (var entity in chunk.GetNativeArray(m_EntityTypeHandle)) {
+                var entityArray = chunk.GetNativeArray(m_EntityTypeHandle);
+                var tempArray   = chunk.GetNativeArray(ref m_TempTypeHandle);
+
+                for (var i = 0; i < entityArray.Length; i++) {
+                    var entity = entityArray[i];
+
+                    // Ignore selected temp entities
+                    if (chunk.Has(ref m_TempTypeHandle)) {
+                        var temp        = tempArray[i];
+                        if ((temp.m_Flags & (TempFlags.Create | TempFlags.Modify)) == 0) {
+                            // No flags set, exit.
+                            continue;
+                        }
+                    } 
+
                     m_ParcelEntitiesQueue.Enqueue(entity);
                 }
             }
@@ -161,7 +177,7 @@ namespace Platter.Systems {
 
                     // The "front position" is the point where a parcel is expected to connect to a road.
                     var size          = ParcelUtils.GetParcelSize(parcelData);
-                    var frontNode     = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.Front) * size;
+                    var frontNode     = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.FrontAccess) * size;
                     var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, frontNode);
 
                     // Check if this parcel is within the bounds of the road

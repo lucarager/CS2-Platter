@@ -49,10 +49,10 @@ namespace Platter.Systems {
                     var parcelHasCreatedComponent = m_CreatedComponentLookup.HasComponent(updateData.m_Parcel);
                     var parcelHasTempComponent    = m_TempComponentLookup.HasComponent(updateData.m_Parcel);
                     var parcelHadRoad             = parcel.m_RoadEdge    != Entity.Null;
-                    var parcelHasNewRoad          = updateData.m_NewRoad != Entity.Null;
-                    var noRoad                    = parcel.m_RoadEdge == Entity.Null && updateData.m_NewRoad == Entity.Null;
-                    var roadChanged               = updateData.m_NewRoad  != parcel.m_RoadEdge;
-                    var parcelHasNewCurvePosition = updateData.m_CurvePos != parcel.m_CurvePosition;
+                    var parcelHasNewRoad          = updateData.m_FrontRoad != Entity.Null;
+                    var noRoad                    = parcel.m_RoadEdge == Entity.Null && updateData.m_FrontRoad == Entity.Null;
+                    var roadChanged               = updateData.m_FrontRoad  != parcel.m_RoadEdge;
+                    var parcelHasNewCurvePosition = updateData.m_FrontCurvePos != parcel.m_CurvePosition;
 
                     // Determine if we should perform an update
                     // Either the "new best road" we found is not the one the parcel has stored
@@ -79,8 +79,8 @@ namespace Platter.Systems {
 
                         // Handle TEMP parcels and exit early
                         if (roadChanged && parcelHasTempComponent) {
-                            parcel.m_RoadEdge                            = updateData.m_NewRoad;
-                            parcel.m_CurvePosition                       = updateData.m_CurvePos;
+                            parcel.m_RoadEdge                            = updateData.m_FrontRoad;
+                            parcel.m_CurvePosition                       = updateData.m_FrontCurvePos;
                             m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
                             return;
                         }
@@ -91,17 +91,17 @@ namespace Platter.Systems {
                         }
 
                         // Update data
-                        parcel.m_RoadEdge                            = updateData.m_NewRoad;
-                        parcel.m_CurvePosition                       = updateData.m_CurvePos;
+                        parcel.m_RoadEdge                            = updateData.m_FrontRoad;
+                        parcel.m_CurvePosition                       = updateData.m_FrontCurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
                         m_CommandBuffer.AddComponent(updateData.m_Parcel, new Updated());
 
                         if (parcelHasNewRoad) {
-                            m_ConnectedParcelsBufferLookup[updateData.m_NewRoad].Add(new ConnectedParcel(updateData.m_Parcel));
+                            m_ConnectedParcelsBufferLookup[updateData.m_FrontRoad].Add(new ConnectedParcel(updateData.m_Parcel));
                         }
                     } else if (parcelHasNewCurvePosition) {
-                        parcel.m_CurvePosition                       = updateData.m_CurvePos;
+                        parcel.m_CurvePosition                       = updateData.m_FrontCurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
                         m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, default);
                     }

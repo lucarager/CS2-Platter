@@ -24,19 +24,49 @@ namespace Platter.Systems {
             public Entity m_Parcel;
 
             /// <summary>
-            /// Road to reference.
+            /// Road connected at the front access.
             /// </summary>
-            public Entity m_NewRoad;
+            public Entity m_FrontRoad;
 
             /// <summary>
-            /// Position of the "front" of the parcel in relation to the edge.
+            /// Position of the front access in relation to the edge.
             /// </summary>
             public float3 m_FrontPos;
 
             /// <summary>
-            /// Curveposition of the parcel in relation to the edge.
+            /// Curve position of the front access in relation to the edge.
             /// </summary>
-            public float m_CurvePos;
+            public float m_FrontCurvePos;
+
+            /// <summary>
+            /// Road connected at the left access.
+            /// </summary>
+            public Entity m_LeftRoad;
+
+            /// <summary>
+            /// Position of the left access in relation to the edge.
+            /// </summary>
+            public float3 m_LeftPos;
+
+            /// <summary>
+            /// Curve position of the left access in relation to the edge.
+            /// </summary>
+            public float m_LeftCurvePos;
+
+            /// <summary>
+            /// Road connected at the right access.
+            /// </summary>
+            public Entity m_RightRoad;
+
+            /// <summary>
+            /// Position of the right access in relation to the edge.
+            /// </summary>
+            public float3 m_RightPos;
+
+            /// <summary>
+            /// Curve position of the right access in relation to the edge.
+            /// </summary>
+            public float m_RightCurvePos;
 
             /// <summary>
             /// Whether it's a deletion update.
@@ -48,11 +78,17 @@ namespace Platter.Systems {
             /// </summary>
             /// <param name="parcel">A Parcel to update.</param>
             public UpdateData(Entity parcel) {
-                m_Parcel   = parcel;
-                m_NewRoad  = Entity.Null;
-                m_FrontPos = default;
-                m_CurvePos = 0f;
-                m_Deleted  = false;
+                m_Parcel        = parcel;
+                m_FrontRoad     = Entity.Null;
+                m_FrontPos      = default;
+                m_FrontCurvePos = 0f;
+                m_LeftRoad      = Entity.Null;
+                m_LeftPos       = default;
+                m_LeftCurvePos  = 0f;
+                m_RightRoad     = Entity.Null;
+                m_RightPos      = default;
+                m_RightCurvePos = 0f;
+                m_Deleted       = false;
             }
 
             /// <inheritdoc/>

@@ -117,6 +117,7 @@ namespace Platter.Systems {
                 m_StartNodeGeometryTypeHandle      = SystemAPI.GetComponentTypeHandle<StartNodeGeometry>(),
                 m_EndNodeGeometryTypeHandle        = SystemAPI.GetComponentTypeHandle<EndNodeGeometry>(),
                 m_DeletedTypeHandle                = SystemAPI.GetComponentTypeHandle<Deleted>(),
+                m_TempTypeHandle                   = SystemAPI.GetComponentTypeHandle<Temp>(),
             }.ScheduleParallel(
                 m_ModificationQuery,
                 JobHandle.CombineDependencies(Dependency, parcelSearchJobHandle)

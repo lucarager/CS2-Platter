@@ -20,13 +20,13 @@ namespace Platter.Utils {
 
         public Bounds3 Bounds => m_ParcelBounds;
 
-        public float3 BackNode => GetParcelNode(ParcelUtils.ParcelNode.Back);
+        public float3 BackNode => GetParcelNode(ParcelUtils.ParcelNode.BackAccess);
 
         public float3 BlockCenter => GetBlockCenter(m_BlockBounds);
 
         public float3 Center => GetCenter(m_ParcelBounds);
 
-        public float3 FrontNode => GetParcelNode(ParcelUtils.ParcelNode.Front);
+        public float3 FrontNode => GetParcelNode(ParcelUtils.ParcelNode.FrontAccess);
 
         public float3 Pivot => GetPivot();
 
