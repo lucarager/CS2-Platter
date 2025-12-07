@@ -1,6 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
-  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platina",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platter",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Teclas de atalho",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Desinstalar",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Sobre",
@@ -51,7 +51,7 @@
   "PlatterMod.UI.SectionTitle.ParcelWidth": "Largura do Lote",
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Profundidade do Lote",
   "PlatterMod.UI.SectionTitle.Search": "Pesquisa",
-  "PlatterMod.UI.SectionTitle.Category": "categoria",
+  "PlatterMod.UI.SectionTitle.Category": "Categoria",
   "PlatterMod.UI.SectionTitle.AssetPacks": "Pacotes de Ativos",
   "PlatterMod.UI.Label.ParcelSizeUnit": "células",
   "PlatterMod.UI.Label.NoZoneMatchesFilter": "Nenhum filtro de zona correspondente",
@@ -145,5 +145,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Um Lote com células para zonear. 6 células de largura, 5 células de profundidade",
   "Assets.NAME[Parcel 6x6]": "Lote (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Um Lote com células para zonear. 6 células de largura, 6 células de profundidade",
-  "Assets.NAME[Unzoned]": "Deszonalizado"
+  "Assets.NAME[Unzoned]": "Sem zoneamento"
 }
