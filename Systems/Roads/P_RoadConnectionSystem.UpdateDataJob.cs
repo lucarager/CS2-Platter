@@ -13,7 +13,6 @@ namespace Platter.Systems {
     using Game.Notifications;
     using Game.Prefabs;
     using Game.Tools;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -59,52 +58,49 @@ namespace Platter.Systems {
                     // Either the "new best road" we found is not the one the parcel has stored
                     // or it's a newly created parcel
                     if (roadChanged || parcelHasCreatedComponent) {
-                        // If this is a TEMP entity
-                        if (parcelHasTempComponent) {
-                            // Update the parcel's data
-                            parcel.m_RoadEdge                            = updateData.m_NewRoad;
-                            parcel.m_CurvePosition                       = updateData.m_CurvePos;
-                            m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-                        } else {
-                            // Check if the parcel had a road and now doesn't, or vice versa, to update the icon status
-                            if (parcelHadRoad != parcelHasNewRoad) {
-                                if (parcelHasNewRoad) {
-                                    m_IconCommandBuffer.Remove(
-                                        updateData.m_Parcel,
-                                        m_TrafficConfigurationData.m_RoadConnectionNotification
-                                    );
-                                } else if (!updateData.m_Deleted) {
-                                    m_IconCommandBuffer.Add(
-                                        updateData.m_Parcel,
-                                        m_TrafficConfigurationData.m_RoadConnectionNotification,
-                                        updateData.m_FrontPos,
-                                        IconPriority.Warning,
-                                        IconClusterLayer.Default,
-                                        IconFlags.OnTop
-                                    );
-                                }
-                            }
-
-                            // Remove old ConnectedParcel
-                            if (parcelHadRoad && m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
-                                CollectionUtils.RemoveValue(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
-                            }
-
-                            // Update data
-                            parcel.m_RoadEdge                            = updateData.m_NewRoad;
-                            parcel.m_CurvePosition                       = updateData.m_CurvePos;
-                            m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-
-                            m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, new Updated());
-
+                        // Check if the parcel had a road and now doesn't, or vice versa, to update the icon status
+                        if (parcelHadRoad != parcelHasNewRoad) {
                             if (parcelHasNewRoad) {
-                                m_ConnectedParcelsBufferLookup[updateData.m_NewRoad].Add(new ConnectedParcel(updateData.m_Parcel));
+                                m_IconCommandBuffer.Remove(
+                                    updateData.m_Parcel,
+                                    m_TrafficConfigurationData.m_RoadConnectionNotification
+                                );
+                            } else if (!updateData.m_Deleted) {
+                                m_IconCommandBuffer.Add(
+                                    updateData.m_Parcel,
+                                    m_TrafficConfigurationData.m_RoadConnectionNotification,
+                                    updateData.m_FrontPos,
+                                    IconPriority.Warning,
+                                    IconClusterLayer.Default,
+                                    IconFlags.OnTop
+                                );
                             }
                         }
-                    }
 
-                    // Alternatively, we could just be updating the parcel's curve position
-                    else if (parcelHasNewCurvePosition) {
+                        // Handle TEMP parcels and exit early
+                        if (roadChanged && parcelHasTempComponent) {
+                            parcel.m_RoadEdge                            = updateData.m_NewRoad;
+                            parcel.m_CurvePosition                       = updateData.m_CurvePos;
+                            m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+                            return;
+                        }
+
+                        // Remove old ConnectedParcel
+                        if (parcelHadRoad && m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
+                            CollectionUtils.RemoveValue(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
+                        }
+
+                        // Update data
+                        parcel.m_RoadEdge                            = updateData.m_NewRoad;
+                        parcel.m_CurvePosition                       = updateData.m_CurvePos;
+                        m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+
+                        m_CommandBuffer.AddComponent(updateData.m_Parcel, new Updated());
+
+                        if (parcelHasNewRoad) {
+                            m_ConnectedParcelsBufferLookup[updateData.m_NewRoad].Add(new ConnectedParcel(updateData.m_Parcel));
+                        }
+                    } else if (parcelHasNewCurvePosition) {
                         parcel.m_CurvePosition                       = updateData.m_CurvePos;
                         m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
                         m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, default);

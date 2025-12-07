@@ -67,9 +67,9 @@ namespace Platter.Systems {
 
             // Define Queries
             m_ModificationQuery = SystemAPI.QueryBuilder()
-                                           .WithAll<Parcel, Initialized>()
+                                           .WithAll<Parcel>()
                                            .WithAny<Updated, Deleted>()
-                                           .WithNone<Temp>()
+                                           //.WithNone<Temp>()
                                            .AddAdditionalQuery()
                                            .WithAll<Edge, ConnectedParcel>()
                                            .WithAny<Updated, Deleted>()
@@ -125,7 +125,7 @@ namespace Platter.Systems {
             m_ParcelSearchSystem.AddSearchTreeReader(parcelSearchJobHandle);
 
             // [CreateUniqueEntitiesListJob] Dedupe the list
-            var createUniqueParcelListJobHandle = new CreateUniqueEntitiesListJob {
+            var createUniqueParcelListJobHandle = new ProcessQueueIntoListJob {
                 m_ParcelEntitiesQueue = parcelEntitiesQueue,
                 m_ParcelEntittiesList = parcelEntitiesList,
             }.Schedule(

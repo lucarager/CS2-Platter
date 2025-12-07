@@ -50,6 +50,7 @@ namespace Platter.Systems {
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
                 var connectedParcelBufferAccessor = chunk.GetBufferAccessor(ref m_ConnectedParcelBufferTypeHandle);
 
+                // Handle Roads first
                 if (connectedParcelBufferAccessor.Length != 0) {
                     // Handle edge delete
                     if (chunk.Has(ref m_DeletedTypeHandle)) {
@@ -99,6 +100,7 @@ namespace Platter.Systems {
                     return;
                 }
 
+                // Otherwise, it's a parcel - enqueue it.
                 foreach (var entity in chunk.GetNativeArray(m_EntityTypeHandle)) {
                     m_ParcelEntitiesQueue.Enqueue(entity);
                 }

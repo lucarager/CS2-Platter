@@ -21,7 +21,7 @@ namespace Platter.Systems {
 #if USE_BURST
         [BurstCompile]
 #endif
-        public struct CreateUniqueEntitiesListJob : IJob {
+        public struct ProcessQueueIntoListJob : IJob {
             public required NativeQueue<Entity>    m_ParcelEntitiesQueue;
             public required NativeList<UpdateData> m_ParcelEntittiesList;
 

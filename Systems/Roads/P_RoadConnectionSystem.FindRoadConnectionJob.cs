@@ -95,7 +95,7 @@ namespace Platter.Systems {
 
                 for (var k = 0; k < m_UpdatedNetChunks.Length; k++) {
                     var netArray = m_UpdatedNetChunks[k].GetNativeArray(m_EntityTypeHandle);
-                    for (var l = 0; l < netArray.Length; l++) findRoadConnectionIterator.CheckEdge(netArray[l]);
+                    foreach (var net in netArray) findRoadConnectionIterator.CheckEdge(net);
                 }
 
                 // Update our BuildingRoadUpdateData struct with the new info
