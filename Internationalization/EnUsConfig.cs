@@ -130,10 +130,21 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Tooltip.ShowZonbes", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
-                { "PlatterMod.UI.Tooltip.BuildingCount", "{COUNT} available {X}x{Y} buildings in the selected zone." },
+                {
+                    "PlatterMod.UI.Tooltip.BuildingCount",
+                    "[Fronting] {COUNT} available {X}x{Y} fronting buildings in the selected zone."
+                },
                 {
                     "PlatterMod.UI.Tooltip.BuildingCountWarning",
-                    "No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on this parcel."
+                    "[Fronting] No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on this parcel."
+                },
+                { 
+                    "PlatterMod.UI.Tooltip.BuildingCornerCount",
+                    "[Corner] {COUNT} available {X}x{Y} fronting buildings in the selected zone."
+                },
+                {
+                    "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",
+                    "[Corner] No {X}x{Y} corner buildings in selected zone."
                 },
 
                 // FirstLaunch Modal

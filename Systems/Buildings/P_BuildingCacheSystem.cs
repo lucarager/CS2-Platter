@@ -24,8 +24,10 @@ namespace Platter.Systems {
         /// </summary>
         public struct BuildingAccessCount {
             public int Total;
+            public int FrontAccessOnly;
             public int LeftAccess;
             public int RightAccess;
+            public int Corner;
             public int BackAccess;
         }
 
@@ -106,7 +108,14 @@ namespace Platter.Systems {
                 for (var i = 0; i < entityArray.Length; i++) {
                     var building  = buildingArray[i];
                     var spawnable = spawnableArray[i];
+
+                    if (spawnable.m_Level != 1) {
+                        continue;
+                    }
+
                     var zoneData  = EntityManager.GetComponentData<ZoneData>(spawnable.m_ZonePrefab);
+                    var hasLeft   = (building.m_Flags & BuildingFlags.LeftAccess)  != 0;
+                    var hasRight  = (building.m_Flags & BuildingFlags.RightAccess) != 0;
 
                     // Construct key from zone, then size x and y
                     var key = new float3(
@@ -117,13 +126,18 @@ namespace Platter.Systems {
                     if (m_BuildingCount.ContainsKey(key)) {
                         var count = m_BuildingCount[key];
                         count.Total++;
-                        
-                        // Count access flags
-                        if ((building.m_Flags & BuildingFlags.LeftAccess) != 0) {
+
+                        if (hasLeft) {
                             count.LeftAccess++;
                         }
-                        if ((building.m_Flags & BuildingFlags.RightAccess) != 0) {
+                        if (hasRight) {
                             count.RightAccess++;
+                        }
+                        if (!hasLeft && !hasRight) {
+                            count.FrontAccessOnly++;
+                        }
+                        if (hasLeft && hasRight) {
+                            count.Corner++;
                         }
                         if ((building.m_Flags & BuildingFlags.BackAccess) != 0) {
                             count.BackAccess++;
@@ -134,11 +148,17 @@ namespace Platter.Systems {
                         var count = new BuildingAccessCount { Total = 1 };
                         
                         // Count access flags
-                        if ((building.m_Flags & BuildingFlags.LeftAccess) != 0) {
+                        if (hasLeft) {
                             count.LeftAccess = 1;
                         }
-                        if ((building.m_Flags & BuildingFlags.RightAccess) != 0) {
+                        if (hasRight) {
                             count.RightAccess = 1;
+                        }
+                        if (!hasLeft && !hasRight) {
+                            count.FrontAccessOnly = 1;
+                        }
+                        if (hasLeft && hasRight) {
+                            count.Corner = 1;
                         }
                         if ((building.m_Flags & BuildingFlags.BackAccess) != 0) {
                             count.BackAccess = 1;
