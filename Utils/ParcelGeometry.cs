@@ -21,6 +21,8 @@ namespace Platter.Utils {
         public Bounds3 Bounds => m_ParcelBounds;
 
         public float3 BackNode => GetParcelNode(ParcelUtils.ParcelNode.BackAccess);
+        public float3 LeftNode => GetParcelNode(ParcelUtils.ParcelNode.LeftAccess);
+        public float3 RightNode => GetParcelNode(ParcelUtils.ParcelNode.RightAccess);
 
         public float3 BlockCenter => GetBlockCenter(m_BlockBounds);
 
