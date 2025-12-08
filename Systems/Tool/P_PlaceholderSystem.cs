@@ -34,16 +34,11 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_PrefabSystem                  =  World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ToolSystem                    =  World.GetOrCreateSystemManaged<ToolSystem>();
-            m_ModificationBarrier1          =  World.GetOrCreateSystemManaged<ModificationBarrier1>();
-            m_PlatterUISystem               =  World.GetOrCreateSystemManaged<P_UISystem>();
-            m_PPrefabsCreateSystem          =  World.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
-
-            // Register a callback for prefab changes
-            m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
-            m_ToolSystem.EventToolChanged   += OnToolChanged;
-
+            m_PrefabSystem         = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ToolSystem           = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_ModificationBarrier1 = World.GetOrCreateSystemManaged<ModificationBarrier1>();
+            m_PlatterUISystem      = World.GetOrCreateSystemManaged<P_UISystem>();
+            m_PPrefabsCreateSystem = World.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
 
             // Parcels (with ParcelPlaceholder) that have been placed (not Temp)
             m_PlacedQuery = SystemAPI.QueryBuilder()
@@ -96,33 +91,6 @@ namespace Platter.Systems {
             m_ModificationBarrier1.AddJobHandleForProducer(swapPlaceholderForPermnanentJobHandle);
 
             Dependency = JobHandle.CombineDependencies(updateTempPlaceholderJobHandle, swapPlaceholderForPermnanentJobHandle);
-        }
-
-        private void OnToolChanged(ToolBaseSystem tool) {
-            if (tool is ObjectToolSystem
-                {
-                    prefab: ParcelPrefab,
-                } objectTool) {
-                OnPrefabChanged(objectTool.prefab);
-            }
-        }
-
-        private void OnPrefabChanged(PrefabBase currentPrefab) {
-            if (m_ToolSystem.activeTool is not ObjectToolSystem objectTool ||
-                objectTool.prefab == null                            ||
-                objectTool.prefab is not ParcelPrefab) {
-                return;
-            }
-
-            m_Log.Debug($"OnPrefabChanged(currentPrefab = {currentPrefab}");
-
-            var currentPrefabID = currentPrefab.GetPrefabID();
-            var cacheKey        = ParcelUtils.GetCustomHashCode(currentPrefabID, true);
-
-            if (m_PPrefabsCreateSystem.TryGetCachedPrefab(cacheKey, out var newPrefabEntity) && 
-                m_PPrefabsCreateSystem.TryGetCachedPrefabBase(newPrefabEntity, out var newPrefabBase)) {
-                objectTool.TrySetPrefab(newPrefabBase);
-            }
         }
 
         private struct UpdateTempPlaceholderJob : IJobChunk {
