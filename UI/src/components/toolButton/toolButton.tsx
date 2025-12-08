@@ -107,7 +107,7 @@ export const ToolPanel = memo(function ToolPanel() {
                         className={c(VT.checkbox.label)}
                     />
                 </VC.Section>
-                <VC.Section
+                {/* <VC.Section
                     title={translate("PlatterMod.UI.SectionTitle.Changelog", "View Changelog")}>
                     <VC.ToolButton
                         src={"coui://platter/changelog.svg"}
@@ -116,7 +116,7 @@ export const ToolPanel = memo(function ToolPanel() {
                         tooltip={translate("PlatterMod.UI.Tooltip.Changelog")}
                         className={c(VT.checkbox.label)}
                     />
-                </VC.Section>
+                </VC.Section> */}
             </PanelSection>
         </Panel>
     );
