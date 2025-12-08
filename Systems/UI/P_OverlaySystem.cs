@@ -174,6 +174,7 @@ namespace Platter.Systems {
                         parcelData.m_LotSize,
                         trs,
                         m_ColorsMap[parcel.m_PreZoneType.m_Index],
+                        parcel.m_State,
                         spawnable
                     );
                 }

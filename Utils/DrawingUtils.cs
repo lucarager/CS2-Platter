@@ -8,6 +8,7 @@ namespace Platter.Utils {
 
     using System.Collections.Generic;
     using Colossal.Mathematics;
+    using Components;
     using Constants;
     using Unity.Mathematics;
     using UnityEngine;
@@ -15,62 +16,119 @@ namespace Platter.Utils {
 
     #endregion
 
-
     // todo check GizmoBatcher for lots of great drawing utils!
     public static class DrawingUtils {
         public static void DrawLineIcon(Buffer         buffer,
                                         IconDefinition iconDefinition) { }
 
-        public static void DrawParcel(Buffer   buffer,
-                                      int2     lotSize,
-                                      float4x4 trs,
-                                      bool     spawnable = false) {
-            DrawParcel(buffer, lotSize, trs, ColorConstants.ParcelBackground, spawnable);
+        public static void DrawParcel(Buffer      buffer,
+                                      int2        lotSize,
+                                      float4x4    trs,
+                                      ParcelState parcelState,
+                                      bool        spawnable = false) {
+            DrawParcel(buffer, lotSize, trs, ColorConstants.ParcelBackground, parcelState, spawnable);
         }
 
-        public static void DrawParcel(Buffer   buffer,
-                                      int2     lotSize,
-                                      float4x4 trs,
-                                      Color    backgroundColor,
-                                      bool     spawnable = false) {
+        public static void DrawParcel(Buffer      buffer,
+                                      int2        lotSize,
+                                      float4x4    trs,
+                                      Color       backgroundColor,
+                                      ParcelState parcelState,
+                                      bool        spawnable = false) {
             // Final container of lines to draw
             var linesToDraw = new List<LineDef>();
 
             // Calculate data
-            var parcelGeo     = new ParcelGeometry(lotSize);
-            var parcelCenter  = parcelGeo.Center;
-            var parcelCorners = parcelGeo.CornerNodes;
-            var parcelFront   = parcelGeo.FrontNode;
-            var parcelBack    = parcelGeo.BackNode;
+            var parcelGeo      = new ParcelGeometry(lotSize);
+            var parcelCenter   = parcelGeo.Center;
+            var parcelCorners  = parcelGeo.CornerNodes;
+            var parcelFront    = parcelGeo.FrontNode;
+            var parcelLeft     = parcelGeo.LeftNode;
+            var parcelRight    = parcelGeo.RightNode;
+            var parcelBack     = parcelGeo.BackNode;
+            var hasFrontAccess = (parcelState & ParcelState.RoadFront) == ParcelState.RoadFront;
+            var hasLeftAccess  = (parcelState & ParcelState.RoadLeft)  == ParcelState.RoadLeft;
+            var hasRightAccess = (parcelState & ParcelState.RoadRight) == ParcelState.RoadRight;
+            var accessMult     = 3;
 
             // Calculate outside edge lines
-            linesToDraw.Add(new LineDef(parcelCorners.c0, parcelCorners.c1, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
-            linesToDraw.Add(new LineDef(parcelCorners.c1, parcelCorners.c2, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
-            linesToDraw.Add(new LineDef(parcelCorners.c2, parcelCorners.c3, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
-            linesToDraw.Add(new LineDef(parcelCorners.c3, parcelCorners.c0, ColorConstants.ParcelOutline, DimensionConstants.ParcelOutlineWidth));
+            var lineWidth     = DimensionConstants.ParcelOutlineWidth;
+            var halfLineWidth = DimensionConstants.ParcelOutlineWidth * 0.5f;
 
-            // Ensure background opacity
-            backgroundColor.a = ColorConstants.OpacityLow;
+            // Four float3 vectors representing the corners in clockwise direction. <br/>
+            //  c2 ┌┐ c3. <br/>
+            //  c1 └┘ c0. <br/>
+            var frontLineWidth = hasFrontAccess ? lineWidth * accessMult : lineWidth;
+            var frontLineHalf  = frontLineWidth / 2;
+            var leftLineWidth  = hasLeftAccess ? lineWidth * accessMult : lineWidth;
+            var leftLineHalf   = leftLineWidth / 2;
+            var backLineWidth  = lineWidth;
+            var backLineHalf   = backLineWidth / 2;
+            var rightLineWidth = hasRightAccess ? lineWidth * accessMult : lineWidth;
+            var rightLineHalf  = rightLineWidth / 2;
+            // Front
+            linesToDraw.Add(
+                new LineDef(
+                    parcelCorners.c0 + new float3(+rightLineWidth, 0f, -frontLineHalf),
+                    parcelCorners.c1 + new float3(-leftLineWidth, 0f, -frontLineHalf),
+                    ColorConstants.ParcelOutline,
+                    frontLineWidth));
+            // Left
+            linesToDraw.Add(
+                new LineDef(
+                    parcelCorners.c1 + new float3(-leftLineHalf, 0f, 0f),
+                    parcelCorners.c2 + new float3(-leftLineHalf, 0f, 0f),
+                    ColorConstants.ParcelOutline,
+                    leftLineWidth));
+            // Back
+            linesToDraw.Add(
+                new LineDef(
+                    parcelCorners.c2 + new float3(-leftLineWidth, 0f, +backLineHalf),
+                    parcelCorners.c3 + new float3(+rightLineWidth, 0f, +backLineHalf),
+                    ColorConstants.ParcelOutline,
+                    backLineWidth));
+            // Right
+            linesToDraw.Add(
+                new LineDef(
+                    parcelCorners.c3 + new float3(+rightLineHalf, 0f, 0f),
+                    parcelCorners.c0 + new float3(+rightLineHalf, 0f, 0f),
+                    ColorConstants.ParcelOutline,
+                    rightLineWidth));
 
             // Add background
+            backgroundColor.a = ColorConstants.OpacityLow;
             linesToDraw.Add(new LineDef(parcelFront, parcelBack, backgroundColor, parcelGeo.Size.x));
 
-            // Calculate inner lines
+            // Calculate inner lines (front to back)
             var frontNode = new float3(parcelCorners.c1);
             var backNode  = new float3(parcelCorners.c2);
+            frontNode.z += -frontLineWidth;
+            backNode.z += +backLineWidth;
             for (var i = 1; i < lotSize.x; i++) {
-                frontNode.x += DimensionConstants.CellSize;
-                backNode.x  += DimensionConstants.CellSize;
-                linesToDraw.Add(new LineDef(frontNode, backNode, ColorConstants.ParcelInline, DimensionConstants.ParcelCellOutlineWidth));
+                frontNode.x -= DimensionConstants.CellSize;
+                backNode.x  -= DimensionConstants.CellSize;
+                linesToDraw.Add(new LineDef(
+                                    frontNode, 
+                                    backNode, 
+                                    ColorConstants.ParcelInline, 
+                                    DimensionConstants.ParcelCellOutlineWidth)
+                    );
             }
 
-            // Calculate perpendicular inner lines
-            var rightNode = new float3(parcelCorners.c0);
+            // Calculate perpendicular inner lines (left to right)
             var leftNode  = new float3(parcelCorners.c1);
+            var rightNode = new float3(parcelCorners.c0);
+            leftNode.x += -leftLineWidth;
+            rightNode.x += +rightLineWidth;
             for (var i = 1; i < lotSize.y; i++) {
-                leftNode.z  += DimensionConstants.CellSize;
-                rightNode.z += DimensionConstants.CellSize;
-                linesToDraw.Add(new LineDef(leftNode, rightNode, ColorConstants.ParcelInline, DimensionConstants.ParcelCellOutlineWidth));
+                leftNode.z  -= DimensionConstants.CellSize;
+                rightNode.z -= DimensionConstants.CellSize;
+                linesToDraw.Add(new LineDef(
+                                    leftNode, 
+                                    rightNode, 
+                                    ColorConstants.ParcelInline, 
+                                    DimensionConstants.ParcelCellOutlineWidth)
+                    );
             }
 
             // Draw all lines
@@ -85,7 +143,7 @@ namespace Platter.Utils {
                 );
             }
 
-            // Draw "Front Circle"
+            // Draw FrontAccess Indicator
             buffer.DrawCircle(
                 ColorConstants.ParcelFrontIndicator,
                 spawnable ? ColorConstants.ParcelFrontIndicator : new Color(1f, 1f, 1f, 0),
@@ -96,13 +154,41 @@ namespace Platter.Utils {
                 DimensionConstants.ParcelFrontIndicatorDiameter
             );
 
-            //buffer.DrawCustomMesh(
-            //    ColorConstants.ParcelFrontIndicator, 
-            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
-            //    10f, 
-            //    10f,
-            //    CustomMeshType.Arrow,
-            //    new Quaternion()
+            //buffer.DrawCircle(
+            //    ColorConstants.ParcelFrontIndicator,
+            //    Color.red,
+            //    DimensionConstants.ParcelFrontIndicatorHollowLineWidth,
+            //    StyleFlags.Grid,
+            //    new float2(1, 1),
+            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0),
+            //    DimensionConstants.ParcelFrontIndicatorDiameter
+            //);
+            //buffer.DrawCircle(
+            //    ColorConstants.ParcelFrontIndicator,
+            //    Color.blue,
+            //    DimensionConstants.ParcelFrontIndicatorHollowLineWidth,
+            //    StyleFlags.Grid,
+            //    new float2(1, 1),
+            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1),
+            //    DimensionConstants.ParcelFrontIndicatorDiameter
+            //);
+            //buffer.DrawCircle(
+            //    ColorConstants.ParcelFrontIndicator,
+            //    Color.green,
+            //    DimensionConstants.ParcelFrontIndicatorHollowLineWidth,
+            //    StyleFlags.Grid,
+            //    new float2(1, 1),
+            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2),
+            //    DimensionConstants.ParcelFrontIndicatorDiameter
+            //);
+            //buffer.DrawCircle(
+            //    ColorConstants.ParcelFrontIndicator,
+            //    Color.yellow,
+            //    DimensionConstants.ParcelFrontIndicatorHollowLineWidth,
+            //    StyleFlags.Grid,
+            //    new float2(1, 1),
+            //    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3),
+            //    DimensionConstants.ParcelFrontIndicatorDiameter
             //);
         }
 
