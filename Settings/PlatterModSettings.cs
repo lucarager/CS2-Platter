@@ -133,11 +133,11 @@ namespace Platter.Settings {
             set => Modals_FirstLaunchTutorial = false;
         }
 
-        [SettingsUISection(AboutGroup)]
-        [SettingsUIButton]
-        public bool ResetChangelog {
-            set => LastViewedChangelogVersion = 0;
-        }
+        //[SettingsUISection(AboutGroup)]
+        //[SettingsUIButton]
+        //public bool ResetChangelog {
+        //    set => LastViewedChangelogVersion = 0;
+        //}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
