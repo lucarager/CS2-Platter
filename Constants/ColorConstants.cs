@@ -37,6 +37,6 @@ namespace Platter.Constants {
         public static readonly Color ParcelInline         = new(255f / 255f, 255f / 255f, 255f / 255f, OpacityLow);
 
         // Parcel ColorConstants
-        public static readonly Color ParcelOutline = new(255f / 255f, 255f / 255f, 255f / 255f, OpacityMedium);
+        public static readonly Color ParcelOutline = new(255f / 255f, 255f / 255f, 255f / 255f, 0.6f);
     }
 }
