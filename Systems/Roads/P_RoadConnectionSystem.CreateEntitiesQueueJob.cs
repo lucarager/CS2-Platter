@@ -81,11 +81,11 @@ namespace Platter.Systems {
                         var endNodeGeo   = endNodeGeoArray[k].m_Geometry;
 
                         var findParcelIterator = new FindParcelNextToRoadIterator(
-                            MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, MaxDistance),
+                            MathUtils.Expand(edgeGeometry.m_Bounds | startNodeGeo.m_Bounds | endNodeGeo.m_Bounds, MaxDistanceFront),
                             edgeGeometry,
                             startNodeGeo,
                             endNodeGeo,
-                            minDistance: MaxDistance,
+                            minDistance: MaxDistanceFront,
                             parcelEntitiesQueue: m_ParcelEntitiesQueue,
                             prefabRefComponentLookup: m_PrefabRefComponentLookup,
                             edgeGeometryComponentLookup: m_EdgeGeometryComponentLookup,

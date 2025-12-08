@@ -67,17 +67,17 @@ namespace Platter.Systems {
 
                 // Find best road for front access
                 FindBestRoadForAccessNode(
-                    ParcelUtils.ParcelNode.FrontAccess, parcelSize, parcelTransform,
+                    ParcelUtils.ParcelNode.FrontAccess, parcelSize, parcelTransform, MaxDistanceFront,
                     out currentEntityData.m_FrontRoad, out currentEntityData.m_FrontPos, out currentEntityData.m_FrontCurvePos);
 
                 // Find best road for left access
                 FindBestRoadForAccessNode(
-                    ParcelUtils.ParcelNode.LeftAccess, parcelSize, parcelTransform,
+                    ParcelUtils.ParcelNode.LeftAccess, parcelSize, parcelTransform, MaxDistanceSides,
                     out currentEntityData.m_LeftRoad, out currentEntityData.m_LeftPos, out currentEntityData.m_LeftCurvePos);
 
                 // Find best road for right access
                 FindBestRoadForAccessNode(
-                    ParcelUtils.ParcelNode.RightAccess, parcelSize, parcelTransform,
+                    ParcelUtils.ParcelNode.RightAccess, parcelSize, parcelTransform, MaxDistanceSides,
                     out currentEntityData.m_RightRoad, out currentEntityData.m_RightPos, out currentEntityData.m_RightCurvePos);
 
                 // Update the data in the list with what we found
@@ -85,7 +85,7 @@ namespace Platter.Systems {
             }
 
             private void FindBestRoadForAccessNode(
-                ParcelUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform,
+                ParcelUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform, float maxDistance,
                 out Entity road, out float3 position, out float curvePos) {
 
                 var nodeOffset     = ParcelUtils.NodeMult(accessNode) * parcelSize;
@@ -103,8 +103,8 @@ namespace Platter.Systems {
                     endNodeGeometryDataComponentLookup: m_EndNodeGeometryDataComponentLookup,
                     prefabNetCompositionDataComponentLookup: m_PrefabNetCompositionDataComponentLookup,
                     deletedDataComponentLookup: m_DeletedDataComponentLookup,
-                    bounds: new Bounds3(accessPosition - MaxDistance, accessPosition + MaxDistance),
-                    minDistance: MaxDistance,
+                    bounds: new Bounds3(accessPosition - maxDistance, accessPosition + maxDistance),
+                    minDistance: maxDistance,
                     frontPosition: accessPosition
                 );
 
