@@ -33,6 +33,10 @@ export const GAME_BINDINGS = {
     ENABLE_CREATE_FROM_ZONE: new TwoWayBinding<boolean>("ENABLE_CREATE_FROM_ZONE", false),
 
     MODAL__FIRST_LAUNCH: new TwoWayBinding<boolean>("MODAL__FIRST_LAUNCH", false),
+    MODAL__CHANGELOG: new TwoWayBinding<boolean>("MODAL__CHANGELOG", false),
+
+    CURRENT_CHANGELOG_VERSION: new TwoWayBinding<number>("CURRENT_CHANGELOG_VERSION", 0),
+    LAST_VIEWED_CHANGELOG_VERSION: new TwoWayBinding<number>("LAST_VIEWED_CHANGELOG_VERSION", 0),
 
     INFOPANEL_BUILDING_PARCEL_ENTITY: new TwoWayBinding<Entity>("INFOPANEL_BUILDING_PARCEL_ENTITY"),
     INFOPANEL_PARCEL_DATA: new TwoWayBinding<ParcelUIData>("INFOPANEL_PARCEL_DATA"),

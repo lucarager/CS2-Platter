@@ -41,11 +41,22 @@ namespace Platter.Settings {
         // Statics
         private const string Credit = "Made with <3 by Luca.";
 
+        /// <summary>
+        /// The current changelog version. Increment this when adding new changelog entries.
+        /// </summary>
+        public const uint CurrentChangelogVersion = 0;
+
         [SettingsUIHidden]
         public bool AllowSpawn { get; set; } = true;
 
         [SettingsUIHidden]
         public bool Modals_FirstLaunchTutorial { get; set; }
+
+        /// <summary>
+        /// The last changelog version viewed by the user.
+        /// </summary>
+        [SettingsUIHidden]
+        public uint LastViewedChangelogVersion { get; set; }
 
         [SettingsUISection(UninstallGroup)]
         [SettingsUIButton]
@@ -122,6 +133,12 @@ namespace Platter.Settings {
             set => Modals_FirstLaunchTutorial = false;
         }
 
+        [SettingsUISection(AboutGroup)]
+        [SettingsUIButton]
+        public bool ResetChangelog {
+            set => LastViewedChangelogVersion = 0;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
         /// </summary>
@@ -135,9 +152,10 @@ namespace Platter.Settings {
         /// Restores mod settings to default.
         /// </summary>
         public override void SetDefaults() {
-            Modals_FirstLaunchTutorial = false;
-            RenderParcels              = false;
-            AllowSpawn                 = true;
+            Modals_FirstLaunchTutorial  = false;
+            RenderParcels               = false;
+            AllowSpawn                  = true;
+            LastViewedChangelogVersion  = 0;
         }
 
         /// <summary>

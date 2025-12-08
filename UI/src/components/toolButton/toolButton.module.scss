@@ -30,3 +30,18 @@
 .headerText {
     margin-left: -5rem;
 }
+
+.updateBadge {
+    position: absolute;
+    bottom: -4rem;
+    right: -5rem;
+    width: 12rem;
+    height: 12rem;
+    background-color: rgba(255, 99, 183, 1);
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.toolButton {
+    position: relative;
+}
