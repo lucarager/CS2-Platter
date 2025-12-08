@@ -93,9 +93,9 @@ namespace Platter.Systems {
                     // Initialize state tracking
                     var isZoningUniform    = true;
                     var cachedZone         = ZoneType.None;
-                    var roadFlagCountLeft  = 0;
-                    var roadFlagCountRight = 0;
-                    var roadFlagCountBack  = 0;
+                    //var roadFlagCountLeft  = 0;
+                    //var roadFlagCountRight = 0;
+                    //var roadFlagCountBack  = 0;
 
                     // Count Cells and Flags within parcel bounds
                     for (var col = 0; col < block.m_Size.x; col++) {
@@ -116,44 +116,44 @@ namespace Platter.Systems {
                             }
 
                             // Count road flags: RoadLeft, RoadRight, RoadBack
-                            var cellState = cell.m_State;
-                            if ((cellState & CellFlags.RoadLeft) != 0) {
-                                roadFlagCountLeft++;
-                            }
+                            //var cellState = cell.m_State;
+                            //if ((cellState & CellFlags.RoadLeft) != 0) {
+                            //    roadFlagCountLeft++;
+                            //}
 
-                            if ((cellState & CellFlags.RoadRight) != 0) {
-                                roadFlagCountRight++;
-                            }
+                            //if ((cellState & CellFlags.RoadRight) != 0) {
+                            //    roadFlagCountRight++;
+                            //}
 
-                            if ((cellState & CellFlags.RoadBack) != 0) {
-                                roadFlagCountBack++;
-                            }
+                            //if ((cellState & CellFlags.RoadBack) != 0) {
+                            //    roadFlagCountBack++;
+                            //}
                         }
                     }
 
                     // Clear the state flags and rebuild
-                    parcel.m_State = ParcelStateFlags.None;
+                    //parcel.m_State = ParcelState.None;
 
                     // Classify zoning
                     parcel.m_PreZoneType = cachedZone;
                     if (isZoningUniform) {
-                        parcel.m_State |= ParcelStateFlags.ZoningUniform;
+                        parcel.m_State |= ParcelState.ZoningUniform;
                     } else {
-                        parcel.m_State |= ParcelStateFlags.ZoningMixed;
+                        parcel.m_State &= ~ParcelState.ZoningUniform;
                     }
 
                     // Add road flags if 2+ cells have them
-                    if (roadFlagCountLeft >= 2) {
-                        parcel.m_State |= ParcelStateFlags.RoadLeft;
-                    }
+                    //if (roadFlagCountLeft >= 2) {
+                    //    parcel.m_State |= ParcelState.RoadLeft;
+                    //}
 
-                    if (roadFlagCountRight >= 2) {
-                        parcel.m_State |= ParcelStateFlags.RoadRight;
-                    }
+                    //if (roadFlagCountRight >= 2) {
+                    //    parcel.m_State |= ParcelState.RoadRight;
+                    //}
 
-                    if (roadFlagCountBack >= 2) {
-                        parcel.m_State |= ParcelStateFlags.RoadBack;
-                    }
+                    //if (roadFlagCountBack >= 2) {
+                    //    parcel.m_State |= ParcelState.RoadBack;
+                    //}
 
                     // Update the parcel with new state
                     m_ParcelLookup[parcelOwner.m_Owner] = parcel;
