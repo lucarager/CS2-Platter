@@ -24,6 +24,7 @@ namespace Platter.Systems {
     using static P_SnapSystem;
     using ZoneUIDataModel = P_ZoneCacheSystem.ZoneUIDataModel;
     using AssetPackUIDataModel = P_ZoneCacheSystem.AssetPackUIDataModel;
+    using ZoneGroupUIDataModel = P_ZoneCacheSystem.ZoneGroupUIDataModel;
 
     #endregion
 
@@ -74,15 +75,16 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIDataModel[]> m_ZoneDataBinding;
         private ValueBindingHelper<AssetPackUIDataModel[]> m_AssetPackDataBinding;
+        private ValueBindingHelper<ZoneGroupUIDataModel[]> m_ZoneGroupDataBinding;
         private ValueBindingHelper<float>        m_MaxSnapSpacingBinding;
         private ValueBindingHelper<uint>         m_CurrentChangelogVersionBinding;
         private ValueBindingHelper<uint>         m_LastViewedChangelogVersionBinding;
-        private bool                             CurrentlyUsingParcelsInObjectTool => m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
+        private bool                             CurrentlyUsingParcelsInObjectTool => m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
         private bool                             CurrentlyUsingZoneTool => m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem;
 
-        public bool                             ShowContourLines { get; set; }
-        public  bool                             ShowZones { get; set; }
-        public  ZoneType                         PreZoneType { get; set; } = ZoneType.None;
+        public bool     ShowContourLines { get; set; }
+        public bool     ShowZones        { get; set; }
+        public ZoneType PreZoneType      { get; set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -115,6 +117,7 @@ namespace Platter.Systems {
             m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
             m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIDataModel[] { });
             m_AssetPackDataBinding         = CreateBinding("ASSET_PACK_DATA", new AssetPackUIDataModel[] { });
+            m_ZoneGroupDataBinding         = CreateBinding("ZONE_GROUP_DATA", new ZoneGroupUIDataModel[] { });
             m_RenderParcelsBinding         = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
             m_AllowSpawningBinding         = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
             m_ShowContourLinesBinding      = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
@@ -176,8 +179,11 @@ namespace Platter.Systems {
             m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
             m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
             m_EnableToolButtonsBinding.Value = CurrentlyUsingParcelsInObjectTool;
-            m_EnableSnappingOptionsBinding.Value = m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create or ObjectToolSystem.Mode.Line
-                or ObjectToolSystem.Mode.Curve or ObjectToolSystem.Mode.Curve;
+            m_EnableSnappingOptionsBinding.Value = m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create &&
+                                                   m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Line   &&
+                                                   m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Curve  &&
+                                                   m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Move;
+
             m_EnableCreateFromZoneBinding.Value = CurrentlyUsingZoneTool;
             m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
             m_ZoneBinding.Value                 = PreZoneType.m_Index;
@@ -188,7 +194,8 @@ namespace Platter.Systems {
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
             Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
             m_ZoneDataBinding.Value = zoneData;
-            m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.ToArray();
+            m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values.ToArray();
+            m_ZoneGroupDataBinding.Value = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
         }
 
         private void HandleProxyActions() {

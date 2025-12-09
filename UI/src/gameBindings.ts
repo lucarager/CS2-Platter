@@ -1,5 +1,5 @@
 import { TwoWayBinding } from "utils/bidirectionalBinding";
-import { AssetPackData, ParcelUIData, PrefabData, SnapMode, ZoneData } from "types";
+import { AssetPackData, ParcelUIData, PrefabData, SnapMode, ZoneData, ZoneGroupData } from "types";
 import { Entity } from "cs2/bindings";
 import TriggerBuilder from "utils/trigger";
 
@@ -18,6 +18,7 @@ export const GAME_BINDINGS = {
     }),
     ASSET_PACK_DATA: new TwoWayBinding<AssetPackData[]>("ASSET_PACK_DATA", []),
     ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
+    ZONE_GROUP_DATA: new TwoWayBinding<ZoneGroupData[]>("ZONE_GROUP_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
     SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
