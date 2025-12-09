@@ -80,7 +80,7 @@
   "PlatterMod.UI.Tooltip.ShowContourLines": "カウンタートゥール行を表示",
   "PlatterMod.UI.Tooltip.BuildingCount": "[Fronting] {COUNT} 利用可能な {X}x{Y} フロントビルが選択されたゾーンにあります。",
   "PlatterMod.UI.Tooltip.BuildingCountWarning": "[Fronting] 選択したゾーンには {X}x{Y} の建物がありません。この小包には、より小さい建物が出現する可能性があります。",
-  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} 利用可能な {X}x{Y} 選択したゾーンの角の建物。",
+  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} 利用可能な {X}x{Y} フロントビルが選択されたゾーンにあります。",
   "PlatterMod.UI.Tooltip.BuildingCornerCountWarning": "[Corner] 選択したゾーンには、 {X}x{Y} の角の建物はありません。",
   "PlatterMod.UI.Modals.FirstLaunch.Title": "Thanks for installing Platter!",
   "PlatterMod.UI.Modals.FirstLaunch.Subtitle": "Here's a quick intro to get you started",
