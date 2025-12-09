@@ -80,7 +80,7 @@
   "PlatterMod.UI.Tooltip.ShowContourLines": "Mostra linee countour",
   "PlatterMod.UI.Tooltip.BuildingCount": "[Fronting] {COUNT} disponibile {X}x{Y} edifici di fronte alla zona selezionata.",
   "PlatterMod.UI.Tooltip.BuildingCountWarning": "[Fronting] No {X}x{Y} edifici nella zona selezionata. Potrebbero generare edifici più piccoli su questo pacchetto.",
-  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} disponibile {X}x{Y} edifici di fronte alla zona selezionata.",
+  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} available {X}x{Y} corner buildings in the selected zone.",
   "PlatterMod.UI.Tooltip.BuildingCornerCountWarning": "[Corner] No {X}x{Y} edifici d'angolo nella zona selezionata.",
   "PlatterMod.UI.Modals.FirstLaunch.Title": "Grazie per aver installato Platter!",
   "PlatterMod.UI.Modals.FirstLaunch.Subtitle": "Ecco una rapida introduzione per iniziare",
