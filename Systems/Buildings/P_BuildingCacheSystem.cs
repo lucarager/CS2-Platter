@@ -136,7 +136,7 @@ namespace Platter.Systems {
                         if (!hasLeft && !hasRight) {
                             count.FrontAccessOnly++;
                         }
-                        if (hasLeft && hasRight) {
+                        if (hasLeft || hasRight) {
                             count.Corner++;
                         }
                         if ((building.m_Flags & BuildingFlags.BackAccess) != 0) {
@@ -157,7 +157,7 @@ namespace Platter.Systems {
                         if (!hasLeft && !hasRight) {
                             count.FrontAccessOnly = 1;
                         }
-                        if (hasLeft && hasRight) {
+                        if (hasLeft || hasRight) {
                             count.Corner = 1;
                         }
                         if ((building.m_Flags & BuildingFlags.BackAccess) != 0) {
