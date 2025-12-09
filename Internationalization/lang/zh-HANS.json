@@ -80,7 +80,7 @@
   "PlatterMod.UI.Tooltip.ShowContourLines": "显示计数线",
   "PlatterMod.UI.Tooltip.BuildingCount": "[Fronting] {COUNT} available {X}x{Y} fronting buildings in the selected zone.",
   "PlatterMod.UI.Tooltip.BuildingCountWarning": "[Fronting] No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on this parcel.",
-  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} available {X}x{Y} fronting buildings in the selected zone.",
+  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} available {X}x{Y} corner buildings in the selected zone.",
   "PlatterMod.UI.Tooltip.BuildingCornerCountWarning": "[Corner] No {X}x{Y} corner buildings in selected zone.",
   "PlatterMod.UI.Modals.FirstLaunch.Title": "Thanks for installing Platter!",
   "PlatterMod.UI.Modals.FirstLaunch.Subtitle": "Here's a quick intro to get you started",
