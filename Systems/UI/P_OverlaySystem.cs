@@ -7,15 +7,20 @@ namespace Platter.Systems {
     #region Using Statements
 
     using System;
+    using System.Collections.Generic;
+    using Colossal.Mathematics;
     using Components;
+    using Constants;
     using Game;
     using Game.Common;
     using Game.Prefabs;
     using Game.Rendering;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using Unity.Mathematics;
     using UnityEngine;
     using Utils;
     using Transform = Game.Objects.Transform;
@@ -88,7 +93,8 @@ namespace Platter.Systems {
                 }
 
                 // Todo split position calc, culling/render calc, and render step, into separate jobs for perf
-                var drawOverlaysJobData = new DrawOverlaysJob {
+                var drawOverlaysJobData = new DrawOverlaysJob
+                {
                     m_OverlayRenderBuffer            = m_OverlayRenderSystem.GetBuffer(out var overlayRenderBufferJobHandle),
                     m_ColorsMap                      = colorsMap,
                     m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
@@ -123,6 +129,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Job to draw parcel overlays.
         /// </summary>
+#if USE_BURST
+        [BurstCompile]
+#endif
         protected struct DrawOverlaysJob : IJobChunk {
             [ReadOnly] public required OverlayRenderSystem.Buffer       m_OverlayRenderBuffer;
             [ReadOnly] public required NativeHashMap<ushort, Color>     m_ColorsMap;
@@ -145,11 +154,11 @@ namespace Platter.Systems {
                 var transformsArray  = chunk.GetNativeArray(ref m_TransformComponentTypeHandle);
                 var prefabRefsArray  = chunk.GetNativeArray(ref m_PrefabRefComponentTypeHandle);
                 var parcelsArray     = chunk.GetNativeArray(ref m_ParcelComponentTypeHandle);
-                var cullingInfoArray = chunk.GetNativeArray(ref m_CullingInfoComponentTypeHandle);
+                //var cullingInfoArray = chunk.GetNativeArray(ref m_CullingInfoComponentTypeHandle);
 
                 while (enumerator.NextEntityIndex(out var i)) {
                     var entity      = entitiesArray[i];
-                    var cullingInfo = cullingInfoArray[i];
+                    //var cullingInfo = cullingInfoArray[i];
 
                     // Temporary fix until we can figure out how to avoid culling overridden Parcels
                     //if (!IsNearCamera(cullingInfo)) {
@@ -169,7 +178,7 @@ namespace Platter.Systems {
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local
                     // center to calculate the cube's world position.
-                    DrawingUtils.DrawParcel(
+                    DrawParcel(
                         m_OverlayRenderBuffer,
                         parcelData.m_LotSize,
                         trs,
@@ -180,8 +189,144 @@ namespace Platter.Systems {
                 }
             }
 
-            private bool IsNearCamera(CullingInfo cullingInfo) {
-                return cullingInfo.m_CullingIndex != 0 && (m_CullingData[cullingInfo.m_CullingIndex].m_Flags & PreCullingFlags.NearCamera) > 0U;
+            private static void DrawParcel(OverlayRenderSystem.Buffer buffer,
+                                          int2                       lotSize,
+                                          float4x4                   trs,
+                                          Color                      backgroundColor,
+                                          ParcelState                parcelState,
+                                          bool                       spawnable = false) {
+                // Constants
+                const float accessMult         = 3.5f;
+                const float opacityLow         = ColorConstants.OpacityLow;
+                const float outlineWidth       = DimensionConstants.ParcelOutlineWidth;
+                const float cellSize           = DimensionConstants.CellSize;
+                const float cellOutlineWidth   = DimensionConstants.ParcelCellOutlineWidth;
+                const float frontIndicatorDiam = DimensionConstants.ParcelFrontIndicatorDiameter;
+                const float frontIndicatorLine = DimensionConstants.ParcelFrontIndicatorHollowLineWidth;
+
+                // Colors (inlined for Burst compatibility
+                var parcelOutlineColor        = new Color(1f, 1f, 1f, 0.6f);
+                var parcelInlineColor         = new Color(1f, 1f, 1f, opacityLow);
+                var parcelFrontIndicatorColor = new Color(1f, 1f, 1f, 1f);
+                var transparentColor          = new Color(1f, 1f, 1f, 0f);
+
+                // Geometry calculations
+                var parcelGeo     = new ParcelGeometry(lotSize);
+                var parcelSize    = parcelGeo.Size;
+                var parcelCenter  = parcelGeo.Center;
+                var parcelCorners = parcelGeo.CornerNodes;
+                var parcelFront   = parcelGeo.FrontNode;
+                var parcelBack    = parcelGeo.BackNode;
+
+                // Road access flags
+                var hasFrontAccess = (parcelState & ParcelState.RoadFront) != 0;
+                var hasLeftAccess  = (parcelState & ParcelState.RoadLeft)  != 0;
+                var hasRightAccess = (parcelState & ParcelState.RoadRight) != 0;
+
+                // Line widths (thicker on sides with road access)
+                var frontLineWidth = hasFrontAccess ? outlineWidth * accessMult : outlineWidth;
+                var leftLineWidth  = hasLeftAccess  ? outlineWidth * accessMult : outlineWidth;
+                var rightLineWidth = hasRightAccess ? outlineWidth * accessMult : outlineWidth;
+                var frontLineHalf  = frontLineWidth * 0.5f;
+                var leftLineHalf   = leftLineWidth  * 0.5f;
+                var backLineHalf   = outlineWidth   * 0.5f;
+                var rightLineHalf  = rightLineWidth * 0.5f;
+
+                // Draw parcel outline
+                // Corner layout:
+                //  c2 ┌┐ c3
+                //  c1 └┘ c0
+
+                // Front edge
+                buffer.DrawLine(
+                    parcelOutlineColor,
+                    new Line3.Segment(
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineWidth, 0f, -frontLineHalf)),
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineWidth, 0f, -frontLineHalf))
+                    ),
+                    frontLineWidth);
+
+                // Left edge
+                buffer.DrawLine(
+                    parcelOutlineColor,
+                    new Line3.Segment(
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineHalf, 0f, 0f)),
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineHalf, 0f, 0f))
+                    ),
+                    leftLineWidth);
+
+                // Back edge
+                buffer.DrawLine(
+                    parcelOutlineColor,
+                    new Line3.Segment(
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineWidth, 0f, +backLineHalf)),
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineWidth, 0f, +backLineHalf))
+                    ),
+                    outlineWidth);
+
+                // Right edge
+                buffer.DrawLine(
+                    parcelOutlineColor,
+                    new Line3.Segment(
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineHalf, 0f, 0f)),
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineHalf, 0f, 0f))
+                    ),
+                    rightLineWidth);
+
+                // Background fill
+                backgroundColor.a = opacityLow;
+                buffer.DrawLine(
+                    backgroundColor,
+                    new Line3.Segment(
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
+                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelBack)
+                    ),
+                    parcelSize.x);
+
+                // Inner grid lines (front to back)
+                var frontNode = parcelCorners.c1;
+                var backNode  = parcelCorners.c2;
+                frontNode.z -= frontLineWidth;
+                backNode.z  += outlineWidth;
+                for (var i = 1; i < lotSize.x; i++) {
+                    frontNode.x -= cellSize;
+                    backNode.x  -= cellSize;
+                    buffer.DrawLine(
+                        parcelInlineColor,
+                        new Line3.Segment(
+                            ParcelUtils.GetWorldPosition(trs, parcelCenter, frontNode),
+                            ParcelUtils.GetWorldPosition(trs, parcelCenter, backNode)
+                        ),
+                        cellOutlineWidth);
+                }
+
+                // Inner grid lines (left to right)
+                var leftNode  = parcelCorners.c1;
+                var rightNode = parcelCorners.c0;
+                leftNode.x  -= leftLineWidth;
+                rightNode.x += rightLineWidth;
+                for (var i = 1; i < lotSize.y; i++) {
+                    leftNode.z  -= cellSize;
+                    rightNode.z -= cellSize;
+                    buffer.DrawLine(
+                        parcelInlineColor,
+                        new Line3.Segment(
+                            ParcelUtils.GetWorldPosition(trs, parcelCenter, leftNode),
+                            ParcelUtils.GetWorldPosition(trs, parcelCenter, rightNode)
+                        ),
+                        cellOutlineWidth);
+                }
+
+                // Front access indicator (filled circle if spawnable, hollow otherwise)
+                buffer.DrawCircle(
+                    parcelFrontIndicatorColor,
+                    spawnable ? parcelFrontIndicatorColor : transparentColor,
+                    frontIndicatorLine,
+                    OverlayRenderSystem.StyleFlags.Grid,
+                    new float2(1, 1),
+                    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
+                    frontIndicatorDiam
+                );
             }
         }
     }

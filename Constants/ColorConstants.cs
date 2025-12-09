@@ -26,11 +26,11 @@ namespace Platter.Constants {
         public static readonly Color GuidelinePrimary   = Color.cyan;
         public static readonly Color GuidelineSecondary = Color.magenta;
 
-        public static readonly float OpacityFull = 1f;
+        public const float OpacityFull = 1f;
 
         // ColorConstants (general)
-        public static readonly float OpacityLow           = 0.2f;
-        public static readonly float OpacityMedium        = 0.4f;
+        public const float OpacityLow           = 0.2f;
+        public const float OpacityMedium        = 0.4f;
         public static readonly Color ParcelBackground     = new(255f / 255f, 255f / 255f, 255f / 255f, OpacityMedium);
         public static readonly Color ParcelCellOutline    = Color.grey;
         public static readonly Color ParcelFrontIndicator = Color.white;
