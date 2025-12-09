@@ -154,8 +154,7 @@ namespace Platter.Systems {
                         uiObjectData = uiObjectDataArray[k];
 
                         // Cache zone group if not already cached
-                        if (!ZoneGroupUIData.ContainsKey(uiObjectData.m_Group)) {
-                            var uiPrefab  = m_PrefabSystem.GetPrefab<UIAssetCategoryPrefab>(uiObjectData.m_Group);
+                        if (!ZoneGroupUIData.ContainsKey(uiObjectData.m_Group) && m_PrefabSystem.TryGetPrefab<UIAssetCategoryPrefab>(uiObjectData.m_Group, out var uiPrefab)) {
                             var uiObject = uiPrefab.GetComponent<UIObject>();
                             ZoneGroupUIData[uiObjectData.m_Group] = new ZoneGroupUIDataModel(
                                 uiPrefab,
