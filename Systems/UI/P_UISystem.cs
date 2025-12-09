@@ -24,6 +24,7 @@ namespace Platter.Systems {
     using static P_SnapSystem;
     using ZoneUIDataModel = P_ZoneCacheSystem.ZoneUIDataModel;
     using AssetPackUIDataModel = P_ZoneCacheSystem.AssetPackUIDataModel;
+    using ZoneGroupUIDataModel = P_ZoneCacheSystem.ZoneGroupUIDataModel;
 
     #endregion
 
@@ -58,6 +59,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<bool>         m_EnableSnappingOptionsBinding;
         private ValueBindingHelper<bool>         m_EnableToolButtonsBinding;
         private ValueBindingHelper<bool>         m_ModalFirstLaunchBinding;
+        private ValueBindingHelper<bool>         m_ModalChangelogBinding;
         private ValueBindingHelper<bool>         m_RenderParcelsBinding;
         private ValueBindingHelper<bool>         m_ShowContourLinesBinding;
         private ValueBindingHelper<bool>         m_ShowZonesBinding;
@@ -73,13 +75,16 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIDataModel[]> m_ZoneDataBinding;
         private ValueBindingHelper<AssetPackUIDataModel[]> m_AssetPackDataBinding;
+        private ValueBindingHelper<ZoneGroupUIDataModel[]> m_ZoneGroupDataBinding;
         private ValueBindingHelper<float>        m_MaxSnapSpacingBinding;
-        private bool                             CurrentlyUsingParcelsInObjectTool => m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+        private ValueBindingHelper<uint>         m_CurrentChangelogVersionBinding;
+        private ValueBindingHelper<uint>         m_LastViewedChangelogVersionBinding;
+        private bool                             CurrentlyUsingParcelsInObjectTool => m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
         private bool                             CurrentlyUsingZoneTool => m_ToolSystem.activePrefab is ZonePrefab && m_ToolSystem.activeTool is ZoneToolSystem;
 
-        public bool                             ShowContourLines { get; set; }
-        public  bool                             ShowZones { get; set; }
-        public  ZoneType                         PreZoneType { get; set; } = ZoneType.None;
+        public bool     ShowContourLines { get; set; }
+        public bool     ShowZones        { get; set; }
+        public ZoneType PreZoneType      { get; set; } = ZoneType.None;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -112,6 +117,7 @@ namespace Platter.Systems {
             m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
             m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIDataModel[] { });
             m_AssetPackDataBinding         = CreateBinding("ASSET_PACK_DATA", new AssetPackUIDataModel[] { });
+            m_ZoneGroupDataBinding         = CreateBinding("ZONE_GROUP_DATA", new ZoneGroupUIDataModel[] { });
             m_RenderParcelsBinding         = CreateBinding("RENDER_PARCELS", PlatterMod.Instance.Settings.RenderParcels, SetRenderParcels);
             m_AllowSpawningBinding         = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
             m_ShowContourLinesBinding      = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
@@ -120,7 +126,10 @@ namespace Platter.Systems {
             m_SnapSpacingBinding           = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
             m_MaxSnapSpacingBinding        = CreateBinding("MAX_SNAP_SPACING", MaxSnapDistance);
             m_ModalFirstLaunchBinding      = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
+            m_ModalChangelogBinding        = CreateBinding("MODAL__CHANGELOG", false, SetModalChangelog);
             m_ToolModeBinding              = CreateBinding("TOOL_MODE", 0, SetToolMode);
+            m_CurrentChangelogVersionBinding = CreateBinding("CURRENT_CHANGELOG_VERSION", PlatterModSettings.CurrentChangelogVersion);
+            m_LastViewedChangelogVersionBinding = CreateBinding("LAST_VIEWED_CHANGELOG_VERSION", PlatterMod.Instance.Settings.LastViewedChangelogVersion, SetLastViewedChangelogVersion);
 
             // Triggers
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
@@ -170,18 +179,23 @@ namespace Platter.Systems {
             m_BlockWidthBinding.Value        = m_SelectedParcelSize.x;
             m_BlockDepthBinding.Value        = m_SelectedParcelSize.y;
             m_EnableToolButtonsBinding.Value = CurrentlyUsingParcelsInObjectTool;
-            m_EnableSnappingOptionsBinding.Value = m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create or ObjectToolSystem.Mode.Line
-                or ObjectToolSystem.Mode.Curve or ObjectToolSystem.Mode.Curve;
+            m_EnableSnappingOptionsBinding.Value = m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create &&
+                                                   m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Line   &&
+                                                   m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Curve  &&
+                                                   m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Move;
+
             m_EnableCreateFromZoneBinding.Value = CurrentlyUsingZoneTool;
             m_ModalFirstLaunchBinding.Value     = PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial;
             m_ZoneBinding.Value                 = PreZoneType.m_Index;
             m_ShowContourLinesBinding.Value     = ShowContourLines;
             m_ShowZonesBinding.Value            = ShowZones;
             m_SnapSpacingBinding.Value          = m_SnapSystem.CurrentSnapSetback;
+            m_LastViewedChangelogVersionBinding.Value = PlatterMod.Instance.Settings.LastViewedChangelogVersion;
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
             Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
             m_ZoneDataBinding.Value = zoneData;
-            m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.ToArray();
+            m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values.ToArray();
+            m_ZoneGroupDataBinding.Value = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
         }
 
         private void HandleProxyActions() {
@@ -258,7 +272,21 @@ namespace Platter.Systems {
 
         /// <summary>
         /// </summary>
-        private bool ShouldRenderOverlay() { return m_ToolSystem.activeTool is not DefaultToolSystem || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab; }
+        private bool ShouldRenderOverlay() {
+            // Should generally show parcels unless the active tool is specifically called out here
+            var toolCheck = m_ToolSystem.activeTool is not DefaultToolSystem &&
+                            m_ToolSystem.activeTool is not AreaToolSystem    &&
+                            m_ToolSystem.activeTool is not WaterToolSystem   &&
+                            m_ToolSystem.activeTool is not UpgradeToolSystem &&
+                            // Object tool only when using parcel prefabs
+                            m_ToolSystem.activeTool is not ObjectToolSystem
+                            {
+                                prefab: not ParcelPlaceholderPrefab,
+                            };
+
+            // Also catch any other tool using parcel prefabs
+            return toolCheck || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+        }
 
         /// <summary>
         /// Open the panel.
@@ -266,6 +294,13 @@ namespace Platter.Systems {
         private void HandleModalDismiss(string modal) {
             m_Log.Debug($"HandleModalDismiss(modal: {modal})");
             PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial = true;
+        }
+
+        /// <summary>
+        /// Called from the UI when the changelog modal is opened or closed.
+        /// </summary>
+        private void SetModalChangelog(bool isOpen) {
+            m_Log.Debug($"SetModalChangelog(isOpen = {isOpen})");
         }
 
         /// <summary>
@@ -360,6 +395,14 @@ namespace Platter.Systems {
         private void SetShowZones(bool enabled) {
             m_Log.Debug($"SetShowZones(enabled = {enabled})");
             ShowZones = enabled;
+        }
+
+        /// <summary>
+        /// Called from the UI when the user views the changelog.
+        /// </summary>
+        private void SetLastViewedChangelogVersion(uint version) {
+            m_Log.Debug($"SetLastViewedChangelogVersion(version = {version})");
+            PlatterMod.Instance.Settings.LastViewedChangelogVersion = version;
         }
 
         /// <summary>

@@ -32,7 +32,6 @@
     border-radius: 20rem;
 
     animation: 600ms fadeInScale ease-out forwards;
-    animation-delay: 1s;
 
     p,
     li {
@@ -49,14 +48,17 @@
     border-top-right-radius: 20rem 20rem;
 
     h2 {
-        margin-top: 0;
-        margin-bottom: 8rem;
+        margin: 0;
         font-weight: bold;
     }
 
     h3 {
         margin: 0;
         font-weight: bold;
+    }
+
+    h2 + h3 {
+        margin-top: 8rem;
     }
 
     & > * > * {
@@ -78,6 +80,67 @@
 
 .whatsNewPage {
     padding-top: 32rem;
+}
+
+.changelog {
+    display: flex;
+    padding: 32rem 64rem 32rem 32rem;
+    color:  var(--menuText2Normal);
+
+    &__left {
+        width: 100rem;
+        top: 50rem;
+        left: 32px;
+        bottom: -100rem;
+        border-right: 2rem solid rgba(255, 99, 183, 1);
+        position: absolute;
+    }
+
+    &__right {
+        flex: 1;
+        padding-left: 120rem;
+    }
+}
+
+.card + .versionDivider {
+    margin-top: 16rem;
+}
+
+.versionDivider {
+    padding-left: 16rem;
+    padding-right: 16rem;
+
+    &__inner {
+        position: relative;
+        padding: 8rem 0;
+    }
+
+    &__circle {
+        width: 12rem;
+        height: 12rem;
+        border-radius: 50% 50%;
+        background-color:  rgba(255, 99, 183, 1);
+        position: absolute;
+        top: 50%;
+        transform: translate(-30rem, 1rem);
+        right: 100%;
+    }
+
+    &__time {
+        font-size: 0.8em;
+        color: rgba(255, 99, 183, 1);
+        line-height: 0.8em;
+        position: absolute;
+        right: 100%;
+        top: 50%;
+        transform: translate(-100%, 1rem);
+        text-align: right;
+    }
+
+    h3 {
+        margin: 0;
+        color: var(--accentColorLighter);
+    }
 }
 
 .intro {
@@ -135,7 +198,6 @@
     }
 
     &__text_container {
-        margin-top: 8rem;
         display: flex;
         flex-direction: column;
         max-width: 500em;
@@ -155,7 +217,7 @@
         color: var(--accentColorLighter);
     }
 
-    p {
+    p + p {
         margin-top: 10rem;
     }
 }
@@ -169,17 +231,11 @@
 }
 
 .list {
-    display: list-item;
     margin: 6rem 0;
 }
 
 .list small {
     opacity: 0.3;
-}
-
-.list ol,
-.list ul {
-    display: list-item;
 }
 
 .list li {

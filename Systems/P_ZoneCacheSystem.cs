@@ -10,6 +10,7 @@ namespace Platter.Systems {
     using System.Linq;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
+    using Game.Areas;
     using Game.Common;
     using Game.Prefabs;
     using Game.UI;
@@ -24,20 +25,19 @@ namespace Platter.Systems {
     /// System responsible for caching Zone Information for other systems.
     /// </summary>
     public partial class P_ZoneCacheSystem : PlatterGameSystemBase {
-        private EntityQuery                         m_ModifiedQuery;
-        private EntityQuery                         m_AllQuery;
-        private EntityQuery                         m_AssetPackQuery;
-        private NativeHashMap<ushort, Entity>       m_ZonePrefabs;
-        private PrefabSystem                        m_PrefabSystem;
-        private ImageSystem                         m_ImageSystem;
-        public  Dictionary<ushort, Color>           EdgeColors      { get; private set; }
-        public  Dictionary<ushort, Color>           FillColors      { get; private set; }
-        public  Dictionary<ushort, ZoneUIDataModel> ZoneUIData      { get; private set; }
-        public  List<AssetPackUIDataModel>          AssetPackUIData { get; private set; }
-        public  NativeHashMap<ushort, Entity>       ZonePrefabs     => m_ZonePrefabs;
+        private EntityQuery                   m_ZonesModifiedQuery;
+        private EntityQuery                   m_UIAssetCategoryPrefabCreatedQuery;
+        private EntityQuery                   m_ZonesAllQuery;
+        private NativeHashMap<ushort, Entity> m_ZonePrefabs;
+        private PrefabSystem                  m_PrefabSystem;
+        private ImageSystem                   m_ImageSystem;
 
-        private bool m_Zones_InitialCacheComplete = false;
-        private bool m_Packs_InitialCacheComplete = false;
+        public Dictionary<ushort, Color>                EdgeColors      { get; private set; }
+        public Dictionary<ushort, Color>                FillColors      { get; private set; }
+        public Dictionary<ushort, ZoneUIDataModel>      ZoneUIData      { get; private set; }
+        public Dictionary<Entity, AssetPackUIDataModel> AssetPackUIData { get; private set; }
+        public Dictionary<Entity, ZoneGroupUIDataModel> ZoneGroupUIData { get; private set; }
+        public NativeHashMap<ushort, Entity>            ZonePrefabs     => m_ZonePrefabs;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -46,27 +46,28 @@ namespace Platter.Systems {
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ImageSystem  = World.GetOrCreateSystemManaged<ImageSystem>();
 
-            m_ModifiedQuery = SystemAPI.QueryBuilder()
+            m_ZonesModifiedQuery = SystemAPI.QueryBuilder()
                                        .WithAll<ZoneData, PrefabData>()
                                        .WithAny<Created, Updated, Deleted>()
                                        .Build();
-
-            m_AllQuery = SystemAPI.QueryBuilder()
+            m_UIAssetCategoryPrefabCreatedQuery = SystemAPI.QueryBuilder()
+                                                           .WithAll<UIAssetCategoryData>()
+                                                           .WithAny<Created, Updated, Deleted>()
+                                                           .Build();
+            m_ZonesAllQuery = SystemAPI.QueryBuilder()
                                   .WithAll<ZoneData, PrefabData>()
                                   .Build();
 
-            m_AssetPackQuery = SystemAPI.QueryBuilder()
-                                        .WithAll<AssetPackData, PrefabData>()
-                                        .Build();
-
-
+            // Construct data structures
             m_ZonePrefabs   = new NativeHashMap<ushort, Entity>(256, Allocator.Persistent);
             FillColors      = new Dictionary<ushort, Color>();
             EdgeColors      = new Dictionary<ushort, Color>();
             ZoneUIData      = new Dictionary<ushort, ZoneUIDataModel>();
-            AssetPackUIData = new List<AssetPackUIDataModel>();
+            AssetPackUIData = new Dictionary<Entity, AssetPackUIDataModel>();
+            ZoneGroupUIData = new Dictionary<Entity, ZoneGroupUIDataModel>();
 
-            RequireForUpdate(m_ModifiedQuery);
+            RequireAnyForUpdate(m_ZonesModifiedQuery);
+            RequireAnyForUpdate(m_UIAssetCategoryPrefabCreatedQuery);
         }
 
         /// <inheritdoc/>
@@ -75,15 +76,28 @@ namespace Platter.Systems {
             base.OnDestroy();
         }
 
+        private void Clear() {
+            m_ZonePrefabs.Clear();
+            FillColors.Clear();
+            EdgeColors.Clear();
+            ZoneUIData.Clear();
+            AssetPackUIData.Clear();
+            ZoneGroupUIData.Clear();
+        }
+
         /// <inheritdoc/>
         protected override void OnUpdate() {
             m_Log.Debug("OnUpdate()");
 
-            if (m_ModifiedQuery.IsEmptyIgnoreFilter) {
+            // If any UI Asset Category Prefabs were created/modified/deleted, recache all zones to ensure proper groupings
+            if (!m_UIAssetCategoryPrefabCreatedQuery.IsEmpty) {
+                // Clear existing caches
+                Clear();
+                CacheZonePrefabs(m_ZonesAllQuery);
                 return;
             }
 
-            CacheZonePrefabs(m_ModifiedQuery);
+            CacheZonePrefabs(m_ZonesModifiedQuery);
         }
 
         /// <inheritdoc/>
@@ -91,29 +105,12 @@ namespace Platter.Systems {
             base.OnGameLoaded(context);
             m_Log.Debug($"OnGameLoaded(context={context})");
 
-
-            if (!m_Zones_InitialCacheComplete) {
-                CacheZonePrefabs(m_AllQuery);
-            }
-            if (!m_Packs_InitialCacheComplete) {
-                CacheAssetPacks();
-            }
-        }
-
-        private void CacheAssetPacks() {
-            m_Packs_InitialCacheComplete = true;
-
-            var assetPacksArray = m_AssetPackQuery.ToEntityArray(Allocator.Temp);
-            foreach (var assetPackEntity in assetPacksArray) {
-                var prefab = m_PrefabSystem.GetPrefab<AssetPackPrefab>(assetPackEntity);
-                var icon   = ImageSystem.GetIcon(prefab) ?? m_ImageSystem.placeholderIcon;
-
-                AssetPackUIData.Add(new AssetPackUIDataModel(prefab, icon, assetPackEntity));
-            }
+            Clear();
+            CacheZonePrefabs(m_ZonesAllQuery);
         }
 
         private void CacheZonePrefabs(EntityQuery query) {
-            m_Zones_InitialCacheComplete = true;
+            m_Log.Debug($"CacheZonePrefabs(query={query})");
 
             var chunkArray        = query.ToArchetypeChunkArray(Allocator.Temp);
             var prefabDataTh      = SystemAPI.GetComponentTypeHandle<PrefabData>();
@@ -128,6 +125,7 @@ namespace Platter.Systems {
                 var entityArray             = chunk.GetNativeArray(SystemAPI.GetEntityTypeHandle());
                 var prefabDataArray         = chunk.GetNativeArray(ref prefabDataTh);
                 var zoneDataArray           = chunk.GetNativeArray(ref zoneDataTh);
+                var uiObjectDataArray       = chunk.GetNativeArray(ref uIObjectDataTh);
                 var assetPackBufferAccessor = chunk.GetBufferAccessor(ref assetPackBufferTh);
 
                 for (var k = 0; k < zoneDataArray.Length; k++) {
@@ -141,11 +139,35 @@ namespace Platter.Systems {
                         for (var i = 0; i < assetPackBuffer.Length; i++) {
                             var pack = assetPackBuffer[i];
                             assetPacks.Add(pack.m_Pack);
+
+                            // Cache asset pack if not already cached
+                            if (!AssetPackUIData.ContainsKey(pack.m_Pack)) {
+                                var assetPackPrefab = m_PrefabSystem.GetPrefab<AssetPackPrefab>(pack.m_Pack);
+                                var icon = ImageSystem.GetIcon(assetPackPrefab) ?? m_ImageSystem.placeholderIcon;
+                                AssetPackUIData[pack.m_Pack] = new AssetPackUIDataModel(assetPackPrefab, icon, pack.m_Pack);
+                            }
                         }
                     }
 
-                    if (!chunk.Has(ref uIObjectDataTh) && zonePrefab.name != "Unzoned") {
-                        continue;
+                    UIObjectData uiObjectData = default;
+                    if (chunk.Has(ref uIObjectDataTh)) {
+                        uiObjectData = uiObjectDataArray[k];
+
+                        // Cache zone group if not already cached
+                        if (!ZoneGroupUIData.ContainsKey(uiObjectData.m_Group)) {
+                            var uiPrefab  = m_PrefabSystem.GetPrefab<UIAssetCategoryPrefab>(uiObjectData.m_Group);
+                            var uiObject = uiPrefab.GetComponent<UIObject>();
+                            ZoneGroupUIData[uiObjectData.m_Group] = new ZoneGroupUIDataModel(
+                                uiPrefab,
+                                uiObject.m_Icon,
+                                uiObjectData.m_Group
+                            );
+                        }
+                    } else {
+                        // Skip zonePrefabs without UI data unless it's Unzoned
+                        if (zonePrefab.name != "Unzoned") {
+                            continue;
+                        }
                     }
 
                     if (chunk.Has(ref deletedTh)) {
@@ -161,13 +183,14 @@ namespace Platter.Systems {
 
                         // Cache
                         m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
-                        FillColors[zoneData.m_ZoneType.m_Index]    = zonePrefab.m_Color;
-                        EdgeColors[zoneData.m_ZoneType.m_Index]    = zonePrefab.m_Edge;
+                        FillColors[zoneData.m_ZoneType.m_Index] = zonePrefab.m_Color;
+                        EdgeColors[zoneData.m_ZoneType.m_Index] = zonePrefab.m_Edge;
                         ZoneUIData[zoneData.m_ZoneType.m_Index] = new ZoneUIDataModel(
                             zonePrefab.name,
                             GetThumbnail(zonePrefab),
                             category,
                             zoneData.m_ZoneType.m_Index,
+                            uiObjectData.m_Group,
                             assetPacks
                         );
                     }
@@ -187,8 +210,9 @@ namespace Platter.Systems {
         public readonly struct ZoneUIDataModel : IJsonWritable {
             public readonly string       Name;
             public readonly string       Thumbnail;
-            public readonly string       Category;
+            public readonly string       AreaType;
             public readonly int          Index;
+            public readonly Entity       Group;
             public readonly List<Entity> AssetPacks;
 
             /// <summary>
@@ -196,13 +220,15 @@ namespace Platter.Systems {
             /// </summary>
             public ZoneUIDataModel(string name,
                               string thumbnail,
-                              string category,
+                              string areaType,
                               int    index, 
+                              Entity group,
                               List<Entity> assetPacks) {
                 Name       = name;
                 Thumbnail  = thumbnail;
-                Category   = category;
+                AreaType   = areaType;
                 Index      = index;
+                Group      = group;
                 AssetPacks = assetPacks;
             }
 
@@ -216,8 +242,11 @@ namespace Platter.Systems {
                 writer.PropertyName("thumbnail");
                 writer.Write(Thumbnail);
 
-                writer.PropertyName("category");
-                writer.Write(Category);
+                writer.PropertyName("areaType");
+                writer.Write(AreaType);
+
+                writer.PropertyName("group");
+                writer.Write(Group);
 
                 writer.PropertyName("index");
                 writer.Write(Index);
@@ -239,9 +268,40 @@ namespace Platter.Systems {
             public readonly Entity          Entity;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ZoneUIDataModel"/> struct.
+            /// Initializes a new instance of the <see cref="AssetPackUIDataModel"/> struct.
             /// </summary>
             public AssetPackUIDataModel(AssetPackPrefab prefab, string icon, Entity entity) {
+                Prefab = prefab;
+                Icon   = icon;
+                Entity = entity;
+            }
+
+            /// <inheritdoc/>
+            public void Write(IJsonWriter writer) {
+                writer.TypeBegin(GetType().FullName);
+
+                writer.PropertyName("entity");
+                writer.Write(Entity);
+
+                writer.PropertyName("name");
+                writer.Write(Prefab.name);
+
+                writer.PropertyName("icon");
+                writer.Write(Icon);
+
+                writer.TypeEnd();
+            }
+        }
+
+        public readonly struct ZoneGroupUIDataModel : IJsonWritable {
+            public readonly UIAssetCategoryPrefab Prefab;
+            public readonly string                Icon;
+            public readonly Entity                Entity;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ZoneGroupUIDataModel"/> struct.
+            /// </summary>
+            public ZoneGroupUIDataModel(UIAssetCategoryPrefab prefab, string icon, Entity entity) {
                 Prefab = prefab;
                 Icon   = icon;
                 Entity = entity;

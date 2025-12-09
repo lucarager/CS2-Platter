@@ -19,9 +19,16 @@ export type AssetPackData = {
 export type ZoneData = {
     name: string;
     thumbnail: string;
-    category: string;
+    areaType: string;
+    group: Entity;
     index: number;
     assetPacks: Entity[];
+};
+
+export type ZoneGroupData = {
+    name: string;
+    icon: string;
+    entity: Entity;
 };
 
 export enum SnapMode {

@@ -6,12 +6,13 @@
 namespace Platter.Systems {
     #region Using Statements
 
-    using Colossal.Entities;
     using Components;
     using Game;
     using Game.Common;
     using Game.Tools;
     using Game.Zones;
+    using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Utils;
@@ -23,13 +24,11 @@ namespace Platter.Systems {
     /// This is what marks a block as a valid spawn location to the vanilla ZoneSpawnSystem.
     /// </summary>
     public partial class P_BlockToRoadReferenceSystem : GameSystemBase {
-        private EntityCommandBuffer m_CommandBuffer;
-
         // Queries
         private EntityQuery m_ParcelUpdatedQuery;
 
         // Barriers & Buffers
-        private ModificationBarrier5 m_ModificationBarrier;
+        private ModificationBarrier5 m_ModificationBarrier5;
 
         // Logger
         private PrefixedLogger m_Log;
@@ -41,7 +40,7 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(P_BlockToRoadReferenceSystem));
             m_Log.Debug("OnCreate()");
 
-            m_ModificationBarrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();
+            m_ModificationBarrier5 = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
             m_ParcelUpdatedQuery = SystemAPI.QueryBuilder()
                                             .WithAll<Parcel, Initialized>()
@@ -53,56 +52,80 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        // Todo convert to job for perf
         protected override void OnUpdate() {
-            m_Log.Debug("OnUpdate() -- Updating Percel->Block->Road ownership references");
+            m_Log.Debug("OnUpdate() -- Updating Parcel->Block->Road ownership references");
 
-            m_CommandBuffer = m_ModificationBarrier.CreateCommandBuffer();
+            Dependency = new UpdateBlockOwnerJob
+            {
+                m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
+                m_ParcelTypeHandle               = SystemAPI.GetComponentTypeHandle<Parcel>(true),
+                m_ParcelSubBlockBufferTypeHandle = SystemAPI.GetBufferTypeHandle<ParcelSubBlock>(true),
+                m_ParcelSpawnableLookup          = SystemAPI.GetComponentLookup<ParcelSpawnable>(true),
+                m_CurvePositionLookup            = SystemAPI.GetComponentLookup<CurvePosition>(),
+                m_OwnerLookup                    = SystemAPI.GetComponentLookup<Owner>(),
+                m_CommandBuffer                  = m_ModificationBarrier5.CreateCommandBuffer().AsParallelWriter(),
+            }.Schedule(m_ParcelUpdatedQuery, Dependency);
 
-            var entities = m_ParcelUpdatedQuery.ToEntityArray(Allocator.Temp);
+            m_ModificationBarrier5.AddJobHandleForProducer(Dependency);
+        }
 
-            foreach (var parcelEntity in entities) {
-                var parcel        = EntityManager.GetComponentData<Parcel>(parcelEntity);
-                var allowSpawning = EntityManager.HasComponent<ParcelSpawnable>(parcelEntity);
+#if USE_BURST
+        [BurstCompile]
+#endif
+        private struct UpdateBlockOwnerJob : IJobChunk {
+            [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
+            [ReadOnly] public required BufferTypeHandle<ParcelSubBlock>   m_ParcelSubBlockBufferTypeHandle;
+            [ReadOnly] public required ComponentLookup<ParcelSpawnable>   m_ParcelSpawnableLookup;
+            public required            ComponentLookup<CurvePosition>     m_CurvePositionLookup;
+            public required            ComponentLookup<Owner>             m_OwnerLookup;
+            public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
-                if (!EntityManager.TryGetBuffer<ParcelSubBlock>(parcelEntity, false, out var subBlockBuffer)) {
-                    m_Log.Error($"OnUpdate() -- Couldn't find parcel's {parcelEntity} subblock buffer");
-                    return;
-                }
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
+                                in v128           chunkEnabledMask) {
+                var entityArray         = chunk.GetNativeArray(m_EntityTypeHandle);
+                var parcelArray         = chunk.GetNativeArray(ref m_ParcelTypeHandle);
+                var subBlockBufferArray = chunk.GetBufferAccessor(ref m_ParcelSubBlockBufferTypeHandle);
 
-                foreach (var subBlock in subBlockBuffer) {
-                    var blockEntity   = subBlock.m_SubBlock;
-                    var curvePosition = EntityManager.GetComponentData<CurvePosition>(blockEntity);
+                for (var i = 0; i < entityArray.Length; i++) {
+                    var parcelEntity   = entityArray[i];
+                    var parcel         = parcelArray[i];
+                    var subBlockBuffer = subBlockBufferArray[i];
+                    var allowSpawning  = m_ParcelSpawnableLookup.HasComponent(parcelEntity);
 
-                    curvePosition.m_CurvePosition = parcel.m_CurvePosition;
-                    m_CommandBuffer.SetComponent(blockEntity, curvePosition);
+                    foreach (var subBlock in subBlockBuffer) {
+                        var blockEntity = subBlock.m_SubBlock;
 
-                    m_Log.Debug($"OnUpdate() -- Parcel {parcelEntity} -> Block {blockEntity}: Updating Block's Owner ({parcel.m_RoadEdge})");
+                        // Update the block's curve position
+                        if (m_CurvePositionLookup.TryGetComponent(blockEntity, out var curvePosition)) {
+                            curvePosition.m_CurvePosition      = parcel.m_CurvePosition;
+                            m_CurvePositionLookup[blockEntity] = curvePosition;
+                        }
 
-                    if (parcel.m_RoadEdge != Entity.Null) {
-                        m_CommandBuffer.AddComponent<Updated>(parcel.m_RoadEdge, default);
-                    }
+                        // Mark the road edge as updated
+                        if (parcel.m_RoadEdge != Entity.Null) {
+                            m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, parcel.m_RoadEdge);
+                        }
 
-                    if (parcel.m_RoadEdge == Entity.Null || !allowSpawning) {
-                        // We need to make sure that the block actually NEVER has a null owner
-                        // Otherwise the game can crash when systems try to retrieve the Edge.
-                        // Tsk tsk paradox for not considering an edge case that is entirely a modders thing and doesn't happen in vanilla ;)
+                        if (parcel.m_RoadEdge == Entity.Null || !allowSpawning) {
+                            // We need to make sure that the block actually NEVER has a null owner
+                            // Otherwise the game can crash when systems try to retrieve the Edge.
+                            // Tsk tsk paradox for not considering an edge case that is entirely a modders thing and doesn't happen in vanilla ;)
 
-                        // Also note that this is how we prevent a parcel from spawning buildings - as long as no Edge is set as owner,
-                        // the spawn system won't pick up this block.
-                        m_CommandBuffer.RemoveComponent<Owner>(blockEntity);
-                    } else {
-                        if (EntityManager.TryGetComponent<Owner>(blockEntity, out var owner)) {
-                            owner.m_Owner = parcel.m_RoadEdge;
-                            m_CommandBuffer.SetComponent(blockEntity, owner);
+                            // Also note that this is how we prevent a parcel from spawning buildings - as long as no Edge is set as owner,
+                            // the spawn system won't pick up this block.
+                            m_CommandBuffer.RemoveComponent<Owner>(unfilteredChunkIndex, blockEntity);
                         } else {
-                            m_CommandBuffer.AddComponent(blockEntity, new Owner(parcel.m_RoadEdge));
+                            if (m_OwnerLookup.TryGetComponent(blockEntity, out var owner)) {
+                                owner.m_Owner              = parcel.m_RoadEdge;
+                                m_OwnerLookup[blockEntity] = owner;
+                            } else {
+                                m_CommandBuffer.AddComponent(unfilteredChunkIndex, blockEntity, new Owner(parcel.m_RoadEdge));
+                            }
                         }
                     }
                 }
             }
-
-            entities.Dispose();
         }
     }
 }

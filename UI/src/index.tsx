@@ -8,6 +8,7 @@ import { ToolButtonWrapper } from "components/toolButton/toolButton";
 import { WelcomeModal } from "components/modals/WelcomeModal";
 import { PlatterCreateParcelFromZone } from "components/createParcelFromZone/createParcelFromZone";
 import mod from "../mod.json";
+import { ChangelogModal } from "components/modals/ChangelogModal";
 
 // Register bindings
 GAME_BINDINGS.BLOCK_DEPTH;
@@ -17,6 +18,7 @@ const register: ModRegistrar = (moduleRegistry: ModuleRegistry) => {
 
     moduleRegistry.append("GameTopLeft", ToolButtonWrapper);
     moduleRegistry.append("Game", WelcomeModal);
+    moduleRegistry.append("Game", ChangelogModal);
 
     moduleRegistry.extend(
         "game-ui/game/components/tool-options/tool-options-panel.tsx",

@@ -29,7 +29,8 @@ namespace Platter.Systems {
     /// System responsible for connecting parcels to roads.
     /// </summary>
     public partial class P_RoadConnectionSystem : GameSystemBase {
-        private const float MaxDistance = 8.4f;
+        private const float MaxDistanceFront = 8.4f;
+        private const float MaxDistanceSides = 7.8f;
 
         // Queries
         private EntityQuery           m_ModificationQuery;
@@ -117,6 +118,7 @@ namespace Platter.Systems {
                 m_StartNodeGeometryTypeHandle      = SystemAPI.GetComponentTypeHandle<StartNodeGeometry>(),
                 m_EndNodeGeometryTypeHandle        = SystemAPI.GetComponentTypeHandle<EndNodeGeometry>(),
                 m_DeletedTypeHandle                = SystemAPI.GetComponentTypeHandle<Deleted>(),
+                m_TempTypeHandle                   = SystemAPI.GetComponentTypeHandle<Temp>(),
             }.ScheduleParallel(
                 m_ModificationQuery,
                 JobHandle.CombineDependencies(Dependency, parcelSearchJobHandle)

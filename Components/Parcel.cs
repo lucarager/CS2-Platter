@@ -17,36 +17,14 @@ namespace Platter.Components {
     /// Flags used to track the state of a parcel (zoning type, road connections).
     /// </summary>
     [Flags]
-    public enum ParcelStateFlags : byte {
-        /// <summary>
-        /// No state flags set.
-        /// </summary>
+    public enum ParcelState : byte {
         None          = 0,
-
-        /// <summary>
-        /// Parcel has uniform zoning (single zone type).
-        /// </summary>
         ZoningUniform = 1,
-
-        /// <summary>
-        /// Parcel has mixed zoning (multiple zone types).
-        /// </summary>
         ZoningMixed   = 2,
-
-        /// <summary>
-        /// Parcel is connected to a road on the left.
-        /// </summary>
         RoadLeft      = 4,
-
-        /// <summary>
-        /// Parcel is connected to a road on the right.
-        /// </summary>
         RoadRight     = 8,
-
-        /// <summary>
-        /// Parcel is connected to a road at the back.
-        /// </summary>
         RoadBack      = 16,
+        RoadFront     = 32,
     }
 
     /// <summary>
@@ -76,7 +54,7 @@ namespace Platter.Components {
         /// <summary>
         /// State flags indicating zoning type and road connections.
         /// </summary>
-        public ParcelStateFlags m_State;
+        public ParcelState m_State;
 
         /// <inheritdoc/>
         public void Serialize<TWriter>(TWriter writer)
@@ -96,7 +74,7 @@ namespace Platter.Components {
             reader.Read(out m_CurvePosition);
             reader.Read(out m_Building);
             reader.Read(out byte stateBytes);
-            m_State = (ParcelStateFlags)stateBytes;
+            m_State = (ParcelState)stateBytes;
         }
     }
 }

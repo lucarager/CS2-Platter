@@ -165,6 +165,7 @@ namespace Platter {
 
             // Serializaztion/Deserializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_ParcelPlaceholderMigrationSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ParcelSubBlockDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ConnectedParcelDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ConnectedParcelLoadSystem>(SystemUpdatePhase.Deserialize);

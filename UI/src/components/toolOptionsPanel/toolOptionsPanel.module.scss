@@ -110,13 +110,15 @@
 }
 
 .dropdownMenu {
-    height: 95%;
-    max-height: 60vh;
+    position: relative;
+    left: 255rem;
+    top: -10vh;
+    height: 110%;
     background-color: var(--panelColorDark);
     backdrop-filter: var(--panelBlur);
     color: var(--accentColorNormal);
     width: calc(
-        var(--assetMenuColumns) *
+        12 *
         ( var(--assetMenuItemSize) + var(--assetMenuItemGap) )
         - var(--assetMenuItemGap) + 40rem
     );
@@ -147,7 +149,7 @@
     position: relative;
 
     &__sidebar {
-        width: 173rem;
+        width: 183rem;
         border-right: 1rem solid rgba(255, 255, 255, 0.2);
         background-color: rgba(0, 0, 0, 0.25);
 
@@ -159,7 +161,11 @@
         &__row {
             display: flex;
             flex-direction: column;
-            margin-bottom: 16rem;
+            padding-bottom: 16rem;
+
+            &:last-child {
+                padding-bottom: 32rem;
+            }
 
             &__label {
                 font-size:  var(--fontSizeM) ;

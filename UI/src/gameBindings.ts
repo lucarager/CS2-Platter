@@ -1,5 +1,5 @@
 import { TwoWayBinding } from "utils/bidirectionalBinding";
-import { AssetPackData, ParcelUIData, PrefabData, SnapMode, ZoneData } from "types";
+import { AssetPackData, ParcelUIData, PrefabData, SnapMode, ZoneData, ZoneGroupData } from "types";
 import { Entity } from "cs2/bindings";
 import TriggerBuilder from "utils/trigger";
 
@@ -18,6 +18,7 @@ export const GAME_BINDINGS = {
     }),
     ASSET_PACK_DATA: new TwoWayBinding<AssetPackData[]>("ASSET_PACK_DATA", []),
     ZONE_DATA: new TwoWayBinding<ZoneData[]>("ZONE_DATA", []),
+    ZONE_GROUP_DATA: new TwoWayBinding<ZoneGroupData[]>("ZONE_GROUP_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
     SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
@@ -33,6 +34,10 @@ export const GAME_BINDINGS = {
     ENABLE_CREATE_FROM_ZONE: new TwoWayBinding<boolean>("ENABLE_CREATE_FROM_ZONE", false),
 
     MODAL__FIRST_LAUNCH: new TwoWayBinding<boolean>("MODAL__FIRST_LAUNCH", false),
+    MODAL__CHANGELOG: new TwoWayBinding<boolean>("MODAL__CHANGELOG", false),
+
+    CURRENT_CHANGELOG_VERSION: new TwoWayBinding<number>("CURRENT_CHANGELOG_VERSION", 0),
+    LAST_VIEWED_CHANGELOG_VERSION: new TwoWayBinding<number>("LAST_VIEWED_CHANGELOG_VERSION", 0),
 
     INFOPANEL_BUILDING_PARCEL_ENTITY: new TwoWayBinding<Entity>("INFOPANEL_BUILDING_PARCEL_ENTITY"),
     INFOPANEL_PARCEL_DATA: new TwoWayBinding<ParcelUIData>("INFOPANEL_PARCEL_DATA"),

@@ -14,6 +14,7 @@ namespace Platter.Patches {
     using Systems;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Utils;
 
     #endregion
 
@@ -67,6 +68,26 @@ namespace Platter.Patches {
 
                 if (isInSnapMode && isSnapped) {
                     __result = false;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ObjectToolSystem))]
+        [HarmonyPatch(nameof(ObjectToolSystem.StartMoving))]
+        private class ObjectToolSystem_StartMoving {
+            public static void Postfix(ObjectToolSystem __instance) {
+                var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+
+                if (__instance.prefab is not ParcelPrefab) {
+                    return;
+                }
+
+                var currentPrefabID = __instance.prefab.GetPrefabID();
+                var cacheKey        = ParcelUtils.GetCustomHashCode(currentPrefabID, true);
+                if (m_PPrefabsCreateSystem.TryGetCachedPrefab(cacheKey, out var newPrefabEntity) &&
+                    m_PPrefabsCreateSystem.TryGetCachedPrefabBase(newPrefabEntity, out var newPrefabBase) &&
+                    newPrefabBase is ObjectPrefab objectPrefab) {
+                    __instance.prefab = objectPrefab;
                 }
             }
         }

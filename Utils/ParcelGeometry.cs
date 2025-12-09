@@ -12,7 +12,7 @@ namespace Platter.Utils {
 
     #endregion
 
-    internal class ParcelGeometry {
+    internal struct ParcelGeometry {
         private Bounds3 m_BlockBounds;
         private Bounds3 m_ParcelBounds;
         private float3  m_BlockSize;
@@ -20,13 +20,15 @@ namespace Platter.Utils {
 
         public Bounds3 Bounds => m_ParcelBounds;
 
-        public float3 BackNode => GetParcelNode(ParcelUtils.ParcelNode.Back);
+        public float3 BackNode => GetParcelNode(ParcelUtils.ParcelNode.BackAccess);
+        public float3 LeftNode => GetParcelNode(ParcelUtils.ParcelNode.LeftAccess);
+        public float3 RightNode => GetParcelNode(ParcelUtils.ParcelNode.RightAccess);
 
         public float3 BlockCenter => GetBlockCenter(m_BlockBounds);
 
         public float3 Center => GetCenter(m_ParcelBounds);
 
-        public float3 FrontNode => GetParcelNode(ParcelUtils.ParcelNode.Front);
+        public float3 FrontNode => GetParcelNode(ParcelUtils.ParcelNode.FrontAccess);
 
         public float3 Pivot => GetPivot();
 
@@ -46,9 +48,9 @@ namespace Platter.Utils {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ParcelGeometry"/> class.
+        /// Initializes a new instance of the <see cref="ParcelGeometry"/> struct.
         /// </summary>
-        /// <param name="parcelData"></param>
+        /// <param name="lotSize"></param>
         public ParcelGeometry(int2 lotSize) {
             m_ParcelSize   = GetParcelSize(lotSize);
             m_BlockSize    = GetBlockSize(lotSize);
