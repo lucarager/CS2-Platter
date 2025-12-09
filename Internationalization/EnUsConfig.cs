@@ -140,7 +140,7 @@ namespace Platter.Settings {
                 },
                 { 
                     "PlatterMod.UI.Tooltip.BuildingCornerCount",
-                    "[Corner] {COUNT} available {X}x{Y} fronting buildings in the selected zone."
+                    "[Corner] {COUNT} available {X}x{Y} corner buildings in the selected zone."
                 },
                 {
                     "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",
