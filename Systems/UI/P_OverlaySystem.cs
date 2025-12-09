@@ -205,7 +205,7 @@ namespace Platter.Systems {
                 const float frontIndicatorLine = DimensionConstants.ParcelFrontIndicatorHollowLineWidth;
 
                 // Colors (inlined for Burst compatibility
-                var parcelOutlineColor        = new Color(1f, 1f, 1f, 0.6f);
+                var parcelOutlineColor        = new Color(1f, 1f, 1f, 0.5f);
                 var parcelInlineColor         = new Color(1f, 1f, 1f, opacityLow);
                 var parcelFrontIndicatorColor = new Color(1f, 1f, 1f, 1f);
                 var transparentColor          = new Color(1f, 1f, 1f, 0f);
