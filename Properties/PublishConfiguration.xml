@@ -20,9 +20,9 @@ Include the following logs:
 - `%localappdata%low\Colossal Order\Cities Skylines II\logs\Player.log`
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/logo.jpg" />
+	<Thumbnail Value="Properties/thumbnail.jpg" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/alpha.png" />
+	<Screenshot Value="Properties/alpha.jpg" />
 	<Screenshot Value="Properties/preview1.jpg" />
 	<Screenshot Value="Properties/preview2.jpg" />
 	<Screenshot Value="Properties/preview3.jpg" />
