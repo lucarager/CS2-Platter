@@ -32,27 +32,15 @@ Include the following logs:
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.2.4" />
+	<ModVersion Value="1.2.5" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
 	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />
+	<Dependency Id="79186" DisplayName="Simple Mod Checker Plus" Version="*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-Numerous fixes and improvements, including:
-
-- Reworked pre-zone panel:
-	- Refactored: This should improve stability and fix various issues you may have encountered.
-	- New: *Added support for Zone Reorganizer* and other mods that rearrange zones.
-	- New: *Added a "Base Game" filter* that explicitly filters for zones that are NOT part of a pack.
-	- Fixed: Tool panel would stick around after using Platter, then switching to other tools.
-	- Fixed: Platter's filter was showing ALL packs, when not all packs related to zones. Now restricted to zone packs only.
-- Improved performance:
-	- Significantly improved the performance of parcel updates
-	- Significantly improved the performance of the parcel overlay
-- Tweaked Parcel overlay, further adjusted size and opacity of the new parcel overlay.
-- Updated Translations.
-- Further worked on internal changelog UI, unreleased.
+Small follow up update fixing a race condition when caching zone groups.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
