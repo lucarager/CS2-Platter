@@ -16,8 +16,8 @@
 		<DebugType>portable</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
-		<AssemblyVersion>1.2.2</AssemblyVersion>
-		<Version>1.2.2</Version>
+		<AssemblyVersion>1.2.3</AssemblyVersion>
+		<Version>1.2.3</Version>
 	</PropertyGroup>
 	
 	<PropertyGroup>

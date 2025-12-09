@@ -33,7 +33,7 @@ Include the following logs:
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.2.2" />
+	<ModVersion Value="1.2.3" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
@@ -41,22 +41,7 @@ Include the following logs:
 	<!--<Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.3" />-->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-		A lot of polish and bug-fixing in this one, plus a whole new corner lot detection system!
-		- *New road connection tracking system*
-			- Parcels now track not just front, but side road connection (for corner lots)
-			- Parcels will now show missing road connection icon before being plopped.
-			- Fix: Parcels at 8.45m-8.41m from the road would sometimes indicate they are connected to the road when they shouldn't be.
-		- *New parcel object visuals*:
-			- Overhauled parcel overlay.
-			- The parcel overlay now accurately matches the parcel's actual size. (Overlay was 0.5m larger)
-			- Parcel overlay now shows whether a parcel is connected to a road on each side.
-			- (internal) Fix incorrect node positions.
-		- *Improved building verification tooltips*
-			- Fixed: Building total was counting level 2+ and corner buildings. Now only counts level 1 buildings and tracks fronting/corner buildings separately.
-			- Added new tooltip providing corner building information.
-		- *Fix*: Fixed relocate button causing all buildings to become parcels when placed, and sometimes causing a crash.
-		- Include latest translations.
-		- Internal: Add changelog system.
+		Fixes new corner lot tooltip being the wrong color / string when 0 lots are available.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
