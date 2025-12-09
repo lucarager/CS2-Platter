@@ -80,7 +80,7 @@
   "PlatterMod.UI.Tooltip.ShowContourLines": "Pokaż linie topograficzne",
   "PlatterMod.UI.Tooltip.BuildingCount": "[Frontowe] {COUNT} dostępnych budynków {X}×{Y} w wybranej strefie.",
   "PlatterMod.UI.Tooltip.BuildingCountWarning": "[Frontowe] Brak budynków {X}×{Y} w wybranej strefie. Mniejsze budynki mogą pojawić się na tej parceli.",
-  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Narożne] {COUNT} dostępnych budynków {X}×{Y} w wybranej strefie.",
+  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} dostępne budynki narożne {X}x{Y} w wybranej strefie.",
   "PlatterMod.UI.Tooltip.BuildingCornerCountWarning": "[Narożne] Brak budynków {X}×{Y} w wybranej strefie.",
   "PlatterMod.UI.Modals.FirstLaunch.Title": "Dzięki za zainstalowanie Plattera!",
   "PlatterMod.UI.Modals.FirstLaunch.Subtitle": "Oto krótkie wprowadzenie, abyś wiedział jak to działa",
