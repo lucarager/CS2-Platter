@@ -119,7 +119,7 @@ namespace Platter.Systems {
             var locArgs = CreateBuildingCountLocArgs(count.Total, parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth);
             if (count.Total == 0) {
                 m_Tooltip_BuildingFrontCount.value = new LocalizedString("PlatterMod.UI.Tooltip.BuildingCountWarning", null, locArgs);
-                m_Tooltip_BuildingFrontCount.color = TooltipColor.Warning;
+                m_Tooltip_BuildingFrontCount.color = TooltipColor.Info;
             } else {
                 m_Tooltip_BuildingFrontCount.value = new LocalizedString("PlatterMod.UI.Tooltip.BuildingCount", null, locArgs);
                 m_Tooltip_BuildingFrontCount.color = TooltipColor.Success;
@@ -128,9 +128,9 @@ namespace Platter.Systems {
 
             // Tooltip for total corner access buildings
             var locArgs2 = CreateBuildingCountLocArgs(count.Corner, parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth);
-            if (count.Total == 0) {
+            if (count.Corner == 0) {
                 m_Tooltip_BuildingCornerCount.value = new LocalizedString("PlatterMod.UI.Tooltip.BuildingCornerCountWarning", null, locArgs2);
-                m_Tooltip_BuildingCornerCount.color = TooltipColor.Warning;
+                m_Tooltip_BuildingCornerCount.color = TooltipColor.Info;
             } else {
                 m_Tooltip_BuildingCornerCount.value = new LocalizedString("PlatterMod.UI.Tooltip.BuildingCornerCount", null, locArgs2);
                 m_Tooltip_BuildingCornerCount.color = TooltipColor.Success;
