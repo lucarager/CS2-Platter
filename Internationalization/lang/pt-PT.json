@@ -1,6 +1,6 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
-  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platina",
+  "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platter",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Teclas de atalho",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Desinstalar",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Sobre",
@@ -51,7 +51,7 @@
   "PlatterMod.UI.SectionTitle.ParcelWidth": "Largura do Lote",
   "PlatterMod.UI.SectionTitle.ParcelDepth": "Profundidade do Lote",
   "PlatterMod.UI.SectionTitle.Search": "Pesquisa",
-  "PlatterMod.UI.SectionTitle.Category": "categoria",
+  "PlatterMod.UI.SectionTitle.Category": "Categoria",
   "PlatterMod.UI.SectionTitle.AssetPacks": "Pacotes de Ativos",
   "PlatterMod.UI.Label.ParcelSizeUnit": "células",
   "PlatterMod.UI.Label.NoZoneMatchesFilter": "Nenhum filtro de zona correspondente",
@@ -78,8 +78,10 @@
   "PlatterMod.UI.Tooltip.ShowZonbes": "Alterna permitindo que edifícios apareçam nas Parcelas",
   "PlatterMod.UI.Tooltip.ShowZones": "Mostrar grade vanilla",
   "PlatterMod.UI.Tooltip.ShowContourLines": "Mostrar contador de linhas",
-  "PlatterMod.UI.Tooltip.BuildingCount": "{COUNT} edifícios {X}x{Y} disponíveis na zona selecionada.",
-  "PlatterMod.UI.Tooltip.BuildingCountWarning": "Nenhum edifício {X}x{Y} na zona selecionada. Edifícios menores podem surgir neste lote.",
+  "PlatterMod.UI.Tooltip.BuildingCount": "[Fronting] {COUNT} disponíveis {X}x{Y} construções de frente na zona selecionada.",
+  "PlatterMod.UI.Tooltip.BuildingCountWarning": "[Fronting] Nenhum edifício {X}x{Y} na zona selecionada. Edifícios menores podem ser gerados neste pacote.",
+  "PlatterMod.UI.Tooltip.BuildingCornerCount": "[Corner] {COUNT} disponíveis em {X}x{Y} edifícios do canto na zona selecionada.",
+  "PlatterMod.UI.Tooltip.BuildingCornerCountWarning": "[Corner] Não {X}x Edifícios do canto{Y} na zona selecionada.",
   "PlatterMod.UI.Modals.FirstLaunch.Title": "Obrigado por instalar o Platter!",
   "PlatterMod.UI.Modals.FirstLaunch.Subtitle": "Aqui está uma breve introdução para começar",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title": "Platter adiciona \"Lotes\" ao jogo",
@@ -145,5 +147,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Um Lote com células para zonear. 6 células de largura, 5 células de profundidade",
   "Assets.NAME[Parcel 6x6]": "Lote (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Um Lote com células para zonear. 6 células de largura, 6 células de profundidade",
-  "Assets.NAME[Unzoned]": "Deszonalizado"
+  "Assets.NAME[Unzoned]": "Sem zoneamento"
 }
