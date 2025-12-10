@@ -8,8 +8,34 @@ import { useRenderTracker, useValueWrap } from "../../debug";
 
 export const SnapModeSection = function SnapModeSection() {
     useRenderTracker("ToolPanel/SnapModeSection");
-    const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
+    const snapModes = useValueWrap(GAME_BINDINGS.SNAP_MODES.binding, "SnapModes");
     const { translate } = useLocalization();
+
+    const isEnabled = (mode: SnapMode) => snapModes.includes(mode);
+
+    const allModes = [SnapMode.ZoneSide, SnapMode.RoadSide];
+    const areAllEnabled = allModes.every(isEnabled);
+
+    const toggleAll = () => {
+        if (areAllEnabled) {
+            GAME_BINDINGS.SNAP_MODES.set([]);
+        } else {
+            GAME_BINDINGS.SNAP_MODES.set(allModes);
+        }
+    };
+
+    const toggleMode = (mode: SnapMode) => {
+        if (mode === SnapMode.None) {
+            // "None" clears all modes
+            GAME_BINDINGS.SNAP_MODES.set([]);
+        } else if (isEnabled(mode)) {
+            // Remove mode from array
+            GAME_BINDINGS.SNAP_MODES.set(snapModes.filter((m) => m !== mode));
+        } else {
+            // Add mode to array
+            GAME_BINDINGS.SNAP_MODES.set([...snapModes, mode]);
+        }
+    };
 
     return (
         <VC.Section
@@ -17,20 +43,20 @@ export const SnapModeSection = function SnapModeSection() {
             title={translate("PlatterMod.UI.SectionTitle.SnapMode")}>
             <VC.ToolButton
                 className={VT.toolButton.button}
-                src={"coui://uil/Standard/XClose.svg"}
-                onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.None)}
-                selected={snapModeBinding == SnapMode.None}
+                src={"Media/Tools/Snap Options/All.svg"}
+                onSelect={toggleAll}
+                selected={areAllEnabled}
                 multiSelect={false}
                 disabled={false}
                 focusKey={VF.FOCUS_DISABLED}
-                tooltip={translate("PlatterMod.UI.Tooltip.SnapModeNone")}
+                tooltip={translate("PlatterMod.UI.Tooltip.SnapModeAll")}
             />
             <VC.ToolButton
                 className={VT.toolButton.button}
                 src={"Media/Tools/Snap Options/ZoneGrid.svg"}
-                onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.ZoneSide)}
-                selected={snapModeBinding == SnapMode.ZoneSide}
-                multiSelect={false}
+                onSelect={() => toggleMode(SnapMode.ZoneSide)}
+                selected={isEnabled(SnapMode.ZoneSide)}
+                multiSelect={true}
                 disabled={false}
                 focusKey={VF.FOCUS_DISABLED}
                 tooltip={translate("PlatterMod.UI.Tooltip.SnapModeRoadSide")}
@@ -38,9 +64,9 @@ export const SnapModeSection = function SnapModeSection() {
             <VC.ToolButton
                 className={VT.toolButton.button}
                 src={"Media/Tools/Snap Options/NetSide.svg"}
-                onSelect={() => GAME_BINDINGS.SNAP_MODE.set(SnapMode.RoadSide)}
-                selected={snapModeBinding == SnapMode.RoadSide}
-                multiSelect={false}
+                onSelect={() => toggleMode(SnapMode.RoadSide)}
+                selected={isEnabled(SnapMode.RoadSide)}
+                multiSelect={true}
                 disabled={false}
                 focusKey={VF.FOCUS_DISABLED}
                 tooltip={translate("PlatterMod.UI.Tooltip.SnapModeZoneSide")}

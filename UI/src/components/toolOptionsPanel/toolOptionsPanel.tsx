@@ -47,7 +47,6 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component: any) =>
 
 const ToolPanel = function ToolPanel() {
     useRenderTracker("ToolPanel/ToolPanel");
-    const snapModeBinding = useValueWrap(GAME_BINDINGS.SNAP_MODE.binding, "SnapMode");
     const stylesheet = useRef(document.createElement("style"));
     stylesheet.current.type = "text/css";
     stylesheet.current.innerHTML = `
@@ -80,7 +79,7 @@ const ToolPanel = function ToolPanel() {
             <div className={styles.wrapper}>
                 <div className={c(VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection)}>
                     <PrezoningSection />
-                    {snapModeBinding != SnapMode.None && <SnapRoadsideSection />}
+                    <SnapRoadsideSection />
                     <ParcelWidthSection />
                     <ParcelDepthSection />
                     <SnapModeSection />

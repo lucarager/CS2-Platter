@@ -32,7 +32,7 @@ export type ZoneGroupData = {
 };
 
 export enum SnapMode {
-    None,
-    ZoneSide,
-    RoadSide,
+    None = 0,
+    ZoneSide = 1,
+    RoadSide = 2,
 }

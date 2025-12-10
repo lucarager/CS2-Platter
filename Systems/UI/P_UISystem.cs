@@ -70,7 +70,7 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_BlockWidthBinding;
         private ValueBindingHelper<int>          m_BlockWidthMaxBinding;
         private ValueBindingHelper<int>          m_BlockWidthMinBinding;
-        private ValueBindingHelper<int>          m_SnapModeBinding;
+        private ValueBindingHelper<int[]>        m_SnapModesBinding;
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
         private ValueBindingHelper<ZoneUIDataModel[]> m_ZoneDataBinding;
@@ -122,7 +122,7 @@ namespace Platter.Systems {
             m_AllowSpawningBinding         = CreateBinding("ALLOW_SPAWNING", PlatterMod.Instance.Settings.AllowSpawn, SetAllowSpawning);
             m_ShowContourLinesBinding      = CreateBinding("SHOW_CONTOUR_LINES", false, SetShowContourLines);
             m_ShowZonesBinding             = CreateBinding("SHOW_ZONES", false, SetShowZones);
-            m_SnapModeBinding              = CreateBinding("SNAP_MODE", (int)m_SnapSystem.CurrentSnapMode, SetSnapMode);
+            m_SnapModesBinding             = CreateBinding("SNAP_MODES", GetSnapModesArray(), SetSnapModes);
             m_SnapSpacingBinding           = CreateBinding("SNAP_SPACING", DefaultSnapDistance, SetSnapSpacing);
             m_MaxSnapSpacingBinding        = CreateBinding("MAX_SNAP_SPACING", MaxSnapDistance);
             m_ModalFirstLaunchBinding      = CreateBinding("MODAL__FIRST_LAUNCH", PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial);
@@ -190,6 +190,7 @@ namespace Platter.Systems {
             m_ShowContourLinesBinding.Value     = ShowContourLines;
             m_ShowZonesBinding.Value            = ShowZones;
             m_SnapSpacingBinding.Value          = m_SnapSystem.CurrentSnapSetback;
+            m_SnapModesBinding.Value            = GetSnapModesArray();
             m_LastViewedChangelogVersionBinding.Value = PlatterMod.Instance.Settings.LastViewedChangelogVersion;
             var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
             Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
@@ -403,6 +404,36 @@ namespace Platter.Systems {
         private void SetLastViewedChangelogVersion(uint version) {
             m_Log.Debug($"SetLastViewedChangelogVersion(version = {version})");
             PlatterMod.Instance.Settings.LastViewedChangelogVersion = version;
+        }
+
+        /// <summary>
+        /// Gets the current snap modes as an array of enabled flag values.
+        /// </summary>
+        private int[] GetSnapModesArray() {
+            var currentMode = m_SnapSystem.CurrentSnapMode;
+            var modes = new System.Collections.Generic.List<int>();
+            
+            foreach (SnapMode mode in Enum.GetValues(typeof(SnapMode))) {
+                if (mode != SnapMode.None && (currentMode & mode) != 0) {
+                    modes.Add((int)mode);
+                }
+            }
+            
+            return modes.ToArray();
+        }
+
+        /// <summary>
+        /// Called from the UI to set snap modes from an array of enabled flags.
+        /// </summary>
+        private void SetSnapModes(int[] enabledModes) {
+            m_Log.Debug($"SetSnapModes(enabledModes = [{string.Join(", ", enabledModes)}])");
+            
+            var combinedMode = SnapMode.None;
+            foreach (var mode in enabledModes) {
+                combinedMode |= (SnapMode)mode;
+            }
+            
+            m_SnapSystem.CurrentSnapMode = combinedMode;
         }
 
         /// <summary>

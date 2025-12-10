@@ -24,7 +24,6 @@ namespace Platter.Systems {
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
     using Unity.Jobs;
     using Unity.Mathematics;
     using Utils;
@@ -45,10 +44,18 @@ namespace Platter.Systems {
             RoadSide,
         }
 
-        private EntityQuery             m_Query;
-        private float                   m_SnapSetback;
+        private static class SnapLevel {
+            public const float None       = 0f;
+            public const float ParcelEdge = 2f; 
+            public const float RoadSide   = 1.5f;
+            public const float ZoneSide   = 1f;
+        }
+
+        private EntityQuery m_Query;
+        private float       m_SnapSetback;
+
+        public  NativeReference<bool>   IsSnapped;
         private ObjectToolSystem        m_ObjectToolSystem;
-        private PrefabSystem            m_PrefabSystem;
         private PrefixedLogger          m_Log;
         private SearchSystem            m_NetSearchSystem;
         private Game.Zones.SearchSystem m_ZoneSearchSystem;
@@ -65,11 +72,9 @@ namespace Platter.Systems {
             }
         }
 
-        public NativeReference<bool> IsSnapped;
-
-        public static float MinSnapDistance     { get; } = 0f;
-        public static float MaxSnapDistance     { get; } = 8f;
-        public static float DefaultSnapDistance { get; } = MinSnapDistance;
+        public static float DefaultSnapDistance => MinSnapDistance;
+        public static float MaxSnapDistance     => 8f;
+        public static float MinSnapDistance     => 0f;
 
         // Props
         public SnapMode CurrentSnapMode {
@@ -85,7 +90,6 @@ namespace Platter.Systems {
             m_ZoneSearchSystem = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
             m_NetSearchSystem  = World.GetOrCreateSystemManaged<SearchSystem>();
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_PrefabSystem     = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ToolSystem       = World.GetOrCreateSystemManaged<ToolSystem>();
             m_TerrainSystem    = World.GetOrCreateSystemManaged<TerrainSystem>();
             m_WaterSystem      = World.GetOrCreateSystemManaged<WaterSystem>();
@@ -104,7 +108,7 @@ namespace Platter.Systems {
             // Data
             m_SnapSetback   = DefaultSnapDistance;
             m_SnapMode      = SnapMode.RoadSide;
-            IsSnapped       = new NativeReference<bool>(Allocator.Persistent, NativeArrayOptions.ClearMemory);
+            IsSnapped       = new NativeReference<bool>(Allocator.Persistent);
             IsSnapped.Value = false;
 
             RequireForUpdate(m_Query);
@@ -128,12 +132,12 @@ namespace Platter.Systems {
             if (m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create &&
                 m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab parcelPrefab) {
                 // Override distance scale
-                var width        = parcelPrefab.m_LotWidth * 8f;
+                var width = parcelPrefab.m_LotWidth * 8f;
                 m_ObjectToolSystem.SetMemberValue("distanceScale", width);
             }
 
             // Exit on disabled snap
-            if (m_SnapMode != SnapMode.ZoneSide && m_SnapMode != SnapMode.RoadSide) {
+            if (m_SnapMode == SnapMode.None) {
                 return;
             }
 
@@ -150,7 +154,8 @@ namespace Platter.Systems {
             var curvesFilter = new NativeList<bool>(Allocator.Temp);
 
             // Schedule our snapping job
-            var parcelSnapJobHandle = new ParcelSnapJob {
+            var parcelSnapJobHandle = new ParcelSnapJob
+            {
                 m_ZoneTree                     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
                 m_NetTree                      = m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
                 m_CurvesList                   = curvesList,
@@ -243,7 +248,10 @@ namespace Platter.Systems {
                     return;
                 }
 
-                // For now, only do this to the first object in the chunk
+                // Only snap the last point in the list, all previous ones were snapped already
+                var controlPoint = m_ControlPoints[^1];
+
+                // Grab the first creation definition (all should be the same)
                 var creationDefinition = creationDefinitionArray[0];
 
                 // Get some data
@@ -251,9 +259,6 @@ namespace Platter.Systems {
 
                 // Calculate geometry
                 var searchRadius = parcelData.m_LotSize.y * 4f + 16f;
-                var minValue = float.MinValue;
-                var controlPoint = m_ControlPoints[0];
-
                 var bounds = new Bounds3(
                     controlPoint.m_Position - searchRadius,
                     controlPoint.m_Position + searchRadius
@@ -265,71 +270,25 @@ namespace Platter.Systems {
                 // At minimum, the distance to snap must be
                 var minDistance = math.cmin(parcelData.m_LotSize) * 4f + 16f;
 
-                // Default to our control point as a start
+                // Start with the raw control point (no snap)
                 var bestSnapPosition = controlPoint;
+                bestSnapPosition.m_SnapPriority = float2.zero; // No snap = lowest priority
 
-                switch (m_SnapMode) {
-                    case SnapMode.ZoneSide: {
-                            var iterator = new BlockSnapIterator(
-                                controlPoint: controlPoint,
-                                bestSnapPosition: bestSnapPosition,
-                                bounds: bounds.xz,
-                                blockComponentLookup: m_BlockComponentLookup,
-                                parcelOwnerComponentLookup: m_ParcelOwnerComponentLookup,
-                                bestDistance: minDistance,
-                                lotSize: parcelData.m_LotSize,
-                                snapSetback: m_SnapSetback
-                            );
-                            m_ZoneTree.Iterate(ref iterator);
-                            bestSnapPosition = iterator.BestSnapPosition;
-                            break;
-                        }
-                    case SnapMode.RoadSide: {
-                            var iterator = new EdgeSnapIterator(
-                                minDistance,
-                                m_CurvesList,
-                                m_CurvesFilter,
-                                totalBounds,
-                                bounds,
-                                20f,
-                                controlPoint.m_Elevation,
-                                bestSnapPosition: bestSnapPosition,
-                                lotSize: parcelData.m_LotSize,
-                                heightRange: new Bounds1(-50f, 50f),
-                                netData: default,
-                                controlPoint: controlPoint,
-                                terrainHeightData: m_TerrainHeightData,
-                                waterSurfaceData: m_WaterSurfaceData,
-                                nodeLookup: m_NodeLookup,
-                                edgeLookup: m_EdgeLookup,
-                                curveLookup: m_CurveLookup,
-                                compositionLookup: m_CompositionLookup,
-                                prefabRefLookup: m_PrefabRefLookup,
-                                prefabNetLookup: m_NetDataLookup,
-                                netGeometryDataLookup: m_NetGeometryDataLookup,
-                                netCompositionDataLookup: m_NetCompositionDataLookup,
-                                edgeGeoLookup: m_EdgeGeoLookup,
-                                startNodeGeoLookup: m_StartNodeGeoLookup,
-                                endNodeGeoLookup: m_EndNodeGeoLookup,
-                                connectedEdgeLookup: m_ConnectedEdgeLookup,
-                                snapSetback: m_SnapSetback,
-                                connectedParcelLookup: m_ConnectedParcelLookup
-                            );
-                            m_NetTree.Iterate(ref iterator);
-
-                            bestSnapPosition = iterator.BestSnapPosition;
-                            break;
-                        }
-                    case SnapMode.None:
-                    default:
-                        return;
+                // Run ALL enabled snap modes - each one only updates bestSnapPosition if it wins
+                if ((m_SnapMode & SnapMode.ZoneSide) != 0) {
+                    SnapToZoneSide(ref bestSnapPosition, controlPoint, bounds, parcelData, minDistance);
                 }
 
-                var hasSnap = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position);
+                if ((m_SnapMode & SnapMode.RoadSide) != 0) {
+                    SnapToRoadSide(ref bestSnapPosition, controlPoint, bounds, totalBounds, parcelData, minDistance);
+                }
+
+                // Check if any snap won
+                var hasSnap = bestSnapPosition.m_SnapPriority.x > 0f || bestSnapPosition.m_SnapPriority.y > 0f;
                 m_IsSnapped.Value = hasSnap;
 
-                // Height Calc
-                CalculateHeight(ref bestSnapPosition, parcelData, minValue);
+                // Height calc and apply...
+                CalculateHeight(ref bestSnapPosition, parcelData, float.MinValue);
 
                 // If we found a snapping point, modify the object definition
                 if (!hasSnap) {
@@ -337,7 +296,7 @@ namespace Platter.Systems {
                 }
 
                 // Calculate difference
-                var firstObjDef = objectDefinitionArray[0];
+                var firstObjDef  = objectDefinitionArray[0];
                 var positionDiff = bestSnapPosition.m_Position - firstObjDef.m_Position;
 
                 // Apply diff to all objects in chunk
@@ -345,11 +304,107 @@ namespace Platter.Systems {
                     var objectDefinition = objectDefinitionArray[i];
                     objectDefinition.m_Position      += positionDiff;
                     objectDefinition.m_LocalPosition += positionDiff;
-                    objectDefinition.m_Rotation      = bestSnapPosition.m_Rotation;
-                    objectDefinition.m_LocalRotation = bestSnapPosition.m_Rotation;
+                    objectDefinition.m_Rotation      =  bestSnapPosition.m_Rotation;
+                    objectDefinition.m_LocalRotation =  bestSnapPosition.m_Rotation;
 
                     objectDefinitionArray[i] = objectDefinition;
                 }
+            }
+
+            private void SnapToZoneSide(ref ControlPoint bestSnapPosition,
+                                        ControlPoint     controlPoint,
+                                        Bounds3          bounds,
+                                        ParcelData       parcelData,
+                                        float            minDistance) {
+                var iterator = new BlockSnapIterator(
+                    controlPoint: controlPoint,
+                    bestSnapPosition: controlPoint, // Start fresh for this iterator
+                    bounds: bounds.xz,
+                    blockComponentLookup: m_BlockComponentLookup,
+                    parcelOwnerComponentLookup: m_ParcelOwnerComponentLookup,
+                    bestDistance: minDistance,
+                    lotSize: parcelData.m_LotSize,
+                    snapSetback: m_SnapSetback,
+                    snapLevel: SnapLevel.ZoneSide
+                );
+
+                m_ZoneTree.Iterate(ref iterator);
+
+                // Only update if this snap beats the current best
+                AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
+            }
+
+            private void SnapToRoadSide(ref ControlPoint bestSnapPosition,
+                                        ControlPoint     controlPoint,
+                                        Bounds3          bounds,
+                                        Bounds3          totalBounds,
+                                        ParcelData       parcelData,
+                                        float            minDistance) {
+                var iterator = new EdgeSnapIterator(
+                    minDistance,
+                    m_CurvesList,
+                    m_CurvesFilter,
+                    totalBounds,
+                    bounds,
+                    20f,
+                    controlPoint.m_Elevation,
+                    bestSnapPosition: bestSnapPosition,
+                    lotSize: parcelData.m_LotSize,
+                    heightRange: new Bounds1(-50f, 50f),
+                    netData: default,
+                    controlPoint: controlPoint,
+                    terrainHeightData: m_TerrainHeightData,
+                    waterSurfaceData: m_WaterSurfaceData,
+                    nodeLookup: m_NodeLookup,
+                    edgeLookup: m_EdgeLookup,
+                    curveLookup: m_CurveLookup,
+                    compositionLookup: m_CompositionLookup,
+                    prefabRefLookup: m_PrefabRefLookup,
+                    prefabNetLookup: m_NetDataLookup,
+                    netGeometryDataLookup: m_NetGeometryDataLookup,
+                    netCompositionDataLookup: m_NetCompositionDataLookup,
+                    edgeGeoLookup: m_EdgeGeoLookup,
+                    startNodeGeoLookup: m_StartNodeGeoLookup,
+                    endNodeGeoLookup: m_EndNodeGeoLookup,
+                    connectedEdgeLookup: m_ConnectedEdgeLookup,
+                    snapSetback: m_SnapSetback,
+                    connectedParcelLookup: m_ConnectedParcelLookup,
+                    snapLevel: SnapLevel.RoadSide
+                );
+
+                m_NetTree.Iterate(ref iterator);
+
+                AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
+            }
+
+            //private void SnapToParcelEdge(
+            //private ref ControlPoint bestSnapPosition,
+            //                         ControlPoint controlPoint,
+
+            //private Bounds3 bounds,
+            //                ParcelData parcelData,
+            //private float minDistance) {
+            //var iterator = new ParcelSnapIterator(
+            //    // ... your parcel-to-parcel snapping logic ...
+            //    snapLevel: SnapLevel.ParcelEdge
+            //);
+
+            //m_ParcelTree.Iterate(ref iterator);
+
+            //AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
+            //}
+
+            // Helper method matching game's pattern
+            private static void AddSnapPosition(ref ControlPoint bestSnapPosition, ControlPoint candidate) {
+                if (CompareSnapPriority(candidate.m_SnapPriority, bestSnapPosition.m_SnapPriority)) {
+                    bestSnapPosition = candidate;
+                }
+            }
+
+            // Match game's comparison logic
+            private static bool CompareSnapPriority(float2 a, float2 b) {
+                // Higher level always wins; if equal level, compare priority
+                return a.x > b.x || (a.x == b.x && a.y > b.y);
             }
 
             private void CalculateHeight(ref ControlPoint controlPoint, ParcelData parcelData,
@@ -366,6 +421,7 @@ namespace Platter.Systems {
             /// </summary>
             public struct BlockSnapIterator : INativeQuadTreeIterator<Entity, Bounds2> {
                 public  ControlPoint                 BestSnapPosition => m_BestSnapPosition;
+                private float                        m_SnapLevel;
                 private ComponentLookup<Block>       m_BlockComponentLookup;
                 private ComponentLookup<ParcelOwner> m_ParcelOwnerComponentLookup;
                 private ControlPoint                 m_ControlPoint;
@@ -382,7 +438,8 @@ namespace Platter.Systems {
                                          Bounds2                      bounds,
                                          ControlPoint                 bestSnapPosition,
                                          float                        bestDistance,
-                                         float                        snapSetback) {
+                                         float                        snapSetback,
+                                         float                        snapLevel) {
                     m_ParcelOwnerComponentLookup = parcelOwnerComponentLookup;
                     m_BlockComponentLookup       = blockComponentLookup;
                     m_ControlPoint               = controlPoint;
@@ -391,6 +448,8 @@ namespace Platter.Systems {
                     m_BestSnapPosition           = bestSnapPosition;
                     m_BestDistance               = bestDistance;
                     m_SnapSetback                = snapSetback;
+                    m_SnapSetback                = snapSetback;
+                    m_SnapLevel                  = snapLevel;
                 }
 
                 /// <summary>
@@ -466,32 +525,35 @@ namespace Platter.Systems {
                     lateralOffset -= (math.round(lateralOffset / 8f - parityOffset) + parityOffset) * 8f;
 
                     // Build the snapped position
-                    m_BestSnapPosition            = m_ControlPoint;
-                    m_BestSnapPosition.m_Position = m_ControlPoint.m_HitPosition;
+                    var candidate = m_ControlPoint;
+                    candidate.m_Position = m_ControlPoint.m_HitPosition;
 
                     // Align new lot behind the existing block's front edge
                     var depthAlignment = blockDepth - forwardOffset - m_SnapSetback - m_LotSize.y * 4f;
-                    m_BestSnapPosition.m_Position.xz += blockForwardDirection * depthAlignment;
+                    candidate.m_Position.xz += blockForwardDirection * depthAlignment;
 
                     // Apply lateral grid snapping
-                    m_BestSnapPosition.m_Position.xz -= blockLeftDirection * lateralOffset;
+                    candidate.m_Position.xz -= blockLeftDirection * lateralOffset;
 
                     // Set direction and rotation to match the block
-                    m_BestSnapPosition.m_Direction = block.m_Direction;
-                    m_BestSnapPosition.m_Rotation  = ToolUtils.CalculateRotation(m_BestSnapPosition.m_Direction);
+                    candidate.m_Direction = block.m_Direction;
+                    candidate.m_Rotation  = ToolUtils.CalculateRotation(candidate.m_Direction);
 
                     // Calculate snap priority
-                    m_BestSnapPosition.m_SnapPriority = ToolUtils.CalculateSnapPriority(
-                        0f,
+                    candidate.m_SnapPriority = CalculateSnapPriority(
+                        m_SnapLevel,
                         1f,
-                        0f,
-                        m_ControlPoint.m_HitPosition  * 0.5f,
-                        m_BestSnapPosition.m_Position * 0.5f,
-                        m_BestSnapPosition.m_Direction
+                        1f,
+                        m_ControlPoint.m_HitPosition,
+                        candidate.m_Position,
+                        candidate.m_Direction
                     );
 
                     // Cache block
-                    m_BestSnapPosition.m_OriginalEntity = blockEntity;
+                    candidate.m_OriginalEntity = blockEntity;
+
+                    // Store candidate
+                    m_BestSnapPosition = candidate;
                 }
             }
 
@@ -529,6 +591,7 @@ namespace Platter.Systems {
                 private NativeList<Bezier4x3>               m_CurvesList;
                 private NativeList<bool>                    m_CurvesFilter;
                 private float                               m_BestDistance;
+                private float                               m_SnapLevel;
 
                 public EdgeSnapIterator(float                               bestDistance, NativeList<Bezier4x3> curvesList, NativeList<bool> curvesFilter,
                                         Bounds3                             totalBounds,  Bounds3               bounds,     float            snapOffset,
@@ -546,8 +609,8 @@ namespace Platter.Systems {
                                         ComponentLookup<EdgeGeometry>       edgeGeoLookup,
                                         ComponentLookup<StartNodeGeometry>  startNodeGeoLookup,
                                         ComponentLookup<EndNodeGeometry>    endNodeGeoLookup,
-                                        BufferLookup<ConnectedEdge>         connectedEdgeLookup, float snapSetback,
-                                        BufferLookup<ConnectedParcel>       connectedParcelLookup) {
+                                        BufferLookup<ConnectedEdge>         connectedEdgeLookup,   float snapSetback,
+                                        BufferLookup<ConnectedParcel>       connectedParcelLookup, float snapLevel) {
                     m_BestDistance             = bestDistance;
                     m_CurvesList               = curvesList;
                     m_CurvesFilter             = curvesFilter;
@@ -576,6 +639,7 @@ namespace Platter.Systems {
                     m_ConnectedEdgeLookup      = connectedEdgeLookup;
                     m_SnapSetback              = snapSetback;
                     m_ConnectedParcelLookup    = connectedParcelLookup;
+                    m_SnapLevel                = snapLevel;
                 }
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds, m_TotalBounds); }
@@ -718,16 +782,18 @@ namespace Platter.Systems {
                         controlPoint2.m_Position  = node.m_Position;
                         controlPoint2.m_Direction = math.mul(node.m_Rotation, new float3(0f, 0f, 1f)).xz;
                         MathUtils.TryNormalize(ref controlPoint2.m_Direction);
-                        var num3 = 1f;
 
-                        controlPoint2.m_SnapPriority = ToolUtils.CalculateSnapPriority(
-                            num3,
+                        controlPoint2.m_SnapPriority = CalculateSnapPriority(
+                            m_SnapLevel,
                             1f,
                             1f,
-                            controlPoint.m_HitPosition,
-                            controlPoint2.m_Position,
-                            controlPoint2.m_Direction);
+                            m_ControlPoint.m_HitPosition,
+                            controlPoint.m_Position,
+                            controlPoint.m_Direction
+                        );
+
                         ToolUtils.AddSnapPosition(ref m_BestSnapPosition, controlPoint2);
+
                         snapAdded = true;
                     } else if (m_CurveLookup.HasComponent(controlPoint.m_OriginalEntity)) {
                         HandleCurve(controlPoint, controlPoint.m_OriginalEntity, flag3, ref snapAdded);
@@ -761,25 +827,17 @@ namespace Platter.Systems {
                     m_CurvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Left);
                     m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
                     m_CurvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Right);
-                    m_CurvesFilter.Add(
-                        startNodeGeo.m_Geometry.m_Left.m_Length.y > 1 &&
-                        !startIsConnected); // This shifts to the middle lane when road is connected
+                    m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !startIsConnected);
                     m_CurvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Left);
-                    m_CurvesFilter.Add(
-                        startNodeGeo.m_Geometry.m_Right.m_Length.x > 1 &&
-                        !startIsConnected); // This shifts to the middle lane when road is connected
+                    m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !startIsConnected);
                     m_CurvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Right);
                     m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
                     m_CurvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Left);
                     m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
                     m_CurvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Right);
-                    m_CurvesFilter.Add(
-                        endNodeGeo.m_Geometry.m_Left.m_Length.y > 1 &&
-                        !endIsConnected); // This shifts to the middle lane when road is connected
+                    m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !endIsConnected);
                     m_CurvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Left);
-                    m_CurvesFilter.Add(
-                        endNodeGeo.m_Geometry.m_Right.m_Length.x > 1 &&
-                        !endIsConnected); // This shifts to the middle lane when road is connected
+                    m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !endIsConnected);
                     m_CurvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Right);
                     m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
 
@@ -837,7 +895,38 @@ namespace Platter.Systems {
 
                     // Apply the snap setback along the perpendicular axis
                     m_BestSnapPosition.m_Position.xz -= m_BestSnapPosition.m_Direction * m_SnapSetback;
+
+                    // Calculate and set snap priority
+                    m_BestSnapPosition.m_SnapPriority = CalculateSnapPriority(
+                        m_SnapLevel,
+                        1f,
+                        1f,
+                        m_ControlPoint.m_HitPosition,
+                        m_BestSnapPosition.m_Position,
+                        m_BestSnapPosition.m_Direction
+                    );
+
+                    m_BestSnapPosition.m_OriginalEntity = curveEntity;
+                    snapAdded                           = true;
                 }
+            }
+
+            // Simplified version of ToolUtils.CalculateSnapPriority
+            private static float2 CalculateSnapPriority(float  level,
+                                                        float  basePriority,
+                                                        float  heightWeight,
+                                                        float3 hitPosition,
+                                                        float3 snapPosition,
+                                                        float2 snapDirection) {
+                var offset = math.abs(snapPosition - hitPosition) / 8f;
+                offset *= offset;
+
+                var horizontal = math.min(1f, offset.x + offset.z);
+                var diagonal   = math.max(offset.x, offset.z) + math.min(offset.x, offset.z) * 0.001f;
+
+                var priority = basePriority * (2f - horizontal - diagonal) / (1f + offset.y * heightWeight);
+
+                return new float2(level, priority);
             }
         }
     }

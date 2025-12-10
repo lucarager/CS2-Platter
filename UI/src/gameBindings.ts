@@ -21,7 +21,7 @@ export const GAME_BINDINGS = {
     ZONE_GROUP_DATA: new TwoWayBinding<ZoneGroupData[]>("ZONE_GROUP_DATA", []),
     RENDER_PARCELS: new TwoWayBinding<boolean>("RENDER_PARCELS", true),
     ALLOW_SPAWNING: new TwoWayBinding<boolean>("ALLOW_SPAWNING", true),
-    SNAP_MODE: new TwoWayBinding<SnapMode>("SNAP_MODE", 0),
+    SNAP_MODES: new TwoWayBinding<number[]>("SNAP_MODES", []),
     SNAP_SPACING: new TwoWayBinding<number>("SNAP_SPACING", 0),
     ENABLE_SNAPPING_OPTIONS: new TwoWayBinding<boolean>("ENABLE_SNAPPING_OPTIONS", false),
     SHOW_ZONES: new TwoWayBinding<boolean>("SHOW_ZONES", false),
