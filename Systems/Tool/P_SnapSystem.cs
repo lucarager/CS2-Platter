@@ -130,9 +130,6 @@ namespace Platter.Systems {
                 // Override distance scale
                 var width        = parcelPrefab.m_LotWidth * 8f;
                 m_ObjectToolSystem.SetMemberValue("distanceScale", width);
-
-                //// Exit, we don't want to snap in line mode
-                //return;
             }
 
             // Exit on disabled snap

@@ -17,6 +17,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEngine;
 
     #endregion
 
@@ -39,109 +40,136 @@ namespace Platter.Systems {
 
             /// <inheritdoc/>
             public void Execute() {
-                if (m_ParcelEntitiesList.Length == 0) {
+                foreach (var updateData in m_ParcelEntitiesList) {
+                    ProcessParcel(updateData);
+                }
+            }
+
+            /// <summary>
+            /// Processes a single parcel update, handling road state flags, connection icons,
+            /// buffer updates, and marking the parcel for downstream system processing.
+            /// </summary>
+            /// <param name="updateData">The update data containing the parcel entity and its new road connections.</param>
+            private void ProcessParcel(UpdateData updateData) {
+                var parcel    = m_ParcelComponentLookup[updateData.m_Parcel];
+                var isCreated = m_CreatedComponentLookup.HasComponent(updateData.m_Parcel);
+                var isTemp    = m_TempComponentLookup.HasComponent(updateData.m_Parcel);
+
+                // Update road state flags
+                UpdateRoadStateFlags(ref parcel, updateData);
+
+                // Check what changed
+                var roadChanged          = updateData.m_FrontRoad     != parcel.m_RoadEdge;
+                var curvePositionChanged = !Mathf.Approximately(updateData.m_FrontCurvePos, parcel.m_CurvePosition);
+                var needsUpdate          = roadChanged || isCreated || curvePositionChanged;
+
+                // Handle road connection icons
+                UpdateRoadConnectionIcon(parcel, updateData, isCreated);
+
+                if (!needsUpdate) {
                     return;
                 }
 
-                foreach (var updateData in m_ParcelEntitiesList) {
-                    var parcel = m_ParcelComponentLookup[updateData.m_Parcel];
-
-                    // A few utility bools
-                    var parcelHasCreatedComponent = m_CreatedComponentLookup.HasComponent(updateData.m_Parcel);
-                    var parcelHasTempComponent    = m_TempComponentLookup.HasComponent(updateData.m_Parcel);
-                    var parcelHadRoad             = parcel.m_RoadEdge    != Entity.Null;
-                    var parcelHasNewRoad          = updateData.m_FrontRoad != Entity.Null;
-                    var noRoad                    = parcel.m_RoadEdge == Entity.Null && updateData.m_FrontRoad == Entity.Null;
-                    var roadChanged               = updateData.m_FrontRoad  != parcel.m_RoadEdge;
-                    var parcelHasNewCurvePosition = updateData.m_FrontCurvePos != parcel.m_CurvePosition;
-
-                    // Update the parcel flags
-                    if (updateData.m_LeftRoad != Entity.Null) {
-                        parcel.m_State |= ParcelState.RoadLeft;
-                    } else {
-                        parcel.m_State &= ~ParcelState.RoadLeft;
-                    }
-
-                    if (updateData.m_RightRoad != Entity.Null) {
-                        parcel.m_State |= ParcelState.RoadRight;
-                    } else {
-                        parcel.m_State &= ~ParcelState.RoadRight;
-                    }
-
-                    if (updateData.m_FrontRoad != Entity.Null) {
-                        parcel.m_State |= ParcelState.RoadFront;
-                    } else {
-                        parcel.m_State &= ~ParcelState.RoadFront;
-                    }
-
+                // For temp parcels, just update the data without modifying buffers
+                if (isTemp) {
+                    parcel.m_RoadEdge      = updateData.m_FrontRoad;
+                    parcel.m_CurvePosition = updateData.m_FrontCurvePos;
                     m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+                    return;
+                }
 
-                    // Determine if we should perform an update
-                    // Either the "new best road" we found is not the one the parcel has stored
-                    // or it's a newly created parcel
-                    if (roadChanged || parcelHasCreatedComponent) {
-                        // Check if the parcel had a road and now doesn't, or vice versa, to update the icon status
-                        if (parcelHadRoad != parcelHasNewRoad) {
-                            if (parcelHasNewRoad) {
-                                m_IconCommandBuffer.Remove(
-                                    updateData.m_Parcel,
-                                    m_TrafficConfigurationData.m_RoadConnectionNotification
-                                );
-                            } else if (!updateData.m_Deleted) {
-                                m_IconCommandBuffer.Add(
-                                    updateData.m_Parcel,
-                                    m_TrafficConfigurationData.m_RoadConnectionNotification,
-                                    updateData.m_FrontPos,
-                                    IconPriority.Warning,
-                                    IconClusterLayer.Default,
-                                    IconFlags.OnTop
-                                );
-                            }
-                        }
+                // Update ConnectedParcel buffers if road changed
+                if (roadChanged) {
+                    UpdateConnectedParcelBuffers(parcel, updateData);
+                }
 
-                        // Handle TEMP parcels and exit early
-                        if (roadChanged && parcelHasTempComponent) {
-                            parcel.m_RoadEdge = updateData.m_FrontRoad;
-                            parcel.m_CurvePosition = updateData.m_FrontCurvePos;
-                            m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-                            return;
-                        }
+                // Apply the new road connection data
+                parcel.m_RoadEdge      = updateData.m_FrontRoad;
+                parcel.m_CurvePosition = updateData.m_FrontCurvePos;
+                m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
 
-                        // Remove old ConnectedParcel
-                        if (parcelHadRoad && m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
-                            CollectionUtils.RemoveValue(m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge], new ConnectedParcel(updateData.m_Parcel));
-                        }
+                // Mark for downstream systems to process
+                m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, default);
+            }
 
-                        // Update data
-                        parcel.m_RoadEdge = updateData.m_FrontRoad;
-                        parcel.m_CurvePosition = updateData.m_FrontCurvePos;
-                        m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+            /// <summary>
+            /// Updates the road state flags on a parcel based on the detected road connections
+            /// at the left, right, and front sides of the parcel.
+            /// </summary>
+            /// <param name="parcel">Reference to the parcel component to update.</param>
+            /// <param name="updateData">The update data containing detected road connections.</param>
+            private void UpdateRoadStateFlags(ref Parcel parcel, UpdateData updateData) {
+                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadLeft, updateData.m_LeftRoad   != Entity.Null);
+                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadRight, updateData.m_RightRoad != Entity.Null);
+                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadFront, updateData.m_FrontRoad != Entity.Null);
 
-                        m_CommandBuffer.AddComponent(updateData.m_Parcel, new Updated());
+                m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+            }
 
-                        if (parcelHasNewRoad) {
-                            m_ConnectedParcelsBufferLookup[updateData.m_FrontRoad].Add(new ConnectedParcel(updateData.m_Parcel));
-                        }
-                    } else if (parcelHasNewCurvePosition) {
-                        parcel.m_CurvePosition = updateData.m_FrontCurvePos;
-                        m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
-                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, default);
-                    }
+            /// <summary>
+            /// Sets or clears a flag on the parcel state based on the specified value.
+            /// </summary>
+            /// <param name="state">The current parcel state.</param>
+            /// <param name="flag">The flag to set or clear.</param>
+            /// <param name="value">True to set the flag, false to clear it.</param>
+            /// <returns>The updated parcel state with the flag set or cleared.</returns>
+            private static ParcelState SetFlag(ParcelState state, ParcelState flag, bool value) {
+                return value ? state | flag : state & ~flag;
+            }
 
-                    if (noRoad && !updateData.m_Deleted) {
-                        // Mark parcel as updated
-                        m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, default);
+            /// <summary>
+            /// Updates the road connection warning icon for a parcel. Adds a warning icon when the parcel
+            /// has no road connection (either newly created without a road or just lost its road connection).
+            /// Removes the warning icon when the parcel gains a road connection or is being deleted.
+            /// </summary>
+            /// <param name="parcel">The parcel component with current road connection state.</param>
+            /// <param name="updateData">The update data containing new road connection information.</param>
+            /// <param name="isCreated">Whether the parcel was just created this frame.</param>
+            private void UpdateRoadConnectionIcon(Parcel parcel, UpdateData updateData, bool isCreated) {
+                var hadNoRoad = parcel.m_RoadEdge == Entity.Null;
+                var hasRoad   = updateData.m_FrontRoad != Entity.Null;
 
-                        // Make sure we have the icons pop up when no roads are present
-                        m_IconCommandBuffer.Add(
-                            updateData.m_Parcel,
-                            m_TrafficConfigurationData.m_RoadConnectionNotification,
-                            updateData.m_FrontPos,
-                            IconPriority.Warning,
-                            IconClusterLayer.Default,
-                            IconFlags.OnTop
-                        );
-                    }
+                if (hasRoad || updateData.m_Deleted) {
+                    // Has a road or being deleted - ensure no warning icon
+                    m_IconCommandBuffer.Remove(
+                        updateData.m_Parcel,
+                        m_TrafficConfigurationData.m_RoadConnectionNotification
+                    );
+                } else if (hadNoRoad) {
+                    // No road and either newly created or just lost road - add warning icon
+                    m_IconCommandBuffer.Add(
+                        updateData.m_Parcel,
+                        m_TrafficConfigurationData.m_RoadConnectionNotification,
+                        updateData.m_FrontPos,
+                        IconPriority.Warning,
+                        IconClusterLayer.Default,
+                        IconFlags.OnTop
+                    );
+                }
+            }
+
+            /// <summary>
+            /// Updates the ConnectedParcel buffers on road entities when a parcel's road connection changes.
+            /// Removes the parcel from the old road's buffer and adds it to the new road's buffer.
+            /// </summary>
+            /// <param name="parcel">The parcel component with the current (old) road connection.</param>
+            /// <param name="updateData">The update data containing the new road connection.</param>
+            private void UpdateConnectedParcelBuffers(Parcel parcel, UpdateData updateData) {
+                // Remove from old road's connected parcels
+                if (parcel.m_RoadEdge != Entity.Null &&
+                    m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
+                    CollectionUtils.RemoveValue(
+                        m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge],
+                        new ConnectedParcel(updateData.m_Parcel)
+                    );
+                }
+
+                // Add to new road's connected parcels
+                if (updateData.m_FrontRoad != Entity.Null &&
+                    m_ConnectedParcelsBufferLookup.HasBuffer(updateData.m_FrontRoad)) {
+                    m_ConnectedParcelsBufferLookup[updateData.m_FrontRoad].Add(
+                        new ConnectedParcel(updateData.m_Parcel)
+                    );
                 }
             }
         }
