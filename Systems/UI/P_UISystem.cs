@@ -10,7 +10,6 @@ namespace Platter.Systems {
     using System.Linq;
     using System.Reflection;
     using Colossal.Serialization.Entities;
-    using Colossal.UI.Binding;
     using Extensions;
     using Game;
     using Game.Input;

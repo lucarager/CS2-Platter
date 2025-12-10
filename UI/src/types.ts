@@ -35,4 +35,6 @@ export enum SnapMode {
     None = 0,
     ZoneSide = 1,
     RoadSide = 2,
+    ParcelEdge = 4,
+    ParcelFrontAlign = 8,
 }

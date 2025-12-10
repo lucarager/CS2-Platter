@@ -39,16 +39,19 @@ namespace Platter.Systems {
     public partial class P_SnapSystem : GameSystemBase {
         [Flags]
         public enum SnapMode : uint {
-            None,
-            ZoneSide,
-            RoadSide,
+            None           = 0,
+            ZoneSide       = 1,
+            RoadSide       = 2,
+            ParcelEdge     = 4,
+            ParcelFrontAlign = 8,
         }
 
         private static class SnapLevel {
-            public const float None       = 0f;
-            public const float ParcelEdge = 2f; 
-            public const float RoadSide   = 1.5f;
-            public const float ZoneSide   = 1f;
+            public const float None             = 0f;
+            public const float ZoneSide         = 1f;
+            public const float RoadSide         = 1.5f;
+            public const float ParcelEdge       = 2f;
+            public const float ParcelFrontAlign = 2.5f;
         }
 
         private EntityQuery m_Query;
@@ -56,6 +59,7 @@ namespace Platter.Systems {
 
         public  NativeReference<bool>   IsSnapped;
         private ObjectToolSystem        m_ObjectToolSystem;
+        private P_ParcelSearchSystem    m_ParcelSearchSystem;
         private PrefixedLogger          m_Log;
         private SearchSystem            m_NetSearchSystem;
         private Game.Zones.SearchSystem m_ZoneSearchSystem;
@@ -87,12 +91,13 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Systems
-            m_ZoneSearchSystem = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
-            m_NetSearchSystem  = World.GetOrCreateSystemManaged<SearchSystem>();
-            m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_ToolSystem       = World.GetOrCreateSystemManaged<ToolSystem>();
-            m_TerrainSystem    = World.GetOrCreateSystemManaged<TerrainSystem>();
-            m_WaterSystem      = World.GetOrCreateSystemManaged<WaterSystem>();
+            m_ZoneSearchSystem   = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
+            m_NetSearchSystem    = World.GetOrCreateSystemManaged<SearchSystem>();
+            m_ParcelSearchSystem = World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
+            m_ObjectToolSystem   = World.GetOrCreateSystemManaged<ObjectToolSystem>();
+            m_ToolSystem         = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_TerrainSystem      = World.GetOrCreateSystemManaged<TerrainSystem>();
+            m_WaterSystem        = World.GetOrCreateSystemManaged<WaterSystem>();
 
             // Logger
             m_Log = new PrefixedLogger(nameof(P_SnapSystem));
@@ -107,7 +112,7 @@ namespace Platter.Systems {
 
             // Data
             m_SnapSetback   = DefaultSnapDistance;
-            m_SnapMode      = SnapMode.RoadSide;
+            m_SnapMode      = SnapMode.RoadSide | SnapMode.ZoneSide | SnapMode.ParcelEdge | SnapMode.ParcelFrontAlign;
             IsSnapped       = new NativeReference<bool>(Allocator.Persistent);
             IsSnapped.Value = false;
 
@@ -158,6 +163,7 @@ namespace Platter.Systems {
             {
                 m_ZoneTree                     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
                 m_NetTree                      = m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
+                m_ParcelTree                   = m_ParcelSearchSystem.GetStaticSearchTree(true, out var parcelTreeJobHandle),
                 m_CurvesList                   = curvesList,
                 m_CurvesFilter                 = curvesFilter,
                 m_SnapMode                     = m_SnapMode,
@@ -167,6 +173,8 @@ namespace Platter.Systems {
                 m_BlockComponentLookup         = SystemAPI.GetComponentLookup<Block>(true),
                 m_ParcelDataComponentLookup    = SystemAPI.GetComponentLookup<ParcelData>(true),
                 m_ParcelOwnerComponentLookup   = SystemAPI.GetComponentLookup<ParcelOwner>(true),
+                m_TransformComponentLookup     = SystemAPI.GetComponentLookup<Transform>(true),
+                m_ParcelComponentLookup        = SystemAPI.GetComponentLookup<Parcel>(true),
                 m_NodeLookup                   = SystemAPI.GetComponentLookup<Node>(true),
                 m_EdgeLookup                   = SystemAPI.GetComponentLookup<Edge>(true),
                 m_CurveLookup                  = SystemAPI.GetComponentLookup<Curve>(true),
@@ -187,11 +195,12 @@ namespace Platter.Systems {
                 m_IsSnapped                    = IsSnapped,
             }.ScheduleParallel(
                 m_Query,
-                JobUtils.CombineDependencies(Dependency, zoneTreeJobHandle, netTreeJobHandle, waterSurfaceJobHandle)
+                JobUtils.CombineDependencies(Dependency, zoneTreeJobHandle, netTreeJobHandle, waterSurfaceJobHandle, parcelTreeJobHandle)
             );
 
             m_ZoneSearchSystem.AddSearchTreeReader(parcelSnapJobHandle);
             m_NetSearchSystem.AddNetSearchTreeReader(parcelSnapJobHandle);
+            m_ParcelSearchSystem.AddSearchTreeReader(parcelSnapJobHandle);
             m_TerrainSystem.AddCPUHeightReader(parcelSnapJobHandle);
             m_WaterSystem.AddSurfaceReader(parcelSnapJobHandle);
 
@@ -208,6 +217,7 @@ namespace Platter.Systems {
         private struct ParcelSnapJob : IJobChunk {
             [ReadOnly] public required NativeQuadTree<Entity, Bounds2>          m_ZoneTree;
             [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetTree;
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelTree;
             [ReadOnly] public required TerrainHeightData                        m_TerrainHeightData;
             [ReadOnly] public required WaterSurfaceData<SurfaceWater>           m_WaterSurfaceData;
             [ReadOnly] public required NativeList<ControlPoint>                 m_ControlPoints;
@@ -215,6 +225,8 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<Block>                   m_BlockComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelOwner>             m_ParcelOwnerComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<Transform>               m_TransformComponentLookup;
+            [ReadOnly] public required ComponentLookup<Parcel>                  m_ParcelComponentLookup;
             [ReadOnly] public required float                                    m_SnapSetback;
             [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
             [ReadOnly] public required ComponentLookup<Node>                    m_NodeLookup;
@@ -258,17 +270,17 @@ namespace Platter.Systems {
                 var parcelData = m_ParcelDataComponentLookup[creationDefinition.m_Prefab];
 
                 // Calculate geometry
-                var searchRadius = parcelData.m_LotSize.y * 4f + 16f;
+                var searchRadius = parcelData.m_LotSize.y * 4f + 8f;
                 var bounds = new Bounds3(
                     controlPoint.m_Position - searchRadius,
                     controlPoint.m_Position + searchRadius
                 );
                 var totalBounds = bounds;
-                totalBounds.min -= 64f;
-                totalBounds.max += 64f;
+                totalBounds.min -= 8f;
+                totalBounds.max += 8f;
 
                 // At minimum, the distance to snap must be
-                var minDistance = math.cmin(parcelData.m_LotSize) * 4f + 16f;
+                var minDistance = math.cmin(parcelData.m_LotSize) * 4f + 4f;
 
                 // Start with the raw control point (no snap)
                 var bestSnapPosition = controlPoint;
@@ -281,6 +293,13 @@ namespace Platter.Systems {
 
                 if ((m_SnapMode & SnapMode.RoadSide) != 0) {
                     SnapToRoadSide(ref bestSnapPosition, controlPoint, bounds, totalBounds, parcelData, minDistance);
+                }
+
+                // Parcel-to-parcel snapping (edge and/or front alignment)
+                var enableParcelEdge       = (m_SnapMode & SnapMode.ParcelEdge) != 0;
+                var enableParcelFrontAlign = (m_SnapMode & SnapMode.ParcelFrontAlign) != 0;
+                if (enableParcelEdge || enableParcelFrontAlign) {
+                    SnapToParcelEdge(ref bestSnapPosition, controlPoint, bounds, parcelData, minDistance, enableParcelEdge, enableParcelFrontAlign);
                 }
 
                 // Check if any snap won
@@ -377,22 +396,33 @@ namespace Platter.Systems {
                 AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
             }
 
-            //private void SnapToParcelEdge(
-            //private ref ControlPoint bestSnapPosition,
-            //                         ControlPoint controlPoint,
+            private void SnapToParcelEdge(ref ControlPoint bestSnapPosition,
+                                          ControlPoint     controlPoint,
+                                          Bounds3          bounds,
+                                          ParcelData       parcelData,
+                                          float            minDistance,
+                                          bool             enableEdgeSnap,
+                                          bool             enableFrontAlign) {
+                var iterator = new ParcelEdgeIterator(
+                    controlPoint: controlPoint,
+                    bestSnapPosition: controlPoint,
+                    bounds: bounds,
+                    lotSize: parcelData.m_LotSize,
+                    bestDistance: minDistance,
+                    enableEdgeSnap: enableEdgeSnap,
+                    enableFrontAlign: enableFrontAlign,
+                    snapLevelEdge: SnapLevel.ParcelEdge,
+                    snapLevelFrontAlign: SnapLevel.ParcelFrontAlign,
+                    transformLookup: m_TransformComponentLookup,
+                    prefabRefLookup: m_PrefabRefLookup,
+                    parcelDataLookup: m_ParcelDataComponentLookup,
+                    parcelLookup: m_ParcelComponentLookup
+                );
 
-            //private Bounds3 bounds,
-            //                ParcelData parcelData,
-            //private float minDistance) {
-            //var iterator = new ParcelSnapIterator(
-            //    // ... your parcel-to-parcel snapping logic ...
-            //    snapLevel: SnapLevel.ParcelEdge
-            //);
+                m_ParcelTree.Iterate(ref iterator);
 
-            //m_ParcelTree.Iterate(ref iterator);
-
-            //AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
-            //}
+                AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
+            }
 
             // Helper method matching game's pattern
             private static void AddSnapPosition(ref ControlPoint bestSnapPosition, ControlPoint candidate) {
@@ -890,7 +920,7 @@ namespace Platter.Systems {
                     m_BestSnapPosition.m_Rotation = ToolUtils.CalculateRotation(m_BestSnapPosition.m_Direction);
                     m_BestSnapPosition.m_Position = MathUtils.Position(closestCurve, closestPoint);
 
-                    // Shift back by lot half depth
+                    // Shift back to center on the curve
                     m_BestSnapPosition.m_Position.xz -= m_BestSnapPosition.m_Direction * m_LotSize.y * 4f;
 
                     // Apply the snap setback along the perpendicular axis
@@ -927,6 +957,259 @@ namespace Platter.Systems {
                 var priority = basePriority * (2f - horizontal - diagonal) / (1f + offset.y * heightWeight);
 
                 return new float2(level, priority);
+            }
+
+            /// <summary>
+            /// QuadTree iterator for parcel-to-parcel snapping.
+            /// Supports both edge snapping (sides slide along each other) and front corner alignment (locked corners).
+            /// </summary>
+            public struct ParcelEdgeIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
+                public  ControlPoint                  BestSnapPosition => m_BestSnapPosition;
+                private ControlPoint                  m_ControlPoint;
+                private ControlPoint                  m_BestSnapPosition;
+                private Bounds3                       m_Bounds;
+                private int2                          m_LotSize;
+                private float3                        m_NewParcelSize;
+                private float                         m_BestDistance;
+                private float                         m_SnapLevelEdge;
+                private float                         m_SnapLevelFrontAlign;
+                private bool                          m_EnableEdgeSnap;
+                private bool                          m_EnableFrontAlign;
+                private ComponentLookup<Transform>    m_TransformLookup;
+                private ComponentLookup<PrefabRef>    m_PrefabRefLookup;
+                private ComponentLookup<ParcelData>   m_ParcelDataLookup;
+                private ComponentLookup<Parcel>       m_ParcelLookup;
+
+                public ParcelEdgeIterator(
+                    ControlPoint                controlPoint,
+                    ControlPoint                bestSnapPosition,
+                    Bounds3                     bounds,
+                    int2                        lotSize,
+                    float                       bestDistance,
+                    bool                        enableEdgeSnap,
+                    bool                        enableFrontAlign,
+                    float                       snapLevelEdge,
+                    float                       snapLevelFrontAlign,
+                    ComponentLookup<Transform>  transformLookup,
+                    ComponentLookup<PrefabRef>  prefabRefLookup,
+                    ComponentLookup<ParcelData> parcelDataLookup,
+                    ComponentLookup<Parcel>     parcelLookup) {
+                    m_ControlPoint        = controlPoint;
+                    m_BestSnapPosition    = bestSnapPosition;
+                    m_Bounds              = bounds;
+                    m_LotSize             = lotSize;
+                    m_NewParcelSize       = new float3(lotSize.x * 8f, 0f, lotSize.y * 8f);
+                    m_BestDistance        = bestDistance;
+                    m_EnableEdgeSnap      = enableEdgeSnap;
+                    m_EnableFrontAlign    = enableFrontAlign;
+                    m_SnapLevelEdge       = snapLevelEdge;
+                    m_SnapLevelFrontAlign = snapLevelFrontAlign;
+                    m_TransformLookup     = transformLookup;
+                    m_PrefabRefLookup     = prefabRefLookup;
+                    m_ParcelDataLookup    = parcelDataLookup;
+                    m_ParcelLookup        = parcelLookup;
+                }
+
+                public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds, m_Bounds); }
+
+                public void Iterate(QuadTreeBoundsXZ bounds, Entity parcelEntity) {
+                    if (!MathUtils.Intersect(bounds.m_Bounds, m_Bounds)) {
+                        return;
+                    }
+
+                    // Verify this is a parcel with required components
+                    if (!m_ParcelLookup.HasComponent(parcelEntity) ||
+                        !m_TransformLookup.HasComponent(parcelEntity) ||
+                        !m_PrefabRefLookup.HasComponent(parcelEntity)) {
+                        return;
+                    }
+
+                    var existingTransform = m_TransformLookup[parcelEntity];
+                    var prefabRef         = m_PrefabRefLookup[parcelEntity];
+
+                    if (!m_ParcelDataLookup.HasComponent(prefabRef.m_Prefab)) {
+                        return;
+                    }
+
+                    var existingParcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
+                    var existingSize       = new float3(existingParcelData.m_LotSize.x * 8f, 0f, existingParcelData.m_LotSize.y * 8f);
+
+                    // Calculate existing parcel's world-space corners
+                    // Corner layout (looking from above, front = +Z direction after rotation):
+                    //   LeftBack ───── RightBack
+                    //      │              │
+                    //      │   (center)   │
+                    //      │              │
+                    //  LeftFront ─── RightFront (front edge faces road)
+                    var existingCorners = CalculateWorldCorners(existingTransform, existingSize);
+
+                    // Try front corner alignment first (higher priority if enabled)
+                    if (m_EnableFrontAlign) {
+                        TryFrontCornerSnap(parcelEntity, existingTransform, existingCorners);
+                    }
+
+                    // Try edge snapping (side-to-side with lateral freedom)
+                    if (m_EnableEdgeSnap) {
+                        TryEdgeSnap(parcelEntity, existingTransform, existingCorners, existingSize);
+                    }
+                }
+
+                /// <summary>
+                /// Calculates world-space corner positions for a parcel.
+                /// Returns float3x4: c0=LeftFront, c1=RightFront, c2=RightBack, c3=LeftBack
+                /// </summary>
+                private static float3x4 CalculateWorldCorners(Transform transform, float3 size) {
+                    var halfWidth = size.x * 0.5f;
+                    var halfDepth = size.z * 0.5f;
+
+                    // Local space corners (center is at 0,0,0)
+                    var localLeftFront  = new float3(-halfWidth, 0f, halfDepth);
+                    var localRightFront = new float3(halfWidth, 0f, halfDepth);
+                    var localRightBack  = new float3(halfWidth, 0f, -halfDepth);
+                    var localLeftBack   = new float3(-halfWidth, 0f, -halfDepth);
+
+                    // Transform to world space
+                    var trs = new float4x4(transform.m_Rotation, transform.m_Position);
+
+                    return new float3x4(
+                        math.transform(trs, localLeftFront),
+                        math.transform(trs, localRightFront),
+                        math.transform(trs, localRightBack),
+                        math.transform(trs, localLeftBack)
+                    );
+                }
+
+                /// <summary>
+                /// Try snapping front corners together (magnetized/locked).
+                /// New parcel's LeftFront → Existing RightFront, or New RightFront → Existing LeftFront
+                /// </summary>
+                private void TryFrontCornerSnap(Entity existingEntity, Transform existingTransform, float3x4 existingCorners) {
+                    var existingLeftFront  = existingCorners.c0;
+                    var existingRightFront = existingCorners.c1;
+
+                    // New parcel half dimensions
+                    var newHalfWidth = m_NewParcelSize.x * 0.5f;
+                    var newHalfDepth = m_NewParcelSize.z * 0.5f;
+
+                    // Get existing parcel's direction (forward = +Z in local, transformed to world)
+                    var existingDirection = math.mul(existingTransform.m_Rotation, new float3(0f, 0f, 1f)).xz;
+                    MathUtils.TryNormalize(ref existingDirection);
+                    var existingRight = MathUtils.Right(existingDirection);
+
+                    // Case 1: New LeftFront corner → Existing RightFront corner (new parcel to the RIGHT)
+                    TrySnapToCorner(existingEntity, existingTransform, existingRightFront, existingDirection, existingRight, newHalfWidth, newHalfDepth, isRightSide: true);
+
+                    // Case 2: New RightFront corner → Existing LeftFront corner (new parcel to the LEFT)
+                    TrySnapToCorner(existingEntity, existingTransform, existingLeftFront, existingDirection, existingRight, newHalfWidth, newHalfDepth, isRightSide: false);
+                }
+
+                /// <summary>
+                /// Helper to try snapping to a specific corner position.
+                /// </summary>
+                private void TrySnapToCorner(Entity existingEntity, Transform existingTransform, float3 cornerPosition,
+                                             float2 existingDirection, float2 existingRight,
+                                             float newHalfWidth, float newHalfDepth, bool isRightSide) {
+                    // Calculate new parcel center based on which side we're snapping to
+                    var newCenter = cornerPosition;
+                    newCenter.xz += existingRight * newHalfWidth * (isRightSide ? 1f : -1f);
+                    newCenter.xz -= existingDirection * newHalfDepth;
+
+                    var distanceToHit = math.distance(newCenter.xz, m_ControlPoint.m_HitPosition.xz);
+
+                    if (distanceToHit >= m_BestDistance) {
+                        return;
+                    }
+
+                    var priority = CalculateSnapPriority(
+                        m_SnapLevelFrontAlign,
+                        1f,
+                        1f,
+                        m_ControlPoint.m_HitPosition,
+                        newCenter,
+                        existingDirection
+                    );
+
+                    if (!CompareSnapPriority(priority, m_BestSnapPosition.m_SnapPriority)) {
+                        return;
+                    }
+
+                    m_BestDistance                      = distanceToHit;
+                    m_BestSnapPosition.m_Position       = newCenter;
+                    m_BestSnapPosition.m_Direction      = existingDirection;
+                    m_BestSnapPosition.m_Rotation       = existingTransform.m_Rotation;
+                    m_BestSnapPosition.m_SnapPriority   = priority;
+                    m_BestSnapPosition.m_OriginalEntity = existingEntity;
+                }
+
+                /// <summary>
+                /// Try edge-to-edge snapping (sides flush, but allows lateral sliding).
+                /// Snaps new parcel's left/right edge to existing parcel's right/left edge.
+                /// </summary>
+                private void TryEdgeSnap(Entity existingEntity, Transform existingTransform, float3x4 existingCorners, float3 existingSize) {
+                    var existingRightFront = existingCorners.c1;
+                    var existingRightBack  = existingCorners.c2;
+                    var existingLeftBack   = existingCorners.c3;
+                    var existingLeftFront  = existingCorners.c0;
+
+                    // Get existing parcel's direction
+                    var existingDirection = math.mul(existingTransform.m_Rotation, new float3(0f, 0f, 1f)).xz;
+                    MathUtils.TryNormalize(ref existingDirection);
+                    var existingRight = MathUtils.Right(existingDirection);
+
+                    var newHalfWidth = m_NewParcelSize.x * 0.5f;
+
+                    // Right edge of existing parcel (RightFront to RightBack) - new parcel snaps to the right
+                    TrySnapToEdge(existingEntity, existingTransform, existingRightFront, existingRightBack, existingDirection, existingRight, newHalfWidth, isRightSide: true);
+
+                    // Left edge of existing parcel (LeftBack to LeftFront) - new parcel snaps to the left
+                    TrySnapToEdge(existingEntity, existingTransform, existingLeftBack, existingLeftFront, existingDirection, existingRight, newHalfWidth, isRightSide: false);
+                }
+
+                /// <summary>
+                /// Helper to try snapping to a specific edge with lateral sliding.
+                /// </summary>
+                private void TrySnapToEdge(Entity existingEntity, Transform existingTransform, float3 edgeStart, float3 edgeEnd,
+                                           float2 existingDirection, float2 existingRight, float newHalfWidth, bool isRightSide) {
+                    var cursorXZ    = m_ControlPoint.m_HitPosition.xz;
+                    var edgeStartXZ = edgeStart.xz;
+                    var edgeEndXZ   = edgeEnd.xz;
+                    var edgeDir     = math.normalize(edgeEndXZ - edgeStartXZ);
+                    var edgeLength  = math.distance(edgeStartXZ, edgeEndXZ);
+
+                    // Project cursor onto edge
+                    var toCursor         = cursorXZ - edgeStartXZ;
+                    var projectionLength = math.clamp(math.dot(toCursor, edgeDir), 0f, edgeLength);
+                    var projectedPoint   = edgeStartXZ + edgeDir * projectionLength;
+                    var distanceToEdge   = math.distance(cursorXZ, projectedPoint);
+
+                    if (distanceToEdge >= m_BestDistance) {
+                        return;
+                    }
+
+                    // Calculate new parcel center
+                    var newCenter = new float3(projectedPoint.x, m_ControlPoint.m_HitPosition.y, projectedPoint.y);
+                    newCenter.xz += existingRight * newHalfWidth * (isRightSide ? 1f : -1f);
+
+                    var priority = CalculateSnapPriority(
+                        m_SnapLevelEdge,
+                        1f,
+                        1f,
+                        m_ControlPoint.m_HitPosition,
+                        newCenter,
+                        existingDirection
+                    );
+
+                    if (!CompareSnapPriority(priority, m_BestSnapPosition.m_SnapPriority)) {
+                        return;
+                    }
+
+                    m_BestDistance                      = distanceToEdge;
+                    m_BestSnapPosition.m_Position       = newCenter;
+                    m_BestSnapPosition.m_Direction      = existingDirection;
+                    m_BestSnapPosition.m_Rotation       = existingTransform.m_Rotation;
+                    m_BestSnapPosition.m_SnapPriority   = priority;
+                    m_BestSnapPosition.m_OriginalEntity = existingEntity;
+                }
             }
         }
     }

@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { Button, Panel, PanelSection, Tooltip } from "cs2/ui";
 import styles from "./toolButton.module.scss";
 import { VF, VC, VT } from "../vanilla/Components";
@@ -28,21 +28,7 @@ export const ToolButton = memo(function ToolButton() {
         "LastViewedChangelogVersion",
     );
 
-    const showUpdateBadge = currentChangelogVersion > lastViewedChangelogVersion;
-
-    useEffect(() => {
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                setIsEnabled(false);
-            }
-        };
-
-        document.addEventListener("keydown", handleEscape);
-
-        return () => {
-            document.removeEventListener("keydown", handleEscape);
-        };
-    }, []);
+    const showUpdateBadge = true; // currentChangelogVersion > lastViewedChangelogVersion;
 
     // Mark changelog as viewed when panel is opened
     useEffect(() => {
@@ -53,8 +39,10 @@ export const ToolButton = memo(function ToolButton() {
 
     return (
         <>
-            {enabled && <ToolPanel />}
-            <Tooltip tooltip={translate("Options.SECTION[Platter.Platter.PlatterMod]")}>
+            {enabled && <ToolPanel initialShowUpdateBadge={showUpdateBadge} />}
+            <Tooltip
+                tooltip={translate("Options.SECTION[Platter.Platter.PlatterMod]")}
+                delayTime={0}>
                 <Button
                     variant="floating"
                     className={styles.toolButton}
@@ -69,7 +57,8 @@ export const ToolButton = memo(function ToolButton() {
     );
 });
 
-export const ToolPanel = memo(function ToolPanel() {
+export const ToolPanel = memo(function ToolPanel(props: { initialShowUpdateBadge?: boolean }) {
+    const [showUpdateBadge, setShowUpdateBadge] = useState(props.initialShowUpdateBadge);
     useRenderTracker("ToolPanel");
     const renderParcelBinding = useValueWrap(GAME_BINDINGS.RENDER_PARCELS.binding, "RenderParcels");
     const allowSpawningBinding = useValueWrap(
@@ -107,16 +96,19 @@ export const ToolPanel = memo(function ToolPanel() {
                         className={c(VT.checkbox.label)}
                     />
                 </VC.Section>
-                {/* <VC.Section
+                <VC.Section
                     title={translate("PlatterMod.UI.SectionTitle.Changelog", "View Changelog")}>
-                    <VC.ToolButton
-                        src={"coui://platter/changelog.svg"}
-                        onSelect={() => GAME_BINDINGS.MODAL__CHANGELOG.set(true)}
-                        focusKey={VF.FOCUS_DISABLED}
-                        tooltip={translate("PlatterMod.UI.Tooltip.Changelog")}
-                        className={c(VT.checkbox.label)}
-                    />
-                </VC.Section> */}
+                    <div style={{ position: "relative" }}>
+                        {showUpdateBadge && <div className={styles.updateBadge}></div>}
+                        <VC.ToolButton
+                            src={"coui://platter/changelog.svg"}
+                            onSelect={() => GAME_BINDINGS.MODAL__CHANGELOG.set(true)}
+                            focusKey={VF.FOCUS_DISABLED}
+                            tooltip={translate("PlatterMod.UI.Tooltip.Changelog")}
+                            className={c(VT.checkbox.label)}
+                        />
+                    </div>
+                </VC.Section>
             </PanelSection>
         </Panel>
     );

@@ -42,6 +42,7 @@ Include the following logs:
 Small follow up update fixing a race condition when caching zone groups.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
+	<ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
 	<ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
 	<ExternalLink Type="github" Url="https://github.com/lucarager/CS2-Platter" />
 	<ExternalLink Type="twitch" Url="https://twitch.tv/lucadevdesign" />

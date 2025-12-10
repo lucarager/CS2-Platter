@@ -1,9 +1,11 @@
 import React from "react";
 import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS } from "gameBindings";
-import { VF } from "../vanilla/Components";
 import { useLocalization } from "cs2/l10n";
+import styles from "./toolOptionsPanel.module.scss";
+import { VF } from "../vanilla/Components";
 import { useRenderTracker, useValueWrap } from "../../debug";
+import { c } from "utils/classes";
 
 export const ToolViewmodeSection = function ToolViewmodeSection() {
     useRenderTracker("ToolPanel/ToolViewmodeSection");
@@ -23,7 +25,7 @@ export const ToolViewmodeSection = function ToolViewmodeSection() {
                 onSelect={() => GAME_BINDINGS.SHOW_ZONES.set(!showZonesBinding)}
                 selected={showZonesBinding}
                 multiSelect={false}
-                className={VT.toolButton.button}
+                className={c(VT.toolButton.button, styles.platterToolButton)}
                 focusKey={VF.FOCUS_DISABLED}
                 tooltip={translate("PlatterMod.UI.Tooltip.ShowZones", "ShowZones")}
             />
@@ -32,7 +34,7 @@ export const ToolViewmodeSection = function ToolViewmodeSection() {
                 onSelect={() => GAME_BINDINGS.SHOW_CONTOUR_LINES.set(!showContourBinding)}
                 selected={showContourBinding}
                 multiSelect={false}
-                className={VT.toolButton.button}
+                className={c(VT.toolButton.button, styles.platterToolButton)}
                 focusKey={VF.FOCUS_DISABLED}
                 tooltip={translate("PlatterMod.UI.Tooltip.ShowContourLines", "ShowContourLines")}
             />

@@ -46,6 +46,19 @@
     }
 }
 
+
+.platterToolButton[class*="selected"] {
+    background-color: rgba(119, 48, 84, 1) !important;
+}
+
+.platterToolButton img {
+    opacity: .75;
+}
+
+.platterToolButton[class*="selected"] img {
+    opacity: 1;
+}
+
 .button[disabled] {
     pointer-events: none;
     cursor: default;
