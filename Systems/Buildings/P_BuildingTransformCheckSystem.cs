@@ -48,7 +48,7 @@ namespace Platter.Systems {
             m_UpdatedQuery = SystemAPI.QueryBuilder()
                                       .WithAll<Building, LinkedParcel, GrowableBuilding>()
                                       .WithAny<Updated, BatchesUpdated>()
-                                      .WithNone<Temp>()
+                                      .WithNone<Temp, Hidden>()
                                       .Build();
 
             // Update Cycle

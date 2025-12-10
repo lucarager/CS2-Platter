@@ -54,11 +54,10 @@ namespace Platter.Systems {
             m_ParcelSearchSystem   = World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
 
             // Queries
-            // Todo this runs way too much, add filters!
             m_Query = SystemAPI.QueryBuilder()
                                .WithAll<Building, LinkedParcel, GrowableBuilding>()
-                               .WithAny<Updated, BatchesUpdated, TransformUpdated>()
-                               .WithNone<Temp>()
+                               .WithAny<TransformUpdated>()
+                               .WithNone<Temp, Hidden>()
                                .Build();
 
             // Update Cycle

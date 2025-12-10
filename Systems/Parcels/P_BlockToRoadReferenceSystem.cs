@@ -8,6 +8,7 @@ namespace Platter.Systems {
 
     using Components;
     using Game;
+    using Game.Citizens;
     using Game.Common;
     using Game.Tools;
     using Game.Zones;
@@ -15,6 +16,7 @@ namespace Platter.Systems {
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine;
     using Utils;
 
     #endregion
@@ -24,13 +26,8 @@ namespace Platter.Systems {
     /// This is what marks a block as a valid spawn location to the vanilla ZoneSpawnSystem.
     /// </summary>
     public partial class P_BlockToRoadReferenceSystem : GameSystemBase {
-        // Queries
         private EntityQuery m_ParcelUpdatedQuery;
-
-        // Barriers & Buffers
         private ModificationBarrier5 m_ModificationBarrier5;
-
-        // Logger
         private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
@@ -45,7 +42,7 @@ namespace Platter.Systems {
             m_ParcelUpdatedQuery = SystemAPI.QueryBuilder()
                                             .WithAll<Parcel, Initialized>()
                                             .WithAny<Updated>()
-                                            .WithNone<Temp>()
+                                            .WithNone<Temp, Deleted>()
                                             .Build();
 
             RequireForUpdate(m_ParcelUpdatedQuery);
@@ -55,7 +52,7 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_Log.Debug("OnUpdate() -- Updating Parcel->Block->Road ownership references");
 
-            Dependency = new UpdateBlockOwnerJob
+            var updateBlockOwnerJobHandle = new UpdateBlockOwnerJob
             {
                 m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
                 m_ParcelTypeHandle               = SystemAPI.GetComponentTypeHandle<Parcel>(true),
@@ -66,7 +63,9 @@ namespace Platter.Systems {
                 m_CommandBuffer                  = m_ModificationBarrier5.CreateCommandBuffer().AsParallelWriter(),
             }.Schedule(m_ParcelUpdatedQuery, Dependency);
 
-            m_ModificationBarrier5.AddJobHandleForProducer(Dependency);
+            m_ModificationBarrier5.AddJobHandleForProducer(updateBlockOwnerJobHandle);
+
+            Dependency = updateBlockOwnerJobHandle;
         }
 
 #if USE_BURST
@@ -97,15 +96,19 @@ namespace Platter.Systems {
                         var blockEntity = subBlock.m_SubBlock;
 
                         // Update the block's curve position
-                        if (m_CurvePositionLookup.TryGetComponent(blockEntity, out var curvePosition)) {
+                        if (m_CurvePositionLookup.TryGetComponent(blockEntity, out var curvePosition) &&
+                            (
+                                !Mathf.Approximately(curvePosition.m_CurvePosition.x, parcel.m_CurvePosition) ||
+                                !Mathf.Approximately(curvePosition.m_CurvePosition.y, parcel.m_CurvePosition)
+                            )) {
                             curvePosition.m_CurvePosition      = parcel.m_CurvePosition;
                             m_CurvePositionLookup[blockEntity] = curvePosition;
                         }
 
                         // Mark the road edge as updated
-                        if (parcel.m_RoadEdge != Entity.Null) {
-                            m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, parcel.m_RoadEdge);
-                        }
+                        //if (parcel.m_RoadEdge != Entity.Null) {
+                        //    m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, parcel.m_RoadEdge);
+                        //}
 
                         if (parcel.m_RoadEdge == Entity.Null || !allowSpawning) {
                             // We need to make sure that the block actually NEVER has a null owner

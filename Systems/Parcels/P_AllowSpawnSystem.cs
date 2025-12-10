@@ -38,12 +38,12 @@ namespace Platter.Systems {
 
             // Queries
             m_SpawnableQuery = SystemAPI.QueryBuilder()
-                                        .WithAll<Parcel, Initialized, ParcelSpawnable>()
-                                        .WithNone<Deleted, Temp>()
+                                        .WithAll<Parcel, ParcelSpawnable>()
+                                        .WithNone<Deleted>()
                                         .Build();
             m_NotSpawnableQuery = SystemAPI.QueryBuilder()
-                                           .WithAll<Parcel, Initialized>()
-                                           .WithNone<ParcelSpawnable, Deleted, Temp>()
+                                           .WithAll<Parcel>()
+                                           .WithNone<ParcelSpawnable, Deleted>()
                                            .Build();
         }
 

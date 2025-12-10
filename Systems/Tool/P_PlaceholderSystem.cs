@@ -23,19 +23,14 @@ namespace Platter.Systems {
     public partial class P_PlaceholderSystem : PlatterGameSystemBase {
         private EntityQuery           m_PlacedQuery;
         private EntityQuery           m_TempQuery;
-        private EntityQuery           m_TempNotPlaceholderQuery;
         private ModificationBarrier1  m_ModificationBarrier1;
         private P_UISystem            m_PlatterUISystem;
-        private PrefabSystem          m_PrefabSystem;
-        private ToolSystem            m_ToolSystem;
         private P_PrefabsCreateSystem m_PPrefabsCreateSystem;
-        private ObjectToolSystem      m_ObjectToolSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_PrefabSystem         = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ToolSystem           = World.GetOrCreateSystemManaged<ToolSystem>();
+
             m_ModificationBarrier1 = World.GetOrCreateSystemManaged<ModificationBarrier1>();
             m_PlatterUISystem      = World.GetOrCreateSystemManaged<P_UISystem>();
             m_PPrefabsCreateSystem = World.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
@@ -52,36 +47,25 @@ namespace Platter.Systems {
                                    .WithAll<Temp>()
                                    .Build();
 
-            // Parcels (without ParcelPlaceholder) created by something like the relocate tool (with Temp)
-            // Currently ununsed
-            m_TempNotPlaceholderQuery = SystemAPI.QueryBuilder()
-                                                 .WithAll<Parcel, Temp>()
-                                                 .WithNone<ParcelPlaceholder>()
-                                                 .Build();
+            RequireAnyForUpdate(m_PlacedQuery, m_TempQuery);
         }
 
         protected override void OnUpdate() {
-            if (m_PlacedQuery.IsEmpty &&
-                m_TempQuery.IsEmpty   &&
-                m_TempNotPlaceholderQuery.IsEmpty) {
-                return;
-            }
-
             // Job to set the prezone data on a temp placeholder parcel
             var updateTempPlaceholderJobHandle = new UpdateTempPlaceholderJob {
                 m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
                 m_ZoneType = m_PlatterUISystem.PreZoneType,
-                m_AllowSpawn = PlatterMod.Instance.Settings.AllowSpawn,
                 m_ParcelTypeHandle = SystemAPI.GetComponentTypeHandle<Parcel>(),
                 m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter(),
             }.Schedule(m_TempQuery, Dependency);
             m_ModificationBarrier1.AddJobHandleForProducer(updateTempPlaceholderJobHandle);
 
-            Dependency = JobHandle.CombineDependencies(updateTempPlaceholderJobHandle, updateTempPlaceholderJobHandle);
+            Dependency = JobHandle.CombineDependencies(updateTempPlaceholderJobHandle, Dependency);
 
             // Job to swap prefabref once placeholder is placed
             var swapPlaceholderForPermnanentJobHandle = new SwapPlaceholderRefJob() {
                 m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
+                m_AllowSpawn       = PlatterMod.Instance.Settings.AllowSpawn,
                 m_PrefabRefTypeHandle = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
                 m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(),
                 m_PrefabCache = m_PPrefabsCreateSystem.GetReadOnlyPrefabCache(),
@@ -90,13 +74,12 @@ namespace Platter.Systems {
             }.Schedule(m_PlacedQuery, Dependency);
             m_ModificationBarrier1.AddJobHandleForProducer(swapPlaceholderForPermnanentJobHandle);
 
-            Dependency = JobHandle.CombineDependencies(updateTempPlaceholderJobHandle, swapPlaceholderForPermnanentJobHandle);
+            Dependency = JobHandle.CombineDependencies(swapPlaceholderForPermnanentJobHandle, Dependency);
         }
 
         private struct UpdateTempPlaceholderJob : IJobChunk {
             [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
             [ReadOnly] public required ZoneType                           m_ZoneType;
-            [ReadOnly] public required bool                               m_AllowSpawn;
             public required            ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
             public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
@@ -111,11 +94,7 @@ namespace Platter.Systems {
                     parcel.m_PreZoneType = m_ZoneType;
                     parcelArray[i]       = parcel;
 
-                    if (m_AllowSpawn) {
-                        m_CommandBuffer.AddComponent<ParcelSpawnable>(index, entity);
-                    }
-
-                    m_CommandBuffer.AddComponent<Updated>(index, entity);
+                    //m_CommandBuffer.AddComponent<Updated>(index, entity);
                 }
             }
         }
@@ -125,6 +104,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentTypeHandle<PrefabRef>      m_PrefabRefTypeHandle;
             [ReadOnly] public required ComponentLookup<ParcelData>         m_ParcelDataLookup;
             [ReadOnly] public required NativeHashMap<int, Entity>.ReadOnly m_PrefabCache;
+            [ReadOnly] public required bool                                m_AllowSpawn;
             public required            EntityCommandBuffer.ParallelWriter  m_CommandBuffer;
             public required            bool                                toPermanent;
 
@@ -159,6 +139,10 @@ namespace Platter.Systems {
                         m_CommandBuffer.RemoveComponent<ParcelPlaceholder>(index, entity);
                     } else {
                         m_CommandBuffer.AddComponent<ParcelPlaceholder>(index, entity);
+                    }
+
+                    if (m_AllowSpawn) {
+                        m_CommandBuffer.AddComponent<ParcelSpawnable>(index, entity);
                     }
 
                     // Update
