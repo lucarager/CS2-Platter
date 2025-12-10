@@ -48,7 +48,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             m_Log.Debug("OnUpdate()");
-            EntityManager.AddComponent(m_SpawnedBuildingQuery, new ComponentTypeSet(typeof(GrowableBuilding), typeof(LinkedParcel), typeof(Updated)));
+            EntityManager.AddComponent(m_SpawnedBuildingQuery, new ComponentTypeSet(typeof(GrowableBuilding), typeof(LinkedParcel), typeof(TransformUpdated)));
         }
     }
 }
