@@ -15,6 +15,7 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Prefabs;
     using Game.Rendering;
+    using Game.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -101,6 +102,7 @@ namespace Platter.Systems {
                     m_TransformComponentTypeHandle   = SystemAPI.GetComponentTypeHandle<Transform>(),
                     m_PrefabRefComponentTypeHandle   = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
                     m_ParcelComponentTypeHandle      = SystemAPI.GetComponentTypeHandle<Parcel>(),
+                    m_TempComponentTypeHandle        = SystemAPI.GetComponentTypeHandle<Temp>(),
                     m_ParcelDataComponentLookup      = SystemAPI.GetComponentLookup<ParcelData>(),
                     m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
                     m_CullingData                    = m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle),
@@ -137,6 +139,7 @@ namespace Platter.Systems {
             [ReadOnly] public required NativeHashMap<ushort, Color>     m_ColorsMap;
             [ReadOnly] public required EntityTypeHandle                 m_EntityTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<Transform>   m_TransformComponentTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Temp>        m_TempComponentTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<PrefabRef>   m_PrefabRefComponentTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<Parcel>      m_ParcelComponentTypeHandle;
             [ReadOnly] public required ComponentLookup<ParcelData>      m_ParcelDataComponentLookup;
@@ -184,7 +187,7 @@ namespace Platter.Systems {
                         trs,
                         m_ColorsMap[parcel.m_PreZoneType.m_Index],
                         parcel.m_State,
-                        spawnable
+                        spawnable || chunk.Has(ref m_TempComponentTypeHandle)
                     );
                 }
             }
