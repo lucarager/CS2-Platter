@@ -37,7 +37,6 @@ Include the following logs:
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
 	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />
-	<Dependency Id="79186" DisplayName="Simple Mod Checker Plus" Version="*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
 Small follow up update fixing a race condition when caching zone groups.
