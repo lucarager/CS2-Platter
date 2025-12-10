@@ -23,12 +23,31 @@ namespace Platter.Systems {
     /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
     /// </summary>
     public partial class P_ParcelInitializeSystem : GameSystemBase {
-        // GeometryFlags.Overridable: Allows buildings and objects to grow over the parcel.
-        private const GeometryFlags PermGeometryFlags        = GeometryFlags.Overridable | GeometryFlags.LowCollisionPriority;
-        // GeometryFlags.Brushable: Necessary for ObjectTool to include linetool options.
-        private const GeometryFlags PlaceholderGeometryFlags = GeometryFlags.WalkThrough | GeometryFlags.Brushable;
-        private       EntityQuery   m_ParcelPlaceholderPrefabQuery;
+        // Shared GeometryFlags for all parcels.
+        private const GeometryFlags CommonGeometryFlags =
+            // Ensures the parcel can be walked through.
+            GeometryFlags.WalkThrough;
 
+        // PermGeometryFlags: Assigned to permanent parcels (after placing)
+        private const GeometryFlags PermGeometryFlags =
+            CommonGeometryFlags |
+            // Allows buildings and objects to grow over the parcel.
+            GeometryFlags.Overridable |
+            // Reduces collision priority to avoid interference with other objects.
+            GeometryFlags.LowCollisionPriority;
+
+        // PlaceholderGeometryFlags: Assigned to placeholder parcels (before placing)
+        private const GeometryFlags PlaceholderGeometryFlags =
+            CommonGeometryFlags |
+            // Necessary for ObjectTool to include linetool options.
+            GeometryFlags.Brushable;
+
+        // Shared PlacementFlags for all parcels.
+        private const PlacementFlags CommonPlacementFlags =
+            // Added to make sure EDT doesn't pick up parcels.
+            PlacementFlags.OwnerSide;
+
+        private EntityQuery    m_ParcelPlaceholderPrefabQuery;
         private EntityQuery    m_ParcelPrefabQuery;
         private PrefabSystem   m_PrefabSystem;
         private PrefixedLogger m_Log;
@@ -125,10 +144,9 @@ namespace Platter.Systems {
             // Geometry data
             EntityManager.SetComponentData(
                 prefabEntity,
-                new PlaceableObjectData {
-                    m_Flags = PlacementFlags
-                        .OwnerSide, // Ownerside added to make sure EDT doesn't pick up parcels. Temporary fix until we can patch
-                    // EDT or Platter accordingly
+                new PlaceableObjectData
+                {
+                    m_Flags            = CommonPlacementFlags,
                     m_PlacementOffset  = new float3(0, 0, 0),
                     m_ConstructionCost = 0,
                     m_XPReward         = 0,
