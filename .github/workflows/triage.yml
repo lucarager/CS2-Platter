@@ -27,5 +27,5 @@ jobs:
           repo_name: ${{ github.event.repository.name }}
           owner: ${{ github.repository_owner }}
           ai_review_label: 'request ai review'
-          prompts_directory: './Prompts'
+          prompts_directory: './prompts'
           labels_to_prompts_mapping: 'bug,bug-review.prompt.yml|support request,request-intake.prompt.yml'
