@@ -28,7 +28,7 @@ export const ToolButton = memo(function ToolButton() {
         "LastViewedChangelogVersion",
     );
 
-    const showUpdateBadge = true; // currentChangelogVersion > lastViewedChangelogVersion;
+    const showUpdateBadge = currentChangelogVersion > lastViewedChangelogVersion;
 
     // Mark changelog as viewed when panel is opened
     useEffect(() => {
@@ -37,12 +37,15 @@ export const ToolButton = memo(function ToolButton() {
         }
     }, [enabled, currentChangelogVersion, lastViewedChangelogVersion]);
 
+    let tooltip = translate("Options.SECTION[Platter.Platter.PlatterMod]") || "";
+    tooltip += showUpdateBadge
+        ? ` ${translate("PlatterMod.UI.Label.NewUpdatesAvailable", "(New updates)")}`
+        : "";
+
     return (
         <>
             {enabled && <ToolPanel initialShowUpdateBadge={showUpdateBadge} />}
-            <Tooltip
-                tooltip={translate("Options.SECTION[Platter.Platter.PlatterMod]")}
-                delayTime={0}>
+            <Tooltip tooltip={tooltip} delayTime={0}>
                 <Button
                     variant="floating"
                     className={styles.toolButton}
@@ -98,11 +101,14 @@ export const ToolPanel = memo(function ToolPanel(props: { initialShowUpdateBadge
                 </VC.Section>
                 <VC.Section
                     title={translate("PlatterMod.UI.SectionTitle.Changelog", "View Changelog")}>
-                    <div style={{ position: "relative" }}>
+                    <div className={styles.changelogButtonWrap}>
                         {showUpdateBadge && <div className={styles.updateBadge}></div>}
                         <VC.ToolButton
                             src={"coui://platter/changelog.svg"}
-                            onSelect={() => GAME_BINDINGS.MODAL__CHANGELOG.set(true)}
+                            onSelect={() => {
+                                setShowUpdateBadge(false);
+                                GAME_BINDINGS.MODAL__CHANGELOG.set(true);
+                            }}
                             focusKey={VF.FOCUS_DISABLED}
                             tooltip={translate("PlatterMod.UI.Tooltip.Changelog")}
                             className={c(VT.checkbox.label)}

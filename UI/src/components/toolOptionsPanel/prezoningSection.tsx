@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS } from "gameBindings";
 import styles from "./toolOptionsPanel.module.scss";
-import { Icon, DropdownItem, DropdownToggle, Dropdown } from "cs2/ui";
+import { Icon, DropdownToggle, Dropdown, DropdownItem$1 } from "cs2/ui";
 import { c } from "utils/classes";
 import { VF } from "../vanilla/Components";
 import { useLocalization } from "cs2/l10n";
@@ -259,7 +259,7 @@ export const PrezoningSection = function PrezoningSection() {
                                             </span>
                                         )}
                                         {zones[index].map((zoneData, idx) => (
-                                            <DropdownItem<number>
+                                            <VC.DropdownItem
                                                 key={idx}
                                                 className={styles.dropdownItem}
                                                 focusKey={VF.FOCUS_DISABLED}
@@ -284,7 +284,7 @@ export const PrezoningSection = function PrezoningSection() {
                                                         )}
                                                     </div>
                                                 </div>
-                                            </DropdownItem>
+                                            </VC.DropdownItem>
                                         ))}
                                     </div>
                                 </div>

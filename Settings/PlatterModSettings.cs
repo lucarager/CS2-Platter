@@ -44,7 +44,7 @@ namespace Platter.Settings {
         /// <summary>
         /// The current changelog version. Increment this when adding new changelog entries.
         /// </summary>
-        public const uint CurrentChangelogVersion = 0;
+        public const uint CurrentChangelogVersion = 10;
 
         [SettingsUIHidden]
         public bool AllowSpawn { get; set; } = true;

@@ -42,6 +42,10 @@ const modulePaths = [
         path: "game-ui/common/input/text/text-input.tsx",
         components: ["TextInput"],
     },
+    {
+        path: "game-ui/common/input/dropdown/items/dropdown-item.tsx",
+        components: ["DropdownItem"],
+    },
 ];
 
 const themePaths = [

@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from "react";
 import { UniqueFocusKey } from "cs2/bindings";
 import { HTMLAttributes } from "react";
-import { InfoRowProps, InfoSectionProps } from "cs2/ui";
+import { DropdownItemProps, InfoRowProps, InfoSectionProps } from "cs2/ui";
 
 export interface IVanillaComponents {
     Section: React.FC<VanillaSectionProps>;
@@ -14,6 +14,7 @@ export interface IVanillaComponents {
     InfoLink: React.FC<PropsWithChildren<VanillaInfoLinkProps>>;
     PageSelector: React.FC<PageSelectorProps>;
     Page: React.FC<any>;
+    DropdownItem: React.FC<PropsWithChildren<DropdownItemProps<number>>>;
     PageSwitcher: React.FC<PropsWithChildren<PageSwitcherProps>>;
     [key: string]: React.FC<any>;
 }

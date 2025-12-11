@@ -182,6 +182,10 @@
         align-items: center;
         justify-content: flex-start;
 
+        &__cl {
+            padding-bottom: 0;
+        }
+
         &__image {
             display: flex;
             align-items: center;
