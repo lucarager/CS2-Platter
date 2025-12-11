@@ -45,7 +45,7 @@ Include the following logs:
 	- New: Snap to existing parcel corners
 	- New: New icons to go with the new snap options
 	- Improved: Adjust snapping logic and distance for improved performance and UX.
-- Performance & Stability enhancements
+- Performance and Stability enhancements
 	- Greatly improve performance of road connection system, and fix crash to desktop in certain edge cases.
 	- Greatly improve performance of parcel overlays, especially when many were present.
 	- Improve performance of various parcel update systems by eliminating superfluous update cycles.
