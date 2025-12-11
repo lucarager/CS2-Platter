@@ -32,14 +32,26 @@ Include the following logs:
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.2.5" />
+	<ModVersion Value="1.3.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
 	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-Small follow up update fixing a race condition when caching zone groups.
+- New Snapping System
+	- New: Allow multiple snap options to be selected at the same time
+	- New: Snap to existing parcel sides
+	- New: Snap to existing parcel corners
+	- New: New icons to go with the new snap options
+	- Improved: Adjust snapping logic and distance for improved performance and UX.
+- Performance & Stability enhancements
+	- Greatly improve performance of road connection system, and fix crash to desktop in certain edge cases.
+	- Greatly improve performance of parcel overlays, especially when many were present.
+	- Improve performance of various parcel update systems by eliminating superfluous update cycles.
+	- Improve performance of Temporary ("on cursor") parcels by eliminating superfluous updates that were running each frame
+- New changelog UI in-game
+- Updated Translations
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
