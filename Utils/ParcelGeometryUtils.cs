@@ -1,4 +1,4 @@
-// <copyright file="ParcelGeometryUtils.cs" company="Luca Rager">
+﻿// <copyright file="ParcelGeometryUtils.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -9,6 +9,7 @@ namespace Platter.Utils {
     using Colossal.Mathematics;
     using Constants;
     using Unity.Mathematics;
+    using Transform = Game.Objects.Transform;
 
     #endregion
 
@@ -99,6 +100,55 @@ namespace Platter.Utils {
             var parcelSize   = GetParcelSize(lotSize);
             var parcelBounds = GetParcelBounds(parcelSize);
             return GetCenter(parcelBounds);
+        }
+
+
+        /// <summary>
+        /// Calculates world-space corner positions for a parcel from lot size.
+        /// </summary>
+        /// <param name="transform">The parcel's transform.</param>
+        /// <param name="lotSize">Lot size in cells (width x depth).</param>
+        /// <returns>float3x4 with corners: c0=LeftFront, c1=RightFront, c2=RightBack, c3=LeftBack.</returns>
+        public static Quad2 GetWorldCorners(Transform transform, int2 lotSize) {
+            var trs = ParcelUtils.GetTransformMatrix(transform);
+
+            return GetWorldCorners(trs, GetParcelSize(lotSize));
+        }
+
+        public static Quad2 GetWorldCorners(quaternion rotation, float3 position, int2 lotSize) {
+            var trs = ParcelUtils.GetTransformMatrix(rotation, position);
+
+            return GetWorldCorners(trs, GetParcelSize(lotSize));
+        }
+
+        /// <summary>
+        /// Calculates world-space corner positions for a parcel.
+        /// </summary>
+        /// <param name="trs">The parcel's transform matrix.</param>
+        /// <param name="parcelSize">The parcel size (width, height, depth).</param>
+        /// <returns>
+        /// float3x4 with corners: c0=RightFront, c1=LeftFront, c2=LeftBack, c3=RightBack.
+        /// Corner layout (looking from above, front = +Z direction after rotation):
+        ///   LeftBack ───── RightBack
+        ///      │              │
+        ///      │   (center)   │
+        ///      │              │
+        ///  LeftFront ─── RightFront (front edge faces road)
+        /// </returns>
+        public static Quad2 GetWorldCorners(float4x4 trs, float3 parcelSize) {
+            // Local space corners using ParcelUtils.NodeMult pattern
+            var localRightFront = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerRightFront) * parcelSize;
+            var localLeftFront  = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerLeftFront) * parcelSize;
+            var localLeftBack   = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerLeftBack) * parcelSize;
+            var localRightBack  = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerRightBack) * parcelSize;
+
+            // Transform to world space
+            return new Quad2(
+                math.transform(trs, localRightFront).xz,
+                math.transform(trs, localLeftFront).xz,
+                math.transform(trs, localLeftBack).xz,
+                math.transform(trs, localRightBack).xz
+            );
         }
     }
 }

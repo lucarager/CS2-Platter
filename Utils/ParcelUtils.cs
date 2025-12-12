@@ -67,7 +67,11 @@ namespace Platter.Utils {
         }
 
         public static float4x4 GetTransformMatrix(Transform transform) {
-            return new float4x4(transform.m_Rotation, transform.m_Position);
+            return GetTransformMatrix(transform.m_Rotation, transform.m_Position);
+        }
+
+        public static float4x4 GetTransformMatrix(quaternion rotation, float3 position) {
+            return new float4x4(rotation, position);
         }
 
         public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) {
