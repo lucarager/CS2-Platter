@@ -3,7 +3,7 @@
   "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platter",
   "Options.TAB[Platter.Platter.PlatterMod.GeneralTab]": "Gerais",
   "Options.TAB[Platter.Platter.PlatterMod.KeybindingsTab]": "Combinações de Teclado",
-  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Keyboard",
+  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Teclas de atalho",
   "Options.GROUP[Platter.Platter.PlatterMod.MousebindingsGroup]": "Mouse",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Desinstalar",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Sobre",
