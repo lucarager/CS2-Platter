@@ -33,12 +33,20 @@ namespace Platter.Settings {
                 { m_Setting.GetBindingMapLocaleID(), PlatterMod.Id },
 
                 // Tabs
+                { m_Setting.GetOptionTabLocaleID(PS.GeneralTab), "General" },
+                { m_Setting.GetOptionTabLocaleID(PS.KeybindingsTab), "Keybindings" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(PS.KeybindingsGroup), "Key Bindings" },
+                { m_Setting.GetOptionGroupLocaleID(PS.KeybindingsGroup), "Keyboard" },
+                { m_Setting.GetOptionGroupLocaleID(PS.MousebindingsGroup), "Mouse" },
                 { m_Setting.GetOptionGroupLocaleID(PS.UninstallGroup), "Uninstall" },
-                { m_Setting.GetOptionGroupLocaleID(PS.AboutGroup), "About" },
+                { m_Setting.GetOptionGroupLocaleID(PS.AboutGroup), "About" },                
+                { m_Setting.GetOptionGroupLocaleID(PS.GeneralGroup), "General" },
 
+                // Overlay for Tools
+                { m_Setting.GetOptionLabelLocaleID(PS.EnableOverlayForToolsName), "Auto-Enable Parcel Overlay for key tools" },
+                { m_Setting.GetOptionDescLocaleID(PS.EnableOverlayForToolsName), "When enabled, parcel overlays will show when using key vanilla tools like Net Tool etc. \n\r Disable this to control the overlay with the \"Toggle Overlay\" option manually." },
+                
                 // Uninstaller
                 { m_Setting.GetOptionLabelLocaleID(PS.RemoveParcelsName), "Delete all Parcels" },
                 { m_Setting.GetOptionDescLocaleID(PS.RemoveParcelsName), "Removes all parcels from the map, permanently. Buildings that are not on a vanilla zone grid will despawn, unless you have a mod that prevents that." },
