@@ -147,7 +147,7 @@ namespace Platter.Settings {
         #region Internal/Hidden
 
         [SettingsUIHidden]
-        public const uint CurrentChangelogVersion = 10;
+        public const uint CurrentChangelogVersion = 15;
 
         [SettingsUIHidden]
         public bool AllowSpawn { get; set; } = true;

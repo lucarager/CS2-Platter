@@ -84,6 +84,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include=".github\workflows\prompts\bug-review.prompts.yml" />
 		<None Include="Config/References.csproj" />
 	</ItemGroup>
 

@@ -56,6 +56,13 @@ export const ChangelogModal = () => {
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
                             <ChangelogItem
+                            date="2025-12-12"
+                            title="Platter 1.3.1 - Snap improvements & new auto-overlay Setting"
+                            text={
+`Snap to Parcel Sides now allows snapping parcels together in any orientation, making creating complex layouts easier than ever! Other snapping options have been tweaked to improve usability.
+
+Added a new setting to the Settings Page that allows disabling the "auto-overlay" for vanilla tools. For those that want to fully control when those overlays pop up!`}/>
+                            <ChangelogItem
                             date="2025-12-10"
                             title="Platter 1.3.0 - The Snapping & Performance Update"
                             image="coui://platter/changelog/2.jpg"
