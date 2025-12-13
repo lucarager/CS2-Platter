@@ -271,9 +271,25 @@ namespace Platter.Systems {
         }
 
         /// <summary>
+        /// Determines if parcel overlay should be rendered based on active tool and settings.
         /// </summary>
         private bool ShouldRenderOverlay() {
-            // Should generally show parcels unless the active tool is specifically called out here
+            // Always show if explicitly enabled via RenderParcels setting
+            if (PlatterMod.Instance.Settings.RenderParcels) {
+                return true;
+            }
+
+            // Always show when using parcel prefabs
+            if (m_ToolSystem.activePrefab is ParcelPlaceholderPrefab) {
+                return true;
+            }
+
+            // If vanilla tool overlay is disabled, only show for parcel tools
+            if (!PlatterMod.Instance.Settings.EnableOverlayForTools) {
+                return false;
+            }
+
+            // Show parcels for compatible vanilla tools (when EnableOverlayForVanillaTools is true)
             var toolCheck = m_ToolSystem.activeTool is not DefaultToolSystem &&
                             m_ToolSystem.activeTool is not AreaToolSystem    &&
                             m_ToolSystem.activeTool is not WaterToolSystem   &&
@@ -284,8 +300,7 @@ namespace Platter.Systems {
                                 prefab: not ParcelPlaceholderPrefab,
                             };
 
-            // Also catch any other tool using parcel prefabs
-            return toolCheck || m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+            return toolCheck;
         }
 
         /// <summary>

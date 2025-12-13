@@ -16,6 +16,7 @@ namespace Platter.Settings {
     using Systems;
     using Unity.Entities;
     using UnityEngine;
+    using static Game.Prefabs.CompositionFlags;
 
     #endregion
 
@@ -23,89 +24,50 @@ namespace Platter.Settings {
     /// The mod's settings.
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(PlatterMod) + "/" + nameof(PlatterMod))]
-    [SettingsUIGroupOrder(KeybindingsGroup, UninstallGroup, AboutGroup)]
+    [SettingsUITabOrder(GeneralTab, KeybindingsTab)]
+    [SettingsUIGroupOrder(GeneralGroup, KeybindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
+        #region Strings
+
+        // Tabs
+        public const string GeneralTab       = "GeneralTab";
+        public const string KeybindingsTab   = "KeybindingsTab";
         // Groups
-        public const string AboutGroup        = "AboutGroup";
-        public const string KeybindingsGroup  = "KeybindingsGroup";
-        public const string UninstallGroup    = "UninstallGroup";
+        public const string GeneralGroup       = "GeneralGroup";
+        public const string AboutGroup         = "AboutGroup";
+        public const string KeybindingsGroup   = "KeybindingsGroup";
+        public const string MousebindingsGroup = "MousebindingsGroup";
+        public const string UninstallGroup     = "UninstallGroup";
         // Actions
-        public const string OpenPanelName     = nameof(PlatterOpenPanel);
-        public const string ToggleRenderName  = nameof(PlatterToggleRender);
-        public const string ToggleSpawnName   = nameof(PlatterToggleSpawn);
-        public const string DepthScrollName   = nameof(PlatterDepthScrollAction);
-        public const string WidthScrollName   = nameof(PlatterWidthScrollAction);
-        public const string SetbackScrollName = nameof(PlatterSetbackScrollAction);
-        public const string RemoveParcelsName = nameof(RemoveParcels);
+        public const string OpenPanelName             = nameof(PlatterOpenPanel);
+        public const string ToggleRenderName          = nameof(PlatterToggleRender);
+        public const string ToggleSpawnName           = nameof(PlatterToggleSpawn);
+        public const string DepthScrollName           = nameof(PlatterDepthScrollAction);
+        public const string WidthScrollName           = nameof(PlatterWidthScrollAction);
+        public const string SetbackScrollName         = nameof(PlatterSetbackScrollAction);
+        public const string RemoveParcelsName         = nameof(RemoveParcels);
+        public const string EnableOverlayForToolsName = nameof(EnableOverlayForTools);
         // Statics
         private const string Credit = "Made with <3 by Luca.";
 
-        /// <summary>
-        /// The current changelog version. Increment this when adding new changelog entries.
-        /// </summary>
-        public const uint CurrentChangelogVersion = 10;
+        #endregion
 
-        [SettingsUIHidden]
-        public bool AllowSpawn { get; set; } = true;
+        #region [General]
 
-        [SettingsUIHidden]
-        public bool Modals_FirstLaunchTutorial { get; set; }
+        [SettingsUISection(GeneralTab, GeneralGroup)]
+        public bool EnableOverlayForTools { get; set; } = true;
 
-        /// <summary>
-        /// The last changelog version viewed by the user.
-        /// </summary>
-        [SettingsUIHidden]
-        public uint LastViewedChangelogVersion { get; set; }
-
-        [SettingsUISection(UninstallGroup)]
-        [SettingsUIButton]
-        [SettingsUIConfirmation]
-        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
-        public bool RemoveParcels {
-            set {
-                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
-                uninstallSystem.UninstallPlatter();
-            }
-        }
-
-        [SettingsUIHidden]
-        public bool RenderParcels { get; set; }
-
-        // Fake binding to show in settings UI
-        [SettingsUISection(KeybindingsGroup)]
-        public string PlatterDepthScrollAction => "Ctrl + ScrollWheel";
-
-        // Fake binding to show in settings UI
-        [SettingsUISection(KeybindingsGroup)]
-        public string PlatterWidthScrollAction => "Alt + ScrollWheel";
-
-        // Fake binding to show in settings UI
-        [SettingsUISection(KeybindingsGroup)]
-        public string PlatterSetbackScrollAction => "Ctrl + Shift + ScrollWheel";
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, OpenPanelName, ctrl: true)]
-        public ProxyBinding PlatterOpenPanel { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleRenderName, ctrl: true, shift: true)]
-        public ProxyBinding PlatterToggleRender { get; set; }
-
-        [SettingsUISection(KeybindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleSpawnName, ctrl: true, shift: true, alt: true)]
-        public ProxyBinding PlatterToggleSpawn { get; set; }
-
-        [SettingsUISection(AboutGroup)]
+        [SettingsUISection(GeneralTab, AboutGroup)]
         public string InformationalVersion => PlatterMod.InformationalVersion;
 
-        [SettingsUISection(AboutGroup)]
+        [SettingsUISection(GeneralTab, AboutGroup)]
         public string Version => PlatterMod.Version;
 
-        [SettingsUISection(AboutGroup)]
+        [SettingsUISection(GeneralTab, AboutGroup)]
         public string Credits => Credit;
 
-        [SettingsUISection(AboutGroup)]
+        [SettingsUISection(GeneralTab, AboutGroup)]
         public bool Discord {
             set {
                 try {
@@ -116,7 +78,7 @@ namespace Platter.Settings {
             }
         }
 
-        [SettingsUISection(AboutGroup)]
+        [SettingsUISection(GeneralTab, AboutGroup)]
         public bool Github {
             set {
                 try {
@@ -127,17 +89,79 @@ namespace Platter.Settings {
             }
         }
 
-        [SettingsUISection(AboutGroup)]
+        [SettingsUISection(GeneralTab, AboutGroup)]
         [SettingsUIButton]
         public bool ResetTutorial {
             set => Modals_FirstLaunchTutorial = false;
         }
 
-        //[SettingsUISection(AboutGroup)]
-        //[SettingsUIButton]
-        //public bool ResetChangelog {
-        //    set => LastViewedChangelogVersion = 0;
-        //}
+        [SettingsUISection(GeneralTab, UninstallGroup)]
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
+        public bool RemoveParcels {
+            set {
+                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
+                uninstallSystem.UninstallPlatter();
+            }
+        }
+
+#if IS_DEBUG
+        [SettingsUISection(GeneralTab, AboutGroup)]
+        [SettingsUIButton]
+        public bool ResetChangelog {
+            set => LastViewedChangelogVersion = 0;
+        }
+#endif
+
+        #endregion
+
+        #region [Keybindings]
+
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, OpenPanelName, ctrl: true)]
+        public ProxyBinding PlatterOpenPanel { get; set; }
+
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleRenderName, ctrl: true, shift: true)]
+        public ProxyBinding PlatterToggleRender { get; set; }
+
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleSpawnName, ctrl: true, shift: true, alt: true)]
+        public ProxyBinding PlatterToggleSpawn { get; set; }
+
+        // Fake binding to show in settings UI
+        [SettingsUISection(KeybindingsTab, MousebindingsGroup)]
+        public string PlatterDepthScrollAction => "Ctrl + ScrollWheel";
+
+        // Fake binding to show in settings UI
+        [SettingsUISection(KeybindingsTab, MousebindingsGroup)]
+        public string PlatterWidthScrollAction => "Alt + ScrollWheel";
+
+        // Fake binding to show in settings UI
+        [SettingsUISection(KeybindingsTab, MousebindingsGroup)]
+        public string PlatterSetbackScrollAction => "Ctrl + Shift + ScrollWheel";
+
+        #endregion
+
+        #region Internal/Hidden
+
+        [SettingsUIHidden]
+        public const uint CurrentChangelogVersion = 10;
+
+        [SettingsUIHidden]
+        public bool AllowSpawn { get; set; } = true;
+
+        [SettingsUIHidden]
+        public bool Modals_FirstLaunchTutorial { get; set; }
+
+        [SettingsUIHidden]
+        public uint LastViewedChangelogVersion { get; set; }
+
+        [SettingsUIHidden]
+        public bool RenderParcels { get; set; }
+
+        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatterModSettings"/> class.
@@ -146,16 +170,15 @@ namespace Platter.Settings {
         public PlatterModSettings(IMod mod)
             : base(mod) { }
 
-        public bool AlwaysDisabled() { return true; }
-
         /// <summary>
         /// Restores mod settings to default.
         /// </summary>
         public override void SetDefaults() {
-            Modals_FirstLaunchTutorial  = false;
-            RenderParcels               = false;
-            AllowSpawn                  = true;
-            LastViewedChangelogVersion  = 0;
+            Modals_FirstLaunchTutorial   = false;
+            RenderParcels                = false;
+            AllowSpawn                   = true;
+            LastViewedChangelogVersion   = 0;
+            EnableOverlayForTools = true;
         }
 
         /// <summary>
