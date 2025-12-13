@@ -3,7 +3,7 @@
   "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platter",
   "Options.TAB[Platter.Platter.PlatterMod.GeneralTab]": "A. 概况",
   "Options.TAB[Platter.Platter.PlatterMod.KeybindingsTab]": "按键绑定",
-  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Keyboard",
+  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "按键绑定",
   "Options.GROUP[Platter.Platter.PlatterMod.MousebindingsGroup]": "鼠标键",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "卸载",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "关于",
