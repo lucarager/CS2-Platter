@@ -3,7 +3,7 @@
   "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platter",
   "Options.TAB[Platter.Platter.PlatterMod.GeneralTab]": "Généraux",
   "Options.TAB[Platter.Platter.PlatterMod.KeybindingsTab]": "Raccourcis clavier",
-  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Keyboard",
+  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Raccourcis clavier",
   "Options.GROUP[Platter.Platter.PlatterMod.MousebindingsGroup]": "Souris",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Désinstaller",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "À propos",
