@@ -8,22 +8,77 @@
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Platter mod long" /-->
 	<LongDescription>
-# Private alpha for Platter.
+# Platter: Custom Zoning Overhaul
 
-## Disclaimer:
-This is an experimental, potentially unstable release. Expect issues and bugs, not everything may work as it should. Always backup your saves. Use at your own risk.
+**Break free from the grid.**
 
-## Please report any issues and share feedback on Discord.  
-Include the following logs:
+Platter completely reworks zoning in Cities: Skylines 2. It sits right between vanilla zoning and manual building plopping, giving you the control to create realistic neighborhoods, fill awkward gaps, and zone perfectly on curved roads without fighting the grid.
 
-- `%localappdata%low\Colossal Order\Cities Skylines II\logs\Platter.log`
-- `%localappdata%low\Colossal Order\Cities Skylines II\logs\Player.log`
+### Key Features
+* **Manual Zoning:** Place "Parcels" exactly where you want them. No more relying on the auto-grid.
+* **Precision Snapping:** Includes fully custom snapping options to align parcels perfectly and create exact layouts.
+* **Custom Setbacks:** Place zones back from the road to create front yards or widen roads later without demolition.
+* **Curved Road Support:** Finally zone seamlessly along curves.
+* **Vanilla Simulation:** Parcels use the game's native logic. Buildings spawn based on actual demand, land value, and desirability.
+
+### How to Use
+1. Open the **Platter** tool from the toolbar (or press `Ctrl+P`).
+2. Select your desired zone type and parcel size.
+3. Click to place the parcel manually—anywhere, at any angle.
+4. Watch buildings spawn naturally on your custom plots.
+
+### Alpha & Experimental Warning
+**Platter is currently in ALPHA.**
+This mod is experimental. While it is considered stable for testing, unexpected issues may occur.
+* **Backup your save** before using this mod.
+* Platter can be safely removed from a save by using the "Uninstall" button in the Mod Settings page.
+
+### Support & Troubleshooting
+If you encounter issues, please head to the [Discord server](https://discord.gg/C2XQUYHwuV) for support.
+* Please use **Skyve** to share your logs and playset. This is essential for troubleshooting. Sharing your save is also extremely helpful.
+* Bug reports without logs are difficult to fix!
+
+### Compatibility
+* Fully compatible with major mods such as **Move It**, **Zone Reorganizer**, **Advanced Line Tool**, etc.
+
+### Known Issues & FAQ
+* **Grid Overrides:** The vanilla grid may sometimes override the Parcel grid. Investigation and fix is underway.
+* **Snapping Quirks:** While custom snapping is included, snapping may sometimes act in unexpected ways depending on the angle. Improvements are planned.
+
+### Translations
+I am looking for volunteers to help translate the mod into other languages.
+* If you are interested, please join the [Discord server](https://discord.gg/C2XQUYHwuV) to collaborate with other translators.
+* You can also contribute directly via [CrowdIn](https://crowdin.com/project/platter-cs2).
+
+### Donations
+Donations are incredibly kind and appreciated. If you'd like to show appreciation and help me continue developing mods, the link to Ko-fi is in the sidebar!
+
+### Credits
+**Creator**
+* Luca
+
+**Translators**
+* Nullpinter
+* elGendo87
+* BartqeM
+* Morgan Touverey
+* MarKing
+* SZyMeX
+* GuysLetsPlay
+* to630
+* smile1509
+* redlabracer
+* AngelicaVee
+
+**Special Thanks**
+* The modding community on Discord for testing and feedback.
+* DanielVNZ, saladuit, astrognash, MarKing, Honu, and countless others for testing the mod and putting up with my changes.
+* krzychu124, yenyang, algernon, KJ, and many others for help with code, modding, management, and other topics.
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/thumbnail.jpg" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/alpha.jpg" />
-	<Screenshot Value="Properties/preview1.jpg" />
+	<Screenshot Value="Properties/cover.jpg" />
 	<Screenshot Value="Properties/preview2.jpg" />
 	<Screenshot Value="Properties/preview3.jpg" />
 	<Screenshot Value="Properties/preview4.jpg" />
@@ -32,16 +87,14 @@ Include the following logs:
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.3.1" />
+	<ModVersion Value="1.3.2" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
 	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-- Snap to Parcel Sides now allows snapping parcels together in any orientation, making creating complex layouts easier than ever! 
-- Other snapping options have been tweaked to improve usability.
-- Added a new setting to the Settings Page that allows disabling the "auto-overlay" for vanilla tools. For those that want to fully control when those overlays pop up!
+* Flip to public release.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
@@ -50,5 +103,5 @@ Include the following logs:
 	<ExternalLink Type="twitch" Url="https://twitch.tv/lucadevdesign" />
 	<ExternalLink Type="crowdin" Url="https://crowdin.com/project/platter-cs2" />
 	<!--Supported values Public, Private, Unlisted-->
-	<AccessLevel Value="Unlisted" />
+	<AccessLevel Value="Public" />
 </Publish>
