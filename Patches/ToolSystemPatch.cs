@@ -19,6 +19,10 @@ namespace Platter.Patches {
     #endregion
 
     internal class ToolSystemPatch {
+
+        /// <summary>
+        /// Patch to modify the snap behavior when using platter.
+        /// </summary>
         [HarmonyPatch(typeof(ToolBaseSystem))]
         [HarmonyPatch(nameof(ToolBaseSystem.GetActualSnap))]
         [HarmonyPatch(new[] { typeof(Snap), typeof(Snap), typeof(Snap) })]
@@ -40,6 +44,9 @@ namespace Platter.Patches {
             }
         }
 
+        /// <summary>
+        /// Patch to toggle the zone overlay when using platter.
+        /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("OnUpdate")]
         private class ObjectToolSystem_OnUpdate {
@@ -53,6 +60,9 @@ namespace Platter.Patches {
             }
         }
 
+        /// <summary>
+        /// Patch to prevent rotation when snapped in snap mode using platter.
+        /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("GetAllowRotation")]
         private class ObjectToolSystem_GetAllowRotation {
@@ -72,6 +82,9 @@ namespace Platter.Patches {
             }
         }
 
+        /// <summary>
+        /// Patch to replace the ParcelPrefab with the Placeholder prefab when using move tool.
+        /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch(nameof(ObjectToolSystem.StartMoving))]
         private class ObjectToolSystem_StartMoving {

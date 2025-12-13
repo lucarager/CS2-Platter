@@ -107,7 +107,7 @@ namespace Platter {
                   .GetLogger(ModName)
                   .SetShowsErrorsInUI(false);
 #if IS_DEBUG
-            Log = Log.
+            Log = Log
                   .SetBacktraceEnabled(true)
                   .SetEffectiveness(Level.All);
 #endif
