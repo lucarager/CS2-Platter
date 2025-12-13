@@ -25,8 +25,8 @@ namespace Platter.Settings {
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(PlatterMod) + "/" + nameof(PlatterMod))]
     [SettingsUITabOrder(GeneralTab, KeybindingsTab)]
-    [SettingsUIGroupOrder(GeneralGroup, KeybindingsGroup, UninstallGroup, AboutGroup)]
-    [SettingsUIShowGroupName(KeybindingsGroup, UninstallGroup, AboutGroup)]
+    [SettingsUIGroupOrder(GeneralGroup, KeybindingsGroup, MousebindingsGroup, UninstallGroup, AboutGroup)]
+    [SettingsUIShowGroupName(GeneralGroup, KeybindingsGroup, MousebindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
         #region Strings
 

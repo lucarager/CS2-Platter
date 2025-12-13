@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net48</TargetFramework>
-		<LangVersion>11.0</LangVersion>
 		<Configurations>Debug;Release;I18N</Configurations>
 		<Title>Platter</Title>
 		<AssemblyTitle>$(Title)</AssemblyTitle>
@@ -101,4 +100,9 @@
 	<Import Project="Config/References.csproj" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
+
+	<!--Override langVersion-->
+	<PropertyGroup>
+		<LangVersion>11.0</LangVersion>
+	</PropertyGroup>
 </Project>
