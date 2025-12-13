@@ -3,7 +3,7 @@
   "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Пластинка",
   "Options.TAB[Platter.Platter.PlatterMod.GeneralTab]": "Общие положения",
   "Options.TAB[Platter.Platter.PlatterMod.KeybindingsTab]": "Привязки клавиш",
-  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Keyboard",
+  "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Горячие клавиши",
   "Options.GROUP[Platter.Platter.PlatterMod.MousebindingsGroup]": "Мышь",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Удаление",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Подробно",
