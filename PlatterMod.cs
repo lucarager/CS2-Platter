@@ -103,7 +103,14 @@ namespace Platter {
             Instance = this;
 
             // Initialize logger.
-            Log   = LogManager.GetLogger(ModName);
+            Log = LogManager
+                  .GetLogger(ModName)
+                  .SetShowsErrorsInUI(false);
+#if IS_DEBUG
+            Log = Log.
+                  .SetBacktraceEnabled(true)
+                  .SetEffectiveness(Level.All);
+#endif
             m_Log = new PrefixedLogger(nameof(PlatterMod));
             m_Log.Info($"Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
 
