@@ -17,10 +17,12 @@ namespace Platter.Systems {
     using Game.Simulation;
     using Game.Tools;
     using Game.Zones;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
+    using UnityEngine;
     using Utils;
     using Block = Game.Zones.Block;
     using Transform = Game.Objects.Transform;
@@ -87,17 +89,14 @@ namespace Platter.Systems {
                 var parcelData = m_ParcelDataComponentLookup[creationDefinition.m_Prefab];
 
                 // Calculate geometry
-                var searchRadius = parcelData.m_LotSize.y * 4f + 8f;
+                var searchRadius = parcelData.m_LotSize.y * 4f + 10f;
                 var bounds = new Bounds3(
                     controlPoint.m_Position - searchRadius,
                     controlPoint.m_Position + searchRadius
                 );
                 var totalBounds = bounds;
-                totalBounds.min -= 8f;
-                totalBounds.max += 8f;
-
-                // At minimum, the distance to snap must be
-                var minDistance = math.cmin(parcelData.m_LotSize) * 4f + 4f;
+                totalBounds.min -= 10f;
+                totalBounds.max += 10f;
 
                 // Start with the raw control point (no snap)
                 var bestSnapPosition = controlPoint;
@@ -105,18 +104,18 @@ namespace Platter.Systems {
 
                 // Run ALL enabled snap modes - each one only updates bestSnapPosition if it wins
                 if ((m_SnapMode & SnapMode.ZoneSide) != 0) {
-                    SnapToZoneSide(ref bestSnapPosition, controlPoint, bounds, parcelData, minDistance);
+                    SnapToZoneSide(ref bestSnapPosition, controlPoint, bounds, parcelData, math.cmin(parcelData.m_LotSize) * 4f + 4f);
                 }
 
                 if ((m_SnapMode & SnapMode.RoadSide) != 0) {
-                    SnapToRoadSide(ref bestSnapPosition, controlPoint, bounds, totalBounds, parcelData, minDistance);
+                    SnapToRoadSide(ref bestSnapPosition, controlPoint, bounds, totalBounds, parcelData, math.cmin(parcelData.m_LotSize) * 4f + 4f);
                 }
 
                 // Parcel-to-parcel snapping (edge and/or front alignment)
                 var enableParcelEdge       = (m_SnapMode & SnapMode.ParcelEdge)       != 0;
                 var enableParcelFrontAlign = (m_SnapMode & SnapMode.ParcelFrontAlign) != 0;
                 if (enableParcelEdge || enableParcelFrontAlign) {
-                    SnapToParcelEdge(ref bestSnapPosition, controlPoint, bounds, parcelData, minDistance, enableParcelEdge, enableParcelFrontAlign);
+                    SnapToParcelEdge(ref bestSnapPosition, controlPoint, bounds, parcelData, math.cmax(parcelData.m_LotSize) * 4f + 4f, enableParcelEdge, enableParcelFrontAlign);
                 }
 
                 // Check if any snap won
@@ -829,20 +828,20 @@ namespace Platter.Systems {
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds, m_Bounds); }
 
-                public void Iterate(QuadTreeBoundsXZ bounds, Entity parcelEntity) {
+                public void Iterate(QuadTreeBoundsXZ bounds, Entity existingEntity) {
                     if (!MathUtils.Intersect(bounds.m_Bounds, m_Bounds)) {
                         return;
                     }
 
                     // Verify this is a parcel with required components
-                    if (!m_ParcelLookup.HasComponent(parcelEntity)    ||
-                        !m_TransformLookup.HasComponent(parcelEntity) ||
-                        !m_PrefabRefLookup.HasComponent(parcelEntity)) {
+                    if (!m_ParcelLookup.HasComponent(existingEntity)    ||
+                        !m_TransformLookup.HasComponent(existingEntity) ||
+                        !m_PrefabRefLookup.HasComponent(existingEntity)) {
                         return;
                     }
 
-                    var existingTransform = m_TransformLookup[parcelEntity];
-                    var prefabRef         = m_PrefabRefLookup[parcelEntity];
+                    var existingTransform = m_TransformLookup[existingEntity];
+                    var prefabRef         = m_PrefabRefLookup[existingEntity];
 
                     if (!m_ParcelDataLookup.HasComponent(prefabRef.m_Prefab)) {
                         return;
@@ -851,73 +850,201 @@ namespace Platter.Systems {
                     var existingParcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
                     var existingSize       = ParcelGeometryUtils.GetParcelSize(existingParcelData.m_LotSize);
                     var existingCorners    = ParcelGeometryUtils.GetWorldCorners(existingTransform, existingParcelData.m_LotSize);
+                    var existingRightFront = existingCorners.a;
+                    var existingLeftFront  = existingCorners.b;
+
+                    // Get existing parcel's direction (forward = +Z in local, transformed to world)
+                    var existingFrontDir = math.mul(existingTransform.m_Rotation, new float3(0f, 0f, 1f)).xz;
+                    MathUtils.TryNormalize(ref existingFrontDir);
+                    var existingRightDir = MathUtils.Left(existingFrontDir);
+                    var existingLeftDir  = MathUtils.Right(existingFrontDir);
+                    var existingBackDir  = -existingFrontDir;
 
                     // Try front corner alignment first (higher priority if enabled)
                     if (m_EnableFrontAlign) {
-                        TryFrontCornerSnap(parcelEntity, existingTransform, existingCorners);
+                        // New parcel half dimensions
+                        var newHalfWidth = m_NewParcelSize.x * 0.5f;
+                        var newHalfDepth = m_NewParcelSize.z * 0.5f;
+
+                        // Case 1: New LeftFront corner → Existing RightFront corner (new parcel to the RIGHT)
+                        TrySnapToCorner(existingEntity, existingTransform, existingRightFront, existingFrontDir, existingRightDir, newHalfWidth, newHalfDepth, false);
+
+                        // Case 2: New RightFront corner → Existing LeftFront corner (new parcel to the LEFT)
+                        TrySnapToCorner(existingEntity, existingTransform, existingLeftFront, existingFrontDir, existingRightDir, newHalfWidth, newHalfDepth, true);
                     }
 
                     // Try edge snapping (side-to-side with lateral freedom)
                     if (m_EnableEdgeSnap) {
-                        var maxOffset = existingParcelData.m_LotSize.x - 1;
+                        // Front
                         CheckSnapLine(
                             existingParcelData,
+                            existingFrontDir,
                             existingTransform,
                             m_ControlPoint,
-                            ref m_BestSnapPosition,
                             new Line2.Segment(existingCorners.a, existingCorners.b),
-                            maxOffset); // Front
+                            existingParcelData.m_LotSize.x - 1);
+                        // Left
                         CheckSnapLine(
                             existingParcelData,
+                            existingLeftDir,
                             existingTransform,
                             m_ControlPoint,
-                            ref m_BestSnapPosition,
                             new Line2.Segment(existingCorners.b, existingCorners.c),
-                            maxOffset); // Left
+                            existingParcelData.m_LotSize.y - 1);
+                        // Back
                         CheckSnapLine(
                             existingParcelData,
+                            existingBackDir,
                             existingTransform,
                             m_ControlPoint,
-                            ref m_BestSnapPosition,
                             new Line2.Segment(existingCorners.c, existingCorners.d),
-                            maxOffset); // Back
+                            existingParcelData.m_LotSize.x - 1);
+                        // Right
                         CheckSnapLine(
                             existingParcelData,
+                            existingRightDir,
                             existingTransform,
                             m_ControlPoint,
-                            ref m_BestSnapPosition,
                             new Line2.Segment(existingCorners.d, existingCorners.a),
-                            maxOffset); // Right
+                            existingParcelData.m_LotSize.y - 1);
                     }
                 }
 
-                private void CheckSnapLine(ParcelData       existingParcelData, // Extension prefab data
-                                           Transform        existingTransform,  // Parent building transform
-                                           ControlPoint     controlPoint,       // Current cursor position
-                                           ref ControlPoint bestPosition,       // Best snap position (updated if this wins)
-                                           Line2.Segment    line,               // Edge line segment to snap to (one of 4 sides)
-                                           int              maxOffset // Max lateral grid offset allowed
+                public enum RelativeDirection {
+                    Forward = 0, // Input: 0
+                    Right   = 1, // Input: PI
+                    Back    = 2, // Input: 2PI or -2PI
+                    Left    = 3,  // Input: -PI
+                }
+
+                private static bool TryGetRelativeDirection(float rotationRadians, out RelativeDirection relativeDirection) {
+                    if (Mathf.Approximately(rotationRadians, math.PI) || Mathf.Approximately(rotationRadians, -math.PI)) {
+                        relativeDirection = RelativeDirection.Back;
+                        return true;
+                    } 
+                    if (Mathf.Approximately(rotationRadians, math.PIHALF)) {
+                        relativeDirection = RelativeDirection.Left;
+                        return true;
+                    } 
+                    if (Mathf.Approximately(rotationRadians, 0f)) {
+                        relativeDirection = RelativeDirection.Forward;
+                        return true;
+                    } 
+                    if (Mathf.Approximately(rotationRadians, -math.PIHALF)) {
+                        relativeDirection = RelativeDirection.Right;
+                        return true;
+                    }
+
+                    relativeDirection = RelativeDirection.Forward;
+                    return false;
+                }
+
+                private void CheckSnapLine(ParcelData    existingParcelData, 
+                                           float2        existingDirection,
+                                           Transform     existingTransform, 
+                                           ControlPoint  controlPoint,      
+                                           Line2.Segment line,              
+                                           int           maxOffset 
                 ) {
-                    // Calculate the needed rotation to align the new parcel edge with the existing edge
                     var newCorners = ParcelGeometryUtils.GetWorldCorners(controlPoint.m_Rotation, controlPoint.m_Position, m_LotSize);
-                    var rotation   = GetAlignmentRotation(line, new Line2.Segment(newCorners.a, newCorners.b));
-                    
-                    // Create a candidate
+                    // todo: Try to exit early when too distant.
+
+                    //PlatterMod.Instance.Log.Debug($"CheckSnapLine --  existingDirection {existingDirection.ToJSONString()}");
+
+                    // Create candidate snap position
                     var candidate = controlPoint;
-                    
-                    // todo: apply the rotation to the control point and recalc corners
+                    candidate.m_OriginalEntity = Entity.Null;
+                    candidate.m_Position.y     = existingTransform.m_Position.y;
 
-                    // Find cursor's projection onto the line segment (t parameter, clamped to 0-1)
+                    // Calculate position of candidate on the line
                     MathUtils.Distance(line, controlPoint.m_Position.xz, out var t);
+                    var validRange = 8f * maxOffset; // Allow going over by some amount of cells
+                    var lineLength = math.distance(line.a, line.b);  
 
-                    // Calculate lateral offset from the line
-                    candidate.m_Position.y     = existingTransform.m_Position.y; // Match parent height
-                    candidate.m_Position.xz    = MathUtils.Position(line, t); // Position on line
+                    t *= lineLength;                                  
+                    t =  math.clamp(t, -validRange, lineLength + validRange);
 
-                    // todo: adjust offset so that the edges are flush, not centers
+                    candidate.m_Position.xz = MathUtils.Position(line, t / lineLength);
 
-                    // Compare with current best and update if better
-                    AddSnapPosition(ref bestPosition, candidate);
+                    // Calculate the needed rotation to align the new parcel edge with the existing edge
+                    var degreesToAlign = GetAlignmentRotation(line, new Line2.Segment(newCorners.a, newCorners.b));
+
+                    // Set facing direction
+                    candidate.m_Direction = math.mul(
+                        math.mul(candidate.m_Rotation, quaternion.RotateY(math.radians(degreesToAlign))),
+                        new float3(0f, 0f, 1f)
+                    ).xz;
+                    MathUtils.TryNormalize(ref candidate.m_Direction);
+                    candidate.m_Rotation = ToolUtils.CalculateRotation(candidate.m_Direction);
+
+                    // Calculate directional delta between edge direction and new parcel direction
+                    var directionDelta = MathUtils.RotationAngleSignedLeft(existingDirection, candidate.m_Direction);
+
+                    //PlatterMod.Instance.Log.Debug($"directionDelta {directionDelta}");
+
+                    if (!TryGetRelativeDirection(directionDelta, out var relativeDirection)) {
+                        return;
+                    }
+
+                    //PlatterMod.Instance.Log.Debug($"relativeDirection {relativeDirection}");
+
+                    // Calculate offset direction and amount
+                    var offsetDirection = default(float2);
+                    var offsetAmount    = 0.0f;
+                    var offsetSign      = 1.0f;
+
+                    switch (relativeDirection) {
+                        case RelativeDirection.Forward:
+                            offsetDirection = existingDirection;
+                            offsetAmount    = m_NewParcelSize.z * 0.5f;
+                            offsetSign      = 1f;
+                            break;
+                        case RelativeDirection.Back:
+                            offsetDirection = existingDirection;
+                            offsetAmount    = m_NewParcelSize.z * 0.5f;
+                            offsetSign      = 1f;
+                            break;
+                        case RelativeDirection.Right:
+                            offsetDirection = existingDirection;
+                            offsetAmount    = m_NewParcelSize.x * 0.5f;
+                            offsetSign      = 1f;
+                            break;
+                        case RelativeDirection.Left:
+                            offsetDirection = existingDirection;
+                            offsetAmount    = m_NewParcelSize.x * 0.5f;
+                            offsetSign      = 1f;
+                            break;
+                    }
+
+                    //PlatterMod.Instance.Log.Debug($"offsetDirection {offsetDirection}");
+                    //PlatterMod.Instance.Log.Debug($"offsetAmount {offsetAmount}");
+                    //PlatterMod.Instance.Log.Debug($"offsetSign {offsetSign}");
+
+                    // Apply offset
+                    candidate.m_Position.xz += offsetDirection * offsetAmount * offsetSign;
+
+                    var distanceToHit = math.distance(candidate.m_Position.xz, m_ControlPoint.m_HitPosition.xz);
+
+                    if (distanceToHit >= m_BestDistance) {
+                        return;
+                    }
+
+                    // Calculate priority
+                    candidate.m_SnapPriority = ToolUtils.CalculateSnapPriority(
+                        SnapLevel.ParcelEdge,
+                        1f,
+                        1f,
+                        controlPoint.m_HitPosition * 0.5f,
+                        candidate.m_Position       * 0.5f,
+                        candidate.m_Direction
+                    );
+
+                    if (!CompareSnapPriority(candidate.m_SnapPriority, m_BestSnapPosition.m_SnapPriority)) {
+                        return;
+                    }
+
+                    m_BestDistance     = distanceToHit;
+                    m_BestSnapPosition = candidate;
                 }
 
                 /// <summary>
@@ -951,31 +1078,7 @@ namespace Platter.Systems {
 
                     // 5. The rotation to APPLY is the negation of the current offset
                     // If the line is offset by +10 degrees, we must rotate by -10 to fix it.
-                    return -remainder;
-                }
-
-                /// <summary>
-                /// Try snapping front corners together (magnetized/locked).
-                /// New parcel's LeftFront → Existing RightFront, or New RightFront → Existing LeftFront
-                /// </summary>
-                private void TryFrontCornerSnap(Entity existingEntity, Transform existingTransform, Quad2 existingCorners) {
-                    var existingRightFront = existingCorners.a;
-                    var existingLeftFront  = existingCorners.b;
-
-                    // New parcel half dimensions
-                    var newHalfWidth = m_NewParcelSize.x * 0.5f;
-                    var newHalfDepth = m_NewParcelSize.z * 0.5f;
-
-                    // Get existing parcel's direction (forward = +Z in local, transformed to world)
-                    var existingDirection = math.mul(existingTransform.m_Rotation, new float3(0f, 0f, 1f)).xz;
-                    MathUtils.TryNormalize(ref existingDirection);
-                    var existingRight = MathUtils.Right(existingDirection);
-
-                    // Case 1: New LeftFront corner → Existing RightFront corner (new parcel to the RIGHT)
-                    TrySnapToCorner(existingEntity, existingTransform, existingRightFront, existingDirection, existingRight, newHalfWidth, newHalfDepth, true);
-
-                    // Case 2: New RightFront corner → Existing LeftFront corner (new parcel to the LEFT)
-                    TrySnapToCorner(existingEntity, existingTransform, existingLeftFront, existingDirection, existingRight, newHalfWidth, newHalfDepth, false);
+                    return remainder;
                 }
 
                 /// <summary>
