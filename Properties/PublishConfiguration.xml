@@ -2,9 +2,9 @@
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
 	<ModId Value="125278" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Platter (Private Alpha)" />
+	<DisplayName Value="Platter [Alpha]" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="Platter (Private Alpha)" />
+	<ShortDescription Value="Platter - A zoning overhaul mod." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Platter mod long" /-->
 	<LongDescription>
@@ -15,25 +15,24 @@
 Platter completely reworks zoning in Cities: Skylines 2. It sits right between vanilla zoning and manual building plopping, giving you the control to create realistic neighborhoods, fill awkward gaps, and zone perfectly on curved roads without fighting the grid.
 
 ### Key Features
-* **Manual Zoning:** Place "Parcels" exactly where you want them. No more relying on the auto-grid.
+* **Manual Zoning:** Place "Parcels" exactly where you want them. No more relying on the grid.
 * **Precision Snapping:** Includes fully custom snapping options to align parcels perfectly and create exact layouts.
 * **Custom Setbacks:** Place zones back from the road to create front yards or widen roads later without demolition.
 * **Curved Road Support:** Finally zone seamlessly along curves.
-* **Vanilla Simulation:** Parcels use the game's native logic. Buildings spawn based on actual demand, land value, and desirability.
+* **Vanilla Simulation:** Parcels use the game's native logic for zoning. Buildings spawn based on actual demand, land value, and desirability.
 
 ### How to Use
-1. Open the **Platter** tool from the toolbar (or press `Ctrl+P`).
-2. Select your desired zone type and parcel size.
-3. Click to place the parcel manually—anywhere, at any angle.
-4. Watch buildings spawn naturally on your custom plots.
+1. Open the **Platter** tab from the zoning toolbar (or press `Ctrl+P`).
+2. Select a parcel size and, optionally, your desired zone type.
+3. Click to place the parcel manually — anywhere, at any angle.
 
-### Alpha & Experimental Warning
+### Alpha/Experimental Warning
 **Platter is currently in ALPHA.**
 This mod is experimental. While it is considered stable for testing, unexpected issues may occur.
 * **Backup your save** before using this mod.
 * Platter can be safely removed from a save by using the "Uninstall" button in the Mod Settings page.
 
-### Support & Troubleshooting
+### Support and Troubleshooting
 If you encounter issues, please head to the [Discord server](https://discord.gg/C2XQUYHwuV) for support.
 * Please use **Skyve** to share your logs and playset. This is essential for troubleshooting. Sharing your save is also extremely helpful.
 * Bug reports without logs are difficult to fix!
@@ -41,7 +40,7 @@ If you encounter issues, please head to the [Discord server](https://discord.gg/
 ### Compatibility
 * Fully compatible with major mods such as **Move It**, **Zone Reorganizer**, **Advanced Line Tool**, etc.
 
-### Known Issues & FAQ
+### Known Issues and FAQ
 * **Grid Overrides:** The vanilla grid may sometimes override the Parcel grid. Investigation and fix is underway.
 * **Snapping Quirks:** While custom snapping is included, snapping may sometimes act in unexpected ways depending on the angle. Improvements are planned.
 
@@ -76,7 +75,7 @@ Donations are incredibly kind and appreciated. If you'd like to show appreciatio
 * krzychu124, yenyang, algernon, KJ, and many others for help with code, modding, management, and other topics.
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/thumbnail.jpg" />
+	<Thumbnail Value="Properties/thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="Properties/cover.jpg" />
 	<Screenshot Value="Properties/preview2.jpg" />
@@ -87,14 +86,15 @@ Donations are incredibly kind and appreciated. If you'd like to show appreciatio
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.3.2" />
+	<ModVersion Value="1.3.4" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
 	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-* Flip to public release.
+* Adds safety checks that prevent crashes when deleting Parcels connected to RoadBuilder roads with zoning removed.
+* For now, prevents new Parcels from connecting to RoadBuilder roads with zoning removed. A future update may revert this once a proper fix is implemented.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
