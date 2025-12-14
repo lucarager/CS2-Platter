@@ -15,6 +15,7 @@ namespace Platter.Systems {
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
+    using Game.Zones;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -142,7 +143,8 @@ namespace Platter.Systems {
                 m_PrefabRefComponentLookup                = SystemAPI.GetComponentLookup<PrefabRef>(true),
                 m_ParcelDataComponentLookup               = SystemAPI.GetComponentLookup<ParcelData>(true),
                 m_TransformComponentLookup                = SystemAPI.GetComponentLookup<Transform>(true),
-                m_ConnectedParcelsBufferLookup            = SystemAPI.GetBufferLookup<ConnectedParcel>(true),
+                m_SubBlockBufferLookup                    = SystemAPI.GetBufferLookup<SubBlock>(true),
+                m_ConnectedParcelBufferLookup             = SystemAPI.GetBufferLookup<ConnectedParcel>(true),
                 m_CurveDataComponentLookup                = SystemAPI.GetComponentLookup<Curve>(true),
                 m_CompositionDataComponentLookup          = SystemAPI.GetComponentLookup<Composition>(true),
                 m_EdgeGeometryDataComponentLookup         = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
@@ -169,6 +171,7 @@ namespace Platter.Systems {
                 m_CreatedComponentLookup       = SystemAPI.GetComponentLookup<Created>(true),
                 m_TempComponentLookup          = SystemAPI.GetComponentLookup<Temp>(true),
                 m_ConnectedParcelsBufferLookup = SystemAPI.GetBufferLookup<ConnectedParcel>(),
+                m_IconElementsBufferLookup     = SystemAPI.GetBufferLookup<IconElement>(),
                 m_ParcelEntitiesList           = parcelEntitiesList,
                 m_CommandBuffer                = m_ModificationBarrier.CreateCommandBuffer(),
                 m_IconCommandBuffer            = m_IconCommandSystem.CreateCommandBuffer(),

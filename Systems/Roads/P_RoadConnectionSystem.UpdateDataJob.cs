@@ -33,6 +33,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<Created>      m_CreatedComponentLookup;
             [ReadOnly] public required ComponentLookup<Temp>         m_TempComponentLookup;
             [ReadOnly] public required TrafficConfigurationData      m_TrafficConfigurationData;
+            [ReadOnly] public required BufferLookup<IconElement>     m_IconElementsBufferLookup;
             public required            ComponentLookup<Parcel>       m_ParcelComponentLookup;
             public required            EntityCommandBuffer           m_CommandBuffer;
             public required            IconCommandBuffer             m_IconCommandBuffer;
@@ -126,8 +127,8 @@ namespace Platter.Systems {
             /// <param name="updateData">The update data containing new road connection information.</param>
             /// <param name="isCreated">Whether the parcel was just created this frame.</param>
             private void UpdateRoadConnectionIcon(Parcel parcel, UpdateData updateData, bool isCreated) {
-                var hadNoRoad = parcel.m_RoadEdge == Entity.Null;
-                var hasRoad   = updateData.m_FrontRoad != Entity.Null;
+                var hasRoad = updateData.m_FrontRoad != Entity.Null;
+                var hasBuffer = m_IconElementsBufferLookup.HasBuffer(updateData.m_Parcel);
 
                 if (hasRoad || updateData.m_Deleted) {
                     // Has a road or being deleted - ensure no warning icon
@@ -135,17 +136,17 @@ namespace Platter.Systems {
                         updateData.m_Parcel,
                         m_TrafficConfigurationData.m_RoadConnectionNotification
                     );
-                } else if (hadNoRoad) {
-                    // No road and either newly created or just lost road - add warning icon
-                    m_IconCommandBuffer.Add(
-                        updateData.m_Parcel,
-                        m_TrafficConfigurationData.m_RoadConnectionNotification,
-                        updateData.m_FrontPos,
-                        IconPriority.Warning,
-                        IconClusterLayer.Default,
-                        IconFlags.OnTop
-                    );
+                    return;
                 }
+
+                m_IconCommandBuffer.Add(
+                    updateData.m_Parcel,
+                    m_TrafficConfigurationData.m_RoadConnectionNotification,
+                    updateData.m_FrontPos,
+                    IconPriority.Warning,
+                    IconClusterLayer.Default,
+                    IconFlags.OnTop
+                );
             }
 
             /// <summary>

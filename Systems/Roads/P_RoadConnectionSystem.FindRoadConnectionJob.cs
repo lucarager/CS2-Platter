@@ -14,6 +14,7 @@ namespace Platter.Systems {
     using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
+    using Game.Zones;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
@@ -36,7 +37,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<PrefabRef>               m_PrefabRefComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
             [ReadOnly] public required ComponentLookup<Transform>               m_TransformComponentLookup;
-            [ReadOnly] public required BufferLookup<ConnectedParcel>            m_ConnectedParcelsBufferLookup;
+            [ReadOnly] public required BufferLookup<ConnectedParcel>            m_ConnectedParcelBufferLookup;
             [ReadOnly] public required ComponentLookup<Curve>                   m_CurveDataComponentLookup;
             [ReadOnly] public required ComponentLookup<Composition>             m_CompositionDataComponentLookup;
             [ReadOnly] public required ComponentLookup<EdgeGeometry>            m_EdgeGeometryDataComponentLookup;
@@ -46,6 +47,7 @@ namespace Platter.Systems {
             [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
             [ReadOnly] public required NativeList<ArchetypeChunk>               m_UpdatedNetChunks;
             [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
+            [ReadOnly] public required BufferLookup<SubBlock>                   m_SubBlockBufferLookup;
 
             /// <inheritdoc/>
             public void Execute(int index) {
@@ -71,6 +73,7 @@ namespace Platter.Systems {
                     out currentEntityData.m_FrontRoad, out currentEntityData.m_FrontPos, out currentEntityData.m_FrontCurvePos);
 
                 // Find best road for left access
+                // Todo check how cells check for road access to get more reliable results here
                 FindBestRoadForAccessNode(
                     ParcelUtils.ParcelNode.LeftAccess, parcelSize, parcelTransform, MaxDistanceSides,
                     out currentEntityData.m_LeftRoad, out currentEntityData.m_LeftPos, out currentEntityData.m_LeftCurvePos);
@@ -95,7 +98,8 @@ namespace Platter.Systems {
                     bestCurvePos: 0f,
                     bestRoad: Entity.Null,
                     canBeOnRoad: true,
-                    connectedParcelsBufferLookup: m_ConnectedParcelsBufferLookup,
+                    subBlockBufferLookup: m_SubBlockBufferLookup,
+                    connectedParcelsBufferLookup: m_ConnectedParcelBufferLookup,
                     curveDataComponentLookup: m_CurveDataComponentLookup,
                     compositionDataComponentLookup: m_CompositionDataComponentLookup,
                     edgeGeometryDataComponentLookup: m_EdgeGeometryDataComponentLookup,
@@ -130,6 +134,7 @@ namespace Platter.Systems {
                 private float                               m_MinDistance;
                 private bool                                m_CanBeOnRoad;
                 private BufferLookup<ConnectedParcel>       m_ConnectedParcelsBufferLookup;
+                private BufferLookup<SubBlock>              m_SubBlockBufferLookup;
                 private ComponentLookup<Curve>              m_CurveDataComponentLookup;
                 private ComponentLookup<Composition>        m_CompositionDataComponentLookup;
                 private ComponentLookup<EdgeGeometry>       m_EdgeGeometryDataComponentLookup;
@@ -139,7 +144,7 @@ namespace Platter.Systems {
                 private ComponentLookup<Deleted>            m_DeletedDataComponentLookup;
 
                 public FindRoadConnectionIterator(Bounds3 bounds, float minDistance, float bestCurvePos, Entity bestRoad, float3 frontPosition,
-                                                  bool canBeOnRoad, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup,
+                                                  bool canBeOnRoad, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, BufferLookup<SubBlock> subBlockBufferLookup,
                                                   ComponentLookup<Curve> curveDataComponentLookup, ComponentLookup<Composition> compositionDataComponentLookup,
                                                   ComponentLookup<EdgeGeometry> edgeGeometryDataComponentLookup,
                                                   ComponentLookup<StartNodeGeometry> startNodeGeometryDataComponentLookup,
@@ -153,6 +158,7 @@ namespace Platter.Systems {
                     FrontPosition                             = frontPosition;
                     m_CanBeOnRoad                             = canBeOnRoad;
                     m_ConnectedParcelsBufferLookup            = connectedParcelsBufferLookup;
+                    m_SubBlockBufferLookup                    = subBlockBufferLookup;
                     m_CurveDataComponentLookup                = curveDataComponentLookup;
                     m_CompositionDataComponentLookup          = compositionDataComponentLookup;
                     m_EdgeGeometryDataComponentLookup         = edgeGeometryDataComponentLookup;
@@ -171,16 +177,22 @@ namespace Platter.Systems {
                         return;
                     }
 
-                    if (m_DeletedDataComponentLookup.HasComponent(edgeEntity)) {
-                        return;
-                    }
-
                     CheckEdge(edgeEntity);
                 }
 
                 public void CheckEdge(Entity edgeEntity) {
-                    // Exit early if the edge doesn't have a "Connected Parcels" buffer
+                    // Exit early if the edge has been deleted
+                    if (m_DeletedDataComponentLookup.HasComponent(edgeEntity)) {
+                        return;
+                    }
+
+                    // Exit early if the edge doesn't have a "ConnectedParcels" buffer
                     if (!m_ConnectedParcelsBufferLookup.HasBuffer(edgeEntity)) {
+                        return;
+                    }
+
+                    // Exit early if the edge doesn't have a "SubBlock" buffer
+                    if (!m_SubBlockBufferLookup.HasBuffer(edgeEntity)) {
                         return;
                     }
 
