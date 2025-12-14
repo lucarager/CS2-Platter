@@ -6,9 +6,11 @@
 namespace Platter.Systems {
     #region Using Statements
 
+    using Colossal.Entities;
     using Components;
     using Game;
     using Game.Common;
+    using Game.Notifications;
     using Unity.Collections;
     using Unity.Entities;
     using Utils;
@@ -19,6 +21,7 @@ namespace Platter.Systems {
     /// System responsible for safely uninstalling Platter.
     /// </summary>
     internal partial class P_UninstallSystem : GameSystemBase {
+        private EntityQuery    m_OrphanedIconQuery;
         private EntityQuery    m_ParcelQuery;
         private PrefixedLogger m_Log;
 
@@ -28,10 +31,28 @@ namespace Platter.Systems {
             m_Log = new PrefixedLogger(nameof(P_UninstallSystem));
             m_Log.Debug("OnCreate()");
             m_ParcelQuery = GetEntityQuery(ComponentType.ReadOnly<Parcel>());
+
+            m_OrphanedIconQuery = SystemAPI.QueryBuilder().WithAll<Icon, Owner>().Build();
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() { }
+
+        public void RemoveIcons() {
+            m_Log.Debug("RemoveIcons()");
+            var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
+            var entities      = m_OrphanedIconQuery.ToEntityArray(Allocator.Temp);
+
+            foreach (var entity in entities) {
+                if (EntityManager.TryGetComponent<Owner>(entity, out var owner) &&
+                    owner.m_Owner == Entity.Null) {
+                    commandBuffer.AddComponent<Deleted>(entity);
+                }
+            }
+
+            commandBuffer.Playback(EntityManager);
+            commandBuffer.Dispose();
+        }
 
         public void UninstallPlatter() {
             m_Log.Debug("UninstallPlatter()");

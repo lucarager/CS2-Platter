@@ -24,21 +24,23 @@ namespace Platter.Settings {
     /// The mod's settings.
     /// </summary>
     [FileLocation("ModsSettings/" + nameof(PlatterMod) + "/" + nameof(PlatterMod))]
-    [SettingsUITabOrder(GeneralTab, KeybindingsTab)]
+    [SettingsUITabOrder(GeneralTab, KeybindingsTab, AdvancedTab)]
     [SettingsUIGroupOrder(GeneralGroup, KeybindingsGroup, MousebindingsGroup, UninstallGroup, AboutGroup)]
     [SettingsUIShowGroupName(GeneralGroup, KeybindingsGroup, MousebindingsGroup, UninstallGroup, AboutGroup)]
     public class PlatterModSettings : ModSetting {
         #region Strings
 
         // Tabs
-        public const string GeneralTab       = "GeneralTab";
-        public const string KeybindingsTab   = "KeybindingsTab";
+        public const string GeneralTab     = "GeneralTab";
+        public const string KeybindingsTab = "KeybindingsTab";
+        public const string AdvancedTab    = "AdvancedTab";
         // Groups
         public const string GeneralGroup       = "GeneralGroup";
         public const string AboutGroup         = "AboutGroup";
         public const string KeybindingsGroup   = "KeybindingsGroup";
         public const string MousebindingsGroup = "MousebindingsGroup";
         public const string UninstallGroup     = "UninstallGroup";
+        public const string AdvancedGroup      = "AdvancedGroup";
         // Actions
         public const string OpenPanelName             = nameof(PlatterOpenPanel);
         public const string ToggleRenderName          = nameof(PlatterToggleRender);
@@ -141,6 +143,20 @@ namespace Platter.Settings {
         // Fake binding to show in settings UI
         [SettingsUISection(KeybindingsTab, MousebindingsGroup)]
         public string PlatterSetbackScrollAction => "Ctrl + Shift + ScrollWheel";
+
+        #endregion
+
+
+        #region Advanced
+
+        [SettingsUISection(AdvancedTab, AdvancedGroup)]
+        [SettingsUIButton]
+        public bool RemoveIcons {
+            set {
+                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
+                uninstallSystem.RemoveIcons();
+            }
+        }
 
         #endregion
 
