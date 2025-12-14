@@ -79,8 +79,8 @@ namespace Platter.Systems {
                     return;
                 }
 
-                // Only snap the last point in the list, all previous ones were snapped already
-                var controlPoint = m_ControlPoints[^1];
+                // Only snap the first point in the list
+                var controlPoint = m_ControlPoints[0];
 
                 // Grab the first creation definition (all should be the same)
                 var creationDefinition = creationDefinitionArray[0];
