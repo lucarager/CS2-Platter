@@ -9,6 +9,7 @@ namespace Platter.Systems {
     using System.Collections.Generic;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Areas;
     using Game.Prefabs;
     using Unity.Collections;
     using Unity.Entities;
@@ -46,6 +47,7 @@ namespace Platter.Systems {
         /// </summary>
         private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
             { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
+            { "zoneUnzoned", new PrefabID("ZonePrefab", "Unzoned") },
             { "road", new PrefabID("RoadPrefab", "Alley") },
             { "uiAssetCategory", new PrefabID("UIAssetCategoryPrefab", "ZonesOffice") },
             { "area", new PrefabID("SurfacePrefab", "Concrete Surface 01") },
@@ -134,6 +136,9 @@ namespace Platter.Systems {
 
             m_Log.Debug($"{logMethodPrefix} Creating Category Prefab...");
             CreateCategoryPrefab((UIAssetCategoryPrefab)prefabBaseDict["uiAssetCategory"], out var uiCategoryPrefab);
+
+            m_Log.Debug($"{logMethodPrefix} Creating Unzoned Prefab...");
+            CreateZonePrefab((ZonePrefab)prefabBaseDict["zoneUnzoned"]);
 
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++)
@@ -280,7 +285,29 @@ namespace Platter.Systems {
             areaPrefab = null;
             return false;
         }
-        
+
+        private bool CreateZonePrefab(ZonePrefab originalZonePrefab) {
+            var unzonedPrefab = (ZonePrefab)originalZonePrefab.Clone("PlatterUnzoned");
+            unzonedPrefab.m_AreaType = Game.Zones.AreaType.None;
+
+            var success = m_PrefabSystem.AddPrefab(unzonedPrefab);
+
+            if (!success) {
+                return false;
+            }
+
+            var prefabID     = unzonedPrefab.GetPrefabID();
+            var cacheKey     = ParcelUtils.GetCustomHashCode(prefabID);
+            var prefabEntity = m_PrefabSystem.GetEntity(unzonedPrefab);
+
+            m_Log.Debug($"Populating Prefab Cache. Type: ParcelArea Key: {cacheKey} prefabID: {prefabID}");
+
+            m_PrefabCache[cacheKey]         = prefabEntity;
+            m_PrefabBaseCache[prefabEntity] = unzonedPrefab;
+            return true;
+
+        }
+
         /// <summary>
         /// Get a cached prefab entity by PrefabID.
         /// </summary>
