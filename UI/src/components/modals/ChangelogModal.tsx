@@ -105,7 +105,7 @@ __Building verification tooltips__ now accurately track corner buildings, and cr
                             <ChangelogItem
                                 date="2025-12-3"
                                 title="The frontage update"
-                                text={`Buildings spawning on parcels will now always face the front of the parcel.`}
+                                text={"Buildings spawning on parcels will now always face the front of the parcel."}
                             />
                         </div>
                     </div>
