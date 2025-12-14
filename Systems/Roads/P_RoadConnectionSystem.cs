@@ -71,7 +71,6 @@ namespace Platter.Systems {
             m_ModificationQuery = SystemAPI.QueryBuilder()
                                            .WithAll<Parcel>()
                                            .WithAny<Updated, Deleted>()
-                                           //.WithNone<Temp>()
                                            .AddAdditionalQuery()
                                            .WithAll<Edge, ConnectedParcel>()
                                            .WithAny<Updated, Deleted>()
@@ -100,7 +99,7 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             // Data structures
             var parcelEntitiesQueue = new NativeQueue<Entity>(Allocator.TempJob);
-            var parcelEntitiesList  = new NativeList<UpdateData>(Allocator.TempJob);
+            var parcelEntitiesList  = new NativeList<RCData>(Allocator.TempJob);
 
             // [CreateEntitiesQueueJob] Populate a queue with parcels to update
             var createEntitiesQueueJobHandle = new CreateEntitiesQueueJob {
@@ -170,6 +169,7 @@ namespace Platter.Systems {
                 m_ParcelComponentLookup        = SystemAPI.GetComponentLookup<Parcel>(),
                 m_CreatedComponentLookup       = SystemAPI.GetComponentLookup<Created>(true),
                 m_TempComponentLookup          = SystemAPI.GetComponentLookup<Temp>(true),
+                m_HiddenComponentLookup        = SystemAPI.GetComponentLookup<Hidden>(true),
                 m_ConnectedParcelsBufferLookup = SystemAPI.GetBufferLookup<ConnectedParcel>(),
                 m_IconElementsBufferLookup     = SystemAPI.GetBufferLookup<IconElement>(),
                 m_ParcelEntitiesList           = parcelEntitiesList,

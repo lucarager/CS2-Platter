@@ -17,7 +17,7 @@ namespace Platter.Systems {
         /// <summary>
         /// Struct containing data for a replacement job.
         /// </summary>
-        public struct UpdateData : IComparable<UpdateData> {
+        public struct RCData : IComparable<RCData> {
             /// <summary>
             /// Parcel to update.
             /// </summary>
@@ -74,10 +74,10 @@ namespace Platter.Systems {
             public bool m_Deleted;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="UpdateData"/> struct.
+            /// Initializes a new instance of the <see cref="RCData"/> struct.
             /// </summary>
             /// <param name="parcel">A Parcel to update.</param>
-            public UpdateData(Entity parcel) {
+            public RCData(Entity parcel) {
                 m_Parcel        = parcel;
                 m_FrontRoad     = Entity.Null;
                 m_FrontPos      = default;
@@ -92,7 +92,7 @@ namespace Platter.Systems {
             }
 
             /// <inheritdoc/>
-            public int CompareTo(UpdateData other) { return m_Parcel.Index - other.m_Parcel.Index; }
+            public int CompareTo(RCData other) { return m_Parcel.Index - other.m_Parcel.Index; }
         }
     }
 }

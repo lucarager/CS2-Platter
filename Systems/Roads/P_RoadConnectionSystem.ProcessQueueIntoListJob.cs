@@ -23,7 +23,7 @@ namespace Platter.Systems {
 #endif
         public struct ProcessQueueIntoListJob : IJob {
             public required NativeQueue<Entity>    m_ParcelEntitiesQueue;
-            public required NativeList<UpdateData> m_ParcelEntittiesList;
+            public required NativeList<RCData> m_ParcelEntittiesList;
 
             /// <inheritdoc/>
             public void Execute() {
@@ -31,7 +31,7 @@ namespace Platter.Systems {
                 var parcels = m_ParcelEntitiesQueue.Count;
                 m_ParcelEntittiesList.ResizeUninitialized(parcels);
 
-                for (var i = 0; i < parcels; i++) m_ParcelEntittiesList[i] = new UpdateData(m_ParcelEntitiesQueue.Dequeue());
+                for (var i = 0; i < parcels; i++) m_ParcelEntittiesList[i] = new RCData(m_ParcelEntitiesQueue.Dequeue());
 
                 // Sort the list (by parcel index) so that we can easily dedupe
                 m_ParcelEntittiesList.Sort();

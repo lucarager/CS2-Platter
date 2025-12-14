@@ -35,13 +35,15 @@ namespace Platter.Settings {
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(PS.GeneralTab), "General" },
                 { m_Setting.GetOptionTabLocaleID(PS.KeybindingsTab), "Keybindings" },
+                { m_Setting.GetOptionTabLocaleID(PS.AdvancedTab), "Advanced" },
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(PS.KeybindingsGroup), "Keyboard" },
                 { m_Setting.GetOptionGroupLocaleID(PS.MousebindingsGroup), "Mouse" },
                 { m_Setting.GetOptionGroupLocaleID(PS.UninstallGroup), "Uninstall" },
-                { m_Setting.GetOptionGroupLocaleID(PS.AboutGroup), "About" },                
+                { m_Setting.GetOptionGroupLocaleID(PS.AboutGroup), "About" },
                 { m_Setting.GetOptionGroupLocaleID(PS.GeneralGroup), "General" },
+                { m_Setting.GetOptionGroupLocaleID(PS.AdvancedGroup), "Advanced" },
 
                 // Overlay for Tools
                 { m_Setting.GetOptionLabelLocaleID(PS.EnableOverlayForToolsName), "Auto-Enable Parcel Overlay for key tools" },
@@ -51,6 +53,10 @@ namespace Platter.Settings {
                 { m_Setting.GetOptionLabelLocaleID(PS.RemoveParcelsName), "Delete all Parcels" },
                 { m_Setting.GetOptionDescLocaleID(PS.RemoveParcelsName), "Removes all parcels from the map, permanently. Buildings that are not on a vanilla zone grid will despawn, unless you have a mod that prevents that." },
                 { m_Setting.GetOptionWarningLocaleID(PS.RemoveParcelsName), "WARNING: Permanently remove all parcels from this save?" },
+
+                // Remove Icons
+                { m_Setting.GetOptionLabelLocaleID(nameof(PS.RemoveIcons)), "Remove Orphaned Icons" },
+                { m_Setting.GetOptionDescLocaleID(nameof(PS.RemoveIcons)), "Removes orphaned icon entities from the map that may have been left behind." },
 
                 // ToggleRenderActionName
                 { m_Setting.GetBindingKeyLocaleID(PS.ToggleRenderName), "Toggle \"Parcel Overlay\"" },

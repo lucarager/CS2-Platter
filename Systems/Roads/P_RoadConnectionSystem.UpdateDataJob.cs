@@ -29,9 +29,10 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct UpdateDataJob : IJob {
-            [ReadOnly] public required NativeList<UpdateData>        m_ParcelEntitiesList;
+            [ReadOnly] public required NativeList<RCData>            m_ParcelEntitiesList;
             [ReadOnly] public required ComponentLookup<Created>      m_CreatedComponentLookup;
             [ReadOnly] public required ComponentLookup<Temp>         m_TempComponentLookup;
+            [ReadOnly] public required ComponentLookup<Hidden>       m_HiddenComponentLookup;
             [ReadOnly] public required TrafficConfigurationData      m_TrafficConfigurationData;
             [ReadOnly] public required BufferLookup<IconElement>     m_IconElementsBufferLookup;
             public required            ComponentLookup<Parcel>       m_ParcelComponentLookup;
@@ -50,22 +51,22 @@ namespace Platter.Systems {
             /// Processes a single parcel update, handling road state flags, connection icons,
             /// buffer updates, and marking the parcel for downstream system processing.
             /// </summary>
-            /// <param name="updateData">The update data containing the parcel entity and its new road connections.</param>
-            private void ProcessParcel(UpdateData updateData) {
-                var parcel    = m_ParcelComponentLookup[updateData.m_Parcel];
-                var isCreated = m_CreatedComponentLookup.HasComponent(updateData.m_Parcel);
-                var isTemp    = m_TempComponentLookup.HasComponent(updateData.m_Parcel);
+            /// <param name="rcData">The update data containing the parcel entity and its new road connections.</param>
+            private void ProcessParcel(RCData rcData) {
+                var parcel    = m_ParcelComponentLookup[rcData.m_Parcel];
+                var isCreated = m_CreatedComponentLookup.HasComponent(rcData.m_Parcel);
+                var isTemp    = m_TempComponentLookup.HasComponent(rcData.m_Parcel);
 
                 // Update road state flags
-                UpdateRoadStateFlags(ref parcel, updateData);
+                UpdateRoadStateFlags(ref parcel, rcData);
 
                 // Check what changed
-                var roadChanged          = updateData.m_FrontRoad     != parcel.m_RoadEdge;
-                var curvePositionChanged = !Mathf.Approximately(updateData.m_FrontCurvePos, parcel.m_CurvePosition);
+                var roadChanged          = rcData.m_FrontRoad     != parcel.m_RoadEdge;
+                var curvePositionChanged = !Mathf.Approximately(rcData.m_FrontCurvePos, parcel.m_CurvePosition);
                 var needsUpdate          = roadChanged || isCreated || curvePositionChanged;
 
                 // Handle road connection icons
-                UpdateRoadConnectionIcon(parcel, updateData, isCreated);
+                UpdateRoadConnectionIcon(parcel, rcData, isCreated);
 
                 if (!needsUpdate) {
                     return;
@@ -73,24 +74,24 @@ namespace Platter.Systems {
 
                 // For temp parcels, just update the data without modifying buffers
                 if (isTemp) {
-                    parcel.m_RoadEdge      = updateData.m_FrontRoad;
-                    parcel.m_CurvePosition = updateData.m_FrontCurvePos;
-                    m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+                    parcel.m_RoadEdge      = rcData.m_FrontRoad;
+                    parcel.m_CurvePosition = rcData.m_FrontCurvePos;
+                    m_ParcelComponentLookup[rcData.m_Parcel] = parcel;
                     return;
                 }
 
                 // Update ConnectedParcel buffers if road changed
                 if (roadChanged) {
-                    UpdateConnectedParcelBuffers(parcel, updateData);
+                    UpdateConnectedParcelBuffers(parcel, rcData);
                 }
 
                 // Apply the new road connection data
-                parcel.m_RoadEdge      = updateData.m_FrontRoad;
-                parcel.m_CurvePosition = updateData.m_FrontCurvePos;
-                m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+                parcel.m_RoadEdge      = rcData.m_FrontRoad;
+                parcel.m_CurvePosition = rcData.m_FrontCurvePos;
+                m_ParcelComponentLookup[rcData.m_Parcel] = parcel;
 
                 // Mark for downstream systems to process
-                m_CommandBuffer.AddComponent<Updated>(updateData.m_Parcel, default);
+                m_CommandBuffer.AddComponent<Updated>(rcData.m_Parcel, default);
             }
 
             /// <summary>
@@ -98,13 +99,13 @@ namespace Platter.Systems {
             /// at the left, right, and front sides of the parcel.
             /// </summary>
             /// <param name="parcel">Reference to the parcel component to update.</param>
-            /// <param name="updateData">The update data containing detected road connections.</param>
-            private void UpdateRoadStateFlags(ref Parcel parcel, UpdateData updateData) {
-                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadLeft, updateData.m_LeftRoad   != Entity.Null);
-                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadRight, updateData.m_RightRoad != Entity.Null);
-                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadFront, updateData.m_FrontRoad != Entity.Null);
+            /// <param name="rcData">The update data containing detected road connections.</param>
+            private void UpdateRoadStateFlags(ref Parcel parcel, RCData rcData) {
+                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadLeft, rcData.m_LeftRoad   != Entity.Null);
+                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadRight, rcData.m_RightRoad != Entity.Null);
+                parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadFront, rcData.m_FrontRoad != Entity.Null);
 
-                m_ParcelComponentLookup[updateData.m_Parcel] = parcel;
+                m_ParcelComponentLookup[rcData.m_Parcel] = parcel;
             }
 
             /// <summary>
@@ -124,29 +125,31 @@ namespace Platter.Systems {
             /// Removes the warning icon when the parcel gains a road connection or is being deleted.
             /// </summary>
             /// <param name="parcel">The parcel component with current road connection state.</param>
-            /// <param name="updateData">The update data containing new road connection information.</param>
+            /// <param name="rcData">The update data containing new road connection information.</param>
             /// <param name="isCreated">Whether the parcel was just created this frame.</param>
-            private void UpdateRoadConnectionIcon(Parcel parcel, UpdateData updateData, bool isCreated) {
-                var hasRoad = updateData.m_FrontRoad != Entity.Null;
-                var hasBuffer = m_IconElementsBufferLookup.HasBuffer(updateData.m_Parcel);
+            private void UpdateRoadConnectionIcon(Parcel parcel, RCData rcData, bool isCreated) {
+                var hasRoad = rcData.m_FrontRoad != Entity.Null;
+                var isTemp  = m_TempComponentLookup.HasComponent(rcData.m_Parcel);
+                var isHidden  = m_HiddenComponentLookup.HasComponent(rcData.m_Parcel);
 
-                if (hasRoad || updateData.m_Deleted) {
-                    // Has a road or being deleted - ensure no warning icon
+                if (hasRoad) {
                     m_IconCommandBuffer.Remove(
-                        updateData.m_Parcel,
+                        rcData.m_Parcel,
                         m_TrafficConfigurationData.m_RoadConnectionNotification
                     );
-                    return;
+                } else if (!rcData.m_Deleted && !isTemp) {
+                    m_IconCommandBuffer.Add(
+                        rcData.m_Parcel,
+                        m_TrafficConfigurationData.m_RoadConnectionNotification,
+                        rcData.m_FrontPos,
+                        IconPriority.Warning,
+                        IconClusterLayer.Default,
+                        IconFlags.IgnoreTarget,
+                        default(Entity)
+                        //isTemp
+                        //isHidden
+                    );
                 }
-
-                m_IconCommandBuffer.Add(
-                    updateData.m_Parcel,
-                    m_TrafficConfigurationData.m_RoadConnectionNotification,
-                    updateData.m_FrontPos,
-                    IconPriority.Warning,
-                    IconClusterLayer.Default,
-                    IconFlags.OnTop
-                );
             }
 
             /// <summary>
@@ -154,22 +157,22 @@ namespace Platter.Systems {
             /// Removes the parcel from the old road's buffer and adds it to the new road's buffer.
             /// </summary>
             /// <param name="parcel">The parcel component with the current (old) road connection.</param>
-            /// <param name="updateData">The update data containing the new road connection.</param>
-            private void UpdateConnectedParcelBuffers(Parcel parcel, UpdateData updateData) {
+            /// <param name="rcData">The update data containing the new road connection.</param>
+            private void UpdateConnectedParcelBuffers(Parcel parcel, RCData rcData) {
                 // Remove from old road's connected parcels
                 if (parcel.m_RoadEdge != Entity.Null &&
                     m_ConnectedParcelsBufferLookup.HasBuffer(parcel.m_RoadEdge)) {
                     CollectionUtils.RemoveValue(
                         m_ConnectedParcelsBufferLookup[parcel.m_RoadEdge],
-                        new ConnectedParcel(updateData.m_Parcel)
+                        new ConnectedParcel(rcData.m_Parcel)
                     );
                 }
 
                 // Add to new road's connected parcels
-                if (updateData.m_FrontRoad != Entity.Null &&
-                    m_ConnectedParcelsBufferLookup.HasBuffer(updateData.m_FrontRoad)) {
-                    m_ConnectedParcelsBufferLookup[updateData.m_FrontRoad].Add(
-                        new ConnectedParcel(updateData.m_Parcel)
+                if (rcData.m_FrontRoad != Entity.Null &&
+                    m_ConnectedParcelsBufferLookup.HasBuffer(rcData.m_FrontRoad)) {
+                    m_ConnectedParcelsBufferLookup[rcData.m_FrontRoad].Add(
+                        new ConnectedParcel(rcData.m_Parcel)
                     );
                 }
             }

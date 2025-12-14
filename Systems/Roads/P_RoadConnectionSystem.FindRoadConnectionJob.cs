@@ -32,7 +32,7 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct FindRoadConnectionJob : IJobParallelForDefer {
-            public required            NativeArray<UpdateData>                  m_ParcelEntitiesList;
+            public required            NativeArray<RCData>                  m_ParcelEntitiesList;
             [ReadOnly] public required ComponentLookup<Deleted>                 m_DeletedDataComponentLookup;
             [ReadOnly] public required ComponentLookup<PrefabRef>               m_PrefabRefComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
