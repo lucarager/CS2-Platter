@@ -86,15 +86,14 @@ Donations are incredibly kind and appreciated. If you'd like to show appreciatio
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.3.4" />
+	<ModVersion Value="1.3.5" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple-->
 	<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
 	<ChangeLog>
-* Adds safety checks that prevent crashes when deleting Parcels connected to RoadBuilder roads with zoning removed.
-* For now, prevents new Parcels from connecting to RoadBuilder roads with zoning removed. A future update may revert this once a proper fix is implemented.
+* Fixed: The missing road connection icon was not appearing when deleting a road.
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
 	<ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
