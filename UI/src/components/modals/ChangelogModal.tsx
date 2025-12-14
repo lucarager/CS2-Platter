@@ -56,30 +56,57 @@ export const ChangelogModal = () => {
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
                             <ChangelogItem
-                            date="2025-12-12"
-                            title="Platter 1.3.1 - Snap improvements & new auto-overlay Setting"
-                            text={
-`Snap to Parcel Sides now allows snapping parcels together in any orientation, making creating complex layouts easier than ever! Other snapping options have been tweaked to improve usability.
+                                date="2025-12-12"
+                                title="Platter 1.3.1 - Snap improvements & new auto-overlay Setting"
+                                text={`Snap to Parcel Sides now allows snapping parcels together in any orientation, making creating complex layouts easier than ever! Other snapping options have been tweaked to improve usability.
 
-Added a new setting to the Settings Page that allows disabling the "auto-overlay" for vanilla tools. For those that want to fully control when those overlays pop up!`}/>
+Added a new setting to the Settings Page that allows disabling the "auto-overlay" for vanilla tools. For those that want to fully control when those overlays pop up!`}
+                            />
                             <ChangelogItem
-                            date="2025-12-10"
-                            title="Platter 1.3.0 - The Snapping & Performance Update"
-                            image="coui://platter/changelog/2.jpg"
-                            text={
-`This update introduces an all-new __Snapping System__!
+                                date="2025-12-10"
+                                title="Platter 1.3.0 - The Snapping & Performance Update"
+                                image="coui://platter/changelog/2.jpg"
+                                text={`This update introduces an all-new __Snapping System__!
 Select multiple snap options simultaneously, including snapping to __parcel sides__ and __corners__, all with fresh icons.
 
 Performance and stability have been greatly improved. The __road connection system__ and __parcel overlays__ were heavily refactored and optimized.
-Also, a new changelog UI has been added to keep up with Platter's updates as they release.`}/>
+Also, a new changelog UI has been added to keep up with Platter's updates as they release.`}
+                            />
                             <ChangelogItem
-                            date="2025-12-8"
-                            title="Platter 1.2.4 - Reworked Pre-Zone Panel"
-                            image="coui://platter/changelog/1.jpg"
-                            text={
-`The __Pre-Zone Panel__ has been completely reworked for better stability and compatibility with mods like __Zone Reorganizer__.
+                                date="2025-12-8"
+                                title="Platter 1.2.4 - Reworked Pre-Zone Panel"
+                                image="coui://platter/changelog/1.jpg"
+                                text={`The __Pre-Zone Panel__ has been completely reworked for better stability and compatibility with mods like __Zone Reorganizer__.
 A new __Base Game__ filter helps find vanilla zones instantly.
-Under the hood, performance for __parcel updates__ and the __overlay__ has been significantly boosted, making gameplay smoother than ever.`}/>
+Under the hood, performance for __parcel updates__ and the __overlay__ has been significantly boosted, making gameplay smoother than ever.`}
+                            />
+                            {/* December 8 */}
+                            <ChangelogItem
+                                date="2025-12-8"
+                                title="New Parcel UI & Tracking System"
+                                image="coui://platter/changelog/3.jpg"
+                                text={`A major polish update featuring a new __corner lot detection system__! Parcels now intelligently track both front and side road connections, warning you of missing connections before placement.
+The __parcel overlay__ has been overhauled for precision, now matching the parcel's exact size and visualizing road connections on all sides.
+__Building verification tooltips__ now accurately track corner buildings, and critical bugs with the relocate button have been fixed.`}
+                            />
+                            {/* December 7 */}
+                            <ChangelogItem
+                                date="2025-12-5"
+                                title="Improvements to Plopping"
+                                text={`Parcels will now show missing road connection before placing them. Fixed Parcels causing building props and trees to disappear. Fixed brush tool being able to delete parcels.`}
+                            />
+                            {/* December 5 */}
+                            <ChangelogItem
+                                date="2025-12-5"
+                                title="Pre-Zone QOL Improvements"
+                                text={`Added pack/theme filtering and searching to the Pre-Zone Panel. Adjusted size and position of the panel.`}
+                            />
+                            {/* December 3 */}
+                            <ChangelogItem
+                                date="2025-12-3"
+                                title="The frontage update"
+                                text={`Buildings spawning on parcels will now always face the front of the parcel.`}
+                            />
                         </div>
                     </div>
                 </VC.Scrollable>
@@ -106,20 +133,19 @@ const ChangelogItem: React.FC<{
                 </div>
             </div>
             {image && (
-            <div className={styles.card}>
-                <div className={c(styles.card__inner, styles.card__inner__cl)}>
-                    <div className={styles.card__inner__image}>
-                        <img src={image} className={styles.card__image} />
+                <div className={styles.card}>
+                    <div className={c(styles.card__inner, styles.card__inner__cl)}>
+                        <div className={styles.card__inner__image}>
+                            <img src={image} className={styles.card__image} />
+                        </div>
                     </div>
                 </div>
-            </div>)}
+            )}
             <div className={styles.card}>
                 <div className={styles.card__inner}>
                     <div className={styles.card__text_container}>
                         <p className={styles.card__text} cohinline="true">
-                            <HighlightedText
-                                text={text}
-                            />
+                            <HighlightedText text={text} />
                         </p>
                     </div>
                 </div>
