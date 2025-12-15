@@ -11,7 +11,7 @@
   "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "Ogólne",
   "Options.GROUP[Platter.Platter.PlatterMod.AdvancedGroup]": "Zaawansowane",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Automatycznie włączaj „Widoczność Parcel” dla kluczowych narzędzi",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "When enabled, parcel overlays will show when using key vanilla tools like Net Tool etc. \n\r Disable this to control the overlay with the \"Toggle Overlay\" option manually.",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Gdy włączone widoczność parcel będzie aktywna podczas korzystania z narzędzi gry takich jak Narzędzie Sieci itp. \n\n Wyłącz to, aby móc ręcznie sterować widocznością za pomocą opcji „Widoczność Parcel”.",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Usuń wszystkie Parcele",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Permanentnie usunie wszystkie parcele na mapie. Budynki, których strefy nie znajdują się na siatce stref z gry, znikną, chyba że masz moda, który temu zapobiega.",
   "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Trwale usunąć wszystkie parcele z tego zapisu?",
