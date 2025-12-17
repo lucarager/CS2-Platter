@@ -100,7 +100,7 @@
   "PlatterMod.UI.Modals.FirstLaunch.Title": "플레터를 설치해 주셔서 감사합니다!",
   "PlatterMod.UI.Modals.FirstLaunch.Subtitle": "시작하기 위한 간단한 소개입니다",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Title": "플래터가 게임에 \"구획 셀\"을 추가합니다",
-  "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text": "구역 도구 모음의 __Platter tab__  통해 구획 셀에 액세스합니다 __(CTRL+P)__.\n구획 셀을 집어서 내려놓기.\n\n바닐라 grid —  막을 필요 없이, 그 위에 바로 구획 셀을 배치하면 됩니다.",
+  "PlatterMod.UI.Modals.FirstLaunch.Tutorial1.Text": "구역 도구 모음의 __Platter tab__ 통해 구획 셀에 액세스합니다 __(CTRL+P)__.\n구획 셀을 집어서 내려놓기.\n\n바닐라 그리드 — 막을 필요 없이, 그 위에 바로 구획 셀을 배치하면 됩니다.",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Title": "구획 셀 옵션",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial2.Text": "__Pre-Zone__을 선택하면 구획 셀이 자동으로 구역 지정되며, 구역/크기 조합 정보를 확인할 수 있습니다.\nscrollwheel 사용하거나 shortcuts 또는 도구 옵션 패널에서 __Road Setback__, __Depth__, 그리고 __Width__ 조절할 수 있습니다.\n구획 셀은 기본 구역 지정 도구와도 완벽하게 호환됩니다.",
   "PlatterMod.UI.Modals.FirstLaunch.Tutorial3.Title": "고급 사용법",
