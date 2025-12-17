@@ -11,7 +11,7 @@
   "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "일반 사항",
   "Options.GROUP[Platter.Platter.PlatterMod.AdvancedGroup]": "고급",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "키 도구를 위한 자동 구획 활성화",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "활성화되면 Net Tool 등과 같은 주요 바닐라 도구를 사용할 때 구획 붙이기가 표시됩니다.",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "활성화되면 네트워크 도구와 같은 주요 바닐라 도구를 사용할 때 구획 붙이기가 표시됩니다.",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "모든 구획 삭제",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "지도에서 모든 구획을 영구적으로 제거합니다. 바닐라 구역 그리드에 없는 건물은 이를 방지하는 모드가 없는 한 사라집니다.",
   "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "경고: 이 저장 공간에서 모든 구획을 영구적으로 제거하시겠습니까?",
