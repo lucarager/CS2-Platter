@@ -26,7 +26,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for updating Parcel and Cell data when a parcel is placed, moved, or deleted.
     /// </summary>
-    public partial class P_ParcelUpdateSystem : GameSystemBase {
+    public partial class P_ParcelUpdateSystem : PlatterGameSystemBase {
         // Hardcoded block size minimums
         // This is needed because the game requires
         //   - blocks to be at least 2 wide to not be automatically set to occupied (even though LOTS can be 1 wide, like for townhomes)
@@ -124,7 +124,7 @@ namespace Platter.Systems {
                         // This prevents shenanigans from the vanilla system that will try to re-zone underlying vanilla cells
                         for (var k = 0; k < cellBuffer.Length; k++) {
                             var cell = cellBuffer[k];
-                            cell.m_Zone   = ZoneType.None;
+                            cell.m_Zone   = P_ZoneCacheSystem.UnzonedZoneType;
                             cellBuffer[k] = cell;
                         }
 
@@ -219,7 +219,7 @@ namespace Platter.Systems {
                         cellBuffer.Add(
                             new Cell
                             {
-                                m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
+                                m_Zone  = isBlocked ? P_ZoneCacheSystem.UnzonedZoneType : parcel.m_PreZoneType,
                                 m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
                             });
                     }

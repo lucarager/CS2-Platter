@@ -14,6 +14,7 @@ namespace Platter.Systems {
     using Game.Common;
     using Game.Prefabs;
     using Game.UI;
+    using Game.Zones;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Entities.UniversalDelegates;
@@ -24,13 +25,23 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for caching Zone Information for other systems.
     /// </summary>
-    public partial class P_ZoneCacheSystem : PlatterGameSystemBase {
+    public partial class P_ZoneCacheSystem  : PlatterGameSystemBase {
         private EntityQuery                   m_ZonesModifiedQuery;
         private EntityQuery                   m_UIAssetCategoryPrefabCreatedQuery;
         private EntityQuery                   m_ZonesAllQuery;
         private NativeHashMap<ushort, Entity> m_ZonePrefabs;
         private PrefabSystem                  m_PrefabSystem;
         private ImageSystem                   m_ImageSystem;
+        private int                           m_CacheVersion;
+
+        private static ZoneType m_UnzonedZoneType = ZoneType.None;
+
+        public static ZoneType UnzonedZoneType => m_UnzonedZoneType;
+        
+        /// <summary>
+        /// Gets the current version of the cache. Increments whenever the cache changes.
+        /// </summary>
+        public int CacheVersion => m_CacheVersion;
 
         public Dictionary<ushort, Color>                EdgeColors      { get; private set; }
         public Dictionary<ushort, Color>                FillColors      { get; private set; }
@@ -83,6 +94,7 @@ namespace Platter.Systems {
             ZoneUIData.Clear();
             AssetPackUIData.Clear();
             ZoneGroupUIData.Clear();
+            m_CacheVersion++;
         }
 
         /// <inheritdoc/>
@@ -118,6 +130,7 @@ namespace Platter.Systems {
             var deletedTh         = SystemAPI.GetComponentTypeHandle<Deleted>();
             var uIObjectDataTh    = SystemAPI.GetComponentTypeHandle<UIObjectData>();
             var assetPackBufferTh = SystemAPI.GetBufferTypeHandle<AssetPackElement>();
+            var hasChanges        = false;
 
             CompleteDependency();
 
@@ -162,11 +175,9 @@ namespace Platter.Systems {
                                 uiObjectData.m_Group
                             );
                         }
-                    } else {
-                        // Skip zonePrefabs without UI data unless it's Unzoned
-                        if (zonePrefab.name != "Unzoned") {
-                            continue;
-                        }
+                    } else if (!IsCustomUnzoned(zonePrefab)) {
+                        // Skip zonePrefabs without UI data unless it's our custom Unzoned
+                        continue;                        
                     }
 
                     if (chunk.Has(ref deletedTh)) {
@@ -174,9 +185,15 @@ namespace Platter.Systems {
                         FillColors.Remove(zoneData.m_ZoneType.m_Index);
                         EdgeColors.Remove(zoneData.m_ZoneType.m_Index);
                         ZoneUIData.Remove(zoneData.m_ZoneType.m_Index);
+                        hasChanges = true;
                     } else {
                         // Cache Zone
                         m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Adding to cache.");
+
+                        if (IsCustomUnzoned(zonePrefab)) {
+                            m_UnzonedZoneType = zoneData.m_ZoneType;
+                            zoneData.m_AreaType = Game.Zones.AreaType.None;
+                        }
 
                         var category = zonePrefab.m_Office ? "Office" : zonePrefab.m_AreaType.ToString();
 
@@ -192,11 +209,21 @@ namespace Platter.Systems {
                             uiObjectData.m_Group,
                             assetPacks
                         );
+                        hasChanges = true;
                     }
                 }
             }
 
             chunkArray.Dispose();
+            
+            // Increment version if any changes were made
+            if (hasChanges) {
+                m_CacheVersion++;
+            }
+        }
+
+        private static bool IsCustomUnzoned(ZonePrefab zonePrefab) {
+            return zonePrefab.name == "Unzoned" && zonePrefab.m_AreaType == Game.Zones.AreaType.Residential;
         }
 
         private static string GetThumbnail(ZonePrefab zonePrefab) {

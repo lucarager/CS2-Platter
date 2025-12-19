@@ -268,6 +268,11 @@ namespace Platter.Systems {
 
             m_ToggleRender.shouldBeEnabled = mode.IsGameOrEditor();
             m_ToggleSpawn.shouldBeEnabled  = mode.IsGameOrEditor();
+            
+            // Update PreZoneType to the cached UnzonedZoneType now that zones are loaded
+            if (PreZoneType.Equals(ZoneType.None)) {
+                PreZoneType = P_ZoneCacheSystem.UnzonedZoneType;
+            }
         }
 
         /// <summary>

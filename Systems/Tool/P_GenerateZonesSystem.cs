@@ -24,7 +24,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    public partial class P_GenerateZonesSystem : GameSystemBase {
+    public partial class P_GenerateZonesSystem : PlatterGameSystemBase {
         private EntityQuery          m_DefinitionQuery;
         private ModificationBarrier1 m_ModificationBarrier;
         private SearchSystem         m_ZoneSearchSystem;
@@ -143,7 +143,7 @@ namespace Platter.Systems {
 
                     // If we have parcels targetd, we run our own logic.
                     var zoneData = m_ZoneCLook[creationDefinition.m_Prefab];
-                    var zoneType = isZoning ? zoneData.m_ZoneType : ZoneType.None;
+                    var zoneType = isZoning ? zoneData.m_ZoneType : P_ZoneCacheSystem.UnzonedZoneType;
 
                     if ((zoning.m_Flags & ZoningFlags.FloodFill) != 0U) {
                         FloodFillBlocks(creationDefinition, zoning, zoneData, zoneType, baseCells);
@@ -199,7 +199,7 @@ namespace Platter.Systems {
                         m_ZonedBlocks.Add(in baseCell.Block);
                     }
 
-                    if ((zoning.m_Flags & ZoningFlags.Overwrite) == 0U && !cell.m_Zone.Equals(ZoneType.None)) {
+                    if ((zoning.m_Flags & ZoningFlags.Overwrite) == 0U && !cell.m_Zone.Equals(P_ZoneCacheSystem.UnzonedZoneType)) {
                         cellData.ZoneType = cell.m_Zone;
                     }
 
@@ -340,7 +340,7 @@ namespace Platter.Systems {
                             if ((cell.m_State & CellFlags.Visible) != CellFlags.None && (cell.m_State & CellFlags.Shared) == CellFlags.None) {
                                 var cellPosition = ZoneUtils.GetCellPosition(block, cellData.Location);
                                 if (MathUtils.Intersect(m_Quad, cellPosition.xz) &&
-                                    m_Overwrite | cell.m_Zone.Equals(ZoneType.None)) {
+                                    m_Overwrite | cell.m_Zone.Equals(P_ZoneCacheSystem.UnzonedZoneType)) {
                                     if (!m_ZonedCells.TryGetFirstValue(blockEntity, out _, out _)) {
                                         m_ZonedBlocks.Add(in blockEntity);
                                     }
@@ -404,7 +404,7 @@ namespace Platter.Systems {
 
                     for (var i = @int.y; i <= int2.y; i++) {
                         quad2.d = math.lerp(quad.a, quad.d, (i + 1) * float2.y);
-                        quad2.c = math.lerp(quad.b, quad.c, (i + 1) * float2.y);
+                        quad2.c = math.lerp(quad.b, quad2.c, (i + 1) * float2.y);
                         var quad3 = default(Quad2);
                         quad3.a = math.lerp(quad2.a, quad2.b, @int.x * float2.x);
                         quad3.d = math.lerp(quad2.d, quad2.c, @int.x * float2.x);
@@ -502,7 +502,7 @@ namespace Platter.Systems {
                     }
 
                     // If not overwriting and the cell already has a zone, keep the existing zone
-                    if (!m_Overwrite && !cell.m_Zone.Equals(ZoneType.None)) {
+                    if (!m_Overwrite && !cell.m_Zone.Equals(P_ZoneCacheSystem.UnzonedZoneType)) {
                         cellData.ZoneType = cell.m_Zone;
                     }
 
