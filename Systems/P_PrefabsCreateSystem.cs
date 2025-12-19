@@ -10,6 +10,7 @@ namespace Platter.Systems {
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Prefabs;
+    using Game.Zones;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -19,33 +20,35 @@ namespace Platter.Systems {
     #endregion
 
     /// <summary>
-    /// System responsible for generating our parcel prefabs on game load.
+    /// System responsible for generating custom prefabs on game load.
     /// </summary>
-    public partial class P_PrefabsCreateSystem : GameSystemBase {
+    public partial class P_PrefabsCreateSystem : PlatterGameSystemBase {
         /// <summary>
         /// Range of block sizes we support.
         /// <para>x = min width.</para>
         /// <para>y = min depth.</para>
         /// <para>z = max width.</para>
-        /// <para>w = max width.</para>
+        /// <para>w = max depth.</para>
         /// </summary>
-        public static readonly int4 BlockSizes = new(2, 2, 6, 6);
-
-        private static BuildingInitializeSystem m_BuildingInitializeSystem;
+        public static readonly int4 BlockSizes = new(1, 2, 6, 6);
 
         /// <summary>
         /// Stateful value to only run installation once.
         /// </summary>
         private static bool m_PrefabsAreInstalled;
 
-        // Systems & References
+        /// <summary>
+        /// Reference to the game's prefab system for managing prefab entities.
+        /// </summary>
         private static PrefabSystem m_PrefabSystem;
 
         /// <summary>
-        /// Configuration for vanilla prefabas to load for further processing.
+        /// Configuration for vanilla prefabs to load for further processing.
+        /// Maps identifiers to their corresponding PrefabID references.
         /// </summary>
         private readonly Dictionary<string, PrefabID> m_SourcePrefabsDict = new() {
             { "zone", new PrefabID("ZonePrefab", "EU Residential Mixed") },
+            { "unzonedZone", new PrefabID("ZonePrefab", "Unzoned") },
             { "road", new PrefabID("RoadPrefab", "Alley") },
             { "uiAssetCategory", new PrefabID("UIAssetCategoryPrefab", "ZonesOffice") },
             { "area", new PrefabID("SurfacePrefab", "Concrete Surface 01") },
@@ -62,15 +65,9 @@ namespace Platter.Systems {
         /// </summary>
         private Dictionary<Entity, PrefabBase> m_PrefabBaseCache;
 
-        // Logger
-        private PrefixedLogger m_Log;
-
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            m_Log = new PrefixedLogger(nameof(P_PrefabsCreateSystem));
-            m_Log.Debug("OnCreate()");
 
             // Initialize native hash map (initial capacity for 2x6x6 = 72 parcels + 1 category + 1 area)
             m_PrefabCache = new NativeHashMap<int, Entity>(100, Allocator.Persistent);
@@ -80,15 +77,16 @@ namespace Platter.Systems {
 
             // Systems
             m_PrefabSystem             = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_BuildingInitializeSystem = World.GetOrCreateSystemManaged<BuildingInitializeSystem>();
         }
 
         /// <inheritdoc/>
         protected override void OnDestroy() {
             base.OnDestroy();
+
             if (m_PrefabCache.IsCreated) {
                 m_PrefabCache.Dispose();
             }
+
             if (m_PrefabBaseCache != null) {
                 m_PrefabBaseCache.Clear();
             }
@@ -108,6 +106,10 @@ namespace Platter.Systems {
             }
         }
 
+        /// <summary>
+        /// Installs all custom parcel prefabs by creating and registering them with the prefab system.
+        /// This includes area prefabs, category prefabs, and individual parcel prefabs for all supported sizes.
+        /// </summary>
         private void Install() {
             var logMethodPrefix = "Install() --";
 
@@ -134,6 +136,9 @@ namespace Platter.Systems {
 
             m_Log.Debug($"{logMethodPrefix} Creating Category Prefab...");
             CreateCategoryPrefab((UIAssetCategoryPrefab)prefabBaseDict["uiAssetCategory"], out var uiCategoryPrefab);
+
+            m_Log.Debug($"{logMethodPrefix} Creating Unzoned Prefab...");
+            CreateUnzonedPrefab((ZonePrefab)prefabBaseDict["unzonedZone"], out var unzonedPrefab);
 
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = BlockSizes.x; i <= BlockSizes.z; i++)
@@ -165,6 +170,16 @@ namespace Platter.Systems {
             }
         }
 
+        /// <summary>
+        /// Creates a parcel prefab with the specified dimensions and properties.
+        /// </summary>
+        /// <param name="lotWidth">The width of the parcel lot.</param>
+        /// <param name="lotDepth">The depth of the parcel lot.</param>
+        /// <param name="roadPrefab">The road prefab to use for zone block configuration.</param>
+        /// <param name="uiCategoryPrefab">The UI category prefab to group this parcel under.</param>
+        /// <param name="areaPrefabBase">The area prefab base for enclosed area configuration.</param>
+        /// <param name="placeholder">If true, creates a placeholder prefab; otherwise creates a regular parcel prefab.</param>
+        /// <returns>True if the prefab was successfully created and added to the prefab system; otherwise, false.</returns>
         private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase,
                                         bool placeholder = false) {
             var prefix    = "Parcel";
@@ -205,20 +220,19 @@ namespace Platter.Systems {
             }
 
             if (m_PrefabSystem.AddPrefab(prefabBase)) {
-                var prefabEntity = m_PrefabSystem.GetEntity(prefabBase);
-                var prefabID     = prefabBase.GetPrefabID();
-                var cacheKey     = ParcelUtils.GetCustomHashCode(prefabID, placeholder);
-
-                m_Log.Debug($"Populating Prefab Cache. Type: Parcel Key: {cacheKey} prefabID: {prefabID} placeholder: {placeholder.ToString()}");
-
-                m_PrefabCache[cacheKey] = prefabEntity;
-                m_PrefabBaseCache[prefabEntity] = prefabBase;
+                RegisterPrefabInCache(prefabBase, placeholder);
                 return true;
             }
 
             return false;
         }
 
+        /// <summary>
+        /// Creates a UI category prefab for organizing parcel prefabs in the game UI.
+        /// </summary>
+        /// <param name="originalUICategoryPrefab">The original UI category prefab to base the new category on.</param>
+        /// <param name="uiCategoryPrefab">When this method returns, contains the created UI category prefab if successful; otherwise, null.</param>
+        /// <returns>True if the category prefab was successfully created and added to the prefab system; otherwise, false.</returns>
         private bool CreateCategoryPrefab(UIAssetCategoryPrefab originalUICategoryPrefab, out UIAssetCategoryPrefab uiCategoryPrefab) {
             var name = "PlatterCat";
             var icon = "coui://platter/logo.svg";
@@ -240,18 +254,19 @@ namespace Platter.Systems {
             uiCategoryPrefab = uiCategoryPrefabBase;
 
             if (success) {
-                var prefabID = uiCategoryPrefabBase.GetPrefabID();
-                var cacheKey = ParcelUtils.GetCustomHashCode(prefabID);
-                var prefabEntity = m_PrefabSystem.GetEntity(uiCategoryPrefabBase);
-
-                m_Log.Debug($"Populating Prefab Cache. Type: Category Key: {cacheKey} prefabID: {prefabID}");
-                m_PrefabCache[cacheKey] = prefabEntity;
-                m_PrefabBaseCache[prefabEntity] = uiCategoryPrefabBase;
+                RegisterPrefabInCache(uiCategoryPrefabBase);
             }
 
             return success;
         }
 
+        /// <summary>
+        /// Creates an area prefab for parcel enclosed areas with border configuration.
+        /// </summary>
+        /// <param name="originalAreaPrefab">The original area prefab to clone and modify.</param>
+        /// <param name="borderPrefab">The net lane prefab to use for the border of the enclosed area.</param>
+        /// <param name="areaPrefab">When this method returns, contains the created area prefab if successful; otherwise, null.</param>
+        /// <returns>True if the area prefab was successfully created and added to the prefab system; otherwise, false.</returns>
         private bool CreateParcelAreaPrefab(AreaPrefab originalAreaPrefab, NetLanePrefab borderPrefab, out AreaPrefab areaPrefab) {
             var parecelAreaPrefab = (AreaPrefab)originalAreaPrefab.Clone("Parcel Enclosed Area");
 
@@ -265,35 +280,72 @@ namespace Platter.Systems {
             var success = m_PrefabSystem.AddPrefab(parecelAreaPrefab);
 
             if (success) {
-                var prefabID = parecelAreaPrefab.GetPrefabID();
-                var cacheKey = ParcelUtils.GetCustomHashCode(prefabID);
-                var prefabEntity = m_PrefabSystem.GetEntity(parecelAreaPrefab);
-
-                m_Log.Debug($"Populating Prefab Cache. Type: ParcelArea Key: {cacheKey} prefabID: {prefabID}");
-
-                m_PrefabCache[cacheKey] = prefabEntity;
-                m_PrefabBaseCache[prefabEntity] = parecelAreaPrefab;
-                areaPrefab              = parecelAreaPrefab;
+                RegisterPrefabInCache(parecelAreaPrefab);
+                areaPrefab = parecelAreaPrefab;
                 return true;
             }
 
             areaPrefab = null;
             return false;
         }
+
+        /// <summary>
+        /// Creates a custom unzoned prefab by cloning the vanilla Unzoned prefab.
+        /// </summary>
+        /// <param name="originalUnzonedPrefab">The original Unzoned zone prefab to clone.</param>
+        /// <param name="unzonedPrefab">When this method returns, contains the created unzoned prefab if successful; otherwise, null.</param>
+        /// <returns>True if the unzoned prefab was successfully created and added to the prefab system; otherwise, false.</returns>
+        private bool CreateUnzonedPrefab(ZonePrefab originalUnzonedPrefab, out ZonePrefab unzonedPrefab) {
+            var clonedUnzonedPrefab = (ZonePrefab)originalUnzonedPrefab.Clone("Unzoned");
+            clonedUnzonedPrefab.m_AreaType = Game.Zones.AreaType.Residential;
+            clonedUnzonedPrefab.m_Color = Color.red;
+
+            var success = m_PrefabSystem.AddPrefab(clonedUnzonedPrefab);
+
+            if (success) {
+                RegisterPrefabInCache(clonedUnzonedPrefab);
+                unzonedPrefab = clonedUnzonedPrefab;
+                return true;
+            }
+
+            unzonedPrefab = null;
+            return false;
+        }
         
         /// <summary>
-        /// Get a cached prefab entity by PrefabID.
+        /// Get a cached prefab entity by PrefabID hash.
         /// </summary>
+        /// <param name="hash">The hash code of the prefab ID to look up.</param>
+        /// <param name="entity">When this method returns, contains the cached entity if found; otherwise, the default entity value.</param>
+        /// <returns>True if the entity was found in the cache; otherwise, false.</returns>
         public bool TryGetCachedPrefab(int hash, out Entity entity) { return m_PrefabCache.TryGetValue(hash, out entity); }
 
         /// <summary>
         /// Get a readonly version of the cache for use in Burst jobs.
         /// </summary>
+        /// <returns>A read-only view of the prefab cache that can be safely used in parallel jobs.</returns>
         public NativeHashMap<int, Entity>.ReadOnly GetReadOnlyPrefabCache() { return m_PrefabCache.AsReadOnly(); }
 
         /// <summary>
         /// Get a cached PrefabBase from a Prefab Entity.
         /// </summary>
+        /// <param name="entity">The entity to look up in the prefab base cache.</param>
+        /// <param name="prefabBase">When this method returns, contains the cached PrefabBase if found; otherwise, null.</param>
+        /// <returns>True if the PrefabBase was found in the cache; otherwise, false.</returns>
         public bool TryGetCachedPrefabBase(Entity entity, out PrefabBase prefabBase) { return m_PrefabBaseCache.TryGetValue(entity, out prefabBase); }
+
+        /// <summary>
+        /// Registers a prefab in both caches and logs the registration.
+        /// </summary>
+        /// <param name="prefabBase">The prefab base to register.</param>
+        /// <param name="placeholder">Optional flag indicating if this is a placeholder prefab.</param>
+        private void RegisterPrefabInCache(PrefabBase prefabBase, bool placeholder = false) {
+            var prefabID = prefabBase.GetPrefabID();
+            var cacheKey = ParcelUtils.GetCustomHashCode(prefabID, placeholder);
+            var prefabEntity = m_PrefabSystem.GetEntity(prefabBase);
+
+            m_PrefabCache[cacheKey] = prefabEntity;
+            m_PrefabBaseCache[prefabEntity] = prefabBase;
+        }
     }
 }
