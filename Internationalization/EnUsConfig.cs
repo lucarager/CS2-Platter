@@ -151,19 +151,19 @@ namespace Platter.Settings {
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
                 {
                     "PlatterMod.UI.Tooltip.BuildingCount",
-                    "[Fronting] {COUNT} available {X}x{Y} fronting buildings in the selected zone."
+                    "[Front] {COUNT} available {X}x{Y} front access buildings in the selected zone."
                 },
                 {
                     "PlatterMod.UI.Tooltip.BuildingCountWarning",
-                    "[Fronting] No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on this parcel."
+                    "[Front] No {X}x{Y} front access buildings in selected zone. Smaller buildings may spawn on this parcel."
                 },
                 { 
                     "PlatterMod.UI.Tooltip.BuildingCornerCount",
-                    "[Corner] {COUNT} available {X}x{Y} corner buildings in the selected zone."
+                    "[Corner] {COUNT} available {X}x{Y} corner access buildings in the selected zone."
                 },
                 {
                     "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",
-                    "[Corner] No {X}x{Y} corner buildings in selected zone."
+                    "[Corner] No {X}x{Y} corner access buildings in selected zone. Smaller buildings may spawn on this parcel."
                 },
 
                 // FirstLaunch Modal
