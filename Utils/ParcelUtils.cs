@@ -9,6 +9,11 @@ namespace Platter.Utils {
     using Components;
     using Constants;
     using Game.Prefabs;
+    using Game.Zones;
+    using Systems;
+    using Unity.Burst;
+    using Unity.Collections;
+    using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
     using Transform = Game.Objects.Transform;
@@ -36,7 +41,7 @@ namespace Platter.Utils {
         public static PrefabID GetPrefabID(int2 size, bool placeholder = false) { return GetPrefabID(size.x, size.y, placeholder); }
 
         public static int GetCustomHashCode(PrefabID prefabID, bool placeholder = false) {
-            return Hash128.Compute(prefabID.GetType() + prefabID.GetName() + placeholder.ToString()).GetHashCode();
+            return UnityEngine.Hash128.Compute(prefabID.GetType() + prefabID.GetName() + placeholder.ToString()).GetHashCode();
         }
 
         public static float3 NodeMult(ParcelNode node) {
@@ -86,6 +91,44 @@ namespace Platter.Utils {
         public static float3 GetWorldPosition(Transform transform, float3 center, float3 position) {
             var trs = GetTransformMatrix(transform);
             return math.transform(trs, center + position);
+        }
+
+        /// <summary>
+        /// Classifies the zoning state of a parcel by analyzing its cell zones within the parcel bounds.
+        /// Updates the parcel's PreZoneType and ZoningUniform state flag.
+        /// </summary>
+        /// <param name="parcel">The parcel to update.</param>
+        /// <param name="block">The block containing cell information.</param>
+        /// <param name="parcelData">The parcel data containing lot size information.</param>
+        /// <param name="cellBuffer">The buffer containing cell data.</param>
+        [BurstCompile]
+        public static void ClassifyParcelZoning(ref Parcel parcel, in Block block, in ParcelData parcelData, in DynamicBuffer<Cell> cellBuffer) {
+            var isZoningUniform = true;
+            var cachedZone = P_ZoneCacheSystem.UnzonedZoneType;
+
+            for (var col = 0; col < block.m_Size.x; col++) {
+                for (var row = 0; row < block.m_Size.y; row++) {
+                    var index = row * block.m_Size.x + col;
+                    var cell = cellBuffer[index];
+
+                    if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
+                        continue;
+                    }
+
+                    if (cachedZone.m_Index == P_ZoneCacheSystem.UnzonedZoneType.m_Index) {
+                        cachedZone = cell.m_Zone;
+                    } else if (cell.m_Zone.m_Index != cachedZone.m_Index) {
+                        isZoningUniform = false;
+                    }
+                }
+            }
+
+            parcel.m_PreZoneType = cachedZone;
+            if (isZoningUniform) {
+                parcel.m_State |= ParcelState.ZoningUniform;
+            } else {
+                parcel.m_State &= ~ParcelState.ZoningUniform;
+            }
         }
     }
 }
