@@ -13,7 +13,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    public partial class P_RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : PlatterGameSystemBase {
         /// <summary>
         /// Struct containing data for a replacement job.
         /// </summary>

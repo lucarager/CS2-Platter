@@ -22,7 +22,7 @@ namespace Platter.Systems {
     /// System responsible for initializing ParcelPrefab data.
     /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
     /// </summary>
-    public partial class P_ParcelInitializeSystem : GameSystemBase {
+    public partial class P_ParcelInitializeSystem : PlatterGameSystemBase {
         // Shared GeometryFlags for all parcels.
         private const GeometryFlags CommonGeometryFlags =
             // Ensures the parcel can be walked through.

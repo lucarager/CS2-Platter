@@ -30,7 +30,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Ovverides object placement to snap parcels to road sides 
     /// </summary>
-    public partial class P_SnapSystem : GameSystemBase {
+    public partial class P_SnapSystem : PlatterGameSystemBase {
         [Flags]
         public enum SnapMode : uint {
             None             = 0,

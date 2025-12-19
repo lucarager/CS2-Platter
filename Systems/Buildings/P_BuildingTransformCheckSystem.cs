@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for connecting buildings to their parcels.
     /// </summary>
-    public partial class P_BuildingTransformCheckSystem : GameSystemBase {
+    public partial class P_BuildingTransformCheckSystem : PlatterGameSystemBase {
         // Logger
         private PrefixedLogger m_Log;
 

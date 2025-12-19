@@ -24,7 +24,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    public partial class P_RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : PlatterGameSystemBase {
         /// <summary>
         /// Find the best and eligible road for a given parcel.
         /// </summary>

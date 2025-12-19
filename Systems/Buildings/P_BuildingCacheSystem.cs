@@ -18,7 +18,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for caching Building Information for other systems.
     /// </summary>
-    public partial class P_BuildingCacheSystem : PlatterGameSystemBase {
+    public partial class P_BuildingCacheSystem  : PlatterGameSystemBase {
         /// <summary>
         /// Struct to hold building access count data for a zone/size combination.
         /// </summary>

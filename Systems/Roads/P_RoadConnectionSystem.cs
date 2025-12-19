@@ -29,7 +29,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for connecting parcels to roads.
     /// </summary>
-    public partial class P_RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : PlatterGameSystemBase {
         private const float MaxDistanceFront = 8.4f;
         private const float MaxDistanceSides = 7.8f;
 

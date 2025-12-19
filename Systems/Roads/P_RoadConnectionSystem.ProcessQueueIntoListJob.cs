@@ -14,7 +14,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    public partial class P_RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : PlatterGameSystemBase {
         /// <summary>
         /// Convert the queue of parcels to a list of UpdateData structs.
         /// </summary>

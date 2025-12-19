@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for linking parcels to their blocks.
     /// </summary>
-    public partial class P_ParcelToBlockReferenceSystem : GameSystemBase {
+    public partial class P_ParcelToBlockReferenceSystem : PlatterGameSystemBase {
         // Queries
         private EntityQuery m_ParcelBlockQuery;
 

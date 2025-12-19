@@ -16,7 +16,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for adding the ConnectedParcel buffer to roads that don't have it on load.
     /// </summary>
-    public partial class P_ConnectedParcelLoadSystem : PlatterGameSystemBase {
+    public partial class P_ConnectedParcelLoadSystem  : PlatterGameSystemBase {
         private EntityQuery m_RoadQuery;
 
         /// <inheritdoc/>

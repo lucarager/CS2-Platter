@@ -23,7 +23,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    public partial class P_RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : PlatterGameSystemBase {
         /// <summary>
         /// Find eligible entities and add them to a queue.
         /// </summary>

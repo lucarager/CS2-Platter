@@ -20,7 +20,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for adding the ConnectedParcel buffer to roads.
     /// </summary>
-    public partial class P_ConnectedParcelSystem : GameSystemBase {
+    public partial class P_ConnectedParcelSystem : PlatterGameSystemBase {
         private EntityQuery    m_PrefabCreatedQuery;
         private PrefixedLogger m_Log;
 

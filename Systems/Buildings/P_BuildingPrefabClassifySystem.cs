@@ -21,7 +21,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for adding the GrowableBuilding and LinkedParcel components to buildings.
     /// </summary>
-    public partial class P_BuildingPrefabClassifySystem : GameSystemBase {
+    public partial class P_BuildingPrefabClassifySystem : PlatterGameSystemBase {
         private EntityQuery          m_BuildingPrefabQuery;
         private ModificationBarrier2 m_ModificationBarrier2;
         private PrefixedLogger       m_Log;

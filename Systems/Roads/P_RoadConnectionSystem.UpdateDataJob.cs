@@ -21,7 +21,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    public partial class P_RoadConnectionSystem : GameSystemBase {
+    public partial class P_RoadConnectionSystem : PlatterGameSystemBase {
         /// <summary>
         /// Perform updates to roads and parcels.
         /// </summary>

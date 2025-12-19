@@ -19,7 +19,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for deserializing Parcels to initialize ConnectedParcel buffers.
     /// </summary>
-    internal partial class P_ConnectedParcelDeserializeSystem : GameSystemBase {
+    internal partial class P_ConnectedParcelDeserializeSystem : PlatterGameSystemBase {
         private EntityQuery    m_Query;
         private PrefixedLogger m_Log;
 

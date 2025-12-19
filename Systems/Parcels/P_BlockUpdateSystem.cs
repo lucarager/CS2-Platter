@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
-    public partial class P_BlockUpdateSystem : GameSystemBase {
+    public partial class P_BlockUpdateSystem : PlatterGameSystemBase {
         // Queries
         private EntityQuery m_Query;
 

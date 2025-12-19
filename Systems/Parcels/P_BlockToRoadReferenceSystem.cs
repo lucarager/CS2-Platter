@@ -25,7 +25,7 @@ namespace Platter.Systems {
     /// System responsible for adding the "Owner" component to a block when a parcel and road get connected.
     /// This is what marks a block as a valid spawn location to the vanilla ZoneSpawnSystem.
     /// </summary>
-    public partial class P_BlockToRoadReferenceSystem : GameSystemBase {
+    public partial class P_BlockToRoadReferenceSystem : PlatterGameSystemBase {
         private EntityQuery m_ParcelUpdatedQuery;
         private ModificationBarrier5 m_ModificationBarrier5;
         private PrefixedLogger m_Log;

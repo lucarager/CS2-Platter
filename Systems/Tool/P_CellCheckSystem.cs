@@ -39,7 +39,7 @@ namespace Platter.Systems {
     ///
     /// Some part of this code remains unchanged from the original systems and might therefore be harder to parse.
     /// </summary>
-    public partial class P_CellCheckSystem : GameSystemBase {
+    public partial class P_CellCheckSystem : PlatterGameSystemBase {
         private PrefixedLogger                   m_Log;
         private SearchSystem                     m_AreaSearchSystem;
         private Game.Net.SearchSystem            m_NetSearchSystem;

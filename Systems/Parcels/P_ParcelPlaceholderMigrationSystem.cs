@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// Migrates parcels that still reference placeholder prefabs to use permanent prefabs.
     /// This handles legacy save data where parcels were saved with placeholder prefab references.
     /// </summary>
-    internal partial class P_ParcelPlaceholderMigrationSystem : GameSystemBase {
+    internal partial class P_ParcelPlaceholderMigrationSystem : PlatterGameSystemBase {
         private EntityQuery           m_Query;
         private PrefixedLogger        m_Log;
         private P_PrefabsCreateSystem m_PrefabsCreateSystem;

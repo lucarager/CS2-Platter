@@ -20,7 +20,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for safely uninstalling Platter.
     /// </summary>
-    internal partial class P_UninstallSystem : GameSystemBase {
+    internal partial class P_UninstallSystem : PlatterGameSystemBase {
         private EntityQuery    m_OrphanedIconQuery;
         private EntityQuery    m_ParcelQuery;
         private PrefixedLogger m_Log;

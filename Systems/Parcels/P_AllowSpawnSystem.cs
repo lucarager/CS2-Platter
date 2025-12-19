@@ -19,7 +19,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for adding/removing the AllowSpawn component.
     /// </summary>
-    public partial class P_AllowSpawnSystem : GameSystemBase {
+    public partial class P_AllowSpawnSystem : PlatterGameSystemBase {
         private EntityQuery m_NotSpawnableQuery;
 
         // Queries

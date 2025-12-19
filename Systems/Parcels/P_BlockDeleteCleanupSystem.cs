@@ -19,7 +19,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for linking parcels to their blocks.
     /// </summary>
-    public partial class P_BlockDeleteCleanupSystem : GameSystemBase {
+    public partial class P_BlockDeleteCleanupSystem : PlatterGameSystemBase {
         // Queries
         private EntityQuery m_ParcelBlockQuery;
 

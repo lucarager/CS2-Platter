@@ -17,7 +17,7 @@ namespace Platter.Systems {
 
     #endregion
 
-    internal partial class P_ParcelSubBlockDeserializeSystem : GameSystemBase {
+    internal partial class P_ParcelSubBlockDeserializeSystem : PlatterGameSystemBase {
         private EntityQuery    m_Query;
         private PrefixedLogger m_Log;
 

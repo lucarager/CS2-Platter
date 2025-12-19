@@ -18,7 +18,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for patching parcels and removing the overridable flag.
     /// </summary>
-    public partial class P_RemoveOverriddenSystem : GameSystemBase {
+    public partial class P_RemoveOverriddenSystem : PlatterGameSystemBase {
         private EntityQuery    m_Query;
         private PrefixedLogger m_Log;
 
