@@ -32,7 +32,7 @@ namespace Platter.Systems {
     /// Overlay Rendering System.
     /// <todo>Check BuildingLotRenderJob for any optimizations to grab</todo>
     /// </summary>
-    public partial class P_OverlaySystem : GameSystemBase {
+    public partial class P_OverlaySystem : PlatterGameSystemBase {
         // Data
         private bool m_ShouldRenderParcelsOverride;
 
