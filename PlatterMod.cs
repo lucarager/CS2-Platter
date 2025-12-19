@@ -170,12 +170,17 @@ namespace Platter {
         private void RegisterSystems(UpdateSystem updateSystem) {
             m_Log.Debug("RegisterSystems()");
 
-            // Serializaztion/Deserializaztion
+            // Serialization
+            updateSystem.UpdateAt<P_ParcelOwnerSerializeSystem>(SystemUpdatePhase.Serialize);
+
+            // Deserializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAt<P_ParcelOwnerDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ParcelPlaceholderMigrationSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ParcelSubBlockDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ConnectedParcelDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ConnectedParcelLoadSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_ZoneDeserializeSystem, ResolvePrefabsSystem>(SystemUpdatePhase.Deserialize);
 
             // Prefabs
             updateSystem.UpdateAfter<P_PrefabsCreateSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
