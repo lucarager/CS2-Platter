@@ -21,20 +21,11 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_AllowSpawnSystem : PlatterGameSystemBase {
         private EntityQuery m_NotSpawnableQuery;
-
-        // Queries
         private EntityQuery m_SpawnableQuery;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_AllowSpawnSystem));
-            m_Log.Debug("OnCreate()");
 
             // Queries
             m_SpawnableQuery = SystemAPI.QueryBuilder()

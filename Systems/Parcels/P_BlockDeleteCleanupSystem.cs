@@ -17,7 +17,7 @@ namespace Platter.Systems {
     #endregion
 
     /// <summary>
-    /// System responsible for linking parcels to their blocks.
+    /// System responsible for cleaning up parcel blocks when their associated blocks are deleted.
     /// </summary>
     public partial class P_BlockDeleteCleanupSystem : PlatterGameSystemBase {
         // Queries

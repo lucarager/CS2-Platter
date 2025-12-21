@@ -20,34 +20,23 @@ namespace Platter.Systems {
     /// System responsible for adding the GrowableBuilding and LinkedParcel components to buildings.
     /// </summary>
     public partial class P_BuildingInitializeSystem : PlatterGameSystemBase {
-        // Queries
         private EntityQuery m_SpawnedBuildingQuery;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_BuildingInitializeSystem));
-            m_Log.Debug("OnCreate()");
-
-            // Queries
             m_SpawnedBuildingQuery = SystemAPI.QueryBuilder()
                                               .WithAll<Building>()
                                               .WithAny<ResidentialProperty, IndustrialProperty, CommercialProperty>()
                                               .WithNone<Temp, Deleted, Signature, LinkedParcel, GrowableBuilding>()
                                               .Build();
 
-            // Update Cycle
             RequireForUpdate(m_SpawnedBuildingQuery);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug("OnUpdate()");
             EntityManager.AddComponent(m_SpawnedBuildingQuery, new ComponentTypeSet(typeof(GrowableBuilding), typeof(LinkedParcel), typeof(TransformUpdated)));
         }
     }

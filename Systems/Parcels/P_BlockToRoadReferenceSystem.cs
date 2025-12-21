@@ -28,14 +28,10 @@ namespace Platter.Systems {
     public partial class P_BlockToRoadReferenceSystem : PlatterGameSystemBase {
         private EntityQuery m_ParcelUpdatedQuery;
         private ModificationBarrier5 m_ModificationBarrier5;
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            m_Log = new PrefixedLogger(nameof(P_BlockToRoadReferenceSystem));
-            m_Log.Debug("OnCreate()");
 
             m_ModificationBarrier5 = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
@@ -92,7 +88,8 @@ namespace Platter.Systems {
                     var subBlockBuffer = subBlockBufferArray[i];
                     var allowSpawning  = m_ParcelSpawnableLookup.HasComponent(parcelEntity);
 
-                    foreach (var subBlock in subBlockBuffer) {
+                    for (var index = 0; index < subBlockBuffer.Length; index++) {
+                        var subBlock    = subBlockBuffer[index];
                         var blockEntity = subBlock.m_SubBlock;
 
                         // Update the block's curve position
@@ -104,11 +101,6 @@ namespace Platter.Systems {
                             curvePosition.m_CurvePosition      = parcel.m_CurvePosition;
                             m_CurvePositionLookup[blockEntity] = curvePosition;
                         }
-
-                        // Mark the road edge as updated
-                        //if (parcel.m_RoadEdge != Entity.Null) {
-                        //    m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, parcel.m_RoadEdge);
-                        //}
 
                         if (parcel.m_RoadEdge == Entity.Null || !allowSpawning) {
                             // We need to make sure that the block actually NEVER has a null owner
