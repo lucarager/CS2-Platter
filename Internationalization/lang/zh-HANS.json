@@ -41,7 +41,7 @@
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.Version]": "版本",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.InformationalVersion]": "版本信息",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.Credits]": "",
-  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.Github]": "GitHub",
+  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.Github]": "Github",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.Github]": "在浏览器中打开 https://github.com/lucarager/CS2-Platter",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.Discord]": "Discord",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.ResetTutorial]": "重置教程",
