@@ -659,7 +659,7 @@ resharper_csharp_allow_far_alignment = true
 resharper_csharp_empty_block_style = together
 resharper_csharp_keep_blank_lines_in_declarations = 1
 resharper_csharp_keep_nontrivial_alias = false
-resharper_csharp_max_line_length = 100
+resharper_csharp_max_line_length = 150
 resharper_csharp_prefer_qualified_reference = true
 resharper_csharp_space_after_unary_operator = false
 resharper_csharp_wrap_arguments_style = chop_if_long
@@ -743,7 +743,7 @@ resharper_indent_nested_usings_stmt = false
 resharper_indent_nested_while_stmt = false
 resharper_indent_options = true
 resharper_indent_pars = inside
-resharper_indent_preprocessor_if = no_indent
+resharper_indent_preprocessor_if = usual_indent
 resharper_indent_preprocessor_other = no_indent
 resharper_indent_preprocessor_region = usual_indent
 resharper_indent_primary_constructor_decl_pars = inside
@@ -2518,4 +2518,4 @@ end_of_line = native
 insert_final_newline = false
 
 # IDE0005: Using directive is unnecessary.
-dotnet_diagnostic.IDE0005.severity = none
+dotnet_diagnostic.ide0005.severity = none
