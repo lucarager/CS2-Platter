@@ -124,7 +124,7 @@ namespace Platter.Systems {
                         // This prevents shenanigans from the vanilla system that will try to re-zone underlying vanilla cells
                         for (var k = 0; k < cellBuffer.Length; k++) {
                             var cell = cellBuffer[k];
-                            cell.m_Zone   = P_ZoneCacheSystem.UnzonedZoneType;
+                            cell.m_Zone   = ZoneType.None;
                             cellBuffer[k] = cell;
                         }
 
@@ -203,7 +203,7 @@ namespace Platter.Systems {
                     var cellBuffer = m_CommandBuffer.SetBuffer<Cell>(index, blockEntity);
 
 
-                    // Set all cells beyond the depth or width limit to blocked
+                    // Set all cells beyond the depth or width limit to blocked.
                     // This is due to a graphical limitation of the vanilla game that needs the depth to be 6 to fully render cells
                     // as well as the fact that a block has a minimum width of 2 to be valid.
 
@@ -219,7 +219,7 @@ namespace Platter.Systems {
                         cellBuffer.Add(
                             new Cell
                             {
-                                m_Zone  = isBlocked ? P_ZoneCacheSystem.UnzonedZoneType : parcel.m_PreZoneType,
+                                m_Zone  = isBlocked ? ZoneType.None : parcel.m_PreZoneType,
                                 m_State = isBlocked ? CellFlags.Blocked : CellFlags.Visible,
                             });
                     }
