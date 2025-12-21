@@ -24,32 +24,23 @@ namespace Platter.Systems {
     /// System responsible for connecting buildings to their parcels.
     /// </summary>
     public partial class P_BuildingTransformCheckSystem : PlatterGameSystemBase {
-        // Logger
-        private PrefixedLogger m_Log;
-
-        // Queries
         private EntityQuery m_UpdatedQuery;
-
-        // Systems
         private ModificationBarrier1 m_ModificationBarrier1;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_BuildingTransformCheckSystem));
-            m_Log.Debug("OnCreate()");
-
             // Systems
             m_ModificationBarrier1 = World.GetOrCreateSystemManaged<ModificationBarrier1>();
 
             // Queries
             m_UpdatedQuery = SystemAPI.QueryBuilder()
-                                      .WithAll<Building, LinkedParcel, GrowableBuilding>()
+                                      .WithAll<Building, Transform, LinkedParcel, GrowableBuilding>()
                                       .WithAny<Updated, BatchesUpdated>()
                                       .WithNone<Temp, Hidden>()
                                       .Build();
+            m_UpdatedQuery.SetChangedVersionFilter(typeof(Transform));
 
             // Update Cycle
             RequireForUpdate(m_UpdatedQuery);
