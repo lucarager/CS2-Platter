@@ -32,7 +32,6 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct FindRoadConnectionJob : IJobParallelForDefer {
-            public required            NativeArray<RCData>                  m_ParcelEntitiesList;
             [ReadOnly] public required ComponentLookup<Deleted>                 m_DeletedDataComponentLookup;
             [ReadOnly] public required ComponentLookup<PrefabRef>               m_PrefabRefComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
@@ -48,6 +47,7 @@ namespace Platter.Systems {
             [ReadOnly] public required NativeList<ArchetypeChunk>               m_UpdatedNetChunks;
             [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
             [ReadOnly] public required BufferLookup<SubBlock>                   m_SubBlockBufferLookup;
+            public required NativeArray<RCData> m_ParcelEntitiesList;
 
             /// <inheritdoc/>
             public void Execute(int index) {
@@ -65,7 +65,7 @@ namespace Platter.Systems {
                 var parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
                 var parcelData      = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
                 var parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
-                var parcelSize      = ParcelUtils.GetParcelSize(parcelData);
+                var parcelSize= ParcelUtils.GetParcelSize(parcelData);
 
                 // Find best road for front access
                 FindBestRoadForAccessNode(
@@ -198,7 +198,7 @@ namespace Platter.Systems {
 
                     // Retrieve composition data
                     // Exit early if the road is elevated or a tunnel.
-                    NetCompositionData netCompositionData = default;
+                    var netCompositionData = default(NetCompositionData);
                     if (
                         m_CompositionDataComponentLookup.TryGetComponent(edgeEntity, out var composition)                     &&
                         m_PrefabNetCompositionDataComponentLookup.TryGetComponent(composition.m_Edge, out netCompositionData) &&
@@ -206,9 +206,7 @@ namespace Platter.Systems {
                         return;
                     }
 
-                    // Check whether the entity can be connected to the road based on a maximum distance
-                    // Calls RoadConnectionSystem.CheckDistance, which likely checks the distance from the entity to a road and updates the distanceToRoad if
-                    // necessary.
+                    // Check whether the entity can be connected to the road based on a maximum distance.
                     var edgeGeo         = m_EdgeGeometryDataComponentLookup[edgeEntity];
                     var startNodeGeo    = m_StartNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
                     var endNodeGeo      = m_EndNodeGeometryDataComponentLookup[edgeEntity].m_Geometry;
