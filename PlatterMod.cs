@@ -170,17 +170,12 @@ namespace Platter {
         private void RegisterSystems(UpdateSystem updateSystem) {
             m_Log.Debug("RegisterSystems()");
 
-            // Serialization
-            updateSystem.UpdateAt<P_ParcelOwnerSerializeSystem>(SystemUpdatePhase.Serialize);
-
-            // Deserializaztion
+            // (De)Serializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAt<P_ParcelOwnerDeserializeSystem>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAfter<P_ParcelPlaceholderMigrationSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ParcelSubBlockDeserializeSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAfter<P_ConnectedParcelDeserializeSystem>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAfter<P_ConnectedParcelLoadSystem>(SystemUpdatePhase.Deserialize);
-            updateSystem.UpdateAfter<P_ZoneDeserializeSystem, ResolvePrefabsSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_LoadInitConnectedParcelSystem>(SystemUpdatePhase.Deserialize);
+            updateSystem.UpdateAfter<P_LoadZoneResolverSystem, ResolvePrefabsSystem>(SystemUpdatePhase.Deserialize);
 
             // Prefabs
             updateSystem.UpdateAfter<P_PrefabsCreateSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
@@ -198,6 +193,7 @@ namespace Platter {
 
             // Parcels
             updateSystem.UpdateAt<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_CellUnzoneSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_BlockDeleteCleanupSystem>(SystemUpdatePhase.Modification4);
@@ -205,7 +201,7 @@ namespace Platter {
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateBefore<P_RemoveOverriddenSystem>(SystemUpdatePhase.ModificationEnd); // Run after Mod5 when overrides are applied
+            //updateSystem.UpdateBefore<P_RemoveOverriddenSystem>(SystemUpdatePhase.ModificationEnd); // Run after Mod5 when overrides are applied
             updateSystem.UpdateAt<P_ParcelBlockClassifySystem>(SystemUpdatePhase.ModificationEnd);
 
             // UI/Rendering
@@ -218,9 +214,13 @@ namespace Platter {
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
-            updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateBefore<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
-            updateSystem.UpdateAfter<P_BlockUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
+            //updateSystem.UpdateAfter<P_CellUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
+
+            // Tests
+            #if IS_DEBUG
+            updateSystem.UpdateAt<P_TestToolSystem>(SystemUpdatePhase.ToolUpdate);
+            #endif
         }
 
         /// <summary>
