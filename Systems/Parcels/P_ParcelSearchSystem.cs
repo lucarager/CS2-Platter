@@ -117,19 +117,19 @@ namespace Platter.Systems {
                 return;
             }
 
-            var updateSearchTreeJob = new UpdateSearchTreeJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetComponentTypeHandle<Owner>(),
-                SystemAPI.GetComponentTypeHandle<Transform>(),
-                SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                SystemAPI.GetComponentTypeHandle<Created>(),
-                SystemAPI.GetComponentTypeHandle<Deleted>(),
-                SystemAPI.GetComponentTypeHandle<Overridden>(),
-                SystemAPI.GetComponentLookup<ObjectGeometryData>(),
-                m_ToolSystem.actionMode.IsEditor(),
-                firstLoad,
-                GetStaticSearchTree(false, out var updateSearchTreeJobHandle)
-            );
+            var updateSearchTreeJob = new UpdateSearchTreeJob() {
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>(),
+                m_TransformType = SystemAPI.GetComponentTypeHandle<Transform>(),
+                m_PrefabRefType = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
+                m_CreatedType = SystemAPI.GetComponentTypeHandle<Created>(),
+                m_DeletedType = SystemAPI.GetComponentTypeHandle<Deleted>(),
+                m_OverriddenType = SystemAPI.GetComponentTypeHandle<Overridden>(),
+                m_PrefabObjectGeometryData = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
+                m_EditorMode = m_ToolSystem.actionMode.IsEditor(),
+                m_FirstLoad = firstLoad,
+                m_SearchTree = GetStaticSearchTree(false, out var updateSearchTreeJobHandle)
+            };
 
             Dependency = updateSearchTreeJob.Schedule(entityQuery, JobHandle.CombineDependencies(Dependency, updateSearchTreeJobHandle));
 
@@ -149,56 +149,18 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct UpdateSearchTreeJob : IJobChunk {
-            [ReadOnly]
-            public EntityTypeHandle m_EntityType;
-
-            [ReadOnly]
-            public ComponentTypeHandle<Owner> m_OwnerType;
-
-            [ReadOnly]
-            public ComponentTypeHandle<Transform> m_TransformType;
-
-            [ReadOnly]
-            public ComponentTypeHandle<PrefabRef> m_PrefabRefType;
-
-            [ReadOnly]
-            public ComponentTypeHandle<Created> m_CreatedType;
-
-            [ReadOnly]
-            public ComponentTypeHandle<Deleted> m_DeletedType;
-
-            [ReadOnly]
-            public ComponentTypeHandle<Overridden> m_OverriddenType;
-
-            [ReadOnly]
-            public ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
-
-            [ReadOnly]
-            public bool m_EditorMode;
-
-            [ReadOnly]
-            public bool m_FirstLoad;
-
-            public NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
-
-            public UpdateSearchTreeJob(EntityTypeHandle entityType, ComponentTypeHandle<Owner> ownerType, ComponentTypeHandle<Transform> transformType,
-                                       ComponentTypeHandle<PrefabRef> prefabRefType, ComponentTypeHandle<Created> createdType,
-                                       ComponentTypeHandle<Deleted> deletedType, ComponentTypeHandle<Overridden> overriddenType,
-                                       ComponentLookup<ObjectGeometryData> prefabObjectGeometryData, bool editorMode, bool firstLoad,
-                                       NativeQuadTree<Entity, QuadTreeBoundsXZ> searchTree) {
-                m_EntityType               = entityType;
-                m_OwnerType                = ownerType;
-                m_TransformType            = transformType;
-                m_PrefabRefType            = prefabRefType;
-                m_CreatedType              = createdType;
-                m_DeletedType              = deletedType;
-                m_OverriddenType           = overriddenType;
-                m_PrefabObjectGeometryData = prefabObjectGeometryData;
-                m_EditorMode               = editorMode;
-                m_FirstLoad                = firstLoad;
-                m_SearchTree               = searchTree;
-            }
-
+            [ReadOnly] public required EntityTypeHandle m_EntityType;
+            [ReadOnly] public required ComponentTypeHandle<Owner> m_OwnerType;
+            [ReadOnly] public required ComponentTypeHandle<Transform> m_TransformType;
+            [ReadOnly] public required ComponentTypeHandle<PrefabRef> m_PrefabRefType;
+            [ReadOnly] public required ComponentTypeHandle<Created> m_CreatedType;
+            [ReadOnly] public required ComponentTypeHandle<Deleted> m_DeletedType;
+            [ReadOnly] public required ComponentTypeHandle<Overridden> m_OverriddenType;
+            [ReadOnly] public required ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryData;
+            [ReadOnly] public required bool m_EditorMode;
+            [ReadOnly] public required bool m_FirstLoad;
+            public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_SearchTree;
+            
             public void Execute(in ArchetypeChunk chunk) {
                 var entityArray = chunk.GetNativeArray(m_EntityType);
 
@@ -213,6 +175,7 @@ namespace Platter.Systems {
 
                 var prefabRefArray = chunk.GetNativeArray(ref m_PrefabRefType);
                 var transformArray = chunk.GetNativeArray(ref m_TransformType);
+
                 for (var j = 0; j < entityArray.Length; j++) {
                     var parcelEntity = entityArray[j];
                     var prefabRef    = prefabRefArray[j];
