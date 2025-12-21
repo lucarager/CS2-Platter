@@ -1,4 +1,4 @@
-﻿// <copyright file="P_ZoneDeserializeSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_LoadZoneResolverSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -24,7 +24,7 @@ namespace Platter.Systems {
     /// After `ResolvePrefabsSystem` runs, zone indexes may have changed.
     /// This system patches prezone on parcels by recounting cell zones.
     /// </summary>
-    internal partial class P_ZoneDeserializeSystem : PlatterGameSystemBase {
+    internal partial class P_LoadZoneResolverSystem : PlatterGameSystemBase {
         private EntityQuery m_Query;
 
         /// <inheritdoc/>

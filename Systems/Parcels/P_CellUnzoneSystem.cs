@@ -1,4 +1,4 @@
-﻿// <copyright file="P_BlockUpdateSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_CellUnzoneSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -23,20 +23,12 @@ namespace Platter.Systems {
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
-    public partial class P_BlockUpdateSystem : PlatterGameSystemBase {
-        // Queries
+    public partial class P_CellUnzoneSystem : PlatterGameSystemBase {
         private EntityQuery m_Query;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_BlockUpdateSystem));
-            m_Log.Debug("OnCreate()");
 
             // Queries
             m_Query = SystemAPI.QueryBuilder()
@@ -51,11 +43,11 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnUpdate() {
             Dependency = new UpdateBlockCellsJob {
-                m_BlockTypeHandle       = SystemAPI.GetComponentTypeHandle<Block>(true),
+                m_BlockTypeHandle = SystemAPI.GetComponentTypeHandle<Block>(true),
                 m_ParcelOwnerTypeHandle = SystemAPI.GetComponentTypeHandle<ParcelOwner>(true),
-                m_PrefabRefLookup       = SystemAPI.GetComponentLookup<PrefabRef>(true),
-                m_CellBufferTypeHandle  = SystemAPI.GetBufferTypeHandle<Cell>(),
-                m_ParcelDataLookup      = SystemAPI.GetComponentLookup<ParcelData>(true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(true),
+                m_CellBufferTypeHandle = SystemAPI.GetBufferTypeHandle<Cell>(),
+                m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(true),
             }.Schedule(m_Query, Dependency);
         }
 
@@ -63,32 +55,39 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct UpdateBlockCellsJob : IJobChunk {
-            [ReadOnly] public required ComponentTypeHandle<Block>       m_BlockTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Block> m_BlockTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<ParcelOwner> m_ParcelOwnerTypeHandle;
-            [ReadOnly] public required ComponentLookup<PrefabRef>   m_PrefabRefLookup;
-            [ReadOnly] public required ComponentLookup<ParcelData>      m_ParcelDataLookup;
-            public required            BufferTypeHandle<Cell>           m_CellBufferTypeHandle;
+            [ReadOnly] public required ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly] public required ComponentLookup<ParcelData> m_ParcelDataLookup;
+            public required BufferTypeHandle<Cell> m_CellBufferTypeHandle;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
-                                in v128           chunkEnabledMask) {
-                var blockArray       = chunk.GetNativeArray(ref m_BlockTypeHandle);
+                                in v128 chunkEnabledMask) {
+                var blockArray = chunk.GetNativeArray(ref m_BlockTypeHandle);
                 var parcelOwnerArray = chunk.GetNativeArray(ref m_ParcelOwnerTypeHandle);
-                var cellBufferArray  = chunk.GetBufferAccessor(ref m_CellBufferTypeHandle);
+                var cellBufferArray = chunk.GetBufferAccessor(ref m_CellBufferTypeHandle);
 
                 for (var i = 0; i < blockArray.Length; i++) {
-                    var block       = blockArray[i];
+                    var block = blockArray[i];
                     var parcelOwner = parcelOwnerArray[i];
-                    var cellBuffer  = cellBufferArray[i];
-                    var prefabRef   = m_PrefabRefLookup[parcelOwner.m_Owner];
-                    var parcelData  = m_ParcelDataLookup[prefabRef.m_Prefab];
+                    var cellBuffer = cellBufferArray[i];
+                    var prefabRef = m_PrefabRefLookup[parcelOwner.m_Owner];
+                    var parcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
 
                     for (var col = 0; col < block.m_Size.x; col++)
                     for (var row = 0; row < block.m_Size.y; row++) {
                         var index = row * block.m_Size.x + col;
+                        var cell  = cellBuffer[index];
 
-                        // Set all cells outside of parcel bounds to occupied
-                        if (col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y) {
-                            var cell = cellBuffer[index];
+                        if (col < parcelData.m_LotSize.x && row < parcelData.m_LotSize.y) {
+                            if (cell.m_Zone.Equals(ZoneType.None)) {
+                                cell.m_Zone       = P_ZoneCacheSystem.UnzonedZoneType;
+                                cell.m_State      = CellFlags.Visible;
+                                cellBuffer[index] = cell;
+                            }
+                        } else {
+                            // Set all cells outside of parcel bounds to "blocked" and unzoned
+                            cell.m_Zone       = ZoneType.None;
                             cell.m_State      = CellFlags.Blocked;
                             cellBuffer[index] = cell;
                         }

@@ -1,4 +1,4 @@
-﻿// <copyright file="P_ConnectedParcelLoadSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_LoadInitConnectedParcelSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -16,7 +16,7 @@ namespace Platter.Systems {
     /// <summary>
     /// System responsible for adding the ConnectedParcel buffer to roads that don't have it on load.
     /// </summary>
-    public partial class P_ConnectedParcelLoadSystem  : PlatterGameSystemBase {
+    public partial class P_LoadInitConnectedParcelSystem  : PlatterGameSystemBase {
         private EntityQuery m_RoadQuery;
 
         /// <inheritdoc/>
