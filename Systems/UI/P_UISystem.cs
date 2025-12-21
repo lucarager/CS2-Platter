@@ -37,6 +37,7 @@ namespace Platter.Systems {
         }
 
         private int2                             m_SelectedParcelSize = new(2, 2);
+        private int                              m_LastZoneCacheVersion = -1;
         private ObjectToolSystem                 m_ObjectToolSystem;
         private P_AllowSpawnSystem               m_AllowSpawnSystem;
         private P_OverlaySystem                  m_PlatterOverlaySystem;
@@ -191,11 +192,18 @@ namespace Platter.Systems {
             m_SnapSpacingBinding.Value          = m_SnapSystem.CurrentSnapSetback;
             m_SnapModesBinding.Value            = GetSnapModesArray();
             m_LastViewedChangelogVersionBinding.Value = PlatterMod.Instance.Settings.LastViewedChangelogVersion;
-            var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
-            Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
-            m_ZoneDataBinding.Value = zoneData;
-            m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values.ToArray();
-            m_ZoneGroupDataBinding.Value = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
+            
+            // Only update zone data bindings when the cache version changes
+            var currentCacheVersion = m_ZoneCacheSystem.CacheVersion;
+            if (m_LastZoneCacheVersion != currentCacheVersion) {
+                m_LastZoneCacheVersion = currentCacheVersion;
+                
+                var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
+                Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
+                m_ZoneDataBinding.Value = zoneData;
+                m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values.ToArray();
+                m_ZoneGroupDataBinding.Value = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
+            }
         }
 
         private void HandleProxyActions() {
