@@ -32,16 +32,16 @@ namespace Platter.Systems {
         private NativeHashMap<ushort, Entity> m_ZonePrefabs;
         private PrefabSystem                  m_PrefabSystem;
         private ImageSystem                   m_ImageSystem;
-        private int                           m_CacheVersion;
 
-        private static ZoneType m_UnzonedZoneType = ZoneType.None;
+        /// <summary>
+        /// Gets the ZoneType for the custom Unzoned zone.
+        /// </summary>
+        public static ZoneType UnzonedZoneType { get; private set; } = ZoneType.None;
 
-        public static ZoneType UnzonedZoneType => m_UnzonedZoneType;
-        
         /// <summary>
         /// Gets the current version of the cache. Increments whenever the cache changes.
         /// </summary>
-        public int CacheVersion => m_CacheVersion;
+        public int CacheVersion { get; private set; }
 
         public Dictionary<ushort, Color>                EdgeColors      { get; private set; }
         public Dictionary<ushort, Color>                FillColors      { get; private set; }
@@ -94,7 +94,7 @@ namespace Platter.Systems {
             ZoneUIData.Clear();
             AssetPackUIData.Clear();
             ZoneGroupUIData.Clear();
-            m_CacheVersion++;
+            CacheVersion++;
         }
 
         /// <inheritdoc/>
@@ -149,20 +149,20 @@ namespace Platter.Systems {
                     var assetPacks = new List<Entity> { };
                     if (chunk.Has(ref assetPackBufferTh)) {
                         var assetPackBuffer = assetPackBufferAccessor[k];
-                        for (var i = 0; i < assetPackBuffer.Length; i++) {
-                            var pack = assetPackBuffer[i];
+                        foreach (var pack in assetPackBuffer) {
                             assetPacks.Add(pack.m_Pack);
 
-                            // Cache asset pack if not already cached
-                            if (!AssetPackUIData.ContainsKey(pack.m_Pack)) {
-                                var assetPackPrefab = m_PrefabSystem.GetPrefab<AssetPackPrefab>(pack.m_Pack);
-                                var icon = ImageSystem.GetIcon(assetPackPrefab) ?? m_ImageSystem.placeholderIcon;
-                                AssetPackUIData[pack.m_Pack] = new AssetPackUIDataModel(assetPackPrefab, icon, pack.m_Pack);
-                            }
+                            // Exit if asset pack is already cached
+                            if (AssetPackUIData.ContainsKey(pack.m_Pack)) continue;
+
+                            var assetPackPrefab = m_PrefabSystem.GetPrefab<AssetPackPrefab>(pack.m_Pack);
+                            var icon            = ImageSystem.GetIcon(assetPackPrefab) ?? m_ImageSystem.placeholderIcon;
+                            AssetPackUIData[pack.m_Pack] = new AssetPackUIDataModel(assetPackPrefab, icon, pack.m_Pack);
                         }
                     }
 
                     UIObjectData uiObjectData = default;
+
                     if (chunk.Has(ref uIObjectDataTh)) {
                         uiObjectData = uiObjectDataArray[k];
 
@@ -189,14 +189,13 @@ namespace Platter.Systems {
                     } else {
                         // Cache Zone
                         m_Log.Debug($"CacheZonePrefabs() -- {zonePrefab.name} -- Adding to cache.");
-
-                        if (IsCustomUnzoned(zonePrefab)) {
-                            m_UnzonedZoneType = zoneData.m_ZoneType;
-                            zoneData.m_AreaType = Game.Zones.AreaType.None;
-                        }
-
                         var category = zonePrefab.m_Office ? "Office" : zonePrefab.m_AreaType.ToString();
 
+                        if (IsCustomUnzoned(zonePrefab)) {
+                            UnzonedZoneType = zoneData.m_ZoneType;
+                            category        = "None";
+                        }
+                        
                         // Cache
                         m_ZonePrefabs[zoneData.m_ZoneType.m_Index] = entity;
                         FillColors[zoneData.m_ZoneType.m_Index] = zonePrefab.m_Color;
@@ -218,7 +217,7 @@ namespace Platter.Systems {
             
             // Increment version if any changes were made
             if (hasChanges) {
-                m_CacheVersion++;
+                CacheVersion++;
             }
         }
 
