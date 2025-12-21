@@ -166,9 +166,6 @@ namespace Platter.Systems {
                 m_SelectedParcelSize.y = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
             }
 
-            // Rendering should be on when using a tool
-            m_PlatterOverlaySystem.RenderParcelsOverride = ShouldRenderOverlay();
-
             // Update Bindings
             UpdateBindings();
         }
@@ -263,11 +260,6 @@ namespace Platter.Systems {
             }
         }
 
-        /// <summary>
-        /// Listen to mouswheel input for adjusting block size.
-        /// </summary>
-        private void HandleMousewheelInput() { }
-
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose  purpose,
                                                       GameMode mode) {
@@ -281,39 +273,6 @@ namespace Platter.Systems {
             if (PreZoneType.Equals(ZoneType.None)) {
                 PreZoneType = P_ZoneCacheSystem.UnzonedZoneType;
             }
-        }
-
-        /// <summary>
-        /// Determines if parcel overlay should be rendered based on active tool and settings.
-        /// </summary>
-        private bool ShouldRenderOverlay() {
-            // Always show if explicitly enabled via RenderParcels setting
-            if (PlatterMod.Instance.Settings.RenderParcels) {
-                return true;
-            }
-
-            // Always show when using parcel prefabs
-            if (m_ToolSystem.activePrefab is ParcelPlaceholderPrefab) {
-                return true;
-            }
-
-            // If vanilla tool overlay is disabled, only show for parcel tools
-            if (!PlatterMod.Instance.Settings.EnableOverlayForTools) {
-                return false;
-            }
-
-            // Show parcels for compatible vanilla tools (when EnableOverlayForVanillaTools is true)
-            var toolCheck = m_ToolSystem.activeTool is not DefaultToolSystem &&
-                            m_ToolSystem.activeTool is not AreaToolSystem    &&
-                            m_ToolSystem.activeTool is not WaterToolSystem   &&
-                            m_ToolSystem.activeTool is not UpgradeToolSystem &&
-                            // Object tool only when using parcel prefabs
-                            m_ToolSystem.activeTool is not ObjectToolSystem
-                            {
-                                prefab: not ParcelPlaceholderPrefab,
-                            };
-
-            return toolCheck;
         }
 
         /// <summary>

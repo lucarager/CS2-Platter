@@ -33,35 +33,15 @@ namespace Platter.Systems {
     /// <todo>Check BuildingLotRenderJob for any optimizations to grab</todo>
     /// </summary>
     public partial class P_OverlaySystem : PlatterGameSystemBase {
-        // Data
-        private bool m_ShouldRenderParcelsOverride;
-
-        // Queries
-        private EntityQuery m_ParcelQuery;
-
-        // Systems & References
+        private EntityQuery         m_ParcelQuery;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private P_ZoneCacheSystem   m_ZoneCacheSystem;
         private PreCullingSystem    m_PreCullingSystem;
-
-        // Logger
-        private PrefixedLogger m_Log;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to override render parcels (i.e. for tool).
-        /// </summary>
-        public bool RenderParcelsOverride {
-            get => m_ShouldRenderParcelsOverride;
-            set => m_ShouldRenderParcelsOverride = value;
-        }
+        private ToolSystem          m_ToolSystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_OverlaySystem));
-            m_Log.Debug("OnCreate()");
 
             // Queries
             m_ParcelQuery = SystemAPI.QueryBuilder()
@@ -73,11 +53,12 @@ namespace Platter.Systems {
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_PreCullingSystem    = World.GetOrCreateSystemManaged<PreCullingSystem>();
             m_ZoneCacheSystem     = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
+            m_ToolSystem     = World.GetOrCreateSystemManaged<ToolSystem>();
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            if (!PlatterMod.Instance.Settings.RenderParcels && !m_ShouldRenderParcelsOverride) {
+            if (!ShouldRenderOverlay()) {
                 return;
             }
 
@@ -126,6 +107,43 @@ namespace Platter.Systems {
             } catch (Exception ex) {
                 m_Log.Error($"Failed on DrawOverlaysJob:\n{ex}");
             }
+        }
+
+        /// <summary>
+        /// Determines if parcel overlay should be rendered based on active tool and settings.
+        /// </summary>
+        private bool ShouldRenderOverlay() {
+            // Always show if explicitly enabled via RenderParcels setting.
+            if (PlatterMod.Instance.Settings.RenderParcels) {
+                return true;
+            }
+
+            // Always show when using parcel prefabs.
+            if (m_ToolSystem.activePrefab is ParcelPlaceholderPrefab) {
+                return true;
+            }
+
+            // Always show when bulldozing.
+            if (m_ToolSystem.activeTool is BulldozeToolSystem) {
+                return true;
+            }
+
+            // If vanilla tool overlay is disabled, only show for parcel tools
+            if (!PlatterMod.Instance.Settings.EnableOverlayForTools) {
+                return false;
+            }
+
+            // Show parcels for compatible vanilla tools (when EnableOverlayForVanillaTools is true)
+            var toolCheck = m_ToolSystem.activeTool is not DefaultToolSystem &&
+                            m_ToolSystem.activeTool is not AreaToolSystem    &&
+                            m_ToolSystem.activeTool is not WaterToolSystem   &&
+                            m_ToolSystem.activeTool is not UpgradeToolSystem &&
+                            // Object tool only when using parcel prefabs
+                            m_ToolSystem.activeTool is not ObjectToolSystem {
+                                prefab: not ParcelPlaceholderPrefab,
+                            };
+
+            return toolCheck;
         }
 
         /// <summary>
