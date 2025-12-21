@@ -113,7 +113,7 @@ namespace Platter.Systems {
         private void Install() {
             var logMethodPrefix = "Install() --";
 
-            // Mark the Install as already _prefabsAreInstalled
+            // Mark as already _prefabsAreInstalled
             m_PrefabsAreInstalled = true;
 
             var prefabBaseDict = new Dictionary<string, PrefabBase>();
@@ -185,7 +185,6 @@ namespace Platter.Systems {
             var prefix    = "Parcel";
             var name      = $"{prefix} {lotWidth}x{lotDepth}";
             var icon      = $"coui://platter/{prefix}_{lotWidth}x{lotDepth}.svg";
-            var parcelGeo = new ParcelGeometry(new int2(lotWidth, lotDepth));
 
             PrefabBase prefabBase;
             if (placeholder) {
@@ -234,8 +233,8 @@ namespace Platter.Systems {
         /// <param name="uiCategoryPrefab">When this method returns, contains the created UI category prefab if successful; otherwise, null.</param>
         /// <returns>True if the category prefab was successfully created and added to the prefab system; otherwise, false.</returns>
         private bool CreateCategoryPrefab(UIAssetCategoryPrefab originalUICategoryPrefab, out UIAssetCategoryPrefab uiCategoryPrefab) {
-            var name = "PlatterCat";
-            var icon = "coui://platter/logo.svg";
+            const string name = "PlatterCat";
+            const string icon = "coui://platter/logo.svg";
 
             var uiCategoryPrefabBase = ScriptableObject.CreateInstance<UIAssetCategoryPrefab>();
             uiCategoryPrefabBase.name   = name;
@@ -298,7 +297,7 @@ namespace Platter.Systems {
         private bool CreateUnzonedPrefab(ZonePrefab originalUnzonedPrefab, out ZonePrefab unzonedPrefab) {
             var clonedUnzonedPrefab = (ZonePrefab)originalUnzonedPrefab.Clone("Unzoned");
             clonedUnzonedPrefab.m_AreaType = Game.Zones.AreaType.Residential;
-            clonedUnzonedPrefab.m_Color = Color.red;
+            clonedUnzonedPrefab.m_Edge = new Color(1f, 0.388f, 0.718f, 0.3f);
 
             var success = m_PrefabSystem.AddPrefab(clonedUnzonedPrefab);
 
