@@ -1,6 +1,5 @@
 bin
 obj
-.vs
 
 # This .gitignore file should be placed at the root of your Unity project directory
 #
@@ -76,3 +75,4 @@ crashlytics-build.properties
 node_modules
 UI/debug
 UI/build
+/Platter/Library
