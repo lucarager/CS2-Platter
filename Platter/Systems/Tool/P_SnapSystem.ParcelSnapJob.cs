@@ -89,7 +89,7 @@ namespace Platter.Systems {
                 var parcelData = m_ParcelDataComponentLookup[creationDefinition.m_Prefab];
 
                 // Calculate geometry
-                var searchRadius = parcelData.m_LotSize.y * 4f + 10f;
+                var searchRadius = parcelData.m_LotSize.y * 4f + 16f;
                 var bounds = new Bounds3(
                     controlPoint.m_Position - searchRadius,
                     controlPoint.m_Position + searchRadius
@@ -294,7 +294,6 @@ namespace Platter.Systems {
                     m_BestSnapPosition           = bestSnapPosition;
                     m_BestDistance               = bestDistance;
                     m_SnapSetback                = snapSetback;
-                    m_SnapSetback                = snapSetback;
                     m_SnapLevel                  = snapLevel;
                 }
 
@@ -330,9 +329,11 @@ namespace Platter.Systems {
                     var searchLine = new Line2.Segment(m_ControlPoint.m_HitPosition.xz, m_ControlPoint.m_HitPosition.xz);
 
                     // Extend the search line based on lot depth vs width difference
+                    // The search line extends perpendicular to the parcel's facing direction
                     var lotDepthDifference = math.max(0f, m_LotSize.y - m_LotSize.x) * 4f;
-                    searchLine.a -= lotDepthDifference;
-                    searchLine.b += lotDepthDifference;
+                    var parcelLeftDirection = MathUtils.Left(m_ControlPoint.m_Direction);
+                    searchLine.a -= parcelLeftDirection * lotDepthDifference;
+                    searchLine.b += parcelLeftDirection * lotDepthDifference;
 
                     // Calculate distance between the block's front edge and our search line
                     var distanceToBlock = MathUtils.Distance(blockFrontEdge, searchLine, out var intersectionParams);
@@ -690,7 +691,6 @@ namespace Platter.Systems {
                     // Find curve closes to our control point.
                     var closestCurve = default(Bezier4x3);
                     var closestPoint = default(float);
-                    var curveIndex   = -1;
 
                     for (var i = 0; i < m_CurvesList.Length; i++) {
                         var curve  = m_CurvesList[i];
