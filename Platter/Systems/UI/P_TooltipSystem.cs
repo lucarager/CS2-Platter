@@ -84,7 +84,7 @@ namespace Platter.Systems {
 
             var prezone = m_UISystem.PreZoneType;
 
-            if (prezone.m_Index == 0) {
+            if (prezone.m_Index == P_ZoneCacheSystem.UnzonedZoneType.m_Index) {
                 return;
             }
 
