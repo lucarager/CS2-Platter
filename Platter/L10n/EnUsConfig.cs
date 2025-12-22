@@ -3,16 +3,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Platter.Settings {
+namespace Platter.L10n {
     #region Using Statements
 
     using System.Collections.Generic;
     using Colossal;
-    using Colossal.IO.AssetDatabase.Internal;
-    using PS = PlatterModSettings;
+    using PS = Platter.Settings.PlatterModSettings;
 
     #endregion
-
+        
     /// <summary>
     /// Configures the English (US) localization for Platter Mod.
     /// </summary>

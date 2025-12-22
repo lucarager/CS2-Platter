@@ -1,0 +1,3 @@
+files:
+  - source: /Platter/L10n/lang/en-US.json
+    translation: /Platter/L10n/lang/%locale%.json

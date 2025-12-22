@@ -22,6 +22,7 @@ namespace Platter {
     using Colossal.UI;
     using Components;
     using Extensions;
+    using L10n;
     using Game;
     using Game.Input;
     using Game.Modding;
@@ -363,7 +364,7 @@ namespace Platter {
             try {
                 var path       = GetThisFilePath();
                 var directory  = Path.GetDirectoryName(path);
-                var exportPath = $@"{directory}/Internationalization/lang/en-US.json";
+                var exportPath = $@"{directory}/L10n/lang/en-US.json";
                 File.WriteAllText(exportPath, str);
             } catch (Exception ex) {
                 m_Log.Error(ex.ToString());
@@ -492,7 +493,7 @@ namespace Platter {
                 m_Log.Debug("Reading localizations");
 
                 foreach (var localeID in GameManager.instance.localizationManager.GetSupportedLocales()) {
-                    var resourceName = $"{thisAssembly.GetName().Name}.lang.{localeID}.json";
+                    var resourceName = $"Platter.L10n.lang.{localeID}.json";
                     if (resourceNames.Contains(resourceName)) {
                         m_Log.Debug($"Found localization file {resourceName}");
                         try {

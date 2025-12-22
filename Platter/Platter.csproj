@@ -58,7 +58,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Internationalization\*.json" />
+		<EmbeddedResource Include="L10n\*.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -68,23 +68,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="Internationalization\lang\de-DE.json" />
-	  <EmbeddedResource Include="Internationalization\lang\en-US.json" />
-	  <EmbeddedResource Include="Internationalization\lang\es-ES.json" />
-	  <EmbeddedResource Include="Internationalization\lang\fr-FR.json" />
-	  <EmbeddedResource Include="Internationalization\lang\it-IT.json" />
-	  <EmbeddedResource Include="Internationalization\lang\ja-JP.json" />
-	  <EmbeddedResource Include="Internationalization\lang\ko-KR.json" />
-	  <EmbeddedResource Include="Internationalization\lang\pl-PL.json" />
-	  <EmbeddedResource Include="Internationalization\lang\pt-PT.json" />
-	  <EmbeddedResource Include="Internationalization\lang\ru-RU.json" />
-	  <EmbeddedResource Include="Internationalization\lang\zh-HANS.json" />
-	  <EmbeddedResource Include="Internationalization\lang\zh-HANT.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include=".github\workflows\prompts\bug-review.prompts.yml" />
-		<None Include="Config/References.csproj" />
+		<Folder Include="L10n\lang" />
+		<Content Include="L10n\lang\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<EmbeddedResource Include="L10n\lang\de-DE.json" />
+		<EmbeddedResource Include="L10n\lang\en-US.json" />
+		<EmbeddedResource Include="L10n\lang\es-ES.json" />
+		<EmbeddedResource Include="L10n\lang\fr-FR.json" />
+		<EmbeddedResource Include="L10n\lang\it-IT.json" />
+		<EmbeddedResource Include="L10n\lang\ja-JP.json" />
+		<EmbeddedResource Include="L10n\lang\ko-KR.json" />
+		<EmbeddedResource Include="L10n\lang\pl-PL.json" />
+		<EmbeddedResource Include="L10n\lang\pt-PT.json" />
+		<EmbeddedResource Include="L10n\lang\ru-RU.json" />
+		<EmbeddedResource Include="L10n\lang\zh-HANS.json" />
+		<EmbeddedResource Include="L10n\lang\zh-HANT.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -97,7 +96,7 @@
 	</ItemGroup>
 
 	<!--Imports must be after PropertyGroup block-->
-	<Import Project="Config/References.csproj" />
+	<Import Project="../References.csproj" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 

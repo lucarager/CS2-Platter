@@ -1,3 +1,0 @@
-files:
-  - source: /Internationalization/lang/en-US.json
-    translation: /Internationalization/lang/%locale%.json
