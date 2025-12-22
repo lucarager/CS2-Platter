@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platter", "Platter.csproj", "{80A27D3B-E056-4674-99CC-4E5A6EC34C3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platter", "Platter\Platter.csproj", "{80A27D3B-E056-4674-99CC-4E5A6EC34C3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platter.Tests", "Platter.Tests\Platter.Tests.csproj", "{B800DA64-43C7-4A3E-9E76-E1B7B38B0B33}"
 EndProject
