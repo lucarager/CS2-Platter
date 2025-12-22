@@ -101,7 +101,7 @@ namespace Platter.Systems {
 
             // Data
             m_SnapSetback   = DefaultSnapDistance;
-            m_SnapMode      = SnapMode.RoadSide | SnapMode.ZoneSide | SnapMode.ParcelEdge | SnapMode.ParcelFrontAlign;
+            m_SnapMode      = SnapMode.RoadSide | SnapMode.ParcelFrontAlign;
             IsSnapped       = new NativeReference<bool>(Allocator.Persistent);
             IsSnapped.Value = false;
 
@@ -113,12 +113,21 @@ namespace Platter.Systems {
             base.OnDestroy();
         }
 
+        private bool ShouldAllowSnap() {
+            // Advanced Line Tool
+            //var isALTool  = m_ToolSystem.activeTool.toolID == "Line Tool" && m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
+            // Vanilla Object Tool
+            var isObjTool = m_ToolSystem.activeTool is ObjectToolSystem && m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
+
+            return isObjTool;
+        }
+
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            IsSnapped.Value = false;
+
             // Exit early on certain conditions
-            if (m_Query.IsEmptyIgnoreFilter                     ||
-                m_ToolSystem.activeTool is not ObjectToolSystem ||
-                m_ObjectToolSystem.prefab is not ParcelPlaceholderPrefab) {
+            if (m_Query.IsEmptyIgnoreFilter || !ShouldAllowSnap()) {
                 return;
             }
 
@@ -126,8 +135,16 @@ namespace Platter.Systems {
             if (m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create &&
                 m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab parcelPrefab) {
                 // Override distance scale
-                var width = parcelPrefab.m_LotWidth * 8f;
+                // ObjectToolSystem calculates distance between objects by taking distanceScale and multiplying it
+                // by distance, which is based on the in-game slider, ranging from 1.5f to 6f.
+                // By dividing the lot width by 1.5f, we ensure that the minimum distance on the slider creates an edge-to-edge placement.
+                var width = (parcelPrefab.m_LotWidth * 8f) / 1.5f;
                 m_ObjectToolSystem.SetMemberValue("distanceScale", width);
+                // Patch an edge case where `distance` is set to 1.4f or lower, causing incorrect placement.
+                var currentScaleMult = (float)m_ObjectToolSystem.GetMemberValue("distance");
+                if (currentScaleMult < 1.6f) {
+                    m_ObjectToolSystem.SetMemberValue("distance", 1.5f);
+                }
             }
 
             // Exit on disabled snap
