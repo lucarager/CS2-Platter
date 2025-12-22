@@ -40,7 +40,6 @@ namespace Platter.Systems {
     /// Some part of this code remains unchanged from the original systems and might therefore be harder to parse.
     /// </summary>
     public partial class P_CellCheckSystem : PlatterGameSystemBase {
-        private PrefixedLogger                   m_Log;
         private SearchSystem                     m_AreaSearchSystem;
         private Game.Net.SearchSystem            m_NetSearchSystem;
         private Game.Zones.SearchSystem          m_ZoneSearchSystem;
@@ -65,10 +64,6 @@ namespace Platter.Systems {
             m_AreaSearchSystem          = World.GetOrCreateSystemManaged<SearchSystem>();
             m_ZoneSystem                = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_ModificationBarrier5      = World.GetOrCreateSystemManaged<ModificationBarrier5>();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_CellCheckSystem));
-            m_Log.Debug("OnCreate()");
         }
 
         /// <inheritdoc/>

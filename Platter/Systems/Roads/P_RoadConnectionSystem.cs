@@ -44,7 +44,6 @@ namespace Platter.Systems {
         private P_ParcelSearchSystem m_ParcelSearchSystem;
 
         // Logger
-        private PrefixedLogger m_Log;
         private SearchSystem   m_NetSearchSystem;
 
         /// <summary>
@@ -56,10 +55,6 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logging
-            m_Log = new PrefixedLogger(nameof(P_RoadConnectionSystem));
-            m_Log.Debug("OnCreate()");
 
             // Reference Systems
             m_ParcelSearchSystem  = World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();

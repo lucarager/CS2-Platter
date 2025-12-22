@@ -24,18 +24,11 @@ namespace Platter.Systems {
     /// System responsible for linking parcels to their blocks.
     /// </summary>
     public partial class P_ParcelToBlockReferenceSystem : PlatterGameSystemBase {
-        // Queries
         private EntityQuery m_ParcelBlockQuery;
-
-        // Logger
-        private PrefixedLogger m_Log;
-
+        
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            m_Log = new PrefixedLogger(nameof(P_ParcelToBlockReferenceSystem));
-            m_Log.Debug("OnCreate()");
 
             m_ParcelBlockQuery = SystemAPI.QueryBuilder()
                                           .WithAll<Block, ParcelOwner>()

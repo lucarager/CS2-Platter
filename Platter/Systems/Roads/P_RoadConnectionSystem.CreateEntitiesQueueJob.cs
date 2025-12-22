@@ -176,9 +176,9 @@ namespace Platter.Systems {
                     var enqueuedCount   = 0;
 
                     // The "front position" is the point where a parcel is expected to connect to a road.
-                    var size          = ParcelUtils.GetParcelSize(parcelData);
-                    var frontNode     = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.FrontAccess) * size;
-                    var frontPosition = ParcelUtils.GetWorldPosition(parcelTransform, frontNode);
+                    var size          = ParcelGeometryUtils.GetParcelSize(parcelData.m_LotSize);
+                    var frontNode     = ParcelGeometryUtils.NodeMult(ParcelGeometryUtils.ParcelNode.FrontAccess) * size;
+                    var frontPosition = ParcelGeometryUtils.GetWorldPosition(parcelTransform, frontNode);
 
                     // Check if this parcel is within the bounds of the road
                     if (!MathUtils.Intersect(m_Bounds.xz, frontPosition.xz)) {

@@ -189,7 +189,7 @@ namespace Platter.Systems {
                     var transform = transformsArray[i];
                     var prefabRef = prefabRefsArray[i];
                     var parcel    = parcelsArray[i];
-                    var trs       = ParcelUtils.GetTransformMatrix(transform);
+                    var trs       = ParcelGeometryUtils.GetTransformMatrix(transform);
 
                     if (!m_ParcelDataComponentLookup.TryGetComponent(prefabRef, out var parcelData)) {
                         continue;
@@ -262,8 +262,8 @@ namespace Platter.Systems {
                 buffer.DrawLine(
                     parcelOutlineColor,
                     new Line3.Segment(
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineWidth, 0f, -frontLineHalf)),
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineWidth, 0f, -frontLineHalf))
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineWidth, 0f, -frontLineHalf)),
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineWidth, 0f, -frontLineHalf))
                     ),
                     frontLineWidth);
 
@@ -271,8 +271,8 @@ namespace Platter.Systems {
                 buffer.DrawLine(
                     parcelOutlineColor,
                     new Line3.Segment(
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineHalf, 0f, 0f)),
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineHalf, 0f, 0f))
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineHalf, 0f, 0f)),
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineHalf, 0f, 0f))
                     ),
                     leftLineWidth);
 
@@ -280,8 +280,8 @@ namespace Platter.Systems {
                 buffer.DrawLine(
                     parcelOutlineColor,
                     new Line3.Segment(
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineWidth, 0f, +backLineHalf)),
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineWidth, 0f, +backLineHalf))
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineWidth, 0f, +backLineHalf)),
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineWidth, 0f, +backLineHalf))
                     ),
                     outlineWidth);
 
@@ -289,8 +289,8 @@ namespace Platter.Systems {
                 buffer.DrawLine(
                     parcelOutlineColor,
                     new Line3.Segment(
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineHalf, 0f, 0f)),
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineHalf, 0f, 0f))
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineHalf, 0f, 0f)),
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineHalf, 0f, 0f))
                     ),
                     rightLineWidth);
 
@@ -299,8 +299,8 @@ namespace Platter.Systems {
                 buffer.DrawLine(
                     backgroundColor,
                     new Line3.Segment(
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
-                        ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelBack)
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
+                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelBack)
                     ),
                     parcelSize.x);
 
@@ -315,8 +315,8 @@ namespace Platter.Systems {
                     buffer.DrawLine(
                         parcelInlineColor,
                         new Line3.Segment(
-                            ParcelUtils.GetWorldPosition(trs, parcelCenter, frontNode),
-                            ParcelUtils.GetWorldPosition(trs, parcelCenter, backNode)
+                            ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, frontNode),
+                            ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, backNode)
                         ),
                         cellOutlineWidth);
                 }
@@ -332,8 +332,8 @@ namespace Platter.Systems {
                     buffer.DrawLine(
                         parcelInlineColor,
                         new Line3.Segment(
-                            ParcelUtils.GetWorldPosition(trs, parcelCenter, leftNode),
-                            ParcelUtils.GetWorldPosition(trs, parcelCenter, rightNode)
+                            ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, leftNode),
+                            ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, rightNode)
                         ),
                         cellOutlineWidth);
                 }
@@ -345,7 +345,7 @@ namespace Platter.Systems {
                     frontIndicatorLine,
                     OverlayRenderSystem.StyleFlags.Grid,
                     new float2(1, 1),
-                    ParcelUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
+                    ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
                     frontIndicatorDiam
                 );
             }

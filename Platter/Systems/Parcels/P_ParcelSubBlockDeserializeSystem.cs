@@ -19,19 +19,13 @@ namespace Platter.Systems {
 
     internal partial class P_ParcelSubBlockDeserializeSystem : PlatterGameSystemBase {
         private EntityQuery    m_Query;
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = new PrefixedLogger(nameof(P_ParcelSubBlockDeserializeSystem));
-            m_Log.Debug("OnCreate()");
-
-            m_Query = GetEntityQuery(
-                ComponentType.ReadOnly<Block>(),
-                ComponentType.ReadOnly<ParcelOwner>());
-
+            m_Query = SystemAPI.QueryBuilder().WithAll<Block, ParcelOwner>().Build();
+            
             RequireForUpdate(m_Query);
         }
 

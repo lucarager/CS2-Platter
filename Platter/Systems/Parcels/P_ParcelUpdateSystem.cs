@@ -36,15 +36,10 @@ namespace Platter.Systems {
         private      EntityQuery          m_DeletedQuery;
         private      EntityQuery          m_UpdatedQuery;
         private      ModificationBarrier2 m_ModificationBarrier2;
-        private      PrefixedLogger       m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_ParcelUpdateSystem));
-            m_Log.Debug("OnCreate()");
 
             // Retrieve Systems
             m_ModificationBarrier2 = World.GetOrCreateSystemManaged<ModificationBarrier2>();
@@ -168,7 +163,7 @@ namespace Platter.Systems {
                     var    parcelBlockWidth = math.max(MinBlockWidth, parcelData.m_LotSize.x);
                     var    parcelBlockDepth = math.max(MinBlockDepth, parcelData.m_LotSize.y);
                     var block = new Block {
-                        m_Position  = ParcelUtils.GetWorldPosition(transform, blockCenter),
+                        m_Position  = ParcelGeometryUtils.GetWorldPosition(transform, blockCenter),
                         m_Direction = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f)).xz,
                         m_Size      = new int2(parcelBlockWidth, parcelBlockDepth),
                     };

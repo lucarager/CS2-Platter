@@ -22,15 +22,10 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_ConnectedParcelSystem : PlatterGameSystemBase {
         private EntityQuery    m_PrefabCreatedQuery;
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_ConnectedParcelSystem));
-            m_Log.Debug("OnCreate()");
 
             // Queries
             m_PrefabCreatedQuery = SystemAPI.QueryBuilder()

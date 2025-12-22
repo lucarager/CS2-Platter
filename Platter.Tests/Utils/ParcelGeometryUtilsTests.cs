@@ -442,7 +442,7 @@ namespace Platter.Tests.Utils {
 
             var resultFromQuaternion = ParcelGeometryUtils.GetWorldCorners(rotation, position, lotSize);
 
-            var trs              = ParcelUtils.GetTransformMatrix(rotation, position);
+            var trs              = ParcelGeometryUtils.GetTransformMatrix(rotation, position);
             var parcelSize       = ParcelGeometryUtils.GetParcelSize(lotSize);
             var resultFromMatrix = ParcelGeometryUtils.GetWorldCorners(trs, parcelSize);
 

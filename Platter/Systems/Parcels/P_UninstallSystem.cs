@@ -23,15 +23,12 @@ namespace Platter.Systems {
     internal partial class P_UninstallSystem : PlatterGameSystemBase {
         private EntityQuery    m_OrphanedIconQuery;
         private EntityQuery    m_ParcelQuery;
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_Log = new PrefixedLogger(nameof(P_UninstallSystem));
-            m_Log.Debug("OnCreate()");
-            m_ParcelQuery = GetEntityQuery(ComponentType.ReadOnly<Parcel>());
 
+            m_ParcelQuery = SystemAPI.QueryBuilder().WithAll<Parcel>().Build();
             m_OrphanedIconQuery = SystemAPI.QueryBuilder().WithAll<Icon, Owner>().Build();
         }
 

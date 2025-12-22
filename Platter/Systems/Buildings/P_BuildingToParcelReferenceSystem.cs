@@ -30,24 +30,13 @@ namespace Platter.Systems {
     /// System responsible for connecting buildings to their parcels.
     /// </summary>
     public partial class P_BuildingToParcelReferenceSystem : PlatterGameSystemBase {
-        // Queries
         private EntityQuery m_Query;
-
-        // Systems
         private ModificationBarrier2 m_ModificationBarrier2;
-
         private P_ParcelSearchSystem m_ParcelSearchSystem;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_BuildingToParcelReferenceSystem));
-            m_Log.Debug("OnCreate()");
 
             // Systems
             m_ModificationBarrier2 = World.GetOrCreateSystemManaged<ModificationBarrier2>();

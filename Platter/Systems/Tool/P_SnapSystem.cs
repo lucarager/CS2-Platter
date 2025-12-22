@@ -42,10 +42,10 @@ namespace Platter.Systems {
 
         private static class SnapLevel {
             public const float None             = 0f;
-            public const float ParcelEdge       = 2f;
-            public const float ParcelFrontAlign = 2.5f;
-            public const float RoadSide         = 1.5f;
             public const float ZoneSide         = 1f;
+            public const float ParcelEdge       = 1.5f;
+            public const float RoadSide         = 2f;
+            public const float ParcelFrontAlign = 2.5f;
         }
 
         private EntityQuery m_Query;
@@ -54,7 +54,6 @@ namespace Platter.Systems {
         public  NativeReference<bool>   IsSnapped;
         private ObjectToolSystem        m_ObjectToolSystem;
         private P_ParcelSearchSystem    m_ParcelSearchSystem;
-        private PrefixedLogger          m_Log;
         private SearchSystem            m_NetSearchSystem;
         private Game.Zones.SearchSystem m_ZoneSearchSystem;
         private SnapMode                m_SnapMode;
@@ -92,10 +91,6 @@ namespace Platter.Systems {
             m_ToolSystem         = World.GetOrCreateSystemManaged<ToolSystem>();
             m_TerrainSystem      = World.GetOrCreateSystemManaged<TerrainSystem>();
             m_WaterSystem        = World.GetOrCreateSystemManaged<WaterSystem>();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_SnapSystem));
-            m_Log.Debug("OnCreate()");
 
             // Query
             m_Query = SystemAPI.QueryBuilder()

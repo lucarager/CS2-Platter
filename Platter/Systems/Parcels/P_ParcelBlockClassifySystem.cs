@@ -25,19 +25,11 @@ namespace Platter.Systems {
     /// Updates parcel data whenever block data updates.
     /// </summary>
     public partial class P_ParcelBlockClassifySystem : PlatterGameSystemBase {
-        // Queries
         private EntityQuery m_Query;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            // Logger
-            m_Log = new PrefixedLogger(nameof(P_ParcelBlockClassifySystem));
-            m_Log.Debug("OnCreate()");
 
             // Queries
             m_Query = SystemAPI.QueryBuilder()

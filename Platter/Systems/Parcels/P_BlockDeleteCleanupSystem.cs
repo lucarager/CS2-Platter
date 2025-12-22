@@ -20,18 +20,11 @@ namespace Platter.Systems {
     /// System responsible for cleaning up parcel blocks when their associated blocks are deleted.
     /// </summary>
     public partial class P_BlockDeleteCleanupSystem : PlatterGameSystemBase {
-        // Queries
         private EntityQuery m_ParcelBlockQuery;
-
-        // Logger
-        private PrefixedLogger m_Log;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-
-            m_Log = new PrefixedLogger(nameof(P_BlockDeleteCleanupSystem));
-            m_Log.Debug("OnCreate()");
 
             m_ParcelBlockQuery = SystemAPI.QueryBuilder()
                                           .WithAll<Block, Owner, ParcelOwner, Deleted>()
