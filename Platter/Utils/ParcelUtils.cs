@@ -6,30 +6,39 @@
 namespace Platter.Utils {
     #region Using Statements
 
+    using System;
     using Components;
-    using Constants;
     using Game.Prefabs;
     using Game.Zones;
     using Systems;
     using Unity.Burst;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
-    using UnityEngine;
-    using Transform = Game.Objects.Transform;
 
     #endregion
 
+    /// <summary>
+    /// Utility class for parcel-related operations (prefab IDs, hashing, zoning).
+    /// For geometry calculations, use <see cref="ParcelGeometryUtils"/>.
+    /// </summary>
     public static class ParcelUtils {
+        /// <summary>
+        /// Defines the node positions on a parcel (corners and edge access points).
+        /// </summary>
+        /// <remarks>
+        /// Deprecated: Use <see cref="ParcelGeometryUtils.ParcelNode"/> instead.
+        /// This alias is kept for backward compatibility.
+        /// </remarks>
+        [Obsolete("Use ParcelGeometryUtils.ParcelNode instead.")]
         public enum ParcelNode {
-            CornerLeftFront,
-            CornerLeftBack,
-            CornerRightFront,
-            CornerRightBack,
-            FrontAccess,
-            RightAccess,
-            LeftAccess,
-            BackAccess,
+            CornerLeftFront  = ParcelGeometryUtils.ParcelNode.CornerLeftFront,
+            CornerLeftBack   = ParcelGeometryUtils.ParcelNode.CornerLeftBack,
+            CornerRightFront = ParcelGeometryUtils.ParcelNode.CornerRightFront,
+            CornerRightBack  = ParcelGeometryUtils.ParcelNode.CornerRightBack,
+            FrontAccess      = ParcelGeometryUtils.ParcelNode.FrontAccess,
+            RightAccess      = ParcelGeometryUtils.ParcelNode.RightAccess,
+            LeftAccess       = ParcelGeometryUtils.ParcelNode.LeftAccess,
+            BackAccess       = ParcelGeometryUtils.ParcelNode.BackAccess,
         }
 
         public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
@@ -44,53 +53,63 @@ namespace Platter.Utils {
             return UnityEngine.Hash128.Compute(prefabID.GetType() + prefabID.GetName() + placeholder.ToString()).GetHashCode();
         }
 
+        /// <summary>
+        /// Returns the multiplier vector for a parcel node position.
+        /// </summary>
+        [Obsolete("Use ParcelGeometryUtils.NodeMult instead.")]
         public static float3 NodeMult(ParcelNode node) {
-            const float leftX  = 0.5f;
-            const float rightX = -0.5f;
-            const float frontZ = 0.5f;
-            const float backZ  = -0.5f;
-
-            return node switch {
-                ParcelNode.CornerLeftFront => new float3(leftX, 0f, frontZ),
-                ParcelNode.CornerRightFront => new float3(rightX, 0f, frontZ),
-                ParcelNode.CornerLeftBack => new float3(leftX, 0f, backZ),
-                ParcelNode.CornerRightBack => new float3(rightX, 0f, backZ),
-                ParcelNode.FrontAccess => new float3(0f, 0f, frontZ),
-                ParcelNode.LeftAccess => new float3(leftX, 0f, 0f),
-                ParcelNode.RightAccess => new float3(rightX, 0f, 0f),
-                ParcelNode.BackAccess => new float3(0f, 0f, backZ),
-                _ => new float3(0f, 0f, 0f),
-            };
+            return ParcelGeometryUtils.NodeMult((ParcelGeometryUtils.ParcelNode)node);
         }
 
+        /// <summary>
+        /// Calculates the parcel size from parcel data.
+        /// </summary>
+        /// <remarks>
+        /// Consider using <see cref="ParcelGeometryUtils.GetParcelSize(int2)"/> for lot size input.
+        /// </remarks>
+        [Obsolete("Use ParcelGeometryUtils.GetParcelSize instead.")]
         public static float3 GetParcelSize(ParcelData parcelData) {
-            return new float3(
-                parcelData.m_LotSize.x * DimensionConstants.CellSize,
-                DimensionConstants.ParcelHeight,
-                parcelData.m_LotSize.y * DimensionConstants.CellSize
-            );
+            return ParcelGeometryUtils.GetParcelSize(parcelData.m_LotSize);
         }
 
-        public static float4x4 GetTransformMatrix(Transform transform) {
-            return GetTransformMatrix(transform.m_Rotation, transform.m_Position);
+        /// <summary>
+        /// Builds a transform matrix from a transform.
+        /// </summary>
+        [Obsolete("Use ParcelGeometryUtils.GetTransformMatrix instead.")]
+        public static float4x4 GetTransformMatrix(Game.Objects.Transform transform) {
+            return ParcelGeometryUtils.GetTransformMatrix(transform);
         }
 
+        /// <summary>
+        /// Builds a transform matrix from rotation and position.
+        /// </summary>
+        [Obsolete("Use ParcelGeometryUtils.GetTransformMatrix instead.")]
         public static float4x4 GetTransformMatrix(quaternion rotation, float3 position) {
-            return new float4x4(rotation, position);
+            return ParcelGeometryUtils.GetTransformMatrix(rotation, position);
         }
 
+        /// <summary>
+        /// Transforms a local position to world space.
+        /// </summary>
+        [Obsolete("Use ParcelGeometryUtils.GetWorldPosition instead.")]
         public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) {
-            return math.transform(trs, center + position);
+            return ParcelGeometryUtils.GetWorldPosition(trs, center, position);
         }
 
-        public static float3 GetWorldPosition(Transform transform, float3 center) {
-            var trs = GetTransformMatrix(transform);
-            return math.transform(trs, center);
+        /// <summary>
+        /// Transforms a local position to world space.
+        /// </summary>
+        [Obsolete("Use ParcelGeometryUtils.GetWorldPosition instead.")]
+        public static float3 GetWorldPosition(Game.Objects.Transform transform, float3 center) {
+            return ParcelGeometryUtils.GetWorldPosition(transform, center);
         }
 
-        public static float3 GetWorldPosition(Transform transform, float3 center, float3 position) {
-            var trs = GetTransformMatrix(transform);
-            return math.transform(trs, center + position);
+        /// <summary>
+        /// Transforms a local position to world space.
+        /// </summary>
+        [Obsolete("Use ParcelGeometryUtils.GetWorldPosition instead.")]
+        public static float3 GetWorldPosition(Game.Objects.Transform transform, float3 center, float3 position) {
+            return ParcelGeometryUtils.GetWorldPosition(transform, center, position);
         }
 
         /// <summary>

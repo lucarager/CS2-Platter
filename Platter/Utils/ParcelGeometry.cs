@@ -7,11 +7,14 @@ namespace Platter.Utils {
     #region Using Statements
 
     using Colossal.Mathematics;
-    using Constants;
     using Unity.Mathematics;
 
     #endregion
 
+    /// <summary>
+    /// Stateful wrapper providing cached parcel geometry for a specific lot size.
+    /// Uses <see cref="ParcelGeometryUtils"/> for all calculations.
+    /// </summary>
     internal struct ParcelGeometry {
         private Bounds3 m_BlockBounds;
         private Bounds3 m_ParcelBounds;
@@ -20,17 +23,17 @@ namespace Platter.Utils {
 
         public Bounds3 Bounds => m_ParcelBounds;
 
-        public float3 BackNode => GetParcelNode(ParcelUtils.ParcelNode.BackAccess);
-        public float3 LeftNode => GetParcelNode(ParcelUtils.ParcelNode.LeftAccess);
-        public float3 RightNode => GetParcelNode(ParcelUtils.ParcelNode.RightAccess);
+        public float3 BackNode => GetParcelNode(ParcelGeometryUtils.ParcelNode.BackAccess);
+        public float3 LeftNode => GetParcelNode(ParcelGeometryUtils.ParcelNode.LeftAccess);
+        public float3 RightNode => GetParcelNode(ParcelGeometryUtils.ParcelNode.RightAccess);
 
-        public float3 BlockCenter => GetBlockCenter(m_BlockBounds);
+        public float3 BlockCenter => ParcelGeometryUtils.GetCenter(m_BlockBounds);
 
-        public float3 Center => GetCenter(m_ParcelBounds);
+        public float3 Center => ParcelGeometryUtils.GetCenter(m_ParcelBounds);
 
-        public float3 FrontNode => GetParcelNode(ParcelUtils.ParcelNode.FrontAccess);
+        public float3 FrontNode => GetParcelNode(ParcelGeometryUtils.ParcelNode.FrontAccess);
 
-        public float3 Pivot => GetPivot();
+        public float3 Pivot => ParcelGeometryUtils.GetCenter(m_ParcelBounds);
 
         public float3 Size => m_ParcelSize;
 
@@ -50,71 +53,26 @@ namespace Platter.Utils {
         /// <summary>
         /// Initializes a new instance of the <see cref="ParcelGeometry"/> struct.
         /// </summary>
-        /// <param name="lotSize"></param>
+        /// <param name="lotSize">The lot size in cells (width x depth).</param>
         public ParcelGeometry(int2 lotSize) {
-            m_ParcelSize   = GetParcelSize(lotSize);
-            m_BlockSize    = GetBlockSize(lotSize);
-            m_ParcelBounds = GetParcelBounds(m_ParcelSize);
-            m_BlockBounds  = GetBlockBounds(m_ParcelSize, m_BlockSize);
-        }
-
-        public static float3 GetParcelSize(int2 lotSize) {
-            return new float3(
-                lotSize.x * DimensionConstants.CellSize,
-                DimensionConstants.ParcelHeight,
-                lotSize.y * DimensionConstants.CellSize
-            );
-        }
-
-        public static float3 GetBlockSize(int2 lotSize) {
-            return new float3(
-                math.max(2, lotSize.x) * DimensionConstants.CellSize,
-                DimensionConstants.ParcelHeight,
-                6 * DimensionConstants.CellSize
-            );
+            m_ParcelSize   = ParcelGeometryUtils.GetParcelSize(lotSize);
+            m_BlockSize    = ParcelGeometryUtils.GetBlockSize(lotSize);
+            m_ParcelBounds = ParcelGeometryUtils.GetParcelBounds(m_ParcelSize);
+            m_BlockBounds  = ParcelGeometryUtils.GetBlockBounds(m_ParcelSize, m_BlockSize);
         }
 
         /// <summary>
-        /// The bounds determine where the object sits in relation to its pivot
-        /// In our case, we want the edge of the depth (z) axis to be on the pivot, which will be the "front".
+        /// Gets the local-space position of a parcel node.
         /// </summary>
-        /// <param name="parcelSize"></param>
-        /// <returns></returns>
-        public static Bounds3 GetParcelBounds(float3 parcelSize) {
-            //return new Bounds3(
-            //    new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z),
-            //    new float3(parcelSize.x / 2, parcelSize.y / 2, 0)
-            //);
-            return new Bounds3(
-                new float3(-parcelSize.x / 2, -parcelSize.y / 2, -parcelSize.z / 2),
-                new float3(parcelSize.x  / 2, parcelSize.y  / 2, parcelSize.z  / 2)
-            );
-        }
-
-        public static Bounds3 GetBlockBounds(float3 parcelSize, float3 blockSize) {
-            var shiftX = (blockSize.x - parcelSize.x) / 2;
-            var shiftZ = (blockSize.z - parcelSize.z) / 2;
-            return new Bounds3(
-                new float3(-blockSize.x / 2 - shiftX, -blockSize.y / 2, -blockSize.z / 2 - shiftZ),
-                new float3(blockSize.x  / 2 - shiftX, blockSize.y  / 2, blockSize.z  / 2 - shiftZ)
-            );
-        }
-
-        public static float3 GetCenter(Bounds3 bounds) { return MathUtils.Center(bounds); }
-
-        public static float3 GetBlockCenter(Bounds3 bounds) { return MathUtils.Center(bounds); }
-
-        public float3 GetParcelNode(ParcelUtils.ParcelNode node) { return ParcelUtils.NodeMult(node) * m_ParcelSize; }
-
-        public float3 GetPivot() {
-            return GetCenter(m_ParcelBounds);
-            //return new float3(0f, m_ParcelSize.y, 0f);
+        /// <param name="node">The parcel node.</param>
+        /// <returns>The local-space position.</returns>
+        public float3 GetParcelNode(ParcelGeometryUtils.ParcelNode node) {
+            return ParcelGeometryUtils.NodeMult(node) * m_ParcelSize;
         }
 
         /// <summary>
         /// Returns corner vectors for a parcel.
         /// </summary>
-        /// <param name="parcelData">Parcel Data.</param>
         /// <returns>
         ///     Four float3 vectors representing the corners in clockwise direction. <br/>
         ///      c2 ┌┐ c3. <br/>
@@ -122,10 +80,10 @@ namespace Platter.Utils {
         /// </returns>
         public float3x4 GetParcelCorners() {
             return new float3x4(
-                GetParcelNode(ParcelUtils.ParcelNode.CornerRightFront),
-                GetParcelNode(ParcelUtils.ParcelNode.CornerLeftFront),
-                GetParcelNode(ParcelUtils.ParcelNode.CornerLeftBack),
-                GetParcelNode(ParcelUtils.ParcelNode.CornerRightBack)
+                GetParcelNode(ParcelGeometryUtils.ParcelNode.CornerRightFront),
+                GetParcelNode(ParcelGeometryUtils.ParcelNode.CornerLeftFront),
+                GetParcelNode(ParcelGeometryUtils.ParcelNode.CornerLeftBack),
+                GetParcelNode(ParcelGeometryUtils.ParcelNode.CornerRightBack)
             );
         }
     }

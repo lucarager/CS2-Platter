@@ -65,22 +65,22 @@ namespace Platter.Systems {
                 var parcelPrefabRef = m_PrefabRefComponentLookup[currentEntityData.m_Parcel];
                 var parcelData      = m_ParcelDataComponentLookup[parcelPrefabRef.m_Prefab];
                 var parcelTransform = m_TransformComponentLookup[currentEntityData.m_Parcel];
-                var parcelSize= ParcelUtils.GetParcelSize(parcelData);
+                var parcelSize= ParcelGeometryUtils.GetParcelSize(parcelData.m_LotSize);
 
-                // Find best road for front access
+                // Find road for front access
                 FindBestRoadForAccessNode(
-                    ParcelUtils.ParcelNode.FrontAccess, parcelSize, parcelTransform, MaxDistanceFront,
+                    ParcelGeometryUtils.ParcelNode.FrontAccess, parcelSize, parcelTransform, MaxDistanceFront,
                     out currentEntityData.m_FrontRoad, out currentEntityData.m_FrontPos, out currentEntityData.m_FrontCurvePos);
 
-                // Find best road for left access
+                // Find road for left access
                 // Todo check how cells check for road access to get more reliable results here
                 FindBestRoadForAccessNode(
-                    ParcelUtils.ParcelNode.LeftAccess, parcelSize, parcelTransform, MaxDistanceSides,
+                    ParcelGeometryUtils.ParcelNode.LeftAccess, parcelSize, parcelTransform, MaxDistanceSides,
                     out currentEntityData.m_LeftRoad, out currentEntityData.m_LeftPos, out currentEntityData.m_LeftCurvePos);
 
-                // Find best road for right access
+                // Find road for right access
                 FindBestRoadForAccessNode(
-                    ParcelUtils.ParcelNode.RightAccess, parcelSize, parcelTransform, MaxDistanceSides,
+                    ParcelGeometryUtils.ParcelNode.RightAccess, parcelSize, parcelTransform, MaxDistanceSides,
                     out currentEntityData.m_RightRoad, out currentEntityData.m_RightPos, out currentEntityData.m_RightCurvePos);
 
                 // Update the data in the list with what we found
@@ -88,11 +88,11 @@ namespace Platter.Systems {
             }
 
             private void FindBestRoadForAccessNode(
-                ParcelUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform, float maxDistance,
+                ParcelGeometryUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform, float maxDistance,
                 out Entity road, out float3 position, out float curvePos) {
 
-                var nodeOffset     = ParcelUtils.NodeMult(accessNode) * parcelSize;
-                var accessPosition = ParcelUtils.GetWorldPosition(parcelTransform, nodeOffset);
+                var nodeOffset     = ParcelGeometryUtils.NodeMult(accessNode) * parcelSize;
+                var accessPosition = ParcelGeometryUtils.GetWorldPosition(parcelTransform, nodeOffset);
 
                 var iterator = new FindRoadConnectionIterator(
                     bestCurvePos: 0f,

@@ -19,6 +19,45 @@ namespace Platter.Utils {
     /// </summary>
     public static class ParcelGeometryUtils {
         /// <summary>
+        /// Defines the node positions on a parcel (corners and edge access points).
+        /// </summary>
+        public enum ParcelNode {
+            CornerLeftFront,
+            CornerLeftBack,
+            CornerRightFront,
+            CornerRightBack,
+            FrontAccess,
+            RightAccess,
+            LeftAccess,
+            BackAccess,
+        }
+
+        /// <summary>
+        /// Returns the multiplier vector for a parcel node position.
+        /// Multiply by parcel size to get the local-space position.
+        /// </summary>
+        /// <param name="node">The parcel node.</param>
+        /// <returns>A float3 multiplier (-0.5 to 0.5 range).</returns>
+        public static float3 NodeMult(ParcelNode node) {
+            const float leftX  = 0.5f;
+            const float rightX = -0.5f;
+            const float frontZ = 0.5f;
+            const float backZ  = -0.5f;
+
+            return node switch {
+                ParcelNode.CornerLeftFront => new float3(leftX, 0f, frontZ),
+                ParcelNode.CornerRightFront => new float3(rightX, 0f, frontZ),
+                ParcelNode.CornerLeftBack => new float3(leftX, 0f, backZ),
+                ParcelNode.CornerRightBack => new float3(rightX, 0f, backZ),
+                ParcelNode.FrontAccess => new float3(0f, 0f, frontZ),
+                ParcelNode.LeftAccess => new float3(leftX, 0f, 0f),
+                ParcelNode.RightAccess => new float3(rightX, 0f, 0f),
+                ParcelNode.BackAccess => new float3(0f, 0f, backZ),
+                _ => new float3(0f, 0f, 0f),
+            };
+        }
+
+        /// <summary>
         /// Calculates the parcel size from lot dimensions.
         /// </summary>
         /// <param name="lotSize">Lot size in cells (width x depth).</param>
@@ -104,19 +143,72 @@ namespace Platter.Utils {
 
 
         /// <summary>
+        /// Builds a transform matrix from rotation and position.
+        /// </summary>
+        /// <param name="transform">The transform containing rotation and position.</param>
+        /// <returns>A 4x4 transformation matrix.</returns>
+        public static float4x4 GetTransformMatrix(Transform transform) {
+            return GetTransformMatrix(transform.m_Rotation, transform.m_Position);
+        }
+
+        /// <summary>
+        /// Builds a transform matrix from rotation and position.
+        /// </summary>
+        /// <param name="rotation">The rotation quaternion.</param>
+        /// <param name="position">The position vector.</param>
+        /// <returns>A 4x4 transformation matrix.</returns>
+        public static float4x4 GetTransformMatrix(quaternion rotation, float3 position) {
+            return new float4x4(rotation, position);
+        }
+
+        /// <summary>
+        /// Transforms a local position to world space using a transform matrix.
+        /// </summary>
+        /// <param name="trs">The transform matrix.</param>
+        /// <param name="center">The center offset.</param>
+        /// <param name="position">The local position offset.</param>
+        /// <returns>The world-space position.</returns>
+        public static float3 GetWorldPosition(float4x4 trs, float3 center, float3 position) {
+            return math.transform(trs, center + position);
+        }
+
+        /// <summary>
+        /// Transforms a local position to world space using a transform.
+        /// </summary>
+        /// <param name="transform">The transform.</param>
+        /// <param name="center">The center offset.</param>
+        /// <returns>The world-space position.</returns>
+        public static float3 GetWorldPosition(Transform transform, float3 center) {
+            var trs = GetTransformMatrix(transform);
+            return math.transform(trs, center);
+        }
+
+        /// <summary>
+        /// Transforms a local position to world space using a transform.
+        /// </summary>
+        /// <param name="transform">The transform.</param>
+        /// <param name="center">The center offset.</param>
+        /// <param name="position">The local position offset.</param>
+        /// <returns>The world-space position.</returns>
+        public static float3 GetWorldPosition(Transform transform, float3 center, float3 position) {
+            var trs = GetTransformMatrix(transform);
+            return math.transform(trs, center + position);
+        }
+
+        /// <summary>
         /// Calculates world-space corner positions for a parcel from lot size.
         /// </summary>
         /// <param name="transform">The parcel's transform.</param>
         /// <param name="lotSize">Lot size in cells (width x depth).</param>
         /// <returns>float3x4 with corners: c0=LeftFront, c1=RightFront, c2=RightBack, c3=LeftBack.</returns>
         public static Quad2 GetWorldCorners(Transform transform, int2 lotSize) {
-            var trs = ParcelUtils.GetTransformMatrix(transform);
+            var trs = GetTransformMatrix(transform);
 
             return GetWorldCorners(trs, GetParcelSize(lotSize));
         }
 
         public static Quad2 GetWorldCorners(quaternion rotation, float3 position, int2 lotSize) {
-            var trs = ParcelUtils.GetTransformMatrix(rotation, position);
+            var trs = GetTransformMatrix(rotation, position);
 
             return GetWorldCorners(trs, GetParcelSize(lotSize));
         }
@@ -136,11 +228,11 @@ namespace Platter.Utils {
         ///  LeftFront ─── RightFront (front edge faces road)
         /// </returns>
         public static Quad2 GetWorldCorners(float4x4 trs, float3 parcelSize) {
-            // Local space corners using ParcelUtils.NodeMult pattern
-            var localRightFront = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerRightFront) * parcelSize;
-            var localLeftFront  = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerLeftFront) * parcelSize;
-            var localLeftBack   = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerLeftBack) * parcelSize;
-            var localRightBack  = ParcelUtils.NodeMult(ParcelUtils.ParcelNode.CornerRightBack) * parcelSize;
+            // Local space corners using NodeMult pattern
+            var localRightFront = NodeMult(ParcelNode.CornerRightFront) * parcelSize;
+            var localLeftFront  = NodeMult(ParcelNode.CornerLeftFront) * parcelSize;
+            var localLeftBack   = NodeMult(ParcelNode.CornerLeftBack) * parcelSize;
+            var localRightBack  = NodeMult(ParcelNode.CornerRightBack) * parcelSize;
 
             // Transform to world space
             return new Quad2(
