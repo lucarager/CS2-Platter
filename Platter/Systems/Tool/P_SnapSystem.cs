@@ -113,7 +113,7 @@ namespace Platter.Systems {
             base.OnDestroy();
         }
 
-        private bool ShouldAllowSnap() {
+        public bool ShouldCustomSnap() {
             // Advanced Line Tool
             //var isALTool  = m_ToolSystem.activeTool.toolID == "Line Tool" && m_ToolSystem.activePrefab is ParcelPlaceholderPrefab;
             // Vanilla Object Tool
@@ -127,7 +127,7 @@ namespace Platter.Systems {
             IsSnapped.Value = false;
 
             // Exit early on certain conditions
-            if (m_Query.IsEmptyIgnoreFilter || !ShouldAllowSnap()) {
+            if (m_Query.IsEmptyIgnoreFilter || !ShouldCustomSnap()) {
                 return;
             }
 
@@ -152,69 +152,68 @@ namespace Platter.Systems {
                 return;
             }
 
-            // Grab control points from ObjectTool
-            var controlPoints = m_ObjectToolSystem.GetControlPoints(out var deps);
-            Dependency = JobHandle.CombineDependencies(Dependency, deps);
+            //// Grab control points from ObjectTool
+            //var controlPoints = m_ObjectToolSystem.GetControlPoints(out var deps);
+            //Dependency = JobHandle.CombineDependencies(Dependency, deps);
 
-            // If none, exit
-            if (controlPoints.Length == 0) {
-                return;
-            }
+            //// If none, exit
+            //if (controlPoints.Length == 0) {
+            //    return;
+            //}
 
-            var curvesList   = new NativeList<Bezier4x3>(Allocator.Temp);
-            var curvesFilter = new NativeList<bool>(Allocator.Temp);
+            //var curvesList   = new NativeList<Bezier4x3>(Allocator.Temp);
+            //var curvesFilter = new NativeList<bool>(Allocator.Temp);
 
-            // Schedule our snapping job
-            var parcelSnapJobHandle = new ParcelSnapJob
-            {
-                m_ZoneTree                     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
-                m_NetTree                      = m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
-                m_ParcelTree                   = m_ParcelSearchSystem.GetStaticSearchTree(true, out var parcelTreeJobHandle),
-                m_CurvesList                   = curvesList,
-                m_CurvesFilter                 = curvesFilter,
-                m_SnapMode                     = m_SnapMode,
-                m_ControlPoints                = controlPoints,
-                m_ObjectDefinitionTypeHandle   = SystemAPI.GetComponentTypeHandle<ObjectDefinition>(),
-                m_CreationDefinitionTypeHandle = SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
-                m_BlockComponentLookup         = SystemAPI.GetComponentLookup<Block>(true),
-                m_ParcelDataComponentLookup    = SystemAPI.GetComponentLookup<ParcelData>(true),
-                m_ParcelOwnerComponentLookup   = SystemAPI.GetComponentLookup<ParcelOwner>(true),
-                m_TransformComponentLookup     = SystemAPI.GetComponentLookup<Transform>(true),
-                m_ParcelComponentLookup        = SystemAPI.GetComponentLookup<Parcel>(true),
-                m_NodeLookup                   = SystemAPI.GetComponentLookup<Node>(true),
-                m_EdgeLookup                   = SystemAPI.GetComponentLookup<Edge>(true),
-                m_CurveLookup                  = SystemAPI.GetComponentLookup<Curve>(true),
-                m_CompositionLookup            = SystemAPI.GetComponentLookup<Composition>(true),
-                m_PrefabRefLookup              = SystemAPI.GetComponentLookup<PrefabRef>(true),
-                m_NetDataLookup                = SystemAPI.GetComponentLookup<NetData>(true),
-                m_NetGeometryDataLookup        = SystemAPI.GetComponentLookup<NetGeometryData>(true),
-                m_NetCompositionDataLookup     = SystemAPI.GetComponentLookup<NetCompositionData>(true),
-                m_EdgeGeoLookup                = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
-                m_StartNodeGeoLookup           = SystemAPI.GetComponentLookup<StartNodeGeometry>(true),
-                m_EndNodeGeoLookup             = SystemAPI.GetComponentLookup<EndNodeGeometry>(true),
-                m_ConnectedEdgeLookup          = SystemAPI.GetBufferLookup<ConnectedEdge>(),
-                m_TerrainHeightData            = m_TerrainSystem.GetHeightData(),
-                m_WaterSurfaceData             = m_WaterSystem.GetSurfaceData(out var waterSurfaceJobHandle),
-                m_SnapSetback                  = m_SnapSetback,
-                m_EntityTypeHandle             = SystemAPI.GetEntityTypeHandle(),
-                m_ConnectedParcelLookup        = SystemAPI.GetBufferLookup<ConnectedParcel>(true),
-                m_IsSnapped                    = IsSnapped,
-            }.ScheduleParallel(
-                m_Query,
-                JobUtils.CombineDependencies(Dependency, zoneTreeJobHandle, netTreeJobHandle, waterSurfaceJobHandle, parcelTreeJobHandle)
-            );
+            //// Schedule our snapping job
+            //var parcelSnapJobHandle = new ParcelSnapJob
+            //{
+            //    m_ZoneTree                     = m_ZoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
+            //    m_NetTree                      = m_NetSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
+            //    m_ParcelTree                   = m_ParcelSearchSystem.GetStaticSearchTree(true, out var parcelTreeJobHandle),
+            //    m_CurvesList                   = curvesList,
+            //    m_CurvesFilter                 = curvesFilter,
+            //    m_SnapMode                     = m_SnapMode,
+            //    m_ControlPoints                = controlPoints,
+            //    m_ObjectDefinitionTypeHandle   = SystemAPI.GetComponentTypeHandle<ObjectDefinition>(),
+            //    m_CreationDefinitionTypeHandle = SystemAPI.GetComponentTypeHandle<CreationDefinition>(true),
+            //    m_BlockComponentLookup         = SystemAPI.GetComponentLookup<Block>(true),
+            //    m_ParcelDataComponentLookup    = SystemAPI.GetComponentLookup<ParcelData>(true),
+            //    m_ParcelOwnerComponentLookup   = SystemAPI.GetComponentLookup<ParcelOwner>(true),
+            //    m_TransformComponentLookup     = SystemAPI.GetComponentLookup<Transform>(true),
+            //    m_ParcelComponentLookup        = SystemAPI.GetComponentLookup<Parcel>(true),
+            //    m_NodeLookup                   = SystemAPI.GetComponentLookup<Node>(true),
+            //    m_EdgeLookup                   = SystemAPI.GetComponentLookup<Edge>(true),
+            //    m_CurveLookup                  = SystemAPI.GetComponentLookup<Curve>(true),
+            //    m_CompositionLookup            = SystemAPI.GetComponentLookup<Composition>(true),
+            //    m_PrefabRefLookup              = SystemAPI.GetComponentLookup<PrefabRef>(true),
+            //    m_NetDataLookup                = SystemAPI.GetComponentLookup<NetData>(true),
+            //    m_NetGeometryDataLookup        = SystemAPI.GetComponentLookup<NetGeometryData>(true),
+            //    m_NetCompositionDataLookup     = SystemAPI.GetComponentLookup<NetCompositionData>(true),
+            //    m_EdgeGeoLookup                = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
+            //    m_StartNodeGeoLookup           = SystemAPI.GetComponentLookup<StartNodeGeometry>(true),
+            //    m_EndNodeGeoLookup             = SystemAPI.GetComponentLookup<EndNodeGeometry>(true),
+            //    m_ConnectedEdgeLookup          = SystemAPI.GetBufferLookup<ConnectedEdge>(),
+            //    m_TerrainHeightData            = m_TerrainSystem.GetHeightData(),
+            //    m_WaterSurfaceData             = m_WaterSystem.GetSurfaceData(out var waterSurfaceJobHandle),
+            //    m_SnapSetback                  = m_SnapSetback,
+            //    m_EntityTypeHandle             = SystemAPI.GetEntityTypeHandle(),
+            //    m_ConnectedParcelLookup        = SystemAPI.GetBufferLookup<ConnectedParcel>(true),
+            //    m_IsSnapped                    = IsSnapped,
+            //}.ScheduleParallel(
+            //    m_Query,
+            //    JobUtils.CombineDependencies(Dependency, zoneTreeJobHandle, netTreeJobHandle, waterSurfaceJobHandle, parcelTreeJobHandle)
+            //);
 
-            m_ZoneSearchSystem.AddSearchTreeReader(parcelSnapJobHandle);
-            m_NetSearchSystem.AddNetSearchTreeReader(parcelSnapJobHandle);
-            m_ParcelSearchSystem.AddSearchTreeReader(parcelSnapJobHandle);
-            m_TerrainSystem.AddCPUHeightReader(parcelSnapJobHandle);
-            m_WaterSystem.AddSurfaceReader(parcelSnapJobHandle);
+            //m_ZoneSearchSystem.AddSearchTreeReader(parcelSnapJobHandle);
+            //m_NetSearchSystem.AddNetSearchTreeReader(parcelSnapJobHandle);
+            //m_ParcelSearchSystem.AddSearchTreeReader(parcelSnapJobHandle);
+            //m_TerrainSystem.AddCPUHeightReader(parcelSnapJobHandle);
+            //m_WaterSystem.AddSurfaceReader(parcelSnapJobHandle);
 
-            curvesList.Dispose(parcelSnapJobHandle);
-            curvesFilter.Dispose(parcelSnapJobHandle);
+            //curvesList.Dispose(parcelSnapJobHandle);
+            //curvesFilter.Dispose(parcelSnapJobHandle);
 
-            // Register deps
-            Dependency = JobHandle.CombineDependencies(Dependency, parcelSnapJobHandle);
+            //Dependency = JobHandle.CombineDependencies(Dependency, parcelSnapJobHandle);
         }
     }
 }
