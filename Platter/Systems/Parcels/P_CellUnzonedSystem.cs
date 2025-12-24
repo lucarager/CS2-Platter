@@ -1,4 +1,4 @@
-﻿// <copyright file="P_CellUnzoneSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_CellUnzonedSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
-    public partial class P_CellUnzoneSystem : PlatterGameSystemBase {
+    public partial class P_CellUnzonedSystem : PlatterGameSystemBase {
         private EntityQuery m_Query;
 
         /// <inheritdoc/>
