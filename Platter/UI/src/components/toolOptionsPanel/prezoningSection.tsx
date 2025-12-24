@@ -212,7 +212,7 @@ export const PrezoningSection = function PrezoningSection() {
                                 />
                                 <VC.ToolButton
                                     className={c(VT.toolButton.button, styles.filterButton)}
-                                    src={"coui://uil/Standard/BaseGame.svg"}
+                                    src={"coui://platter/BaseGame.svg"}
                                     multiSelect={true}
                                     selected={baseGameSelected}
                                     onSelect={() => setBaseGameSelected(!baseGameSelected)}
