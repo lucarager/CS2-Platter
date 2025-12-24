@@ -194,7 +194,7 @@ namespace Platter {
 
             // Parcels
             updateSystem.UpdateAt<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
-            updateSystem.UpdateAt<P_CellUnzoneSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_CellUnzonedSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_BlockDeleteCleanupSystem>(SystemUpdatePhase.Modification4);
@@ -215,7 +215,7 @@ namespace Platter {
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
-            updateSystem.UpdateBefore<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateBefore<P_NewCellCheckSystem>(SystemUpdatePhase.ModificationEnd);
             //updateSystem.UpdateAfter<P_CellUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
 
             // Tests
