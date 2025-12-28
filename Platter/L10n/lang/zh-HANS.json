@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "带有分区格的地块。面宽 6 格，进深 5 格",
   "Assets.NAME[Parcel 6x6]": "地块（6x6）",
   "Assets.DESCRIPTION[Parcel 6x6]": "带有分区格的地块。面宽 6 格，进深 6 格",
-  "Assets.NAME[Unzoned]": "未分区"
+  "Assets.NAME[PlatterUnzoned]": "未分区"
 }

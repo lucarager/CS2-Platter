@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Une parcelle avec des blocs de zonage. 6 cellules de large, 5 cellules de profondeur.",
   "Assets.NAME[Parcel 6x6]": "Parcelle (6×6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Une parcelle avec des blocs de zonage. 6 cellules de large, 6 cellules de profondeur.",
-  "Assets.NAME[Unzoned]": "Non zoné"
+  "Assets.NAME[PlatterUnzoned]": "Non zoné"
 }

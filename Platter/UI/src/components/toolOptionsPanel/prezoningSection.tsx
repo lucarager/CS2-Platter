@@ -94,7 +94,7 @@ export const PrezoningSection = function PrezoningSection() {
                 if (zoneData.areaType != category.name) return false;
 
                 // Always include Unzoned
-                if (zoneData.name === "Unzoned") return true;
+                if (zoneData.name === "PlatterUnzoned") return true;
 
                 // Filter by search query
                 if (searchFilter && searchFilter.trim().length > 0) {

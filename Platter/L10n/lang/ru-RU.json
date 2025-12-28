@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Участок для зонирования 6 клеток в ширину, 5 клеток в глубину",
   "Assets.NAME[Parcel 6x6]": "Участок (6х6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Участок для зонирования 6 клеток в ширину, 6 клеток в глубину",
-  "Assets.NAME[Unzoned]": "Не зонировано"
+  "Assets.NAME[PlatterUnzoned]": "Не зонировано"
 }

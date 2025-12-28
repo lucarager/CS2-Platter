@@ -195,6 +195,16 @@ namespace Platter.L10n {
                 { "Assets.DESCRIPTION[PlatterCat]", "Ploppable parcels with zone blocks." },
                 { "SubServices.NAME[PlatterCat]", "Platter - Parcels" },
                 { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "Ploppable parcels with zone blocks." },
+                { "Assets.NAME[Parcel 1x2]", "Parcel (1x2)" },
+                { "Assets.DESCRIPTION[Parcel 1x2]", "A Parcel with zone blocks. 1 cell wide, 2 cells deep" },
+                { "Assets.NAME[Parcel 1x3]", "Parcel (1x3)" },
+                { "Assets.DESCRIPTION[Parcel 1x3]", "A Parcel with zone blocks. 1 cell wide, 3 cells deep" },
+                { "Assets.NAME[Parcel 1x4]", "Parcel (1x4)" },
+                { "Assets.DESCRIPTION[Parcel 1x4]", "A Parcel with zone blocks. 1 cell wide, 4 cells deep" },
+                { "Assets.NAME[Parcel 1x5]", "Parcel (1x5)" },
+                { "Assets.DESCRIPTION[Parcel 1x5]", "A Parcel with zone blocks. 1 cell wide, 5 cells deep" },
+                { "Assets.NAME[Parcel 1x6]", "Parcel (1x6)" },
+                { "Assets.DESCRIPTION[Parcel 1x6]", "A Parcel with zone blocks. 1 cell wide, 6 cells deep" },
                 { "Assets.NAME[Parcel 2x2]", "Parcel (2x2)" },
                 { "Assets.DESCRIPTION[Parcel 2x2]", "A Parcel with zone blocks. 2 cells wide, 2 cells deep" },
                 { "Assets.NAME[Parcel 2x3]", "Parcel (2x3)" },
@@ -245,7 +255,7 @@ namespace Platter.L10n {
                 { "Assets.DESCRIPTION[Parcel 6x5]", "A Parcel with zone blocks. 6 cells wide, 5 cells deep" },
                 { "Assets.NAME[Parcel 6x6]", "Parcel (6x6)" },
                 { "Assets.DESCRIPTION[Parcel 6x6]", "A Parcel with zone blocks. 6 cells wide, 6 cells deep" },
-                { "Assets.NAME[Unzoned]", "Unzoned" },
+                { "Assets.NAME[PlatterUnzoned]", "Unzoned" },
             };
         }
 

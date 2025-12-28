@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Eine Parzelle mit Zonenblöcken. 6 Zellen breit, 5 Zellen tief",
   "Assets.NAME[Parcel 6x6]": "Parzelle (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Eine Parzelle mit Zonenblöcken. 6 Zellen breit, 6 Zellen tief",
-  "Assets.NAME[Unzoned]": "Nicht zoniert"
+  "Assets.NAME[PlatterUnzoned]": "Nicht zoniert"
 }

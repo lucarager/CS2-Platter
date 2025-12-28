@@ -222,11 +222,11 @@ namespace Platter.Systems {
         }
 
         private static bool IsCustomUnzoned(ZonePrefab zonePrefab) {
-            return zonePrefab.name == "Unzoned" && zonePrefab.m_AreaType == Game.Zones.AreaType.Residential;
+            return zonePrefab.name == "PlatterUnzoned" && zonePrefab.m_AreaType == Game.Zones.AreaType.Residential;
         }
 
         private static string GetThumbnail(ZonePrefab zonePrefab) {
-            return zonePrefab.name == "Unzoned" ? "coui://platter/Unzoned.svg" : ImageSystem.GetThumbnail(zonePrefab);
+            return zonePrefab.name == "PlatterUnzoned" ? "coui://platter/Unzoned.svg" : ImageSystem.GetThumbnail(zonePrefab);
         }
 
         /// <summary>
