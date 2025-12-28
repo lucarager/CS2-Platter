@@ -1,13 +1,4 @@
-<Publish>
-  <!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-  <ModId Value="125278" />
-  <!--Name of the mod to display to players-->
-  <DisplayName Value="Platter [Alpha]" />
-  <!--Short description of the mod-->
-  <ShortDescription Value="Platter - A zoning overhaul mod." />
-  <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
-  <!--LongDescription Value="Platter mod long" /-->
-  <LongDescription># Platter: Custom Zoning Overhaul
+# Platter: Custom Zoning Overhaul
 
 Platter reworks zoning in Cities: Skylines 2 by adding "parcels" that contain zoning cells, providing a new way to grow buildings in your city.
 It sits right between vanilla zoning and manual building plopping, giving you the control to create realistic neighborhoods, fill awkward gaps, and zone perfectly on curved roads without fighting the grid.
@@ -22,7 +13,7 @@ It sits right between vanilla zoning and manual building plopping, giving you th
 ### How to Use
 1. Open the **Platter** tab from the zoning toolbar (or press `Ctrl+P`).
 2. Select a parcel size and, optionally, your desired zone type.
-3. Click to place the parcel manually ï¿½ anywhere, at any angle.
+3. Click to place the parcel manually — anywhere, at any angle.
 
 ### Alpha/Experimental Warning
 **Platter is currently in ALPHA.**
@@ -70,35 +61,4 @@ Donations are incredibly kind and appreciated. If you'd like to show appreciatio
 **Special Thanks**
 * The modding community on Discord for testing and feedback.
 * DanielVNZ, saladuit, astrognash, MarKing, Honu, and countless others for testing the mod and putting up with my changes.
-* krzychu124, yenyang, algernon, KJ, and many others for help with code, modding, management, and other topics.</LongDescription>
-  <!--Thumbnail-->
-  <Thumbnail Value="Properties/thumbnail.png" />
-  <!--Screenshot, can be set multiple times-->
-  <Screenshot Value="Properties/cover.jpg" />
-  <Screenshot Value="Properties/preview2.jpg" />
-  <Screenshot Value="Properties/preview3.jpg" />
-  <Screenshot Value="Properties/preview4.jpg" />
-  <!--Tag, can be set multiple times-->
-  <Tag Value="Code Mod" />
-  <!--Link to the forum post where the mod can be discussed-->
-  <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
-  <!--Version of the mod-->
-  <ModVersion Value="1.3.8" />
-  <!--Recommended version of the base game to use the mod-->
-  <GameVersion Value="1.5.*" />
-  <!--Dependency for the mod, can be set multiple-->
-  <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
-  <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog>Version 1.3.8
-
-* Item 1
-* Item 2</ChangeLog>
-  <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
-  <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
-  <ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
-  <ExternalLink Type="github" Url="https://github.com/lucarager/CS2-Platter" />
-  <ExternalLink Type="twitch" Url="https://twitch.tv/lucadevdesign" />
-  <ExternalLink Type="crowdin" Url="https://crowdin.com/project/platter-cs2" />
-  <!--Supported values Public, Private, Unlisted-->
-  <AccessLevel Value="Public" />
-</Publish>
+* krzychu124, yenyang, algernon, KJ, and many others for help with code, modding, management, and other topics.
