@@ -134,9 +134,6 @@ namespace Platter.Patches {
                     m_SnapMode                     = pSnapSystem.CurrentSnapMode,
                     m_ControlPoints                = controlPoints,
                     m_PrefabEntity                 = prefabSystem.GetEntity(prefab),
-                    //m_Rotation = rotation,
-                    m_ObjectDefinitionTypeHandle   = __instance.GetComponentTypeHandle<ObjectDefinition>(),
-                    m_CreationDefinitionTypeHandle = __instance.GetComponentTypeHandle<CreationDefinition>(true),
                     m_BlockComponentLookup         = __instance.GetComponentLookup<Game.Zones.Block>(true),
                     m_ParcelDataComponentLookup    = __instance.GetComponentLookup<ParcelData>(true),
                     m_ParcelOwnerComponentLookup   = __instance.GetComponentLookup<ParcelOwner>(true),
@@ -159,6 +156,7 @@ namespace Platter.Patches {
                     m_SnapSetback                  = pSnapSystem.CurrentSnapSetback,
                     m_EntityTypeHandle             = __instance.GetEntityTypeHandle(),
                     m_ConnectedParcelLookup        = __instance.GetBufferLookup<ConnectedParcel>(true),
+                    m_SubBlockLookup               = __instance.GetBufferLookup<Game.Zones.SubBlock>(true),
                     m_IsSnapped                    = pSnapSystem.IsSnapped,
                 }.Schedule(JobUtils.CombineDependencies(inputDeps, zoneTreeJobHandle, netTreeJobHandle, parcelTreeJobHandle, waterSurfaceJobHandle));
 
