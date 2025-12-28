@@ -95,21 +95,6 @@ namespace Platter.Systems {
                 return;
             }
 
-            // Check if any of the parcels have a corner designation
-            var hasLeft   = false;
-            var hasRight  = false;
-
-            foreach (var entity in parcelEntities) {
-                var parcel = EntityManager.GetComponentData<Parcel>(entity);
-
-                if ((parcel.m_State & ParcelState.RoadLeft) != 0) {
-                    hasLeft   = true;
-                }
-                if ((parcel.m_State & ParcelState.RoadRight) != 0) {
-                    hasRight  = true;
-                }
-            }
-
             var count = m_BuildingCacheSystem.GetBuildingAccessCount(
                 prezone.m_Index,
                 parcelPrefab.m_LotWidth,
@@ -128,10 +113,10 @@ namespace Platter.Systems {
 
             // Tooltip for total corner access buildings
             var locArgs2 = CreateBuildingCountLocArgs(count.Corner, parcelPrefab.m_LotWidth, parcelPrefab.m_LotDepth);
-            if (count.Corner == 0) {
+            if (count.Corner == 0 && count.Total == 0) {
                 m_Tooltip_BuildingCornerCount.value = new LocalizedString("PlatterMod.UI.Tooltip.BuildingCornerCountWarning", null, locArgs2);
                 m_Tooltip_BuildingCornerCount.color = TooltipColor.Info;
-            } else {
+            } else if (count.Corner > 0) {
                 m_Tooltip_BuildingCornerCount.value = new LocalizedString("PlatterMod.UI.Tooltip.BuildingCornerCount", null, locArgs2);
                 m_Tooltip_BuildingCornerCount.color = TooltipColor.Success;
             }
