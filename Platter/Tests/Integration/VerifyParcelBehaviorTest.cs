@@ -111,8 +111,8 @@ namespace Platter.Tests {
                         await TR.It(
                             "A parcel's Block should have the right number of Cells in its buffer",
                             async () => {
-                                for (var i = BlockSizes.x; i <= BlockSizes.z; i++)
-                                for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
+                                for (var i = AvailableParcelLotSizes.x; i <= AvailableParcelLotSizes.z; i++)
+                                for (var j = AvailableParcelLotSizes.y; j <= AvailableParcelLotSizes.w; j++) {
                                     var parcelEntity = await PlaceParcel(
                                         new PrefabID("ParcelPrefab", $"Parcel {i}x{j}"),
                                         new Transform(new float3(100, Elevation0, 100), new quaternion(0, 0, 0, 1f)));
