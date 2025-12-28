@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
-    public partial class P_CellUnzonedSystem : PlatterGameSystemBase {
+    public partial class P_UnzonedSystem : PlatterGameSystemBase {
         private EntityQuery m_Query;
 
         /// <inheritdoc/>
