@@ -55,7 +55,7 @@
 	</Target>
 
 	<!--Custom Build step to assemble the PublishConfiguration.xml-->
-	<Target Name="GeneratePublishConfiguration" AfterTargets="Build">
+	<Target Name="GeneratePublishConfiguration" AfterTargets="ModPublisherConfig">
 		<PropertyGroup>
 			<TargetConfigXml>$(ProjectDir)Properties\PublishConfiguration.xml</TargetConfigXml>
 			<ModVersion>$(Version)</ModVersion>
@@ -70,15 +70,9 @@
 
 		<Copy SourceFiles="$(ProjectDir)Properties/PublishConfiguration.template.xml" DestinationFiles="$(TargetConfigXml)" />
 
-		<XmlPoke XmlInputPath="$(TargetConfigXml)"
-		         Query="/Publish/ModVersion/@Value"
-		         Value="$(ModVersion)" />
-		<XmlPoke XmlInputPath="$(TargetConfigXml)"
-		         Query="/Publish/LongDescription"
-		         Value="$(LongDescText)" />
-		<XmlPoke XmlInputPath="$(TargetConfigXml)"
-		         Query="/Publish/ChangeLog"
-		         Value="$(ChangelogText)" />
+		<XmlPoke XmlInputPath="$(TargetConfigXml)" Query="/Publish/ModVersion/@Value" Value="$(ModVersion)" />
+		<XmlPoke XmlInputPath="$(TargetConfigXml)" Query="/Publish/LongDescription" Value="$(LongDescText)" />
+		<XmlPoke XmlInputPath="$(TargetConfigXml)" Query="/Publish/ChangeLog" Value="$(ChangelogText)" />
 
 		<Message Text="Updated $(TargetConfigXml) with Version $(ModVersion)" Importance="High" />
 	</Target>
@@ -115,7 +109,6 @@
 		<EmbeddedResource Include="L10n\lang\ru-RU.json" />
 		<EmbeddedResource Include="L10n\lang\zh-HANS.json" />
 		<EmbeddedResource Include="L10n\lang\zh-HANT.json" />
-		<Folder Include="NewFolder\" />
 		<Folder Include="Properties\Changelog\" />
 	</ItemGroup>
 
@@ -137,4 +130,11 @@
 	<PropertyGroup>
 		<LangVersion>11.0</LangVersion>
 	</PropertyGroup>
+
+	<!--Override ModPostProcessorArgs to disable Mac/Linux for speed-->
+	<Target Name="CustomModPostProcessorConfig" AfterTargets="ModPostProcessorConfig">
+		<PropertyGroup>
+			<ModPostProcessorArgs>"$(ModPostProcessorFullPath)" PostProcess "$(TargetPath)" -u "$(UnityModProjectFullPath)" @(ReferencePath->'-r "%(Identity)"', ' ') -p Windows -d -v</ModPostProcessorArgs>
+		</PropertyGroup>
+	</Target>
 </Project>
