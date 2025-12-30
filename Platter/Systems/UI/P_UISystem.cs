@@ -198,8 +198,11 @@ namespace Platter.Systems {
                 var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
                 Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
                 m_ZoneDataBinding.Value = zoneData;
-                m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values.ToArray();
-                m_ZoneGroupDataBinding.Value = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
+                m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values
+                                                                .ToArray();
+                var zoneGroupArray = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
+                Array.Sort(zoneGroupArray, (a, b) => a.Priority.CompareTo(b.Priority));
+                m_ZoneGroupDataBinding.Value = zoneGroupArray;
             }
         }
 
