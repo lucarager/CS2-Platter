@@ -29,8 +29,9 @@ namespace Platter.Systems {
         /// <para>y = min depth.</para>
         /// <para>z = max width.</para>
         /// <para>w = max depth.</para>
+        /// todo: Change this to be more inline with vanilla, with y being max width etc.
         /// </summary>
-        public static readonly int4 AvailableParcelLotSizes = new(2, 2, 6, 6);
+        public static readonly int4 AvailableParcelLotSizes = new(1, 2, 8, 6);
 
         /// <summary>
         /// Stateful value to only run installation once.
