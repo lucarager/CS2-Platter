@@ -172,7 +172,8 @@ namespace Platter.Systems {
                             ZoneGroupUIData[uiObjectData.m_Group] = new ZoneGroupUIDataModel(
                                 uiPrefab,
                                 uiObject.m_Icon,
-                                uiObjectData.m_Group
+                                uiObjectData.m_Group,
+                                uiObjectData.m_Priority
                             );
                         }
                     } else if (!IsCustomUnzoned(zonePrefab)) {
@@ -322,14 +323,16 @@ namespace Platter.Systems {
             public readonly UIAssetCategoryPrefab Prefab;
             public readonly string                Icon;
             public readonly Entity                Entity;
+            public readonly int                   Priority;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="ZoneGroupUIDataModel"/> struct.
             /// </summary>
-            public ZoneGroupUIDataModel(UIAssetCategoryPrefab prefab, string icon, Entity entity) {
+            public ZoneGroupUIDataModel(UIAssetCategoryPrefab prefab, string icon, Entity entity, int priority) {
                 Prefab = prefab;
                 Icon   = icon;
                 Entity = entity;
+                Priority = priority;
             }
 
             /// <inheritdoc/>
