@@ -31,6 +31,7 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
+    using Game.Zones;
     using HarmonyLib;
     using Newtonsoft.Json;
     using Settings;
@@ -215,7 +216,7 @@ namespace Platter {
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
-            updateSystem.UpdateBefore<P_NewCellCheckSystem>(SystemUpdatePhase.ModificationEnd);
+            updateSystem.UpdateAfter<P_NewCellCheckSystem, CellCheckSystem>(SystemUpdatePhase.Modification5);
             //updateSystem.UpdateAfter<P_CellUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
 
             // Tests
