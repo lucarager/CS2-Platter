@@ -134,6 +134,11 @@ namespace Platter.Utils {
                         continue;
                     }
 
+                    // Catch any edge cases where the zoning is not yet set to custom unzoned
+                    if (cell.m_Zone.Equals(ZoneType.None)) {
+                        cell.m_Zone = P_ZoneCacheSystem.UnzonedZoneType;
+                    }
+
                     if (cachedZone.m_Index == P_ZoneCacheSystem.UnzonedZoneType.m_Index) {
                         cachedZone = cell.m_Zone;
                     } else if (cell.m_Zone.m_Index != cachedZone.m_Index) {
