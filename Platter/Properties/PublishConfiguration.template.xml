@@ -37,5 +37,5 @@
 <ExternalLink Type="twitch" Url="https://twitch.tv/lucadevdesign" />
 <ExternalLink Type="crowdin" Url="https://crowdin.com/project/platter-cs2" />
 <!--Supported values Public, Private, Unlisted-->
-<AccessLevel Value="Public" />
+<AccessLevel Value="Unlisted" />
 </Publish>

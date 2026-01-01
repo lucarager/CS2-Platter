@@ -109,7 +109,6 @@
 		<EmbeddedResource Include="L10n\lang\ru-RU.json" />
 		<EmbeddedResource Include="L10n\lang\zh-HANS.json" />
 		<EmbeddedResource Include="L10n\lang\zh-HANT.json" />
-		<Folder Include="Properties\Changelog\" />
 	</ItemGroup>
 
 	<ItemGroup>
