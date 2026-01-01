@@ -109,9 +109,9 @@ namespace Platter.Systems {
                 // ========================
 
                 // Check if we snapped
-                //var isSnapped = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position) || 
-                //                !m_Rotation.Value.m_Rotation.Equals(bestSnapPosition.m_Rotation);
-                var isSnapped = bestSnapPosition.m_SnapPriority.x > 0f || bestSnapPosition.m_SnapPriority.y > 0f;
+                var isSnapped = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position) ||
+                                !controlPoint.m_Rotation.Equals(bestSnapPosition.m_Rotation) ||
+                                !controlPoint.m_Direction.Equals(bestSnapPosition.m_Direction);
                 m_IsSnapped.Value = isSnapped;
 
                 // Exit early on no snap
