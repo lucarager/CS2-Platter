@@ -48,6 +48,7 @@ namespace Platter.Systems {
                 m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(true),
                 m_CellBufferTypeHandle = SystemAPI.GetBufferTypeHandle<Cell>(),
                 m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(true),
+                m_UnzonedZoneType = P_ZoneCacheSystem.UnzonedZoneType,
             }.Schedule(m_Query, Dependency);
         }
 
@@ -60,6 +61,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<PrefabRef> m_PrefabRefLookup;
             [ReadOnly] public required ComponentLookup<ParcelData> m_ParcelDataLookup;
             public required BufferTypeHandle<Cell> m_CellBufferTypeHandle;
+            [ReadOnly] public ZoneType m_UnzonedZoneType;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128 chunkEnabledMask) {
@@ -81,7 +83,7 @@ namespace Platter.Systems {
 
                         if (col < parcelData.m_LotSize.x && row < parcelData.m_LotSize.y) {
                             if (cell.m_Zone.Equals(ZoneType.None)) {
-                                cell.m_Zone       = P_ZoneCacheSystem.UnzonedZoneType;
+                                cell.m_Zone       = m_UnzonedZoneType;
                                 cell.m_State      = CellFlags.Visible;
                                 cellBuffer[index] = cell;
                             }

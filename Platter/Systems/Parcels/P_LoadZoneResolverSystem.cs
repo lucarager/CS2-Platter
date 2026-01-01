@@ -49,6 +49,7 @@ namespace Platter.Systems {
                 CellBufferTypeHandle = SystemAPI.GetBufferTypeHandle<Cell>(true),
                 ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(true),
                 ParcelLookup = SystemAPI.GetComponentLookup<Parcel>(),
+                UnzonedZoneType = P_ZoneCacheSystem.UnzonedZoneType,
             }.ScheduleParallel(m_Query, Dependency);
 
             Dependency = deserializeJobHandle;
@@ -65,6 +66,7 @@ namespace Platter.Systems {
             [ReadOnly] public required BufferTypeHandle<Cell> CellBufferTypeHandle;
             [ReadOnly] public required ComponentLookup<ParcelData> ParcelDataLookup;
             public required ComponentLookup<Parcel> ParcelLookup;
+            [ReadOnly] public ZoneType UnzonedZoneType;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128 chunkEnabledMask) {
@@ -82,7 +84,7 @@ namespace Platter.Systems {
                     var parcel = ParcelLookup[parcelOwner.m_Owner];
                     var parcelData = ParcelDataLookup[prefabRef.m_Prefab];
 
-                    ParcelUtils.ClassifyParcelZoning(ref parcel, in block, in parcelData, in cellBuffer);
+                    ParcelUtils.ClassifyParcelZoning(ref parcel, in block, in parcelData, in cellBuffer, UnzonedZoneType);
 
                     ParcelLookup[parcelOwner.m_Owner] = parcel;
                 }
