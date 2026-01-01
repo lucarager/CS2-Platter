@@ -117,15 +117,11 @@ namespace Platter.Patches {
                 var  waterSystem        = (WaterSystem)__instance.GetMemberValue("m_WaterSystem");
                 var  controlPoints      = (NativeList<ControlPoint>)__instance.GetMemberValue("m_ControlPoints");
                 var  prefab             = (PrefabBase)__instance.GetMemberValue("m_Prefab");
-                //var  rotation           = (NativeReference<Rotation>)__instance.GetMemberValue("m_Rotation");
 
                 if (__instance.prefab is not ParcelPlaceholderPrefab) {
-                    PlatterMod.Instance.Log.Debug("[Harmony ObjectToolSystem.SnapControlPoint] Using original.");
                     return true; 
                 }
-
-                PlatterMod.Instance.Log.Debug("[Harmony ObjectToolSystem.SnapControlPoint] Using patch.");
-
+                
                 // Schedule custom job
                 var customSnapJobHandle = new P_SnapSystem.AdhocParcelSnapJob {
                     m_ZoneTree                     = zoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
