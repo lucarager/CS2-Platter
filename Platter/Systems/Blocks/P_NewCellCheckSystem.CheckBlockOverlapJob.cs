@@ -5,7 +5,7 @@
 
 namespace Platter.Systems {
     using static Game.Zones.CellCheckHelpers;
-
+    using Unity.Burst;
     public partial class P_NewCellCheckSystem {
         /// <summary>
         /// Modified copy of Game.Zones.CellOverlapJobs.CheckBlockOverlapJob from the base game.
