@@ -19,6 +19,7 @@ namespace Platter.Utils {
 
     public static class DebugUtils {
         public static void DebugBlockStatus(string context, Entity blockEntity, DynamicBuffer<Game.Zones.Cell> cellBuffer) {
+            #if !USE_BURST
             if (blockEntity == Entity.Null) {
                 return;
             }
@@ -28,6 +29,7 @@ namespace Platter.Utils {
                 message += $"\n - Cell {i}: m_Zone {cell.m_Zone} | m_State {cell.m_State}";
             }
             BurstLogger.Debug($"\n{context}", message);
+            #endif
         }
     }
 }

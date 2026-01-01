@@ -143,7 +143,7 @@ namespace Platter.Systems {
 
                     // If we have parcels targetd, we run our own logic.
                     var zoneData = m_ZoneCLook[creationDefinition.m_Prefab];
-                    var zoneType = isZoning ? zoneData.m_ZoneType : P_ZoneCacheSystem.UnzonedZoneType;
+                    var zoneType = isZoning ? zoneData.m_ZoneType : ZoneType.None;
 
                     if ((zoning.m_Flags & ZoningFlags.FloodFill) != 0U) {
                         FloodFillBlocks(creationDefinition, zoning, zoneData, zoneType, baseCells);
@@ -199,7 +199,7 @@ namespace Platter.Systems {
                         m_ZonedBlocks.Add(in baseCell.Block);
                     }
 
-                    if ((zoning.m_Flags & ZoningFlags.Overwrite) == 0U && !cell.m_Zone.Equals(P_ZoneCacheSystem.UnzonedZoneType)) {
+                    if ((zoning.m_Flags & ZoningFlags.Overwrite) == 0U && !cell.m_Zone.Equals(ZoneType.None)) {
                         cellData.ZoneType = cell.m_Zone;
                     }
 
@@ -340,7 +340,7 @@ namespace Platter.Systems {
                             if ((cell.m_State & CellFlags.Visible) != CellFlags.None && (cell.m_State & CellFlags.Shared) == CellFlags.None) {
                                 var cellPosition = ZoneUtils.GetCellPosition(block, cellData.Location);
                                 if (MathUtils.Intersect(m_Quad, cellPosition.xz) &&
-                                    m_Overwrite | cell.m_Zone.Equals(P_ZoneCacheSystem.UnzonedZoneType)) {
+                                    m_Overwrite | cell.m_Zone.Equals(ZoneType.None)) {
                                     if (!m_ZonedCells.TryGetFirstValue(blockEntity, out _, out _)) {
                                         m_ZonedBlocks.Add(in blockEntity);
                                     }
@@ -502,7 +502,7 @@ namespace Platter.Systems {
                     }
 
                     // If not overwriting and the cell already has a zone, keep the existing zone
-                    if (!m_Overwrite && !cell.m_Zone.Equals(P_ZoneCacheSystem.UnzonedZoneType)) {
+                    if (!m_Overwrite && !cell.m_Zone.Equals(ZoneType.None)) {
                         cellData.ZoneType = cell.m_Zone;
                     }
 
