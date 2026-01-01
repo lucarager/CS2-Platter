@@ -10,8 +10,8 @@
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "À propos",
   "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "Général",
   "Options.GROUP[Platter.Platter.PlatterMod.AdvancedGroup]": "Avancé",
-  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Activer automatiquement la superposition de colis pour les outils clés",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Lorsque cette option est activée, les surcouches de colis s'affichent lorsque vous utilisez des outils clés vanilla tels que l'outil Net, etc. \n\r Désactivez ceci pour contrôler la superposition avec l'option \"Basculer la superposition\" manuellement.",
+  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Activer automatiquement l’affichage des parcelles pour les outils clés",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Lorsque cette option est activée, les surcouches des parcelles s'affichent lorsque vous utilisez des outils clés du jeu de base tels que l'outil Net, etc. \n\n Désactivez ceci pour contrôler la superposition avec l'option \"Basculer la superposition\" manuellement.",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Supprimer toutes les parcelles",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Supprime toutes les parcelles de la map, définitivement. Les bâtiments qui ne se retrouvent pas sur une zone Vanilla seront abandonnée et disparaîtront, sauf si vous avez un mod qui empêche cela.",
   "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "ATTENTION : Supprimer définitivement toutes les parcelles de cette sauvegarde ?",
@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Une parcelle avec des blocs de zonage. 6 cellules de large, 5 cellules de profondeur.",
   "Assets.NAME[Parcel 6x6]": "Parcelle (6×6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Une parcelle avec des blocs de zonage. 6 cellules de large, 6 cellules de profondeur.",
-  "Assets.NAME[Unzoned]": "Non zoné"
+  "Assets.NAME[PlatterUnzoned]": "Non zoné"
 }

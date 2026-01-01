@@ -159,7 +159,7 @@ namespace Platter.Tests {
             TR.Describe(
                 "4. Prefabs",
                 () => {
-                    var blockSizes = P_PrefabsCreateSystem.BlockSizes;
+                    var blockSizes = P_PrefabsCreateSystem.AvailableParcelLotSizes;
 
                     for (var x = blockSizes.x; x <= blockSizes.z; x++)
                     for (var y = blockSizes.y; y <= blockSizes.w; y++) {

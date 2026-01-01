@@ -13,6 +13,7 @@ namespace Platter.Systems {
     using Game.Buildings;
     using Game.Common;
     using Game.Net;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Simulation;
     using Game.Tools;
@@ -35,38 +36,36 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         public struct AdhocParcelSnapJob : IJob {
-            [ReadOnly] public required Entity                                     m_PrefabEntity;
-            [ReadOnly] public required NativeQuadTree<Entity, Bounds2>            m_ZoneTree;
-            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ>   m_NetTree;
-            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ>   m_ParcelTree;
-            [ReadOnly] public required TerrainHeightData                          m_TerrainHeightData;
-            [ReadOnly] public required WaterSurfaceData<SurfaceWater>             m_WaterSurfaceData;
-            [ReadOnly] public required NativeList<ControlPoint>                   m_ControlPoints;
-            [ReadOnly] public required ComponentTypeHandle<CreationDefinition>    m_CreationDefinitionTypeHandle;
-            [ReadOnly] public required ComponentLookup<Block>                     m_BlockComponentLookup;
-            [ReadOnly] public required ComponentLookup<ParcelOwner>               m_ParcelOwnerComponentLookup;
-            [ReadOnly] public required ComponentLookup<ParcelData>                m_ParcelDataComponentLookup;
-            [ReadOnly] public required ComponentLookup<Transform>                 m_TransformComponentLookup;
-            [ReadOnly] public required ComponentLookup<Parcel>                    m_ParcelComponentLookup;
-            [ReadOnly] public required float                                      m_SnapSetback;
-            [ReadOnly] public required EntityTypeHandle                           m_EntityTypeHandle;
-            [ReadOnly] public required ComponentLookup<Node>                      m_NodeLookup;
-            [ReadOnly] public required ComponentLookup<Edge>                      m_EdgeLookup;
-            [ReadOnly] public required ComponentLookup<Curve>                     m_CurveLookup;
-            [ReadOnly] public required ComponentLookup<Composition>               m_CompositionLookup;
-            [ReadOnly] public required ComponentLookup<PrefabRef>                 m_PrefabRefLookup;
-            [ReadOnly] public required ComponentLookup<NetData>                   m_NetDataLookup;
-            [ReadOnly] public required ComponentLookup<NetGeometryData>           m_NetGeometryDataLookup;
-            [ReadOnly] public required ComponentLookup<NetCompositionData>        m_NetCompositionDataLookup;
-            [ReadOnly] public required ComponentLookup<EdgeGeometry>              m_EdgeGeoLookup;
-            [ReadOnly] public required ComponentLookup<StartNodeGeometry>         m_StartNodeGeoLookup;
-            [ReadOnly] public required ComponentLookup<EndNodeGeometry>           m_EndNodeGeoLookup;
-            [ReadOnly] public required BufferLookup<ConnectedParcel>              m_ConnectedParcelLookup;
-            [ReadOnly] public required BufferLookup<ConnectedEdge>                m_ConnectedEdgeLookup;
-            [ReadOnly] public required SnapMode                                   m_SnapMode;
-            public required            ComponentTypeHandle<ObjectDefinition>      m_ObjectDefinitionTypeHandle;
-            public required            NativeReference<bool>                      m_IsSnapped;
-            //public required            NativeReference<Rotation> m_Rotation;
+            [ReadOnly] public required Entity                                   m_PrefabEntity;
+            [ReadOnly] public required NativeQuadTree<Entity, Bounds2>          m_ZoneTree;
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetTree;
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelTree;
+            [ReadOnly] public required TerrainHeightData                        m_TerrainHeightData;
+            [ReadOnly] public required WaterSurfaceData<SurfaceWater>           m_WaterSurfaceData;
+            [ReadOnly] public required NativeList<ControlPoint>                 m_ControlPoints;
+            [ReadOnly] public required ComponentLookup<Block>                   m_BlockComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelOwner>             m_ParcelOwnerComponentLookup;
+            [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
+            [ReadOnly] public required ComponentLookup<Transform>               m_TransformComponentLookup;
+            [ReadOnly] public required ComponentLookup<Parcel>                  m_ParcelComponentLookup;
+            [ReadOnly] public required float                                    m_SnapSetback;
+            [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
+            [ReadOnly] public required ComponentLookup<Node>                    m_NodeLookup;
+            [ReadOnly] public required ComponentLookup<Edge>                    m_EdgeLookup;
+            [ReadOnly] public required ComponentLookup<Curve>                   m_CurveLookup;
+            [ReadOnly] public required ComponentLookup<Composition>             m_CompositionLookup;
+            [ReadOnly] public required ComponentLookup<PrefabRef>               m_PrefabRefLookup;
+            [ReadOnly] public required ComponentLookup<NetData>                 m_NetDataLookup;
+            [ReadOnly] public required ComponentLookup<NetGeometryData>         m_NetGeometryDataLookup;
+            [ReadOnly] public required ComponentLookup<NetCompositionData>      m_NetCompositionDataLookup;
+            [ReadOnly] public required ComponentLookup<EdgeGeometry>            m_EdgeGeoLookup;
+            [ReadOnly] public required ComponentLookup<StartNodeGeometry>       m_StartNodeGeoLookup;
+            [ReadOnly] public required ComponentLookup<EndNodeGeometry>         m_EndNodeGeoLookup;
+            [ReadOnly] public required BufferLookup<ConnectedParcel>            m_ConnectedParcelLookup;
+            [ReadOnly] public required BufferLookup<ConnectedEdge>              m_ConnectedEdgeLookup;
+            [ReadOnly] public required BufferLookup<SubBlock>                   m_SubBlockLookup;
+            [ReadOnly] public required SnapMode                                 m_SnapMode;
+            public required            NativeReference<bool>                    m_IsSnapped;
 
             public void Execute() {
                 // Process last control point
@@ -110,10 +109,10 @@ namespace Platter.Systems {
                 // ========================
 
                 // Check if we snapped
-                //var isSnapped = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position) || 
-                //                !m_Rotation.Value.m_Rotation.Equals(bestSnapPosition.m_Rotation);
-                var isSnapped = bestSnapPosition.m_SnapPriority.x > 0f || bestSnapPosition.m_SnapPriority.y > 0f;
-
+                var isSnapped = !controlPoint.m_Position.Equals(bestSnapPosition.m_Position) ||
+                                !controlPoint.m_Rotation.Equals(bestSnapPosition.m_Rotation) ||
+                                !controlPoint.m_Direction.Equals(bestSnapPosition.m_Direction);
+                m_IsSnapped.Value = isSnapped;
 
                 // Exit early on no snap
                 if (!isSnapped) {
@@ -123,13 +122,6 @@ namespace Platter.Systems {
                 // Calculate height
                 // todo do we need this?
                 CalculateHeight(ref bestSnapPosition, parcelData, float.MinValue);
-
-                // Update Rotation
-                //var rotation = m_Rotation.Value;
-                //rotation.m_IsSnapped =  isSnapped;
-                //rotation.m_IsAligned &= rotation.m_Rotation.Equals(bestSnapPosition.m_Rotation);
-                //rotation.m_Rotation  = bestSnapPosition.m_Rotation;
-                //m_Rotation.Value = rotation;
 
                 // Update control point
                 m_ControlPoints[^1] = bestSnapPosition;
@@ -164,47 +156,40 @@ namespace Platter.Systems {
                                         Bounds3          totalBounds,
                                         ParcelData       parcelData,
                                         float            minDistance) {
-                var curvesList   = new NativeList<Bezier4x3>(Allocator.Temp);
-                var curvesFilter = new NativeList<bool>(Allocator.Temp);
-
-                var iterator = new EdgeSnapIterator(
-                    minDistance,
-                    curvesList,
-                    curvesFilter,
-                    totalBounds,
-                    bounds,
-                    20f,
-                    controlPoint.m_Elevation,
-                    bestSnapPosition: bestSnapPosition,
-                    lotSize: parcelData.m_LotSize,
-                    heightRange: new Bounds1(-50f, 50f),
-                    netData: default,
-                    prefabRefLookup: m_PrefabRefLookup,
-                    controlPoint: controlPoint,
-                    terrainHeightData: m_TerrainHeightData,
-                    waterSurfaceData: m_WaterSurfaceData,
-                    nodeLookup: m_NodeLookup,
-                    edgeLookup: m_EdgeLookup,
-                    curveLookup: m_CurveLookup,
-                    compositionLookup: m_CompositionLookup,
-                    prefabNetLookup: m_NetDataLookup,
-                    netGeometryDataLookup: m_NetGeometryDataLookup,
-                    netCompositionDataLookup: m_NetCompositionDataLookup,
-                    edgeGeoLookup: m_EdgeGeoLookup,
-                    startNodeGeoLookup: m_StartNodeGeoLookup,
-                    endNodeGeoLookup: m_EndNodeGeoLookup,
-                    connectedEdgeLookup: m_ConnectedEdgeLookup,
-                    snapSetback: m_SnapSetback,
-                    connectedParcelLookup: m_ConnectedParcelLookup,
-                    snapLevel: SnapLevel.RoadSide
-                );
-
+                var iterator = new EdgeSnapIterator {
+                    m_TotalBounds              = totalBounds,
+                    m_Bounds                   = bounds,
+                    m_SnapOffset               = 20f,
+                    m_Elevation                = controlPoint.m_Elevation,
+                    m_HeightRange              = new Bounds1(-20f, 20f),
+                    m_NetData                  = default,
+                    m_ControlPoint             = controlPoint,
+                    m_BestSnapPosition         = bestSnapPosition,
+                    m_LotSize                  = parcelData.m_LotSize,
+                    m_TerrainHeightData        = m_TerrainHeightData,
+                    m_WaterSurfaceData         = m_WaterSurfaceData         ,
+                    m_NodeLookup               = m_NodeLookup               ,
+                    m_EdgeLookup               = m_EdgeLookup               ,
+                    m_CurveLookup              = m_CurveLookup              ,
+                    m_SubBlockLookup           = m_SubBlockLookup,
+                    m_ConnectedParcelLookup    = m_ConnectedParcelLookup,
+                    m_CompositionLookup        = m_CompositionLookup        ,
+                    m_PrefabRefLookup          = m_PrefabRefLookup          ,
+                    m_NetDataLookup            = m_NetDataLookup,
+                    m_NetGeometryDataLookup    = m_NetGeometryDataLookup    ,
+                    m_NetCompositionDataLookup = m_NetCompositionDataLookup ,
+                    m_EdgeGeoLookup            = m_EdgeGeoLookup            ,
+                    m_StartNodeGeoLookup       = m_StartNodeGeoLookup       ,
+                    m_EndNodeGeoLookup         = m_EndNodeGeoLookup         ,
+                    m_ConnectedEdgeLookup      = m_ConnectedEdgeLookup      ,
+                    m_SnapSetback              = m_SnapSetback              ,
+                    m_BestDistance             = minDistance,
+                    m_SnapLevel                = SnapLevel.RoadSide,
+                };
+                    
                 m_NetTree.Iterate(ref iterator);
 
                 AddSnapPosition(ref bestSnapPosition, iterator.BestSnapPosition);
-
-                curvesList.Dispose();
-                curvesFilter.Dispose();
             }
 
             private void SnapToParcelEdge(ref ControlPoint bestSnapPosition,
@@ -392,7 +377,7 @@ namespace Platter.Systems {
                     );
 
                     // Cache block
-                    candidate.m_OriginalEntity = blockEntity;
+                    //candidate.m_OriginalEntity = blockEntity;
 
                     // Store candidate
                     m_BestSnapPosition = candidate;
@@ -403,86 +388,35 @@ namespace Platter.Systems {
             /// QuadTree iterator.
             /// </summary>
             public struct EdgeSnapIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
-                public ControlPoint BestSnapPosition => m_BestSnapPosition;
-
-                private Bounds3                             m_TotalBounds;
-                private Bounds3                             m_Bounds;
-                private float                               m_SnapOffset;
-                private float                               m_Elevation;
-                private Bounds1                             m_HeightRange;
-                private NetData                             m_NetData;
-                private ControlPoint                        m_ControlPoint;
-                private ControlPoint                        m_BestSnapPosition;
-                private int2                                m_LotSize;
-                private TerrainHeightData                   m_TerrainHeightData;
-                private WaterSurfaceData<SurfaceWater>      m_WaterSurfaceData;
-                private ComponentLookup<Node>               m_NodeLookup;
-                private ComponentLookup<Edge>               m_EdgeLookup;
-                private ComponentLookup<Curve>              m_CurveLookup;
-                private BufferLookup<ConnectedParcel>       m_ConnectedParcelLookup;
-                private ComponentLookup<Composition>        m_CompositionLookup;
-                private ComponentLookup<PrefabRef>          m_PrefabRefLookup;
-                private ComponentLookup<NetData>            m_PrefabNetLookup;
-                private ComponentLookup<NetGeometryData>    m_NetGeometryDataLookup;
-                private ComponentLookup<NetCompositionData> m_NetCompositionDataLookup;
-                private ComponentLookup<EdgeGeometry>       m_EdgeGeoLookup;
-                private ComponentLookup<StartNodeGeometry>  m_StartNodeGeoLookup;
-                private ComponentLookup<EndNodeGeometry>    m_EndNodeGeoLookup;
-                private BufferLookup<ConnectedEdge>         m_ConnectedEdgeLookup;
-                private float                               m_SnapSetback;
-                private NativeList<Bezier4x3>               m_CurvesList;
-                private NativeList<bool>                    m_CurvesFilter;
-                private float                               m_BestDistance;
-                private float                               m_SnapLevel;
-
-                public EdgeSnapIterator(float                               bestDistance, NativeList<Bezier4x3> curvesList, NativeList<bool> curvesFilter,
-                                        Bounds3                             totalBounds,  Bounds3               bounds,     float            snapOffset,
-                                        float                               elevation,    int2                  lotSize,
-                                        Bounds1                             heightRange,  NetData               netData,
-                                        ControlPoint                        controlPoint, ControlPoint          bestSnapPosition,
-                                        TerrainHeightData                   terrainHeightData,
-                                        WaterSurfaceData<SurfaceWater>      waterSurfaceData, ComponentLookup<Node>  nodeLookup,
-                                        ComponentLookup<Edge>               edgeLookup,       ComponentLookup<Curve> curveLookup,
-                                        ComponentLookup<Composition>        compositionLookup,
-                                        ComponentLookup<PrefabRef>          prefabRefLookup,
-                                        ComponentLookup<NetData>            prefabNetLookup,
-                                        ComponentLookup<NetGeometryData>    netGeometryDataLookup,
-                                        ComponentLookup<NetCompositionData> netCompositionDataLookup,
-                                        ComponentLookup<EdgeGeometry>       edgeGeoLookup,
-                                        ComponentLookup<StartNodeGeometry>  startNodeGeoLookup,
-                                        ComponentLookup<EndNodeGeometry>    endNodeGeoLookup,
-                                        BufferLookup<ConnectedEdge>         connectedEdgeLookup,   float snapSetback,
-                                        BufferLookup<ConnectedParcel>       connectedParcelLookup, float snapLevel) {
-                    m_BestDistance             = bestDistance;
-                    m_CurvesList               = curvesList;
-                    m_CurvesFilter             = curvesFilter;
-                    m_TotalBounds              = totalBounds;
-                    m_Bounds                   = bounds;
-                    m_SnapOffset               = snapOffset;
-                    m_Elevation                = elevation;
-                    m_HeightRange              = heightRange;
-                    m_NetData                  = netData;
-                    m_ControlPoint             = controlPoint;
-                    m_LotSize                  = lotSize;
-                    m_BestSnapPosition         = bestSnapPosition;
-                    m_TerrainHeightData        = terrainHeightData;
-                    m_WaterSurfaceData         = waterSurfaceData;
-                    m_NodeLookup               = nodeLookup;
-                    m_EdgeLookup               = edgeLookup;
-                    m_CurveLookup              = curveLookup;
-                    m_CompositionLookup        = compositionLookup;
-                    m_PrefabRefLookup          = prefabRefLookup;
-                    m_PrefabNetLookup          = prefabNetLookup;
-                    m_NetGeometryDataLookup    = netGeometryDataLookup;
-                    m_NetCompositionDataLookup = netCompositionDataLookup;
-                    m_EdgeGeoLookup            = edgeGeoLookup;
-                    m_StartNodeGeoLookup       = startNodeGeoLookup;
-                    m_EndNodeGeoLookup         = endNodeGeoLookup;
-                    m_ConnectedEdgeLookup      = connectedEdgeLookup;
-                    m_SnapSetback              = snapSetback;
-                    m_ConnectedParcelLookup    = connectedParcelLookup;
-                    m_SnapLevel                = snapLevel;
-                }
+                public          ControlPoint                        BestSnapPosition => m_BestSnapPosition;
+                public required Bounds3                             m_TotalBounds;
+                public required Bounds3                             m_Bounds;
+                public required float                               m_SnapOffset;
+                public required float                               m_Elevation;
+                public required Bounds1                             m_HeightRange;
+                public required NetData                             m_NetData;
+                public required ControlPoint                        m_ControlPoint;
+                public required ControlPoint                        m_BestSnapPosition;
+                public required int2                                m_LotSize;
+                public required TerrainHeightData                   m_TerrainHeightData;
+                public required WaterSurfaceData<SurfaceWater>      m_WaterSurfaceData;
+                public required ComponentLookup<Node>               m_NodeLookup;
+                public required ComponentLookup<Edge>               m_EdgeLookup;
+                public required ComponentLookup<Curve>              m_CurveLookup;
+                public required BufferLookup<ConnectedParcel>       m_ConnectedParcelLookup;
+                public required BufferLookup<SubBlock>              m_SubBlockLookup;
+                public required ComponentLookup<Composition>        m_CompositionLookup;
+                public required ComponentLookup<PrefabRef>          m_PrefabRefLookup;
+                public required ComponentLookup<NetData>            m_NetDataLookup;
+                public required ComponentLookup<NetGeometryData>    m_NetGeometryDataLookup;
+                public required ComponentLookup<NetCompositionData> m_NetCompositionDataLookup;
+                public required ComponentLookup<EdgeGeometry>       m_EdgeGeoLookup;
+                public required ComponentLookup<StartNodeGeometry>  m_StartNodeGeoLookup;
+                public required ComponentLookup<EndNodeGeometry>    m_EndNodeGeoLookup;
+                public required BufferLookup<ConnectedEdge>         m_ConnectedEdgeLookup;
+                public required float                               m_SnapSetback;
+                public required float                               m_BestDistance;
+                public required float                               m_SnapLevel;
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds, m_TotalBounds); }
 
@@ -502,9 +436,9 @@ namespace Platter.Systems {
                     var distance  = m_SnapOffset;
                     var isNode    = m_ConnectedEdgeLookup.HasBuffer(entity);
                     var isCurve   = m_CurveLookup.HasComponent(entity);
-                    var isZonable = m_ConnectedParcelLookup.HasBuffer(entity);
+                    var isValidRoad = m_SubBlockLookup.HasBuffer(entity) && m_ConnectedParcelLookup.HasBuffer(entity);
 
-                    if (!isZonable) {
+                    if (!isValidRoad) {
                         return false;
                     }
 
@@ -559,15 +493,15 @@ namespace Platter.Systems {
 
                 public bool HandleGeometry(ControlPoint controlPoint, float snapHeight, PrefabRef prefabRef,
                                            bool         ignoreHeightDistance) {
-                    if (!m_PrefabNetLookup.HasComponent(prefabRef.m_Prefab)) {
+                    if (!m_NetDataLookup.HasComponent(prefabRef.m_Prefab)) {
                         return false;
                     }
 
-                    var netData = m_PrefabNetLookup[prefabRef.m_Prefab];
+                    var netData = m_NetDataLookup[prefabRef.m_Prefab];
 
                     var   snapAdded = false;
                     var   flag2     = true;
-                    var   flag3     = true;
+                    var   allowEdgeSnap     = true;
                     float height;
 
                     if (m_Elevation < 0f) {
@@ -584,7 +518,7 @@ namespace Platter.Systems {
                         var bounds2         = netGeometryData.m_DefaultHeightRange + snapHeight;
                         if (!MathUtils.Intersect(bounds, bounds2)) {
                             flag2 = false;
-                            flag3 = (netGeometryData.m_Flags & GeometryFlags.NoEdgeConnection) == 0;
+                            allowEdgeSnap = (netGeometryData.m_Flags & Game.Net.GeometryFlags.NoEdgeConnection) == 0;
                         }
                     }
 
@@ -611,7 +545,7 @@ namespace Platter.Systems {
                                     var edge2 = m_EdgeLookup[edge];
                                     if (!(edge2.m_Start != controlPoint.m_OriginalEntity) ||
                                         !(edge2.m_End   != controlPoint.m_OriginalEntity)) {
-                                        HandleCurve(controlPoint, edge, flag3, ref snapAdded);
+                                        HandleCurve(controlPoint, edge, allowEdgeSnap, ref snapAdded);
                                     }
                                 }
 
@@ -638,7 +572,7 @@ namespace Platter.Systems {
 
                         snapAdded = true;
                     } else if (m_CurveLookup.HasComponent(controlPoint.m_OriginalEntity)) {
-                        HandleCurve(controlPoint, controlPoint.m_OriginalEntity, flag3, ref snapAdded);
+                        HandleCurve(controlPoint, controlPoint.m_OriginalEntity, allowEdgeSnap, ref snapAdded);
                     }
 
                     return snapAdded;
@@ -654,42 +588,41 @@ namespace Platter.Systems {
                     var startIsConnected = m_ConnectedEdgeLookup[edge.m_Start].Length > 1;
                     var endIsConnected   = m_ConnectedEdgeLookup[edge.m_End].Length   > 1;
 
-                    // Gather all curves for this road.
-                    m_CurvesFilter.Clear();
-                    m_CurvesList.Clear();
+                    var curvesList   = new NativeList<Bezier4x3>(Allocator.Temp);
+                    var curvesFilter = new NativeList<bool>(Allocator.Temp);
 
-                    m_CurvesList.Add(edgeGeo.m_Start.m_Left);
-                    m_CurvesFilter.Add(true);
-                    m_CurvesList.Add(edgeGeo.m_Start.m_Right);
-                    m_CurvesFilter.Add(true);
-                    m_CurvesList.Add(edgeGeo.m_End.m_Left);
-                    m_CurvesFilter.Add(true);
-                    m_CurvesList.Add(edgeGeo.m_End.m_Right);
-                    m_CurvesFilter.Add(true);
-                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Left);
-                    m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
-                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Right);
-                    m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !startIsConnected);
-                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Left);
-                    m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !startIsConnected);
-                    m_CurvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Right);
-                    m_CurvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
-                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Left);
-                    m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
-                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Right);
-                    m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !endIsConnected);
-                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Left);
-                    m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !endIsConnected);
-                    m_CurvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Right);
-                    m_CurvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
+                    curvesList.Add(edgeGeo.m_Start.m_Left);
+                    curvesFilter.Add(true);
+                    curvesList.Add(edgeGeo.m_Start.m_Right);
+                    curvesFilter.Add(true);
+                    curvesList.Add(edgeGeo.m_End.m_Left);
+                    curvesFilter.Add(true);
+                    curvesList.Add(edgeGeo.m_End.m_Right);
+                    curvesFilter.Add(true);
+                    curvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Left);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
+                    curvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Right);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !startIsConnected);
+                    curvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Left);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !startIsConnected);
+                    curvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Right);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
+                    curvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Left);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
+                    curvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Right);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !endIsConnected);
+                    curvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Left);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !endIsConnected);
+                    curvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Right);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
 
                     // Find curve closes to our control point.
                     var closestCurve = default(Bezier4x3);
                     var closestPoint = default(float);
 
-                    for (var i = 0; i < m_CurvesList.Length; i++) {
-                        var curve  = m_CurvesList[i];
-                        var filter = m_CurvesFilter[i];
+                    for (var i = 0; i < curvesList.Length; i++) {
+                        var curve  = curvesList[i];
+                        var filter = curvesFilter[i];
 
                         if (!filter) {
                             continue;
@@ -709,6 +642,8 @@ namespace Platter.Systems {
                     }
 
                     if (closestCurve.Equals(default)) {
+                        curvesList.Dispose();
+                        curvesFilter.Dispose();
                         return;
                     }
 
@@ -746,8 +681,11 @@ namespace Platter.Systems {
                         m_BestSnapPosition.m_Direction
                     );
 
-                    m_BestSnapPosition.m_OriginalEntity = curveEntity;
+                    //m_BestSnapPosition.m_OriginalEntity = curveEntity;
                     snapAdded                           = true;
+
+                    curvesList.Dispose();
+                    curvesFilter.Dispose();
                 }
             }
 
@@ -975,13 +913,9 @@ namespace Platter.Systems {
                     // Calculate directional delta between edge direction and new parcel direction
                     var directionDelta = MathUtils.RotationAngleSignedLeft(existingDirection, candidate.m_Direction);
 
-                    //PlatterMod.Instance.Log.Debug($"directionDelta {directionDelta}");
-
                     if (!TryGetRelativeDirection(directionDelta, out var relativeDirection)) {
                         return;
                     }
-
-                    //PlatterMod.Instance.Log.Debug($"relativeDirection {relativeDirection}");
 
                     // Calculate offset direction and amount
                     var offsetDirection = default(float2);
@@ -1010,10 +944,6 @@ namespace Platter.Systems {
                             offsetSign      = 1f;
                             break;
                     }
-
-                    //PlatterMod.Instance.Log.Debug($"offsetDirection {offsetDirection}");
-                    //PlatterMod.Instance.Log.Debug($"offsetAmount {offsetAmount}");
-                    //PlatterMod.Instance.Log.Debug($"offsetSign {offsetSign}");
 
                     // Apply offset
                     candidate.m_Position.xz += offsetDirection * offsetAmount * offsetSign;
@@ -1111,7 +1041,7 @@ namespace Platter.Systems {
                     m_BestSnapPosition.m_Direction      = existingDirection;
                     m_BestSnapPosition.m_Rotation       = existingTransform.m_Rotation;
                     m_BestSnapPosition.m_SnapPriority   = priority;
-                    m_BestSnapPosition.m_OriginalEntity = existingEntity;
+                    //m_BestSnapPosition.m_OriginalEntity = existingEntity;
                 }
             }
         }

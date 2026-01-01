@@ -5,8 +5,6 @@
 
 // ReSharper disable InconsistentNaming
 
-using Platter.Extensions;
-
 namespace Platter.Patches {
     #region Using Statements
 
@@ -111,21 +109,17 @@ namespace Platter.Patches {
                 var  pSnapSystem        = __instance.World.GetOrCreateSystemManaged<P_SnapSystem>();
                 var  parcelSearchSystem = __instance.World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
                 var  prefabSystem       = __instance.World.GetOrCreateSystemManaged<PrefabSystem>();
-                var  zoneSearchSystem   = (Game.Zones.SearchSystem)__instance.GetMemberValue("m_ZoneSearchSystem");
-                var  netSearchSystem    = (Game.Net.SearchSystem)__instance.GetMemberValue("m_NetSearchSystem");
-                var  terrainSystem      = (TerrainSystem)__instance.GetMemberValue("m_TerrainSystem");
-                var  waterSystem        = (WaterSystem)__instance.GetMemberValue("m_WaterSystem");
-                var  controlPoints      = (NativeList<ControlPoint>)__instance.GetMemberValue("m_ControlPoints");
-                var  prefab             = (PrefabBase)__instance.GetMemberValue("m_Prefab");
-                //var  rotation           = (NativeReference<Rotation>)__instance.GetMemberValue("m_Rotation");
+                var  zoneSearchSystem   = ObjectToolSystemFieldAccessor.GetZoneSearchSystem(__instance);
+                var  netSearchSystem    = ObjectToolSystemFieldAccessor.GetNetSearchSystem(__instance);
+                var  terrainSystem      = ObjectToolSystemFieldAccessor.GetTerrainSystem(__instance);
+                var  waterSystem        = ObjectToolSystemFieldAccessor.GetWaterSystem(__instance);
+                var  controlPoints      = ObjectToolSystemFieldAccessor.GetControlPoints(__instance);
+                var  prefab             = ObjectToolSystemFieldAccessor.GetPrefab(__instance);
 
                 if (__instance.prefab is not ParcelPlaceholderPrefab) {
-                    PlatterMod.Instance.Log.Debug("[Harmony ObjectToolSystem.SnapControlPoint] Using original.");
                     return true; 
                 }
-
-                PlatterMod.Instance.Log.Debug("[Harmony ObjectToolSystem.SnapControlPoint] Using patch.");
-
+                
                 // Schedule custom job
                 var customSnapJobHandle = new P_SnapSystem.AdhocParcelSnapJob {
                     m_ZoneTree                     = zoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
@@ -134,9 +128,6 @@ namespace Platter.Patches {
                     m_SnapMode                     = pSnapSystem.CurrentSnapMode,
                     m_ControlPoints                = controlPoints,
                     m_PrefabEntity                 = prefabSystem.GetEntity(prefab),
-                    //m_Rotation = rotation,
-                    m_ObjectDefinitionTypeHandle   = __instance.GetComponentTypeHandle<ObjectDefinition>(),
-                    m_CreationDefinitionTypeHandle = __instance.GetComponentTypeHandle<CreationDefinition>(true),
                     m_BlockComponentLookup         = __instance.GetComponentLookup<Game.Zones.Block>(true),
                     m_ParcelDataComponentLookup    = __instance.GetComponentLookup<ParcelData>(true),
                     m_ParcelOwnerComponentLookup   = __instance.GetComponentLookup<ParcelOwner>(true),
@@ -159,6 +150,7 @@ namespace Platter.Patches {
                     m_SnapSetback                  = pSnapSystem.CurrentSnapSetback,
                     m_EntityTypeHandle             = __instance.GetEntityTypeHandle(),
                     m_ConnectedParcelLookup        = __instance.GetBufferLookup<ConnectedParcel>(true),
+                    m_SubBlockLookup               = __instance.GetBufferLookup<Game.Zones.SubBlock>(true),
                     m_IsSnapped                    = pSnapSystem.IsSnapped,
                 }.Schedule(JobUtils.CombineDependencies(inputDeps, zoneTreeJobHandle, netTreeJobHandle, parcelTreeJobHandle, waterSurfaceJobHandle));
 

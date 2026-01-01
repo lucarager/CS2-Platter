@@ -10,8 +10,8 @@
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Über",
   "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "Allgemein",
   "Options.GROUP[Platter.Platter.PlatterMod.AdvancedGroup]": "Erweitert",
-  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Parzellen-Overlay für Schlüsselwerkzeuge automatisch aktivieren",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Wenn diese Option aktiviert ist, werden Parzellen-Overlays angezeigt, wenn Sie wichtige Standard-Tools wie Net Tool usw. verwenden.\n\nDeaktivieren Sie diese Option, um das Overlay manuell mit der Option „Overlay umschalten“ zu steuern.",
+  "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Parzellen-Overlay für wichtigste Tools automatisch aktivieren",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Wenn diese Option aktiviert ist, werden Parzellen-Overlays angezeigt, wenn Sie wichtige Standard-Tools wie das Netzwerk-Tool usw. verwenden.\n\nDeaktivieren Sie diese Option, um das Overlay manuell mit der Option „Overlay umschalten“ zu steuern.",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Alle Parzellen löschen",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Entfernt alle Parzellen dauerhaft von der Karte. Gebäude, die nicht auf einer Vanille-Zone sind, verschwinden, es sei denn, du hast einen Modifikator, der dies verhindert.",
   "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "WARNUNG: Alle Parzellen dauerhaft aus diesem Speicherplatz entfernen?",
@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Eine Parzelle mit Zonenblöcken. 6 Zellen breit, 5 Zellen tief",
   "Assets.NAME[Parcel 6x6]": "Parzelle (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Eine Parzelle mit Zonenblöcken. 6 Zellen breit, 6 Zellen tief",
-  "Assets.NAME[Unzoned]": "Nicht zoniert"
+  "Assets.NAME[PlatterUnzoned]": "Nicht zoniert"
 }

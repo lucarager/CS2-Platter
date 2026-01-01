@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Parcela colocable con celdas de zonificación, de 6 celdas de ancho y 5 de largo",
   "Assets.NAME[Parcel 6x6]": "Parcela (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Parcela colocable con celdas de zonificación, de 6 celdas de ancho y 6 de largo",
-  "Assets.NAME[Unzoned]": "Sin zona"
+  "Assets.NAME[PlatterUnzoned]": "Sin zona"
 }

@@ -218,15 +218,16 @@ namespace Platter.Systems {
                                           bool                       spawnable = false) {
                 // Constants
                 const float accessMult         = 3.5f;
-                const float opacityLow         = ColorConstants.OpacityLow;
+                const float opacityLow         = 0.13f;
+                const float opacityMedium      = 0.4f;
                 const float outlineWidth       = DimensionConstants.ParcelOutlineWidth;
                 const float cellSize           = DimensionConstants.CellSize;
                 const float cellOutlineWidth   = DimensionConstants.ParcelCellOutlineWidth;
                 const float frontIndicatorDiam = DimensionConstants.ParcelFrontIndicatorDiameter;
                 const float frontIndicatorLine = DimensionConstants.ParcelFrontIndicatorHollowLineWidth;
 
-                // Colors (inlined for Burst compatibility
-                var parcelOutlineColor        = new Color(1f, 1f, 1f, 0.5f);
+                // Colors
+                var parcelOutlineColor        = new Color(1f, 1f, 1f, opacityMedium);
                 var parcelInlineColor         = new Color(1f, 1f, 1f, opacityLow);
                 var parcelFrontIndicatorColor = new Color(1f, 1f, 1f, 1f);
                 var transparentColor          = new Color(1f, 1f, 1f, 0f);

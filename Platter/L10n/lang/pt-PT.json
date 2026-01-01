@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Um Lote com células para zonear. 6 células de largura, 5 células de profundidade",
   "Assets.NAME[Parcel 6x6]": "Lote (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Um Lote com células para zonear. 6 células de largura, 6 células de profundidade",
-  "Assets.NAME[Unzoned]": "Sem zoneamento"
+  "Assets.NAME[PlatterUnzoned]": "Sem zoneamento"
 }

@@ -45,6 +45,7 @@ namespace Platter.Systems {
             m_TempQuery = SystemAPI.QueryBuilder()
                                    .WithAllRW<ParcelPlaceholder>()
                                    .WithAll<Temp>()
+                                   .WithNone<Deleted>()
                                    .Build();
 
             RequireAnyForUpdate(m_PlacedQuery, m_TempQuery);

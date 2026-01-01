@@ -29,8 +29,7 @@ namespace Platter.Systems {
 
             // Queries
             m_PrefabCreatedQuery = SystemAPI.QueryBuilder()
-                                            .WithAll<Edge, Created,
-                                                ConnectedBuilding>() // Only roads that allow connections will have ConnectedBuilding component
+                                            .WithAll<Edge, Created, Game.Zones.SubBlock, ConnectedBuilding>() // Only roads that allow connections will have ConnectedBuilding component
                                             .WithNone<ConnectedParcel, Temp, Deleted>()
                                             .Build();
 

@@ -24,13 +24,14 @@ namespace Platter.Systems {
     /// </summary>
     public partial class P_PrefabsCreateSystem : PlatterGameSystemBase {
         /// <summary>
-        /// Range of block sizes we support.
+        /// Range of parcel lot sizes we support.
         /// <para>x = min width.</para>
         /// <para>y = min depth.</para>
         /// <para>z = max width.</para>
         /// <para>w = max depth.</para>
+        /// todo: Change this to be more inline with vanilla, with y being max width etc.
         /// </summary>
-        public static readonly int4 BlockSizes = new(1, 2, 6, 6);
+        public static readonly int4 AvailableParcelLotSizes = new(1, 2, 8, 6);
 
         /// <summary>
         /// Stateful value to only run installation once.
@@ -76,7 +77,7 @@ namespace Platter.Systems {
             m_PrefabBaseCache = new Dictionary<Entity, PrefabBase>(100);
 
             // Systems
-            m_PrefabSystem             = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
         }
 
         /// <inheritdoc/>
@@ -111,7 +112,7 @@ namespace Platter.Systems {
         /// This includes area prefabs, category prefabs, and individual parcel prefabs for all supported sizes.
         /// </summary>
         private void Install() {
-            var logMethodPrefix = "Install() --";
+            const string logMethodPrefix = "Install() --";
 
             // Mark as already _prefabsAreInstalled
             m_PrefabsAreInstalled = true;
@@ -141,8 +142,8 @@ namespace Platter.Systems {
             CreateUnzonedPrefab((ZonePrefab)prefabBaseDict["unzonedZone"], out var unzonedPrefab);
 
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
-            for (var i = BlockSizes.x; i <= BlockSizes.z; i++)
-            for (var j = BlockSizes.y; j <= BlockSizes.w; j++) {
+            for (var i = AvailableParcelLotSizes.x; i <= AvailableParcelLotSizes.z; i++)
+            for (var j = AvailableParcelLotSizes.y; j <= AvailableParcelLotSizes.w; j++) {
                 if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab)) {
                     m_Log.Debug($"Created Parcel Prefab {i}x{j}");
                 } else {
@@ -212,7 +213,7 @@ namespace Platter.Systems {
                 var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
                 placeableLotPrefabUIObject.m_Icon          = icon;
                 placeableLotPrefabUIObject.m_IsDebugObject = false;
-                placeableLotPrefabUIObject.m_Priority      = (lotWidth - 2) * BlockSizes.z + lotDepth - 1;
+                placeableLotPrefabUIObject.m_Priority      = (lotWidth - 2) * AvailableParcelLotSizes.z + lotDepth - 1;
                 placeableLotPrefabUIObject.m_Group         = uiCategoryPrefab;
                 placeableLotPrefabUIObject.active          = true;
                 prefabBase.AddComponentFrom(placeableLotPrefabUIObject);
@@ -295,9 +296,9 @@ namespace Platter.Systems {
         /// <param name="unzonedPrefab">When this method returns, contains the created unzoned prefab if successful; otherwise, null.</param>
         /// <returns>True if the unzoned prefab was successfully created and added to the prefab system; otherwise, false.</returns>
         private bool CreateUnzonedPrefab(ZonePrefab originalUnzonedPrefab, out ZonePrefab unzonedPrefab) {
-            var clonedUnzonedPrefab = (ZonePrefab)originalUnzonedPrefab.Clone("Unzoned");
+            var clonedUnzonedPrefab = (ZonePrefab)originalUnzonedPrefab.Clone("PlatterUnzoned");
             clonedUnzonedPrefab.m_AreaType = Game.Zones.AreaType.Residential;
-            clonedUnzonedPrefab.m_Edge = new Color(1f, 0.388f, 0.718f, 0.3f);
+            clonedUnzonedPrefab.m_Edge = new Color(1f, 0.388f, 0.718f, 0.13f);
 
             var success = m_PrefabSystem.AddPrefab(clonedUnzonedPrefab);
 
