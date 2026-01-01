@@ -1,27 +1,34 @@
 <Publish>
   <!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-  <ModId Value="" />
+  <ModId Value="130324" />
   <!--Name of the mod to display to players-->
   <DisplayName Value="Platter [Experimental]" />
   <!--Short description of the mod-->
-  <ShortDescription Value="Platter (Experimental)" />
+  <ShortDescription Value="Platter - A zoning overhaul mod." />
   <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
   <!--LongDescription Value="Platter mod long" /-->
-  <LongDescription>	This is the experimental branch of Platter mod for Cities: Skylines 2.
-	You can expect to find new features and improvements here before they are added to the stable release.
-	Please note that this branch may contain bugs or unfinished features, so use it at your own risk.</LongDescription>
+  <LongDescription>This is the experimental branch of Platter mod for Cities: Skylines 2.
+You can expect to find new features and improvements here before they are added to the stable release.
+Please note that this branch may contain bugs or unfinished features, so use it at your own risk.</LongDescription>
   <!--Thumbnail-->
   <Thumbnail Value="Properties/thumbnail.png" />
   <!--Screenshot, can be set multiple times-->
   <Screenshot Value="Properties/cover.jpg" />
+  <Screenshot Value="Properties/preview2.jpg" />
+  <Screenshot Value="Properties/preview3.jpg" />
+  <Screenshot Value="Properties/preview4.jpg" />
   <!--Tag, can be set multiple times-->
   <Tag Value="Code Mod" />
+  <!--Link to the forum post where the mod can be discussed-->
+  <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
   <!--Version of the mod-->
   <ModVersion Value="0.1.0" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
+  <!--Dependency for the mod, can be set multiple-->
+  <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog/>
+  <ChangeLog>Version 0.1.0 - Initial Release</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
   <ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
