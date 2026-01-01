@@ -10,6 +10,7 @@ namespace Platter.Systems {
     using Game.Net;
     using Game.Zones;
     using Platter.Components;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Game.Prefabs;
