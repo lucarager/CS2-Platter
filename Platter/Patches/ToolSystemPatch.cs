@@ -5,8 +5,6 @@
 
 // ReSharper disable InconsistentNaming
 
-using Platter.Extensions;
-
 namespace Platter.Patches {
     #region Using Statements
 
@@ -111,12 +109,12 @@ namespace Platter.Patches {
                 var  pSnapSystem        = __instance.World.GetOrCreateSystemManaged<P_SnapSystem>();
                 var  parcelSearchSystem = __instance.World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
                 var  prefabSystem       = __instance.World.GetOrCreateSystemManaged<PrefabSystem>();
-                var  zoneSearchSystem   = (Game.Zones.SearchSystem)__instance.GetMemberValue("m_ZoneSearchSystem");
-                var  netSearchSystem    = (Game.Net.SearchSystem)__instance.GetMemberValue("m_NetSearchSystem");
-                var  terrainSystem      = (TerrainSystem)__instance.GetMemberValue("m_TerrainSystem");
-                var  waterSystem        = (WaterSystem)__instance.GetMemberValue("m_WaterSystem");
-                var  controlPoints      = (NativeList<ControlPoint>)__instance.GetMemberValue("m_ControlPoints");
-                var  prefab             = (PrefabBase)__instance.GetMemberValue("m_Prefab");
+                var  zoneSearchSystem   = ObjectToolSystemFieldAccessor.GetZoneSearchSystem(__instance);
+                var  netSearchSystem    = ObjectToolSystemFieldAccessor.GetNetSearchSystem(__instance);
+                var  terrainSystem      = ObjectToolSystemFieldAccessor.GetTerrainSystem(__instance);
+                var  waterSystem        = ObjectToolSystemFieldAccessor.GetWaterSystem(__instance);
+                var  controlPoints      = ObjectToolSystemFieldAccessor.GetControlPoints(__instance);
+                var  prefab             = ObjectToolSystemFieldAccessor.GetPrefab(__instance);
 
                 if (__instance.prefab is not ParcelPlaceholderPrefab) {
                     return true; 
