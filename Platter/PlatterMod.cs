@@ -217,7 +217,6 @@ namespace Platter {
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
             updateSystem.UpdateAfter<P_NewCellCheckSystem, CellCheckSystem>(SystemUpdatePhase.Modification5);
-            //updateSystem.UpdateAfter<P_CellUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
 
             // Tests
             #if IS_DEBUG
