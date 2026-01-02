@@ -50,12 +50,12 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             m_Log.Debug("OnUpdate()");
 
-            var updateJobHandle = new UpdateCachedTransformJob(
-                SystemAPI.GetEntityTypeHandle(),
-                SystemAPI.GetComponentTypeHandle<CachedTransform>(),
-                SystemAPI.GetComponentTypeHandle<Transform>(),
-                m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter()
-            ).ScheduleParallel(m_UpdatedQuery, Dependency);
+            var updateJobHandle = new UpdateCachedTransformJob {
+                m_EntityTypeHandle          = SystemAPI.GetEntityTypeHandle(),
+                m_CachedTransformTypeHandle = SystemAPI.GetComponentTypeHandle<CachedTransform>(),
+                m_TransformTypeHandle       = SystemAPI.GetComponentTypeHandle<Transform>(),
+                m_CommandBuffer             = m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter(),
+            }.ScheduleParallel(m_UpdatedQuery, Dependency);
 
             m_ModificationBarrier1.AddJobHandleForProducer(updateJobHandle);
             Dependency = updateJobHandle;
@@ -65,10 +65,10 @@ namespace Platter.Systems {
         [BurstCompile]
 #endif
         private struct UpdateCachedTransformJob : IJobChunk {
-            [ReadOnly] private EntityTypeHandle                     m_EntityTypeHandle;
-            [ReadOnly] private ComponentTypeHandle<Transform>       m_TransformTypeHandle;
-            private            ComponentTypeHandle<CachedTransform> m_CachedTransformTypeHandle;
-            private            EntityCommandBuffer.ParallelWriter   m_CommandBuffer;
+            [ReadOnly] public required EntityTypeHandle                     m_EntityTypeHandle;
+            [ReadOnly] public required ComponentTypeHandle<Transform>       m_TransformTypeHandle;
+            public required            ComponentTypeHandle<CachedTransform> m_CachedTransformTypeHandle;
+            public required            EntityCommandBuffer.ParallelWriter   m_CommandBuffer;
 
             public UpdateCachedTransformJob(EntityTypeHandle               entityTypeHandle,    ComponentTypeHandle<CachedTransform> cachedTransformTypeHandle,
                                             ComponentTypeHandle<Transform> transformTypeHandle, EntityCommandBuffer.ParallelWriter   commandBuffer) {
