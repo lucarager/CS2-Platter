@@ -105,6 +105,8 @@ namespace Platter.Systems {
                 return;
             }
 
+            m_Log.Debug("Running P_NewCellCheckSystem");
+
             var updatedBlocksList  = new NativeList<SortedEntity>(Allocator.TempJob);
             var blockOverlapQueue  = new NativeQueue<BlockOverlap>(Allocator.TempJob);
             var blockOverlapList   = new NativeList<BlockOverlap>(Allocator.TempJob);

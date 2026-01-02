@@ -130,12 +130,15 @@ namespace Platter.Systems {
                             // No valid flags set, exit.
                             continue;
                         }
-                    } 
+                    }
 
+                    enqueuedCount++;
                     m_ParcelEntitiesQueue.Enqueue(entity);
                 }
 
-                BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} of {tempArray.Length} parcels.");
+                if (enqueuedCount > 0) {
+                    BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} of {entityArray.Length} parcels.");
+                }
             }
 
             private struct FindParcelNextToRoadIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {

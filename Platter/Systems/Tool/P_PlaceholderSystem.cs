@@ -95,6 +95,8 @@ namespace Platter.Systems {
                     parcel.m_PreZoneType = m_ZoneType;
                     parcelArray[i]       = parcel;
 
+                    BurstLogger.Debug($"[UpdateTempPlaceholderJob]", $"Updated parcel {entity}");
+
                     //m_CommandBuffer.AddComponent<Updated>(index, entity);
                 }
             }
@@ -117,6 +119,8 @@ namespace Platter.Systems {
                 for (var i = 0; i < entityArray.Length; i++) {
                     var entity = entityArray[i];
                     var prefabRef = prefabRefArray[i];
+
+                    BurstLogger.Debug($"[SwapPlaceholderRefJob]", $"Updated parcel {entity}");
 
                     // Get the parcel data from the placeholder prefab entity to extract dimensions
                     if (!m_ParcelDataLookup.HasComponent(prefabRef.m_Prefab)) {

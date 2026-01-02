@@ -76,6 +76,8 @@ namespace Platter.Systems {
                     var prefabRef = m_PrefabRefLookup[parcelOwner.m_Owner];
                     var parcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
 
+                    BurstLogger.Debug("[P_UnzonedSystem]", $"Block {block} of parcel {parcelOwner.m_Owner} is being updated.");
+
                     for (var col = 0; col < block.m_Size.x; col++)
                     for (var row = 0; row < block.m_Size.y; row++) {
                         var index = row * block.m_Size.x + col;
