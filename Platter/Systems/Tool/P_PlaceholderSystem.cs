@@ -11,6 +11,7 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Tools;
     using Game.Zones;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -44,7 +45,7 @@ namespace Platter.Systems {
             // Parcels (with ParcelPlaceholder) created by a tool (Temp)
             m_TempQuery = SystemAPI.QueryBuilder()
                                    .WithAllRW<ParcelPlaceholder>()
-                                   .WithAll<Temp, Created>()
+                                   .WithAll<Temp>()
                                    .WithNone<Deleted>()
                                    .Build();
 
@@ -57,9 +58,7 @@ namespace Platter.Systems {
                 m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
                 m_ZoneType = m_PlatterUISystem.PreZoneType,
                 m_ParcelTypeHandle = SystemAPI.GetComponentTypeHandle<Parcel>(),
-                m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter(),
             }.Schedule(m_TempQuery, Dependency);
-            m_ModificationBarrier1.AddJobHandleForProducer(updateTempPlaceholderJobHandle);
 
             Dependency = JobHandle.CombineDependencies(updateTempPlaceholderJobHandle, Dependency);
 
@@ -68,8 +67,7 @@ namespace Platter.Systems {
                 m_EntityTypeHandle = SystemAPI.GetEntityTypeHandle(),
                 m_AllowSpawn       = PlatterMod.Instance.Settings.AllowSpawn,
                 m_PrefabRefTypeHandle = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
-                m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(),
-                m_PrefabCache = m_PPrefabsCreateSystem.GetReadOnlyPrefabCache(),
+                m_ParcelPairCache = m_PPrefabsCreateSystem.GetReadOnlyParcelPairCache(),
                 m_CommandBuffer = m_ModificationBarrier1.CreateCommandBuffer().AsParallelWriter(),
                 toPermanent = true,
             }.Schedule(m_PlacedQuery, Dependency);
@@ -85,7 +83,6 @@ namespace Platter.Systems {
             [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
             [ReadOnly] public required ZoneType                           m_ZoneType;
             public required            ComponentTypeHandle<Parcel>        m_ParcelTypeHandle;
-            public required            EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int index, bool useEnabledMask,
                                 in v128           chunkEnabledMask) {
@@ -114,8 +111,7 @@ namespace Platter.Systems {
         private struct SwapPlaceholderRefJob : IJobChunk {
             [ReadOnly] public required EntityTypeHandle                    m_EntityTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<PrefabRef>      m_PrefabRefTypeHandle;
-            [ReadOnly] public required ComponentLookup<ParcelData>         m_ParcelDataLookup;
-            [ReadOnly] public required NativeHashMap<int, Entity>.ReadOnly m_PrefabCache;
+            [ReadOnly] public required NativeHashMap<Entity, Entity>.ReadOnly m_ParcelPairCache;
             [ReadOnly] public required bool                                m_AllowSpawn;
             public required            EntityCommandBuffer.ParallelWriter  m_CommandBuffer;
             public required            bool                                toPermanent;
@@ -129,23 +125,15 @@ namespace Platter.Systems {
                     var entity = entityArray[i];
                     var prefabRef = prefabRefArray[i];
 
-                    BurstLogger.Debug($"[SwapPlaceholderRefJob]", $"Updated parcel {entity}");
+                    BurstLogger.Debug($"[SwapPlaceholderRefJob]", $"Swapping parcel {entity}");
 
-                    // Get the parcel data from the placeholder prefab entity to extract dimensions
-                    if (!m_ParcelDataLookup.HasComponent(prefabRef.m_Prefab)) {
-                        continue;
-                    }
-
-                    var parcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
-                    var parcelPrefabID = ParcelUtils.GetPrefabID(parcelData.m_LotSize.x, parcelData.m_LotSize.y);
-                    var cacheKey = ParcelUtils.GetCustomHashCode(parcelPrefabID, !toPermanent);
-
-                    if (!m_PrefabCache.TryGetValue(cacheKey, out var newPrefabEntity)) {
+                    // Use the parcel pair cache to get the paired prefab entity directly
+                    if (!m_ParcelPairCache.TryGetValue(prefabRef.m_Prefab, out var pairedPrefabEntity)) {
                         continue;
                     }
 
                     // Swap PrefabRef
-                    prefabRef.m_Prefab = newPrefabEntity;
+                    prefabRef.m_Prefab = pairedPrefabEntity;
                     m_CommandBuffer.SetComponent(index, entity, prefabRef);
 
                     // Set or remove ParcelPlaceholder component

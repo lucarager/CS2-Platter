@@ -523,7 +523,7 @@ namespace Platter.Systems {
         /// </summary>
         private void UpdateSelectedPrefab() {
             var id = ParcelUtils.GetPrefabID(m_SelectedParcelSize, true);
-            m_Log.Debug($"UpdateSelectedPrefab() -- ${id}!");
+            m_Log.Debug($"UpdateSelectedPrefab() -- ${id}");
 
             if (!m_PrefabSystem.TryGetPrefab(id, out var prefabBase)) {
                 return;

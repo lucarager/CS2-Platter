@@ -14,6 +14,7 @@ namespace Platter.Utils {
     using Unity.Burst;
     using Unity.Entities;
     using Unity.Mathematics;
+    using static Game.UI.NameSystem;
 
     #endregion
 
@@ -43,15 +44,24 @@ namespace Platter.Utils {
         }
 
         public static PrefabID GetPrefabID(int width, int depth, bool placeholder = false) {
-            var category = placeholder ? "ParcelPlaceholderPrefab" : "ParcelPrefab";
-            var name     = $"Parcel {width}x{depth}";
-            return new PrefabID(category, name);
+            var prefix = placeholder ? "ParcelPlaceholder" : "Parcel";
+            var type   = placeholder ? "ParcelPlaceholderPrefab" : "ParcelPrefab";
+            var name   = $"{prefix} {width}x{depth}";
+            return new PrefabID(type, name);
         }
 
-        public static PrefabID GetPrefabID(int2 size, bool placeholder = false) { return GetPrefabID(size.x, size.y, placeholder); }
+        public static PrefabID GetPrefabID(int2 size, bool placeholder = false) {
+            return GetPrefabID(size.x, size.y, placeholder);
+        }
 
-        public static int GetCustomHashCode(PrefabID prefabID, bool placeholder = false) {
-            return UnityEngine.Hash128.Compute(prefabID.GetType() + prefabID.GetName() + placeholder.ToString()).GetHashCode();
+        public static int GetHashCode(int2 size, bool placeholder = false) {
+            return placeholder ? 
+                UnityEngine.Hash128.Compute($"ParcelPlaceholder {size.x}x{size.y}").GetHashCode() : 
+                UnityEngine.Hash128.Compute($"Parcel {size.x}x{size.y}").GetHashCode();
+        }
+
+        public static int GetHashCode(PrefabID prefabID) {
+            return UnityEngine.Hash128.Compute($"{prefabID.GetName()}").GetHashCode();
         }
 
         /// <summary>

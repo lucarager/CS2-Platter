@@ -171,18 +171,17 @@ namespace Platter.Patches {
         [HarmonyPatch(nameof(ObjectToolSystem.StartMoving))]
         private class ObjectToolSystem_StartMoving {
             public static void Postfix(ObjectToolSystem __instance) {
-                var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+                var prefab = __instance.prefab;
 
-                if (__instance.prefab is not ParcelPrefab) {
+                if (prefab is not ParcelPrefab) {
                     return;
                 }
 
-                var currentPrefabID = __instance.prefab.GetPrefabID();
-                var cacheKey        = ParcelUtils.GetCustomHashCode(currentPrefabID, true);
-                if (m_PPrefabsCreateSystem.TryGetCachedPrefab(cacheKey, out var newPrefabEntity) &&
-                    m_PPrefabsCreateSystem.TryGetCachedPrefabBase(newPrefabEntity, out var newPrefabBase) &&
-                    newPrefabBase is ObjectPrefab objectPrefab) {
-                    __instance.prefab = objectPrefab;
+                var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+
+                // Use the new cache to get the placeholder prefab directly
+                if (m_PPrefabsCreateSystem.TryGetParcelPairPrefabBase<ParcelPlaceholderPrefab>(prefab, out var placeholderPrefab)) {
+                    __instance.prefab = placeholderPrefab;
                 }
             }
         }
@@ -196,18 +195,15 @@ namespace Platter.Patches {
         [HarmonyPatch(new[] { typeof(PrefabBase) })]
         private class ObjectToolSystem_TrySetPrefab {
             public static bool Prefix(ObjectToolSystem __instance, ref PrefabBase prefab) {
-                var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
-
                 if (prefab is not ParcelPrefab) {
-                    return true; // Run original method
+                    return true;
                 }
 
-                var currentPrefabID = prefab.GetPrefabID();
-                var cacheKey        = ParcelUtils.GetCustomHashCode(currentPrefabID, true);
-                if (m_PPrefabsCreateSystem.TryGetCachedPrefab(cacheKey, out var newPrefabEntity) &&
-                    m_PPrefabsCreateSystem.TryGetCachedPrefabBase(newPrefabEntity, out var newPrefabBase) &&
-                    newPrefabBase is ObjectPrefab objectPrefab) {
-                    prefab = objectPrefab;
+                var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+
+                // Use the new cache to get the placeholder prefab directly
+                if (m_PPrefabsCreateSystem.TryGetParcelPairPrefabBase<ParcelPlaceholderPrefab>(prefab, out var placeholderPrefab)) {
+                    prefab = placeholderPrefab;
                 }
 
                 return true; // Run original method with modified prefab

@@ -11,6 +11,7 @@ namespace Platter.Systems {
     using Game.Buildings;
     using Game.Common;
     using Game.Tools;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;

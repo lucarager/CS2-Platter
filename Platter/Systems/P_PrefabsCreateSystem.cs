@@ -66,6 +66,12 @@ namespace Platter.Systems {
         /// </summary>
         private Dictionary<Entity, PrefabBase> m_PrefabBaseCache;
 
+        /// <summary>
+        /// Bidirectional cache mapping between parcel and placeholder entities.
+        /// Given a Parcel entity, returns its ParcelPlaceholder entity and vice versa.
+        /// </summary>
+        private NativeHashMap<Entity, Entity> m_ParcelPairCache;
+
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -75,6 +81,9 @@ namespace Platter.Systems {
             
             // Initialize reverse cache for Entity -> PrefabBase lookup
             m_PrefabBaseCache = new Dictionary<Entity, PrefabBase>(100);
+
+            // Initialize parcel pair cache (capacity for 72 pairs = 144 entries since it's bidirectional)
+            m_ParcelPairCache = new NativeHashMap<Entity, Entity>(144, Allocator.Persistent);
 
             // Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
@@ -90,6 +99,10 @@ namespace Platter.Systems {
 
             if (m_PrefabBaseCache != null) {
                 m_PrefabBaseCache.Clear();
+            }
+
+            if (m_ParcelPairCache.IsCreated) {
+                m_ParcelPairCache.Dispose();
             }
         }
 
@@ -144,16 +157,26 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = AvailableParcelLotSizes.x; i <= AvailableParcelLotSizes.z; i++)
             for (var j = AvailableParcelLotSizes.y; j <= AvailableParcelLotSizes.w; j++) {
-                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab)) {
+                Entity parcelEntity = Entity.Null;
+                Entity placeholderEntity = Entity.Null;
+
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, false, out parcelEntity)) {
                     m_Log.Debug($"Created Parcel Prefab {i}x{j}");
                 } else {
                     m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
                 }
 
-                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, true)) {
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, true, out placeholderEntity)) {
                     m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
                 } else {
                     m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
+                }
+
+                // Register the parcel pair in the bidirectional cache
+                if (parcelEntity != Entity.Null && placeholderEntity != Entity.Null) {
+                    m_ParcelPairCache[parcelEntity] = placeholderEntity;
+                    m_ParcelPairCache[placeholderEntity] = parcelEntity;
+                    m_Log.Debug($"Registered parcel pair {i}x{j} in cache");
                 }
             }
 
@@ -180,12 +203,13 @@ namespace Platter.Systems {
         /// <param name="uiCategoryPrefab">The UI category prefab to group this parcel under.</param>
         /// <param name="areaPrefabBase">The area prefab base for enclosed area configuration.</param>
         /// <param name="placeholder">If true, creates a placeholder prefab; otherwise creates a regular parcel prefab.</param>
+        /// <param name="entity">When this method returns, contains the created entity if successful; otherwise, Entity.Null.</param>
         /// <returns>True if the prefab was successfully created and added to the prefab system; otherwise, false.</returns>
         private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase,
-                                        bool placeholder = false) {
-            var prefix    = "Parcel";
+                                        bool placeholder, out Entity entity) {
+            var prefix    = placeholder ? "ParcelPlaceholder" : "Parcel";
             var name      = $"{prefix} {lotWidth}x{lotDepth}";
-            var icon      = $"coui://platter/{prefix}_{lotWidth}x{lotDepth}.svg";
+            var icon      = $"coui://platter/Parcel_{lotWidth}x{lotDepth}.svg";
 
             PrefabBase prefabBase;
             if (placeholder) {
@@ -220,11 +244,18 @@ namespace Platter.Systems {
             }
 
             if (m_PrefabSystem.AddPrefab(prefabBase)) {
-                RegisterPrefabInCache(prefabBase, placeholder);
+                entity = RegisterPrefabInCache(prefabBase);
                 return true;
             }
 
+            entity = Entity.Null;
             return false;
+        }
+
+        // Overload for backward compatibility
+        private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase,
+                                        bool placeholder = false) {
+            return CreateParcelPrefab(lotWidth, lotDepth, roadPrefab, uiCategoryPrefab, areaPrefabBase, placeholder, out _);
         }
 
         /// <summary>
@@ -331,21 +362,110 @@ namespace Platter.Systems {
         /// </summary>
         /// <param name="entity">The entity to look up in the prefab base cache.</param>
         /// <param name="prefabBase">When this method returns, contains the cached PrefabBase if found; otherwise, null.</param>
-        /// <returns>True if the PrefabBase was found in the cache; otherwise, false.</returns>
         public bool TryGetCachedPrefabBase(Entity entity, out PrefabBase prefabBase) { return m_PrefabBaseCache.TryGetValue(entity, out prefabBase); }
+
+        /// <summary>
+        /// Get the paired entity (placeholder for parcel, or parcel for placeholder).
+        /// </summary>
+        /// <param name="entity">The entity to look up (either a parcel or placeholder).</param>
+        /// <param name="pairedEntity">When this method returns, contains the paired entity if found; otherwise, Entity.Null.</param>
+        /// <returns>True if the paired entity was found in the cache; otherwise, false.</returns>
+        public bool TryGetParcelPair(Entity entity, out Entity pairedEntity) { return m_ParcelPairCache.TryGetValue(entity, out pairedEntity); }
+
+        /// <summary>
+        /// Get the paired PrefabBase (placeholder for parcel, or parcel for placeholder).
+        /// </summary>
+        /// <param name="entity">The entity to look up (either a parcel or placeholder).</param>
+        /// <param name="pairedPrefabBase">When this method returns, contains the paired PrefabBase if found; otherwise, null.</param>
+        /// <returns>True if the paired PrefabBase was found; otherwise, false.</returns>
+        public bool TryGetParcelPairPrefabBase(Entity entity, out PrefabBase pairedPrefabBase) {
+            pairedPrefabBase = null;
+            return m_ParcelPairCache.TryGetValue(entity, out var pairedEntity) && 
+                   m_PrefabBaseCache.TryGetValue(pairedEntity, out pairedPrefabBase);
+        }
+
+        /// <summary>
+        /// Get the paired PrefabBase strongly typed (placeholder for parcel, or parcel for placeholder).
+        /// </summary>
+        /// <typeparam name="T">The type of PrefabBase to cast to (e.g., ParcelPrefab or ParcelPlaceholderPrefab).</typeparam>
+        /// <param name="entity">The entity to look up (either a parcel or placeholder).</param>
+        /// <param name="pairedPrefab">When this method returns, contains the paired prefab if found and cast successful; otherwise, null.</param>
+        /// <returns>True if the paired prefab was found and successfully cast to type T; otherwise, false.</returns>
+        public bool TryGetParcelPairPrefabBase<T>(Entity entity, out T pairedPrefab) where T : PrefabBase {
+            pairedPrefab = null;
+            if (m_ParcelPairCache.TryGetValue(entity, out var pairedEntity) && 
+                m_PrefabBaseCache.TryGetValue(pairedEntity, out var prefabBase)) {
+                pairedPrefab = prefabBase as T;
+                return pairedPrefab != null;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get the paired PrefabBase from a source PrefabBase (placeholder for parcel, or parcel for placeholder).
+        /// </summary>
+        /// <param name="sourcePrefabBase">The source PrefabBase to find the pair for.</param>
+        /// <param name="pairedPrefabBase">When this method returns, contains the paired PrefabBase if found; otherwise, null.</param>
+        /// <returns>True if the paired PrefabBase was found; otherwise, false.</returns>
+        public bool TryGetParcelPairPrefabBase(PrefabBase sourcePrefabBase, out PrefabBase pairedPrefabBase) {
+            pairedPrefabBase = null;
+            
+            // Find the entity for the source PrefabBase by reverse lookup
+            Entity sourceEntity = Entity.Null;
+            foreach (var kvp in m_PrefabBaseCache) {
+                if (kvp.Value == sourcePrefabBase) {
+                    sourceEntity = kvp.Key;
+                    break;
+                }
+            }
+            
+            if (sourceEntity == Entity.Null) {
+                return false;
+            }
+            
+            // Now get the paired entity and its PrefabBase
+            return m_ParcelPairCache.TryGetValue(sourceEntity, out var pairedEntity) && 
+                   m_PrefabBaseCache.TryGetValue(pairedEntity, out pairedPrefabBase);
+        }
+
+        /// <summary>
+        /// Get the paired PrefabBase strongly typed from a source PrefabBase (placeholder for parcel, or parcel for placeholder).
+        /// </summary>
+        /// <typeparam name="T">The type of PrefabBase to cast to (e.g., ParcelPrefab or ParcelPlaceholderPrefab).</typeparam>
+        /// <param name="sourcePrefabBase">The source PrefabBase to find the pair for.</param>
+        /// <param name="pairedPrefab">When this method returns, contains the paired prefab if found and cast successful; otherwise, null.</param>
+        /// <returns>True if the paired prefab was found and successfully cast to type T; otherwise, false.</returns>
+        public bool TryGetParcelPairPrefabBase<T>(PrefabBase sourcePrefabBase, out T pairedPrefab) where T : PrefabBase {
+            pairedPrefab = null;
+            if (TryGetParcelPairPrefabBase(sourcePrefabBase, out var prefabBase)) {
+                pairedPrefab = prefabBase as T;
+                return pairedPrefab != null;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get a readonly version of the parcel pair cache for use in Burst jobs.
+        /// </summary>
+        /// <returns>A read-only view of the parcel pair cache that can be safely used in parallel jobs.</returns>
+        public NativeHashMap<Entity, Entity>.ReadOnly GetReadOnlyParcelPairCache() { return m_ParcelPairCache.AsReadOnly(); }
 
         /// <summary>
         /// Registers a prefab in both caches and logs the registration.
         /// </summary>
         /// <param name="prefabBase">The prefab base to register.</param>
-        /// <param name="placeholder">Optional flag indicating if this is a placeholder prefab.</param>
-        private void RegisterPrefabInCache(PrefabBase prefabBase, bool placeholder = false) {
-            var prefabID = prefabBase.GetPrefabID();
-            var cacheKey = ParcelUtils.GetCustomHashCode(prefabID, placeholder);
+        /// <returns>The entity associated with the registered prefab.</returns>
+        private Entity RegisterPrefabInCache(PrefabBase prefabBase) {
+            var prefabID     = prefabBase.GetPrefabID();
+            var cacheKey     = ParcelUtils.GetHashCode(prefabID);
             var prefabEntity = m_PrefabSystem.GetEntity(prefabBase);
+
+            m_Log.Debug($"Registered prefab {prefabID} with hash {cacheKey}");
 
             m_PrefabCache[cacheKey] = prefabEntity;
             m_PrefabBaseCache[prefabEntity] = prefabBase;
+
+            return prefabEntity;
         }
     }
 }
