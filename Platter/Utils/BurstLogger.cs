@@ -7,6 +7,7 @@ namespace Platter.Utils {
     #region Using Statements
 
     using System.Diagnostics;
+    using Unity.Burst;
 
     #endregion
 
@@ -23,6 +24,9 @@ namespace Platter.Utils {
         /// </summary>
         /// <param name="context">The context or system name to prefix the message with (e.g., "RCS").</param>
         /// <param name="message">The message to log.</param>
+        #if USE_BURST
+        [BurstCompile]
+        #endif
         public static void Debug(string context, string message) {
 #if !USE_BURST
             PlatterMod.Instance.Log.Debug($"[{context}] {message}");
@@ -36,6 +40,9 @@ namespace Platter.Utils {
         /// </summary>
         /// <param name="context">The context or system name to prefix the message with.</param>
         /// <param name="message">The message to log.</param>
+#if USE_BURST
+        [BurstCompile]
+#endif
         public static void Info(string context, string message) {
 #if !USE_BURST
             PlatterMod.Instance.Log.Info($"[{context}] {message}");
@@ -49,6 +56,9 @@ namespace Platter.Utils {
         /// </summary>
         /// <param name="context">The context or system name to prefix the message with.</param>
         /// <param name="message">The message to log.</param>
+        #if USE_BURST
+        [BurstCompile]
+        #endif
         public static void Warn(string context, string message) {
 #if !USE_BURST
             PlatterMod.Instance.Log.Warn($"[{context}] {message}");
@@ -62,6 +72,9 @@ namespace Platter.Utils {
         /// </summary>
         /// <param name="context">The context or system name to prefix the message with.</param>
         /// <param name="message">The message to log.</param>
+        #if USE_BURST
+        [BurstCompile]
+        #endif
         public static void Error(string context, string message) {
 #if !USE_BURST
             PlatterMod.Instance.Log.Error($"[{context}] {message}");

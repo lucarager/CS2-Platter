@@ -35,6 +35,8 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate() { EntityManager.RemoveComponent<Overridden>(m_Query); }
+        protected override void OnUpdate() {
+            EntityManager.RemoveComponent<Overridden>(m_Query);
+        }
     }
 }

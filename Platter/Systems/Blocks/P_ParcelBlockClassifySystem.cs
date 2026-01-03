@@ -84,6 +84,8 @@ namespace Platter.Systems {
                     var parcel      = m_ParcelLookup[parcelOwner.m_Owner];
                     var parcelData  = m_ParcelDataLookup[prefabRef.m_Prefab];
 
+                    BurstLogger.Debug("[P_ParcelBlockClassifySystem]", $"Classifying Parcel's Block: Block {blockArray[i]} of parcel {parcelOwner.m_Owner}");
+
                     ParcelUtils.ClassifyParcelZoning(ref parcel, in block, in parcelData, in cellBuffer, m_UnzonedZoneType);
 
                     m_ParcelLookup[parcelOwner.m_Owner] = parcel;

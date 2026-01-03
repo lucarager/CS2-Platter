@@ -18,18 +18,20 @@ namespace Platter.Utils {
     #endregion
 
     public static class DebugUtils {
+
+        [BurstCompile]
         public static void DebugBlockStatus(string context, Entity blockEntity, DynamicBuffer<Game.Zones.Cell> cellBuffer) {
-            #if !USE_BURST
-            if (blockEntity == Entity.Null) {
-                return;
-            }
-            var message = $"Block Entity: {blockEntity} -- Cells: {cellBuffer.Length}";
-            for (var i = 0; i < cellBuffer.Length; i++) {
-                var cell = cellBuffer[i];
-                message += $"\n - Cell {i}: m_Zone {cell.m_Zone} | m_State {cell.m_State}";
-            }
-            BurstLogger.Debug($"\n{context}", message);
-            #endif
+            //#if !USE_BURST
+            //if (blockEntity == Entity.Null) {
+            //    return;
+            //}
+            //var message = $"Block Entity: {blockEntity} -- Cells: {cellBuffer.Length}";
+            //for (var i = 0; i < cellBuffer.Length; i++) {
+            //    var cell = cellBuffer[i];
+            //    message += $"\n - Cell {i}: m_Zone {cell.m_Zone} | m_State {cell.m_State}";
+            //}
+            //BurstLogger.Debug($"\n{context}", message);
+            //#endif
         }
     }
 }

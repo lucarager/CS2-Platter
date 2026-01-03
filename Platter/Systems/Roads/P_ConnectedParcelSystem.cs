@@ -38,6 +38,8 @@ namespace Platter.Systems {
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate() { EntityManager.AddComponent<ConnectedParcel>(m_PrefabCreatedQuery); }
+        protected override void OnUpdate() {
+            EntityManager.AddComponent<ConnectedParcel>(m_PrefabCreatedQuery);
+        }
     }
 }

@@ -77,12 +77,15 @@ namespace Platter.Systems {
                 var cellBufferArray = chunk.GetBufferAccessor(ref CellBufferTypeHandle);
 
                 for (var i = 0; i < entityArray.Length; i++) {
-                    var block = blockArray[i];
+                    var entity      = entityArray[i];
+                    var block       = blockArray[i];
                     var parcelOwner = parcelOwnerArray[i];
-                    var prefabRef = prefabRefArray[i];
-                    var cellBuffer = cellBufferArray[i];
-                    var parcel = ParcelLookup[parcelOwner.m_Owner];
-                    var parcelData = ParcelDataLookup[prefabRef.m_Prefab];
+                    var prefabRef   = prefabRefArray[i];
+                    var cellBuffer  = cellBufferArray[i];
+                    var parcel      = ParcelLookup[parcelOwner.m_Owner];
+                    var parcelData  = ParcelDataLookup[prefabRef.m_Prefab];
+                    BurstLogger.Debug("[P_LoadZoneResolverSystem]", 
+                                      $"Re-classifying Parcel entity {entity}");
 
                     ParcelUtils.ClassifyParcelZoning(ref parcel, in block, in parcelData, in cellBuffer, UnzonedZoneType);
 

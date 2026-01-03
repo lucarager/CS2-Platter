@@ -55,11 +55,8 @@ namespace Platter.Systems {
     /// If placed overlaying vanilla grid at an offset, they are blocked.
     /// Most importantly, the logic that "occpies" them if they are 1 wide is caused by the depth smoothing logic inside the CellReduction struct within CellOverlapJobs.cs.
     ///
-    /// So we need to do the following:
-    /// We want to mostly re-run the vanilla CellCheckSystem, except for:
-    /// 1. The first job (BlockCellsJob) where we want to trim cells over lot depth/width depending on parcel type.
-    /// 2. The overlap job (CheckBlockOverlapJob) which contains the cell reduction logic which causes 1-wide parcels to be occupied incorrectly.
-    /// which we will rewrite and run as replacement to the base game jobs here.
+    /// Note the difference between the Occupied and Blocked flags:
+    /// - 
     ///
     /// </summary>
     public partial class P_NewCellCheckSystem : PlatterGameSystemBase {
@@ -105,6 +102,8 @@ namespace Platter.Systems {
                 return;
             }
 
+            m_Log.Debug("Running P_NewCellCheckSystem");
+
             var updatedBlocksList  = new NativeList<SortedEntity>(Allocator.TempJob);
             var blockOverlapQueue  = new NativeQueue<BlockOverlap>(Allocator.TempJob);
             var blockOverlapList   = new NativeList<BlockOverlap>(Allocator.TempJob);
@@ -121,9 +120,6 @@ namespace Platter.Systems {
                 m_OutputBlocks      = filteredBlocksList,
             }.Schedule(JobHandle.CombineDependencies(Dependency, collectUpdatedBlocksJobHandle));
             var filteredBlocks = filteredBlocksList.AsDeferredJobArray();
-
-            var zoneSearchTree    = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle);
-            var deletedBlocksList = m_DeletedBlocksQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var deletedBlocksJobHandle);
 
             // Process Updated Blocks. This is one of the jobs we maintain ourselves.
             var processUpdatedBlocksJobHandle = new BlockCellsJob {
@@ -154,6 +150,7 @@ namespace Platter.Systems {
             m_AreaSearchSystem.AddSearchTreeReader(processUpdatedBlocksJobHandle);
 
             // Find Overlapping Blocks
+            var zoneSearchTree = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle);
             var findOverlappingBlocksJobHandle = new CellCheckHelpers.FindOverlappingBlocksJob {
                 m_Blocks         = filteredBlocks,
                 m_SearchTree     = zoneSearchTree,
@@ -162,6 +159,7 @@ namespace Platter.Systems {
                 m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(true),
                 m_ResultQueue    = blockOverlapQueue.AsParallelWriter(),
             }.Schedule(filteredBlocksList, 1, JobHandle.CombineDependencies(processUpdatedBlocksJobHandle, zoneSearchJobHandle));
+            m_ZoneSearchSystem.AddSearchTreeReader(findOverlappingBlocksJobHandle);
 
             // Group Overlapping Blocks
             var groupOverlappingBlocksJobHandle = new CellCheckHelpers.GroupOverlappingBlocksJob {
@@ -172,7 +170,8 @@ namespace Platter.Systems {
             }.Schedule(findOverlappingBlocksJobHandle);
 
             // Zone and Occupy Cells
-            var objectSearchTree = m_ObjectSearchSystem.GetStaticSearchTree(true, out var objectSearchJobHandle);
+            // todo check if we can run this on one-wides only
+            var deletedBlocksList = m_DeletedBlocksQuery.ToArchetypeChunkListAsync(Allocator.TempJob, out var deletedBlocksJobHandle);
             var zoneAndOccupyCellsJobHandle = new CellOccupyJobs.ZoneAndOccupyCellsJob {
                 m_Blocks                        = filteredBlocks,
                 m_DeletedBlockChunks            = deletedBlocksList,
@@ -180,7 +179,7 @@ namespace Platter.Systems {
                 m_EntityType                    = SystemAPI.GetEntityTypeHandle(),
                 m_BlockData                     = SystemAPI.GetComponentLookup<Block>(true),
                 m_ValidAreaData                 = SystemAPI.GetComponentLookup<ValidArea>(true),
-                m_ObjectSearchTree              = objectSearchTree,
+                m_ObjectSearchTree              = m_ObjectSearchSystem.GetStaticSearchTree(true, out var objectSearchJobHandle),
                 m_TransformData                 = SystemAPI.GetComponentLookup<Game.Objects.Transform>(true),
                 m_ElevationData                 = SystemAPI.GetComponentLookup<Game.Objects.Elevation>(true),
                 m_PrefabRefData                 = SystemAPI.GetComponentLookup<PrefabRef>(true),
@@ -192,6 +191,7 @@ namespace Platter.Systems {
                 m_PrefabData                    = SystemAPI.GetComponentLookup<PrefabData>(true),
                 m_Cells                         = SystemAPI.GetBufferLookup<Cell>(false),
             }.Schedule(filteredBlocksList, 1, JobHandle.CombineDependencies(processUpdatedBlocksJobHandle, objectSearchJobHandle, deletedBlocksJobHandle));
+            m_ObjectSearchSystem.AddStaticSearchTreeReader(zoneAndOccupyCellsJobHandle);
 
             // Check Block Overlap
             var checkBlockOverlapJobHandle = new CheckBlockOverlapJob {
@@ -231,26 +231,25 @@ namespace Platter.Systems {
                 m_CommandBuffer  = m_ModificationBarrier5.CreateCommandBuffer().AsParallelWriter(),
                 m_BoundsQueue    = boundsQueue.AsParallelWriter(),
             }.Schedule(filteredBlocksList, 1, updateBlocksJobHandle);
+            m_ZoneSearchSystem.AddSearchTreeReader(updateLotSizeJobHandle);
+            m_ZoneSystem.AddPrefabsReader(updateLotSizeJobHandle);
+            m_ModificationBarrier5.AddJobHandleForProducer(updateLotSizeJobHandle);
 
             // Update Bounds
             var updateBoundsJobHandle = new LotSizeJobs.UpdateBoundsJob {
                 m_BoundsList  = m_ZoneUpdateCollectSystem.GetUpdatedBounds(false, out var zoneUpdateJobHandle),
                 m_BoundsQueue = boundsQueue,
             }.Schedule(JobHandle.CombineDependencies(updateLotSizeJobHandle, zoneUpdateJobHandle));
+            m_ZoneUpdateCollectSystem.AddBoundsWriter(updateBoundsJobHandle);
 
             updatedBlocksList.Dispose(filterBlocksJobHandle);
             filteredBlocksList.Dispose(updateLotSizeJobHandle);
+            filteredBlocks.Dispose(updateLotSizeJobHandle);
             blockOverlapQueue.Dispose(groupOverlappingBlocksJobHandle);
             blockOverlapList.Dispose(checkBlockOverlapJobHandle);
             overlapGroupsList.Dispose(checkBlockOverlapJobHandle);
             boundsQueue.Dispose(updateBoundsJobHandle);
             deletedBlocksList.Dispose(zoneAndOccupyCellsJobHandle);
-
-            m_ZoneSearchSystem.AddSearchTreeReader(updateLotSizeJobHandle);
-            m_ObjectSearchSystem.AddStaticSearchTreeReader(zoneAndOccupyCellsJobHandle);
-            m_ZoneSystem.AddPrefabsReader(updateLotSizeJobHandle);
-            m_ModificationBarrier5.AddJobHandleForProducer(updateLotSizeJobHandle);
-            m_ZoneUpdateCollectSystem.AddBoundsWriter(updateBoundsJobHandle);
 
             Dependency = updateLotSizeJobHandle;
         }
@@ -325,7 +324,7 @@ namespace Platter.Systems {
                 jobHandle = JobHandle.CombineDependencies(jobHandle, findUpdatedBlocksJob_MapTiles);
             }
 
-            var collectBlocksJobHandle = new CollectBlocksJob {
+            var collectBlocksJobHandle = new CellCheckHelpers.CollectBlocksJob {
                 m_Queue1 = zoneUpdateQueue,
                 m_Queue2 = objectUpdateQueue,
                 m_Queue3 = netUpdateQueue,

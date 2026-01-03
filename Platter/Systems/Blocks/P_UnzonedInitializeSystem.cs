@@ -48,8 +48,8 @@ namespace Platter.Systems {
         // Todo convert to job for perf
         protected override void OnUpdate() {
             foreach (var prefabEntity in m_ZonePrefabQuery.ToEntityArray(Allocator.Temp)) {
-                var                                prefab = m_PrefabSystem.GetPrefab<ZonePrefab>(prefabEntity);
-                                               var id         = prefab.GetPrefabID();
+                var prefab = m_PrefabSystem.GetPrefab<ZonePrefab>(prefabEntity);
+                var id     = prefab.GetPrefabID();
                 if (id.GetName() == "PlatterUnzoned") {
                     InitializePrefab(prefabEntity);
                 }

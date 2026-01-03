@@ -44,7 +44,7 @@ namespace Platter.Systems {
             // Parcels (with ParcelPlaceholder) created by a tool (Temp)
             m_TempQuery = SystemAPI.QueryBuilder()
                                    .WithAllRW<ParcelPlaceholder>()
-                                   .WithAll<Temp>()
+                                   .WithAll<Temp, Created>()
                                    .WithNone<Deleted>()
                                    .Build();
 
@@ -78,6 +78,9 @@ namespace Platter.Systems {
             Dependency = JobHandle.CombineDependencies(swapPlaceholderForPermnanentJobHandle, Dependency);
         }
 
+        #if USE_BURST
+        [BurstCompile]
+        #endif
         private struct UpdateTempPlaceholderJob : IJobChunk {
             [ReadOnly] public required EntityTypeHandle                   m_EntityTypeHandle;
             [ReadOnly] public required ZoneType                           m_ZoneType;
@@ -92,14 +95,22 @@ namespace Platter.Systems {
                 for (var i = 0; i < entityArray.Length; i++) {
                     var entity = entityArray[i];
                     var parcel = parcelArray[i];
+
+                    if (parcel.m_PreZoneType.Equals(m_ZoneType)) {
+                        continue;
+                    }
+
                     parcel.m_PreZoneType = m_ZoneType;
                     parcelArray[i]       = parcel;
+                    BurstLogger.Debug($"[UpdateTempPlaceholderJob]", $"Updated parcel {entity}");
 
-                    //m_CommandBuffer.AddComponent<Updated>(index, entity);
                 }
             }
         }
 
+        #if USE_BURST
+        [BurstCompile]
+        #endif
         private struct SwapPlaceholderRefJob : IJobChunk {
             [ReadOnly] public required EntityTypeHandle                    m_EntityTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<PrefabRef>      m_PrefabRefTypeHandle;
@@ -117,6 +128,8 @@ namespace Platter.Systems {
                 for (var i = 0; i < entityArray.Length; i++) {
                     var entity = entityArray[i];
                     var prefabRef = prefabRefArray[i];
+
+                    BurstLogger.Debug($"[SwapPlaceholderRefJob]", $"Updated parcel {entity}");
 
                     // Get the parcel data from the placeholder prefab entity to extract dimensions
                     if (!m_ParcelDataLookup.HasComponent(prefabRef.m_Prefab)) {
