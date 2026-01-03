@@ -14,6 +14,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
     using Game.Prefabs;
+    using Colossal.Collections;
 
     public partial class P_NewCellCheckSystem {
         /// <summary>
@@ -28,13 +29,8 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<Block> m_BlockLookup;
             [ReadOnly] public required ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
             [ReadOnly] public required ComponentLookup<ParcelData> m_ParcelDataLookup;
-
-            [ReadOnly]
-            public required Colossal.Collections.NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
-
-            [ReadOnly]
-            public required Colossal.Collections.NativeQuadTree<AreaSearchItem, QuadTreeBoundsXZ> m_AreaSearchTree;
-
+            [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetSearchTree;
+            [ReadOnly] public required NativeQuadTree<AreaSearchItem, QuadTreeBoundsXZ> m_AreaSearchTree;
             [ReadOnly] public required ComponentLookup<Owner> m_OwnerLookup;
             [ReadOnly] public required ComponentLookup<Transform> m_TransformLookup;
             [ReadOnly] public required ComponentLookup<EdgeGeometry> m_EdgeGeometryLookup;
@@ -43,24 +39,15 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<Composition> m_CompositionLookup;
             [ReadOnly] public required ComponentLookup<PrefabRef> m_PrefabRefLookup;
             [ReadOnly] public required ComponentLookup<NetCompositionData> m_NetCompositionLookup;
-
-            [ReadOnly]
-            public required ComponentLookup<RoadComposition> m_PrefabRoadCompositionLookup;
-
-            [ReadOnly]
-            public required ComponentLookup<AreaGeometryData> m_PrefabAreaGeometryLookup;
-
-            [ReadOnly]
-            public required ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryLookup;
-
+            [ReadOnly] public required ComponentLookup<RoadComposition> m_PrefabRoadCompositionLookup;
+            [ReadOnly] public required ComponentLookup<AreaGeometryData> m_PrefabAreaGeometryLookup;
+            [ReadOnly] public required ComponentLookup<ObjectGeometryData> m_PrefabObjectGeometryLookup;
             [ReadOnly] public required ComponentLookup<Native> m_NativeLookup;
             [ReadOnly] public required BufferLookup<Game.Areas.Node> m_AreaNodesLookup;
             [ReadOnly] public required BufferLookup<Triangle> m_AreaTrianglesLookup;
-
-            [NativeDisableParallelForRestrictionAttribute]
+            [NativeDisableParallelForRestriction]
             public required BufferLookup<Cell> m_CellsLookup;
-
-            [NativeDisableParallelForRestrictionAttribute]
+            [NativeDisableParallelForRestriction]
             public required ComponentLookup<ValidArea> m_ValidAreaLookup;
 
             public void Execute(int index) {
@@ -89,49 +76,47 @@ namespace Platter.Systems {
                     // Normalize "wide" parcel's cells.
                     NormalizeWideParcelCells(block, parcelData, cellBuffer);
                     m_ValidAreaLookup[entity] = validArea;
-                    // "Wide" parcels should now be done and ready for processing by other jobs.
-                    return;
                 } else {
                     // Normalize "narrow" parcel's cells so they are processed from a clean state.
                     NormalizeNarrowParcelCells(block, parcelData, cellBuffer);
                 }
 
-                // Check for conflicts with Net geometry.
-                var netIterator = new NetIterator {
-                    m_BlockEntity = entity,
-                    m_BlockData = block,
-                    m_Bounds = bounds.xz,
-                    m_Quad = corners,
-                    m_ValidAreaData = validArea,
-                    m_Cells = cellBuffer,
-                    m_OwnerData = this.m_OwnerLookup,
-                    m_TransformData = this.m_TransformLookup,
-                    m_EdgeGeometryData = this.m_EdgeGeometryLookup,
-                    m_StartNodeGeometryData = this.m_StartNodeGeometryLookup,
-                    m_EndNodeGeometryData = this.m_EndNodeGeometryLookup,
-                    m_CompositionData = this.m_CompositionLookup,
-                    m_PrefabRefData = this.m_PrefabRefLookup,
-                    m_PrefabCompositionData = this.m_NetCompositionLookup,
-                    m_PrefabRoadCompositionData = this.m_PrefabRoadCompositionLookup,
-                    m_PrefabObjectGeometryData = this.m_PrefabObjectGeometryLookup
-                };
-                m_NetSearchTree.Iterate(ref netIterator, 0);
+                //// Check for conflicts with Net geometry.
+                //var netIterator = new NetIterator {
+                //    m_BlockEntity = entity,
+                //    m_BlockData = block,
+                //    m_Bounds = bounds.xz,
+                //    m_Quad = corners,
+                //    m_ValidAreaData = validArea,
+                //    m_Cells = cellBuffer,
+                //    m_OwnerData = this.m_OwnerLookup,
+                //    m_TransformData = this.m_TransformLookup,
+                //    m_EdgeGeometryData = this.m_EdgeGeometryLookup,
+                //    m_StartNodeGeometryData = this.m_StartNodeGeometryLookup,
+                //    m_EndNodeGeometryData = this.m_EndNodeGeometryLookup,
+                //    m_CompositionData = this.m_CompositionLookup,
+                //    m_PrefabRefData = this.m_PrefabRefLookup,
+                //    m_PrefabCompositionData = this.m_NetCompositionLookup,
+                //    m_PrefabRoadCompositionData = this.m_PrefabRoadCompositionLookup,
+                //    m_PrefabObjectGeometryData = this.m_PrefabObjectGeometryLookup
+                //};
+                //m_NetSearchTree.Iterate(ref netIterator, 0);
 
-                // Check for conflicts with Areas.
-                var areaIterator = new AreaIterator {
-                    m_BlockEntity = entity,
-                    m_BlockData = block,
-                    m_Bounds = bounds.xz,
-                    m_Quad = corners,
-                    m_ValidAreaData = validArea,
-                    m_Cells = cellBuffer,
-                    m_NativeData = this.m_NativeLookup,
-                    m_PrefabRefData = this.m_PrefabRefLookup,
-                    m_PrefabAreaGeometryData = this.m_PrefabAreaGeometryLookup,
-                    m_AreaNodes = this.m_AreaNodesLookup,
-                    m_AreaTriangles = this.m_AreaTrianglesLookup
-                };
-                m_AreaSearchTree.Iterate(ref areaIterator, 0);
+                //// Check for conflicts with Areas.
+                //var areaIterator = new AreaIterator {
+                //    m_BlockEntity = entity,
+                //    m_BlockData = block,
+                //    m_Bounds = bounds.xz,
+                //    m_Quad = corners,
+                //    m_ValidAreaData = validArea,
+                //    m_Cells = cellBuffer,
+                //    m_NativeData = this.m_NativeLookup,
+                //    m_PrefabRefData = this.m_PrefabRefLookup,
+                //    m_PrefabAreaGeometryData = this.m_PrefabAreaGeometryLookup,
+                //    m_AreaNodes = this.m_AreaNodesLookup,
+                //    m_AreaTriangles = this.m_AreaTrianglesLookup
+                //};
+                //m_AreaSearchTree.Iterate(ref areaIterator, 0);
 
                 // Process the results, calculating the final valid area.
                 CleanBlockedCells(block, ref validArea, cellBuffer);
@@ -261,7 +246,7 @@ namespace Platter.Systems {
             }
 
             // Exact copy of NetIterator from vanilla CellCheckSystem.
-            private struct NetIterator : Colossal.Collections.INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
+            private struct NetIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
                 public bool Intersect(QuadTreeBoundsXZ bounds) {
                     return Colossal.Mathematics.MathUtils.Intersect(bounds.m_Bounds.xz, this.m_Bounds);
                 }
@@ -618,7 +603,7 @@ namespace Platter.Systems {
             }
 
             // Exact copy of AreaIterator from vanilla CellCheckSystem.
-            private struct AreaIterator : Colossal.Collections.INativeQuadTreeIterator<AreaSearchItem, QuadTreeBoundsXZ> {
+            private struct AreaIterator : INativeQuadTreeIterator<AreaSearchItem, QuadTreeBoundsXZ> {
                 public bool Intersect(QuadTreeBoundsXZ bounds) {
                     return Colossal.Mathematics.MathUtils.Intersect(bounds.m_Bounds.xz, this.m_Bounds);
                 }
