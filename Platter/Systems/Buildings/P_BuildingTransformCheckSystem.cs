@@ -48,6 +48,10 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            if (m_UpdatedQuery.IsEmpty) {
+                return;
+            }
+
             m_Log.Debug("OnUpdate()");
 
             var updateJobHandle = new UpdateCachedTransformJob {
@@ -61,7 +65,7 @@ namespace Platter.Systems {
             Dependency = updateJobHandle;
         }
 
-#if BURST
+#if USE_BURST
         [BurstCompile]
 #endif
         private struct UpdateCachedTransformJob : IJobChunk {
