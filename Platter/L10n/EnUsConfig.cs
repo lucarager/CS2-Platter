@@ -148,20 +148,35 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.Tooltip.ShowZonbes", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
+
+                // Building/Zone Tooltips
                 {
-                    "PlatterMod.UI.Tooltip.BuildingCount",
+                    "PlatterMod.UI.Tooltip.ZoneBuildingCount.Front",
+                    "{COUNT} front access {X}x{Y} buildings in selected zone."
+                },
+                {
+                    "PlatterMod.UI.Tooltip.ZoneBuildingCount.FrontCorner",
+                    "{COUNT1} front and {COUNT2} corner access {X}x{Y} buildings in selected zone."
+                },
+                {
+                    "PlatterMod.UI.Tooltip.ZoneBuildingCount.None",
+                    "No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on parcel."
+                },
+                
+                {
+                    "PlatterMod.UI.Tooltip.BuildingCount",// Deprecated
                     "[Front] {COUNT} available {X}x{Y} front access buildings in the selected zone."
                 },
                 {
-                    "PlatterMod.UI.Tooltip.BuildingCountWarning",
+                    "PlatterMod.UI.Tooltip.BuildingCountWarning",// Deprecated
                     "[Front] No {X}x{Y} front access buildings in selected zone. Smaller buildings may spawn on this parcel."
                 },
                 { 
-                    "PlatterMod.UI.Tooltip.BuildingCornerCount",
+                    "PlatterMod.UI.Tooltip.BuildingCornerCount",// Deprecated
                     "[Corner] {COUNT} available {X}x{Y} corner access buildings in the selected zone."
                 },
                 {
-                    "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",
+                    "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",// Deprecated
                     "[Corner] No {X}x{Y} corner access buildings in selected zone. Smaller buildings may spawn on this parcel."
                 },
 
@@ -195,58 +210,16 @@ namespace Platter.L10n {
                 { "Assets.DESCRIPTION[PlatterCat]", "Ploppable parcels with zone blocks." },
                 { "SubServices.NAME[PlatterCat]", "Platter - Parcels" },
                 { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "Ploppable parcels with zone blocks." },
-                { "Assets.NAME[Parcel 2x2]", "Parcel (2x2)" },
-                { "Assets.DESCRIPTION[Parcel 2x2]", "A Parcel with zone blocks. 2 cells wide, 2 cells deep" },
-                { "Assets.NAME[Parcel 2x3]", "Parcel (2x3)" },
-                { "Assets.DESCRIPTION[Parcel 2x3]", "A Parcel with zone blocks. 2 cells wide, 3 cells deep" },
-                { "Assets.NAME[Parcel 2x4]", "Parcel (2x4)" },
-                { "Assets.DESCRIPTION[Parcel 2x4]", "A Parcel with zone blocks. 2 cells wide, 4 cells deep" },
-                { "Assets.NAME[Parcel 2x5]", "Parcel (2x5)" },
-                { "Assets.DESCRIPTION[Parcel 2x5]", "A Parcel with zone blocks. 2 cells wide, 5 cells deep" },
-                { "Assets.NAME[Parcel 2x6]", "Parcel (2x6)" },
-                { "Assets.DESCRIPTION[Parcel 2x6]", "A Parcel with zone blocks. 2 cells wide, 6 cells deep" },
-                { "Assets.NAME[Parcel 3x2]", "Parcel (3x2)" },
-                { "Assets.DESCRIPTION[Parcel 3x2]", "A Parcel with zone blocks. 3 cells wide, 2 cells deep" },
-                { "Assets.NAME[Parcel 3x3]", "Parcel (3x3)" },
-                { "Assets.DESCRIPTION[Parcel 3x3]", "A Parcel with zone blocks. 3 cells wide, 3 cells deep" },
-                { "Assets.NAME[Parcel 3x4]", "Parcel (3x4)" },
-                { "Assets.DESCRIPTION[Parcel 3x4]", "A Parcel with zone blocks. 3 cells wide, 4 cells deep" },
-                { "Assets.NAME[Parcel 3x5]", "Parcel (3x5)" },
-                { "Assets.DESCRIPTION[Parcel 3x5]", "A Parcel with zone blocks. 3 cells wide, 5 cells deep" },
-                { "Assets.NAME[Parcel 3x6]", "Parcel (3x6)" },
-                { "Assets.DESCRIPTION[Parcel 3x6]", "A Parcel with zone blocks. 3 cells wide, 6 cells deep" },
-                { "Assets.NAME[Parcel 4x2]", "Parcel (4x2)" },
-                { "Assets.DESCRIPTION[Parcel 4x2]", "A Parcel with zone blocks. 4 cells wide, 2 cells deep" },
-                { "Assets.NAME[Parcel 4x3]", "Parcel (4x3)" },
-                { "Assets.DESCRIPTION[Parcel 4x3]", "A Parcel with zone blocks. 4 cells wide, 3 cells deep" },
-                { "Assets.NAME[Parcel 4x4]", "Parcel (4x4)" },
-                { "Assets.DESCRIPTION[Parcel 4x4]", "A Parcel with zone blocks. 4 cells wide, 4 cells deep" },
-                { "Assets.NAME[Parcel 4x5]", "Parcel (4x5)" },
-                { "Assets.DESCRIPTION[Parcel 4x5]", "A Parcel with zone blocks. 4 cells wide, 5 cells deep" },
-                { "Assets.NAME[Parcel 4x6]", "Parcel (4x6)" },
-                { "Assets.DESCRIPTION[Parcel 4x6]", "A Parcel with zone blocks. 4 cells wide, 6 cells deep" },
-                { "Assets.NAME[Parcel 5x2]", "Parcel (5x2)" },
-                { "Assets.DESCRIPTION[Parcel 5x2]", "A Parcel with zone blocks. 5 cells wide, 2 cells deep" },
-                { "Assets.NAME[Parcel 5x3]", "Parcel (5x3)" },
-                { "Assets.DESCRIPTION[Parcel 5x3]", "A Parcel with zone blocks. 5 cells wide, 3 cells deep" },
-                { "Assets.NAME[Parcel 5x4]", "Parcel (5x4)" },
-                { "Assets.DESCRIPTION[Parcel 5x4]", "A Parcel with zone blocks. 5 cells wide, 4 cells deep" },
-                { "Assets.NAME[Parcel 5x5]", "Parcel (5x5)" },
-                { "Assets.DESCRIPTION[Parcel 5x5]", "A Parcel with zone blocks. 5 cells wide, 5 cells deep" },
-                { "Assets.NAME[Parcel 5x6]", "Parcel (5x6)" },
-                { "Assets.DESCRIPTION[Parcel 5x6]", "A Parcel with zone blocks. 5 cells wide, 6 cells deep" },
-                { "Assets.NAME[Parcel 6x2]", "Parcel (6x2)" },
-                { "Assets.DESCRIPTION[Parcel 6x2]", "A Parcel with zone blocks. 6 cells wide, 2 cells deep" },
-                { "Assets.NAME[Parcel 6x3]", "Parcel (6x3)" },
-                { "Assets.DESCRIPTION[Parcel 6x3]", "A Parcel with zone blocks. 6 cells wide, 3 cells deep" },
-                { "Assets.NAME[Parcel 6x4]", "Parcel (6x4)" },
-                { "Assets.DESCRIPTION[Parcel 6x4]", "A Parcel with zone blocks. 6 cells wide, 4 cells deep" },
-                { "Assets.NAME[Parcel 6x5]", "Parcel (6x5)" },
-                { "Assets.DESCRIPTION[Parcel 6x5]", "A Parcel with zone blocks. 6 cells wide, 5 cells deep" },
-                { "Assets.NAME[Parcel 6x6]", "Parcel (6x6)" },
-                { "Assets.DESCRIPTION[Parcel 6x6]", "A Parcel with zone blocks. 6 cells wide, 6 cells deep" },
-                { "Assets.NAME[Unzoned]", "Unzoned" },
+                { "Assets.NAME[PlatterUnzoned]", "Unzoned" },
             };
+
+            var lotSizes = Platter.Systems.P_PrefabsCreateSystem.AvailableParcelLotSizes;
+            for (var width = lotSizes.x; width <= lotSizes.z; width++) {
+                for (var depth = lotSizes.y; depth <= lotSizes.w; depth++) {
+                    m_Localization[$"Assets.NAME[Parcel {width}x{depth}]"] = $"Parcel ({width}x{depth})";
+                    m_Localization[$"Assets.DESCRIPTION[Parcel {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
+                }
+            }
         }
 
         /// <inheritdoc/>

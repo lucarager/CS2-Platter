@@ -109,12 +109,14 @@ namespace Platter.Systems {
 
             var entityQuery = firstLoad ? m_AllQuery : m_UpdatedQuery;
 
-            if (firstLoad) {
-                m_Log.Debug("OnUpdate() -- First load.");
-            }
-
             if (entityQuery.IsEmptyIgnoreFilter) {
                 return;
+            }
+
+            if (firstLoad) {
+                m_Log.Debug("OnUpdate() -- First load, initializing search tree.");
+            } else {
+                m_Log.Debug("OnUpdate() -- Reloading search tree.");
             }
 
             var updateSearchTreeJob = new UpdateSearchTreeJob() {

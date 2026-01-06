@@ -49,12 +49,12 @@ namespace Platter.Systems {
                                       // Uninitialized parcels, that just got swapped from being a placeholder
                                       .WithAllRW<Parcel>()
                                       .WithNone<Initialized>()
-                                      .WithNone<Temp, ParcelPlaceholder>()
+                                      .WithNone<Deleted, Temp, ParcelPlaceholder>()
                                       .AddAdditionalQuery()
                                       // Existing parcels that got updated
                                       .WithAllRW<Parcel>()
                                       .WithAll<Updated, Initialized>()
-                                      .WithNone<Temp, ParcelPlaceholder>()
+                                      .WithNone<Deleted, Temp, ParcelPlaceholder>()
                                       .Build();
 
             m_DeletedQuery = SystemAPI.QueryBuilder()
@@ -66,7 +66,6 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            // Job to delete parcels marked for deletion
             var deleteParcelJobHandle = new DeleteParcelJob
             {
                 m_EntityTypeHandle         = SystemAPI.GetEntityTypeHandle(),
@@ -77,7 +76,6 @@ namespace Platter.Systems {
 
             m_ModificationBarrier2.AddJobHandleForProducer(deleteParcelJobHandle);
 
-            // Job to initialize a parcel after it has been replaced from a placeholder
             var updateParcelJobHandle = new UpdateParcelJob
             {
                 m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
@@ -169,6 +167,9 @@ namespace Platter.Systems {
                     };
                     var    zoneBlockData = m_ZoneBlockDataLookup[parcelData.m_ZoneBlockPrefab];
                     Entity blockEntity;
+
+                    BurstLogger.Debug("[P_ParcelUpdateSystem]", 
+                                      $"Updating parcel: {parcelEntity} -- isUpdatingExisting {isUpdatingExisting}");
 
                     if (isUpdatingExisting) {
                         blockEntity = subBlockBuffer[0].m_SubBlock;

@@ -21,6 +21,7 @@ namespace Platter.Utils {
     /// Utility class for parcel-related operations (prefab IDs, hashing, zoning).
     /// For geometry calculations, use <see cref="ParcelGeometryUtils"/>.
     /// </summary>
+    [BurstCompile]
     public static class ParcelUtils {
         /// <summary>
         /// Defines the node positions on a parcel (corners and edge access points).
@@ -120,10 +121,11 @@ namespace Platter.Utils {
         /// <param name="block">The block containing cell information.</param>
         /// <param name="parcelData">The parcel data containing lot size information.</param>
         /// <param name="cellBuffer">The buffer containing cell data.</param>
+        /// <param name="unzonedZoneType">The zone type representing unzoned cells (passed to avoid static field access in Burst).</param>
         [BurstCompile]
-        public static void ClassifyParcelZoning(ref Parcel parcel, in Block block, in ParcelData parcelData, in DynamicBuffer<Cell> cellBuffer) {
+        public static void ClassifyParcelZoning(ref Parcel parcel, in Block block, in ParcelData parcelData, in DynamicBuffer<Cell> cellBuffer, ZoneType unzonedZoneType) {
             var isZoningUniform = true;
-            var cachedZone = P_ZoneCacheSystem.UnzonedZoneType;
+            var cachedZone = unzonedZoneType;
 
             for (var col = 0; col < block.m_Size.x; col++) {
                 for (var row = 0; row < block.m_Size.y; row++) {
@@ -134,7 +136,12 @@ namespace Platter.Utils {
                         continue;
                     }
 
-                    if (cachedZone.m_Index == P_ZoneCacheSystem.UnzonedZoneType.m_Index) {
+                    // Catch any edge cases where the zoning is not yet set to custom unzoned
+                    if (cell.m_Zone.Equals(ZoneType.None)) {
+                        cell.m_Zone = unzonedZoneType;
+                    }
+
+                    if (cachedZone.m_Index == unzonedZoneType.m_Index) {
                         cachedZone = cell.m_Zone;
                     } else if (cell.m_Zone.m_Index != cachedZone.m_Index) {
                         isZoningUniform = false;

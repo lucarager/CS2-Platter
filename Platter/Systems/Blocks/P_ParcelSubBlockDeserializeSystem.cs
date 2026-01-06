@@ -53,6 +53,8 @@ namespace Platter.Systems {
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask) {
                 var entityArray      = chunk.GetNativeArray(EntityType);
                 var parcelOwnerArray = chunk.GetNativeArray(ref ParcelOwnerType);
+                BurstLogger.Debug("[P_ParcelSubBlockDeserializeSystem]", $"Deserializing Parcel's SubBlocks of {parcelOwnerArray.Length} parcels");
+
                 for (var i = 0; i < parcelOwnerArray.Length; i++) {
                     var blockEntity = entityArray[i];
                     var parcelOwner = parcelOwnerArray[i];

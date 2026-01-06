@@ -1,4 +1,4 @@
-﻿// <copyright file="P_CellUnzoneSystem.cs" company="Luca Rager">
+﻿// <copyright file="P_CellUnzonedSystem.cs" company="Luca Rager">
 // Copyright (c) Luca Rager. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -23,7 +23,7 @@ namespace Platter.Systems {
     /// <summary>
     /// Updates parcel data whenever block data updates.
     /// </summary>
-    public partial class P_CellUnzoneSystem : PlatterGameSystemBase {
+    public partial class P_UnzonedSystem : PlatterGameSystemBase {
         private EntityQuery m_Query;
 
         /// <inheritdoc/>
@@ -48,6 +48,7 @@ namespace Platter.Systems {
                 m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(true),
                 m_CellBufferTypeHandle = SystemAPI.GetBufferTypeHandle<Cell>(),
                 m_ParcelDataLookup = SystemAPI.GetComponentLookup<ParcelData>(true),
+                m_UnzonedZoneType = P_ZoneCacheSystem.UnzonedZoneType,
             }.Schedule(m_Query, Dependency);
         }
 
@@ -60,6 +61,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<PrefabRef> m_PrefabRefLookup;
             [ReadOnly] public required ComponentLookup<ParcelData> m_ParcelDataLookup;
             public required BufferTypeHandle<Cell> m_CellBufferTypeHandle;
+            [ReadOnly] public ZoneType m_UnzonedZoneType;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask,
                                 in v128 chunkEnabledMask) {
@@ -74,6 +76,8 @@ namespace Platter.Systems {
                     var prefabRef = m_PrefabRefLookup[parcelOwner.m_Owner];
                     var parcelData = m_ParcelDataLookup[prefabRef.m_Prefab];
 
+                    BurstLogger.Debug("[P_UnzonedSystem]", $"Block {block} of parcel {parcelOwner.m_Owner} is being updated.");
+
                     for (var col = 0; col < block.m_Size.x; col++)
                     for (var row = 0; row < block.m_Size.y; row++) {
                         var index = row * block.m_Size.x + col;
@@ -81,7 +85,7 @@ namespace Platter.Systems {
 
                         if (col < parcelData.m_LotSize.x && row < parcelData.m_LotSize.y) {
                             if (cell.m_Zone.Equals(ZoneType.None)) {
-                                cell.m_Zone       = P_ZoneCacheSystem.UnzonedZoneType;
+                                cell.m_Zone       = m_UnzonedZoneType;
                                 cell.m_State      = CellFlags.Visible;
                                 cellBuffer[index] = cell;
                             }

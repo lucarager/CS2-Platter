@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "구역 블록이 적용된 구획 셀. 가로 6 칸, 세로 5 칸",
   "Assets.NAME[Parcel 6x6]": "구획 셀 (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "구역 블록이 적용된 구획 셀. 가로 6 칸, 세로 6 칸",
-  "Assets.NAME[Unzoned]": "구역화되지 않음"
+  "Assets.NAME[PlatterUnzoned]": "구역화되지 않음"
 }

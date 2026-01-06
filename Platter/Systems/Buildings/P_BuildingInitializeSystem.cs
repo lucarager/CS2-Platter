@@ -37,6 +37,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            m_Log.Debug($"OnUpdate() -- Initializing {m_SpawnedBuildingQuery.CalculateEntityCount()} spawned buildings");
             EntityManager.AddComponent(m_SpawnedBuildingQuery, new ComponentTypeSet(typeof(GrowableBuilding), typeof(LinkedParcel), typeof(TransformUpdated)));
         }
     }

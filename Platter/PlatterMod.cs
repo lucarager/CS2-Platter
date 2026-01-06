@@ -31,6 +31,7 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
+    using Game.Zones;
     using HarmonyLib;
     using Newtonsoft.Json;
     using Settings;
@@ -164,8 +165,7 @@ namespace Platter {
         }
 
         /// <summary>
-        /// Registers all systems that handle deserialization, prefabs, buildings, roads, parcels, UI/rendering, and tools.
-        /// Systems are registered in a specific order to ensure proper initialization and update dependencies.
+        /// Registers all systems.
         /// </summary>
         /// <param name="updateSystem">The update system to register systems into.</param>
         private void RegisterSystems(UpdateSystem updateSystem) {
@@ -181,6 +181,7 @@ namespace Platter {
             // Prefabs
             updateSystem.UpdateAfter<P_PrefabsCreateSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ParcelInitializeSystem, ObjectInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+            updateSystem.UpdateAfter<P_UnzonedInitializeSystem, ZoneSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_ZoneCacheSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAfter<P_BuildingCacheSystem>(SystemUpdatePhase.PrefabUpdate);
 
@@ -194,8 +195,8 @@ namespace Platter {
 
             // Parcels
             updateSystem.UpdateAt<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
-            updateSystem.UpdateAt<P_CellUnzoneSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
+            updateSystem.UpdateAt<P_UnzonedSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_BlockDeleteCleanupSystem>(SystemUpdatePhase.Modification4);
             updateSystem.UpdateAt<P_RoadConnectionSystem>(SystemUpdatePhase.Modification4B);
@@ -215,8 +216,7 @@ namespace Platter {
             // Tools
             updateSystem.UpdateBefore<P_SnapSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateBefore<P_GenerateZonesSystem, GenerateZonesSystem>(SystemUpdatePhase.Modification1); // Needs to run before GenerateZonesSystem
-            updateSystem.UpdateBefore<P_CellCheckSystem>(SystemUpdatePhase.ModificationEnd);
-            //updateSystem.UpdateAfter<P_CellUpdateSystem>(SystemUpdatePhase.ModificationEnd); // Needs to run after CellCheckSystem
+            updateSystem.UpdateAfter<P_NewCellCheckSystem, CellCheckSystem>(SystemUpdatePhase.Modification5);
 
             // Tests
             #if IS_DEBUG
@@ -240,6 +240,7 @@ namespace Platter {
 
         /// <summary>
         /// Registers custom input actions for parcel manipulation (depth, width, and setback adjustments).
+        /// This is needed because the modding API doesn't allow creating mousewheel-based shortcuts directly.
         /// </summary>
         private void RegisterCustomInputActions() {
             m_Log.Debug("RegisterCustomInputActions()");
@@ -380,7 +381,6 @@ namespace Platter {
 
         /// <summary>
         /// Adds test scenarios from the assembly to the test framework.
-        /// Only executed in debug builds.
         /// </summary>
         private void AddTests() {
             m_Log.Info("AddTests()");

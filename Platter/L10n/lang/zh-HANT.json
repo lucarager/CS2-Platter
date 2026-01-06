@@ -162,5 +162,6 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "A Parcel with zone blocks. 6 cells wide, 5 cells deep",
   "Assets.NAME[Parcel 6x6]": "Parcel (6x6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "A Parcel with zone blocks. 6 cells wide, 6 cells deep",
-  "Assets.NAME[Unzoned]": "未分區"
+  "Assets.NAME[Unzoned]": "未分區",
+  "Assets.NAME[PlatterUnzoned]": "未分區"
 }

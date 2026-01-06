@@ -61,12 +61,13 @@ namespace Platter.Systems {
         protected override void OnUpdate() {
             base.OnUpdate();
 
-            if (EntityManager.TryGetComponent<LinkedParcel>(selectedEntity, out var linkedParcel)) {
+            if (EntityManager.TryGetComponent<LinkedParcel>(selectedEntity, out var linkedParcel) && 
+                linkedParcel.m_Parcel != Entity.Null) {
                 visible               = true;
                 m_EntityBinding.Value = linkedParcel.m_Parcel;
             } else {
-                m_EntityBinding.Value = Entity.Null;
                 visible               = false;
+                m_EntityBinding.Value = Entity.Null;
             }
 
             RequestUpdate();

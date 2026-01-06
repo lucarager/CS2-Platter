@@ -46,8 +46,6 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            m_Log.Debug("OnUpdate() -- Updating Parcel->Block->Road ownership references");
-
             var updateBlockOwnerJobHandle = new UpdateBlockOwnerJob
             {
                 m_EntityTypeHandle               = SystemAPI.GetEntityTypeHandle(),
@@ -87,6 +85,8 @@ namespace Platter.Systems {
                     var parcel         = parcelArray[i];
                     var subBlockBuffer = subBlockBufferArray[i];
                     var allowSpawning  = m_ParcelSpawnableLookup.HasComponent(parcelEntity);
+
+                    BurstLogger.Debug("[P_BlockToRoadReferenceSystem]", $"Updating ownership references -- Parcel {parcelEntity} -> {subBlockBuffer.Length} Blocks -> Road {parcel.m_RoadEdge}");
 
                     for (var index = 0; index < subBlockBuffer.Length; index++) {
                         var subBlock    = subBlockBuffer[index];

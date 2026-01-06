@@ -127,15 +127,18 @@ namespace Platter.Systems {
                     if (chunk.Has(ref m_TempTypeHandle)) {
                         var temp        = tempArray[i];
                         if ((temp.m_Flags & (TempFlags.Create | TempFlags.Modify)) == 0) {
-                            // No flags set, exit.
+                            // No valid flags set, exit.
                             continue;
                         }
-                    } 
+                    }
 
+                    enqueuedCount++;
                     m_ParcelEntitiesQueue.Enqueue(entity);
                 }
 
-                BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} parcels.");
+                if (enqueuedCount > 0) {
+                    BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} of {entityArray.Length} parcels.");
+                }
             }
 
             private struct FindParcelNextToRoadIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {

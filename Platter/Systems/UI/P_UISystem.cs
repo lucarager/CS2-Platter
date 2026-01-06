@@ -110,11 +110,11 @@ namespace Platter.Systems {
             m_EnableCreateFromZoneBinding  = CreateBinding("ENABLE_CREATE_FROM_ZONE", false);
             m_ZoneBinding                  = CreateBinding("ZONE", 0, SetPreZone);
             m_BlockWidthBinding            = CreateBinding("BLOCK_WIDTH", 2);
-            m_BlockWidthMinBinding         = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.BlockSizes.x);
-            m_BlockWidthMaxBinding         = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.BlockSizes.z);
+            m_BlockWidthMinBinding         = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.AvailableParcelLotSizes.x);
+            m_BlockWidthMaxBinding         = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.AvailableParcelLotSizes.z);
             m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2);
-            m_BlockDepthMinBinding         = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.BlockSizes.y);
-            m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.BlockSizes.w);
+            m_BlockDepthMinBinding         = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.AvailableParcelLotSizes.y);
+            m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.AvailableParcelLotSizes.w);
             m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIDataModel[] { });
             m_AssetPackDataBinding         = CreateBinding("ASSET_PACK_DATA", new AssetPackUIDataModel[] { });
             m_ZoneGroupDataBinding         = CreateBinding("ZONE_GROUP_DATA", new ZoneGroupUIDataModel[] { });
@@ -198,8 +198,11 @@ namespace Platter.Systems {
                 var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
                 Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
                 m_ZoneDataBinding.Value = zoneData;
-                m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values.ToArray();
-                m_ZoneGroupDataBinding.Value = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
+                m_AssetPackDataBinding.Value = m_ZoneCacheSystem.AssetPackUIData.Values
+                                                                .ToArray();
+                var zoneGroupArray = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
+                Array.Sort(zoneGroupArray, (a, b) => a.Priority.CompareTo(b.Priority));
+                m_ZoneGroupDataBinding.Value = zoneGroupArray;
             }
         }
 
@@ -471,7 +474,7 @@ namespace Platter.Systems {
         /// Called from the UI.
         /// </summary>
         private void DecreaseBlockWidth() {
-            if (m_SelectedParcelSize.x > P_PrefabsCreateSystem.BlockSizes.x) {
+            if (m_SelectedParcelSize.x > P_PrefabsCreateSystem.AvailableParcelLotSizes.x) {
                 m_SelectedParcelSize.x -= 1;
             }
 
@@ -483,7 +486,7 @@ namespace Platter.Systems {
         ///  Called from the UI.
         /// </summary>
         private void IncreaseBlockWidth() {
-            if (m_SelectedParcelSize.x < P_PrefabsCreateSystem.BlockSizes.z) {
+            if (m_SelectedParcelSize.x < P_PrefabsCreateSystem.AvailableParcelLotSizes.z) {
                 m_SelectedParcelSize.x += 1;
             }
 
@@ -495,7 +498,7 @@ namespace Platter.Systems {
         ///  Called from the UI.
         /// </summary>
         private void DecreaseBlockDepth() {
-            if (m_SelectedParcelSize.y > P_PrefabsCreateSystem.BlockSizes.y) {
+            if (m_SelectedParcelSize.y > P_PrefabsCreateSystem.AvailableParcelLotSizes.y) {
                 m_SelectedParcelSize.y -= 1;
             }
 
@@ -507,7 +510,7 @@ namespace Platter.Systems {
         ///  Called from the UI.
         /// </summary>
         private void IncreaseBlockDepth() {
-            if (m_SelectedParcelSize.y < P_PrefabsCreateSystem.BlockSizes.w) {
+            if (m_SelectedParcelSize.y < P_PrefabsCreateSystem.AvailableParcelLotSizes.w) {
                 m_SelectedParcelSize.y += 1;
             }
 
