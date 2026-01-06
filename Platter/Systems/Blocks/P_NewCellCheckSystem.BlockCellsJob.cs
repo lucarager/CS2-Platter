@@ -16,6 +16,7 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Colossal.Collections;
     using Unity.Jobs;
+    using Unity.Mathematics;
 
     public partial class P_NewCellCheckSystem {
         /// <summary>
@@ -50,19 +51,19 @@ namespace Platter.Systems {
                 var parcelData = m_ParcelDataLookup[prefab.m_Prefab];
                 var cellBuffer = m_CellsLookup[entity];
                 var validArea = new ValidArea() {
-                    m_Area = new Unity.Mathematics.int4(0, parcelData.m_LotSize.x, 0, parcelData.m_LotSize.y),
+                    m_Area = new int4(0, parcelData.m_LotSize.x, 0, parcelData.m_LotSize.y),
                 };
 
                 if (parcelData.m_LotSize.x > 1) {
                     // Normalize "wide" parcel's cells.
-                    NormalizeWideParcelCells(block, parcelData, cellBuffer);
+                    NormalizeWideParcelCells(ref block, ref parcelData, ref cellBuffer);
                 } else {
                     // Normalize "narrow" parcel's cells so they are processed from a clean state.
-                    NormalizeNarrowParcelCells(block, parcelData, cellBuffer);
+                    NormalizeNarrowParcelCells(ref block, ref parcelData, ref cellBuffer);
                 }
 
                 // Process the results, calculating the final valid area.
-                CleanBlockedCells(block, ref validArea, cellBuffer);
+                CleanBlockedCells(ref block, ref validArea, ref cellBuffer);
 
                 // Set final valid area data
                 m_ValidAreaLookup[entity] = validArea;
@@ -78,9 +79,9 @@ namespace Platter.Systems {
             #if USE_BURST
             [BurstCompile]
             #endif
-            private static void NormalizeWideParcelCells(Block block,
-                                                         ParcelData parcelData,
-                                                         DynamicBuffer<Cell> cells) {
+            private static void NormalizeWideParcelCells(ref Block block,
+                                                         ref ParcelData parcelData,
+                                                         ref DynamicBuffer<Cell> cells) {
                 for (var row = 0; row < block.m_Size.y; row++)
                     for (var col = 0; col < block.m_Size.x; col++) {
                         var isOutsideLot = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
@@ -108,9 +109,9 @@ namespace Platter.Systems {
             #if USE_BURST
             [BurstCompile]
             #endif
-            private static void NormalizeNarrowParcelCells(Block block,
-                                                           ParcelData parcelData,
-                                                           DynamicBuffer<Cell> cells) {
+            private static void NormalizeNarrowParcelCells(ref Block block,
+                                                           ref ParcelData parcelData,
+                                                           ref DynamicBuffer<Cell> cells) {
                 for (var row = 0; row < block.m_Size.y; row++)
                     for (var col = 0; col < block.m_Size.x; col++) {
                         var isOutsideLot = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
@@ -136,9 +137,9 @@ namespace Platter.Systems {
             #if USE_BURST
             [BurstCompile]
             #endif
-            private static void CleanBlockedCells(Block blockData,
+            private static void CleanBlockedCells(ref Block blockData,
                                                   ref ValidArea validAreaData,
-                                                  DynamicBuffer<Cell> cells) {
+                                                  ref DynamicBuffer<Cell> cells) {
                 var validArea = default(ValidArea);
                 validArea.m_Area.xz = blockData.m_Size;
                 for (var i = validAreaData.m_Area.x; i < validAreaData.m_Area.y; i++) {
@@ -168,8 +169,8 @@ namespace Platter.Systems {
                     }
 
                     if (num > validAreaData.m_Area.z) {
-                        validArea.m_Area.xz = Unity.Mathematics.math.min(validArea.m_Area.xz, new Unity.Mathematics.int2(i, validAreaData.m_Area.z));
-                        validArea.m_Area.yw = Unity.Mathematics.math.max(validArea.m_Area.yw, new Unity.Mathematics.int2(i + 1, num));
+                        validArea.m_Area.xz = math.min(validArea.m_Area.xz, new int2(i, validAreaData.m_Area.z));
+                        validArea.m_Area.yw = math.max(validArea.m_Area.yw, new int2(i + 1, num));
                     }
                 }
 
