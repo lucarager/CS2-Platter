@@ -85,7 +85,7 @@ namespace Platter.Systems {
                     var parcel      = ParcelLookup[parcelOwner.m_Owner];
                     var parcelData  = ParcelDataLookup[prefabRef.m_Prefab];
                     // BurstLogger.Debug("[P_LoadZoneResolverSystem]", 
-                                      $"Re-classifying Parcel entity {entity}");
+                                      //$"Re-classifying Parcel entity {entity}");
 
                     ParcelUtils.ClassifyParcelZoning(ref parcel, in block, in parcelData, in cellBuffer, UnzonedZoneType);
 

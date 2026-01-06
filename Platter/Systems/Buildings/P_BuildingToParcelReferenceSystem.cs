@@ -124,7 +124,7 @@ namespace Platter.Systems {
                     var wasMoved     = chunk.Has(ref m_TransformUpdatedComponentTypeHandle);
 
                     // BurstLogger.Debug("[P_BuildingToParcelReferenceSystem]", 
-                                      $"Processing Building {entity} -> LinkedParcel {linkedParcel.m_Parcel}. WasMoved: {wasMoved}");
+                                      //$"Processing Building {entity} -> LinkedParcel {linkedParcel.m_Parcel}. WasMoved: {wasMoved}");
 
                     if (wasMoved) {
                         m_CommandBuffer.RemoveComponent<TransformUpdated>(unfilteredChunkIndex, entity);

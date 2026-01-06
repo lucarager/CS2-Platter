@@ -169,7 +169,7 @@ namespace Platter.Systems {
                     Entity blockEntity;
 
                     // BurstLogger.Debug("[P_ParcelUpdateSystem]", 
-                                      $"Updating parcel: {parcelEntity} -- isUpdatingExisting {isUpdatingExisting}");
+                                      //$"Updating parcel: {parcelEntity} -- isUpdatingExisting {isUpdatingExisting}");
 
                     if (isUpdatingExisting) {
                         blockEntity = subBlockBuffer[0].m_SubBlock;
