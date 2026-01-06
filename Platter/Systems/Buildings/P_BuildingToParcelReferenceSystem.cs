@@ -123,7 +123,7 @@ namespace Platter.Systems {
                     var linkedParcel = linkedParcelArray[i];
                     var wasMoved     = chunk.Has(ref m_TransformUpdatedComponentTypeHandle);
 
-                    BurstLogger.Debug("[P_BuildingToParcelReferenceSystem]", 
+                    // BurstLogger.Debug("[P_BuildingToParcelReferenceSystem]", 
                                       $"Processing Building {entity} -> LinkedParcel {linkedParcel.m_Parcel}. WasMoved: {wasMoved}");
 
                     if (wasMoved) {

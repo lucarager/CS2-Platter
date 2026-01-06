@@ -68,12 +68,12 @@ namespace Platter.Systems {
                     var owner  = parcelOwnerArray[i];
 
                     if (chunk.Has(ref m_CreatedTypeHandle)) {
-                        BurstLogger.Debug("[P_ParcelToBlockReferenceSystem]", $"Added reference: Parcel {owner.m_Owner} -> Block {entity}");
+                        // BurstLogger.Debug("[P_ParcelToBlockReferenceSystem]", $"Added reference: Parcel {owner.m_Owner} -> Block {entity}");
                         CollectionUtils.TryAddUniqueValue(m_ParcelSubBlockLookup[owner.m_Owner], new ParcelSubBlock(entity));
                         continue;
                     }
 
-                    BurstLogger.Debug("[P_ParcelToBlockReferenceSystem]", $"Removed reference: Parcel {owner.m_Owner} -> Block {entity}");
+                    // BurstLogger.Debug("[P_ParcelToBlockReferenceSystem]", $"Removed reference: Parcel {owner.m_Owner} -> Block {entity}");
                     CollectionUtils.RemoveValue(m_ParcelSubBlockLookup[owner.m_Owner], new ParcelSubBlock(entity));
                 }
             }

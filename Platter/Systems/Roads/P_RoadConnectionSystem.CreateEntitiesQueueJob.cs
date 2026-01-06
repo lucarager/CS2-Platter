@@ -76,7 +76,7 @@ namespace Platter.Systems {
                             }
                         }
 
-                        BurstLogger.Debug("RCS", $"Processed {connectedParcelBufferAccessor.Length} deleted edges. Enqueued {enqueuedCount} parcels.");
+                        // BurstLogger.Debug("RCS", $"Processed {connectedParcelBufferAccessor.Length} deleted edges. Enqueued {enqueuedCount} parcels.");
 
                         return;
                     }
@@ -137,7 +137,7 @@ namespace Platter.Systems {
                 }
 
                 if (enqueuedCount > 0) {
-                    BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} of {entityArray.Length} parcels.");
+                    // BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} of {entityArray.Length} parcels.");
                 }
             }
 
@@ -222,7 +222,7 @@ namespace Platter.Systems {
                         enqueuedCount++;
                     }
 
-                    BurstLogger.Debug("RCS", $"Analyzed updated edge and enqueued {enqueuedCount} parcels.");
+                    // BurstLogger.Debug("RCS", $"Analyzed updated edge and enqueued {enqueuedCount} parcels.");
                 }
             }
         }

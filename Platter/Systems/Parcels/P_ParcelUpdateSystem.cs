@@ -168,7 +168,7 @@ namespace Platter.Systems {
                     var    zoneBlockData = m_ZoneBlockDataLookup[parcelData.m_ZoneBlockPrefab];
                     Entity blockEntity;
 
-                    BurstLogger.Debug("[P_ParcelUpdateSystem]", 
+                    // BurstLogger.Debug("[P_ParcelUpdateSystem]", 
                                       $"Updating parcel: {parcelEntity} -- isUpdatingExisting {isUpdatingExisting}");
 
                     if (isUpdatingExisting) {
