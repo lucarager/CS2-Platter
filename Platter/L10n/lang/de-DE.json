@@ -19,7 +19,7 @@
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveIcons]": "Entfernt verwaiste Icon-Entitäten von der Karte, die möglicherweise zurückgelassen wurden.",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterToggleRender/binding]": "Umschalten des \"Parzellen-Overlay\"",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Umschalten von \"Parzellen-Overlay\"",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Shortcut zum Ein- oder Ausschalten der Parzellen-Overlay.",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Shortcut zum Ein- oder Ausschalten des Parzellen-Overlay.",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterDepthScrollAction]": "Parzellentiefe erhöhen/verringern",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterDepthScrollAction/binding]": "Parzellentiefe erhöhen/verringern",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterDepthScrollAction]": "Shortcut zum Erhöhen/Verringern der Tiefe einer Parzelle",
