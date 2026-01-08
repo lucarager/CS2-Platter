@@ -36,6 +36,7 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
+            m_Log.Debug("Removing overridden from parcels");
             EntityManager.RemoveComponent<Overridden>(m_Query);
         }
     }

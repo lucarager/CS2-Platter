@@ -11,6 +11,7 @@ namespace Platter.Systems {
     using Game.Buildings;
     using Game.Common;
     using Game.Tools;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
@@ -92,12 +93,12 @@ namespace Platter.Systems {
                     var currentEntity     = entityArray[i];
                     var originalTransform = transformArray[i];
 
-                    BurstLogger.Debug("[P_BuildingTransformCheckSystem]",
-                                      $"Checking Building {currentEntity}");
+                    // BurstLogger.Debug("[P_BuildingTransformCheckSystem]",
+                                      //$"Checking Building {currentEntity}");
 
                     if (!chunk.Has(ref m_CachedTransformTypeHandle)) {
-                        BurstLogger.Debug("[P_BuildingTransformCheckSystem]", 
-                                          $"Adding CachedTransform for Building {currentEntity}");
+                        // BurstLogger.Debug("[P_BuildingTransformCheckSystem]", 
+                                          //$"Adding CachedTransform for Building {currentEntity}");
                         m_CommandBuffer.AddComponent(
                             unfilteredChunkIndex,
                             currentEntity,
@@ -112,8 +113,8 @@ namespace Platter.Systems {
                             continue;
                         }
 
-                        BurstLogger.Debug("[P_BuildingTransformCheckSystem]", 
-                                          $"Updating CachedTransform for Building {currentEntity}");
+                        // BurstLogger.Debug("[P_BuildingTransformCheckSystem]", 
+                                          //$"Updating CachedTransform for Building {currentEntity}");
 
                         cachedTransform.m_Position = originalTransform.m_Position;
                         cachedTransform.m_Rotation = originalTransform.m_Rotation;

@@ -86,7 +86,7 @@ namespace Platter.Systems {
                     var subBlockBuffer = subBlockBufferArray[i];
                     var allowSpawning  = m_ParcelSpawnableLookup.HasComponent(parcelEntity);
 
-                    BurstLogger.Debug("[P_BlockToRoadReferenceSystem]", $"Updating ownership references -- Parcel {parcelEntity} -> {subBlockBuffer.Length} Blocks -> Road {parcel.m_RoadEdge}");
+                    // BurstLogger.Debug("[P_BlockToRoadReferenceSystem]", $"Updating ownership references -- Parcel {parcelEntity} -> {subBlockBuffer.Length} Blocks -> Road {parcel.m_RoadEdge}");
 
                     for (var index = 0; index < subBlockBuffer.Length; index++) {
                         var subBlock    = subBlockBuffer[index];

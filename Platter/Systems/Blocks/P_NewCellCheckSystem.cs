@@ -60,8 +60,6 @@ namespace Platter.Systems {
     ///
     /// </summary>
     public partial class P_NewCellCheckSystem : PlatterGameSystemBase {
-        private SearchSystem                     m_AreaSearchSystem;
-        private Game.Net.SearchSystem            m_NetSearchSystem;
         private Game.Zones.SearchSystem          m_ZoneSearchSystem;
         private Game.Objects.SearchSystem        m_ObjectSearchSystem;
         private UpdateCollectSystem              m_AreaUpdateCollectSystem;
@@ -83,8 +81,6 @@ namespace Platter.Systems {
             m_AreaUpdateCollectSystem   = World.GetOrCreateSystemManaged<UpdateCollectSystem>();
             m_ZoneSearchSystem          = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
             m_ObjectSearchSystem        = World.GetOrCreateSystemManaged<Game.Objects.SearchSystem>();
-            m_NetSearchSystem           = World.GetOrCreateSystemManaged<Game.Net.SearchSystem>();
-            m_AreaSearchSystem          = World.GetOrCreateSystemManaged<SearchSystem>();
             m_ZoneSystem                = World.GetOrCreateSystemManaged<ZoneSystem>();
             m_ModificationBarrier5      = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
@@ -110,15 +106,14 @@ namespace Platter.Systems {
             var overlapGroupsList  = new NativeList<OverlapGroup>(Allocator.TempJob);
             var boundsQueue        = new NativeQueue<Bounds2>(Allocator.TempJob);
             var filteredBlocksList = new NativeList<SortedEntity>(Allocator.TempJob);
-
-            var collectUpdatedBlocksJobHandle = CollectUpdatedBlocks(updatedBlocksList);
+            Dependency = JobHandle.CombineDependencies(Dependency, CollectUpdatedBlocks(updatedBlocksList));
 
             // Filter blocks to only include those that are part of a parcel
             var filterBlocksJobHandle = new FilterBlocksToParcelsJob {
                 m_InputBlocks       = updatedBlocksList,
                 m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(true),
                 m_OutputBlocks      = filteredBlocksList,
-            }.Schedule(JobHandle.CombineDependencies(Dependency, collectUpdatedBlocksJobHandle));
+            }.Schedule(Dependency);
             var filteredBlocks = filteredBlocksList.AsDeferredJobArray();
 
             // Process Updated Blocks. This is one of the jobs we maintain ourselves.
@@ -127,27 +122,10 @@ namespace Platter.Systems {
                 m_BlockLookup                 = SystemAPI.GetComponentLookup<Block>(),
                 m_ParcelOwnerLookup           = SystemAPI.GetComponentLookup<ParcelOwner>(),
                 m_ParcelDataLookup            = SystemAPI.GetComponentLookup<ParcelData>(),
-                m_NetSearchTree               = m_NetSearchSystem.GetNetSearchTree(true, out var netSearchJobHandle),
-                m_AreaSearchTree              = m_AreaSearchSystem.GetSearchTree(true, out var areaSearchJobHandle),
-                m_OwnerLookup                 = SystemAPI.GetComponentLookup<Owner>(),
-                m_TransformLookup             = SystemAPI.GetComponentLookup<Game.Objects.Transform>(),
-                m_EdgeGeometryLookup          = SystemAPI.GetComponentLookup<EdgeGeometry>(),
-                m_StartNodeGeometryLookup     = SystemAPI.GetComponentLookup<StartNodeGeometry>(),
-                m_EndNodeGeometryLookup       = SystemAPI.GetComponentLookup<EndNodeGeometry>(),
-                m_CompositionLookup           = SystemAPI.GetComponentLookup<Composition>(),
                 m_PrefabRefLookup             = SystemAPI.GetComponentLookup<PrefabRef>(),
-                m_NetCompositionLookup        = SystemAPI.GetComponentLookup<NetCompositionData>(),
-                m_PrefabRoadCompositionLookup = SystemAPI.GetComponentLookup<RoadComposition>(),
-                m_PrefabAreaGeometryLookup    = SystemAPI.GetComponentLookup<AreaGeometryData>(),
-                m_PrefabObjectGeometryLookup  = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
-                m_NativeLookup                = SystemAPI.GetComponentLookup<Native>(),
                 m_CellsLookup                 = SystemAPI.GetBufferLookup<Cell>(),
-                m_AreaNodesLookup             = SystemAPI.GetBufferLookup<Game.Areas.Node>(),
-                m_AreaTrianglesLookup         = SystemAPI.GetBufferLookup<Game.Areas.Triangle>(),
                 m_ValidAreaLookup             = SystemAPI.GetComponentLookup<ValidArea>(),
-            }.Schedule(filteredBlocksList, 1, JobHandle.CombineDependencies(filterBlocksJobHandle, netSearchJobHandle, areaSearchJobHandle));
-            m_NetSearchSystem.AddNetSearchTreeReader(processUpdatedBlocksJobHandle);
-            m_AreaSearchSystem.AddSearchTreeReader(processUpdatedBlocksJobHandle);
+            }.Schedule(filteredBlocksList, 1, filterBlocksJobHandle);
 
             // Find Overlapping Blocks
             var zoneSearchTree = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle);
@@ -203,7 +181,6 @@ namespace Platter.Systems {
                 m_ZoneData        = SystemAPI.GetComponentLookup<ZoneData>(true),
                 m_Cells           = SystemAPI.GetBufferLookup<Cell>(false),
                 m_ValidAreaData   = SystemAPI.GetComponentLookup<ValidArea>(false),
-                // Add new lookups for narrow parcel detection
                 m_ParcelOwnerData = SystemAPI.GetComponentLookup<ParcelOwner>(true),
                 m_PrefabRefData   = SystemAPI.GetComponentLookup<PrefabRef>(true),
                 m_ParcelData      = SystemAPI.GetComponentLookup<ParcelData>(true),

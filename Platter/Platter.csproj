@@ -15,7 +15,7 @@
 		<DebugType>portable</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
-		<Version>1.3.8</Version>
+		<Version>0.1.1</Version>
 		<AssemblyVersion>$(Version).0</AssemblyVersion>
 		<FileVersion>$(Version).0</FileVersion>
 	</PropertyGroup>
@@ -109,7 +109,6 @@
 		<EmbeddedResource Include="L10n\lang\ru-RU.json" />
 		<EmbeddedResource Include="L10n\lang\zh-HANS.json" />
 		<EmbeddedResource Include="L10n\lang\zh-HANT.json" />
-		<Folder Include="Properties\Changelog\" />
 	</ItemGroup>
 
 	<ItemGroup>
