@@ -132,7 +132,9 @@ namespace Platter.Utils {
         /// <param name="parcelData">The parcel data containing lot size information.</param>
         /// <param name="cellBuffer">The buffer containing cell data.</param>
         /// <param name="unzonedZoneType">The zone type representing unzoned cells (passed to avoid static field access in Burst).</param>
+#if USE_BURST
         [BurstCompile]
+#endif
         public static void ClassifyParcelZoning(ref Parcel parcel, in Block block, in ParcelData parcelData, in DynamicBuffer<Cell> cellBuffer, ZoneType unzonedZoneType) {
             var isZoningUniform = true;
             var cachedZone = unzonedZoneType;

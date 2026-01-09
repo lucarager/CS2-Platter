@@ -87,6 +87,9 @@ namespace Platter.Systems {
                 m_ParcelEntitiesList[index] = currentEntityData;
             }
 
+#if USE_BURST
+            [BurstCompile]
+#endif
             private void FindBestRoadForAccessNode(
                 ParcelGeometryUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform, float maxDistance,
                 out Entity road, out float3 position, out float curvePos) {
@@ -126,6 +129,9 @@ namespace Platter.Systems {
                 curvePos = iterator.BestCurvePos;
             }
 
+#if USE_BURST
+            [BurstCompile]
+#endif
             public struct FindRoadConnectionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
                 public  float                               BestCurvePos;
                 public  Entity                              BestRoad;

@@ -52,6 +52,9 @@ namespace Platter.Systems {
             /// buffer updates, and marking the parcel for downstream system processing.
             /// </summary>
             /// <param name="rcData">The update data containing the parcel entity and its new road connections.</param>
+#if USE_BURST
+            [BurstCompile]
+#endif
             private void ProcessParcel(RCData rcData) {
                 var parcel    = m_ParcelComponentLookup[rcData.m_Parcel];
                 var isCreated = m_CreatedComponentLookup.HasComponent(rcData.m_Parcel);
@@ -100,6 +103,9 @@ namespace Platter.Systems {
             /// </summary>
             /// <param name="parcel">Reference to the parcel component to update.</param>
             /// <param name="rcData">The update data containing detected road connections.</param>
+#if USE_BURST
+            [BurstCompile]
+#endif
             private void UpdateRoadStateFlags(ref Parcel parcel, RCData rcData) {
                 parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadLeft, rcData.m_LeftRoad   != Entity.Null);
                 parcel.m_State = SetFlag(parcel.m_State, ParcelState.RoadRight, rcData.m_RightRoad != Entity.Null);
@@ -115,6 +121,9 @@ namespace Platter.Systems {
             /// <param name="flag">The flag to set or clear.</param>
             /// <param name="value">True to set the flag, false to clear it.</param>
             /// <returns>The updated parcel state with the flag set or cleared.</returns>
+#if USE_BURST
+            [BurstCompile]
+#endif
             private static ParcelState SetFlag(ParcelState state, ParcelState flag, bool value) {
                 return value ? state | flag : state & ~flag;
             }
@@ -127,6 +136,9 @@ namespace Platter.Systems {
             /// <param name="parcel">The parcel component with current road connection state.</param>
             /// <param name="rcData">The update data containing new road connection information.</param>
             /// <param name="isCreated">Whether the parcel was just created this frame.</param>
+#if USE_BURST
+            [BurstCompile]
+#endif
             private void UpdateRoadConnectionIcon(Parcel parcel, RCData rcData, bool isCreated) {
                 var hasRoad = rcData.m_FrontRoad != Entity.Null;
                 var isTemp  = m_TempComponentLookup.HasComponent(rcData.m_Parcel);
@@ -158,6 +170,9 @@ namespace Platter.Systems {
             /// </summary>
             /// <param name="parcel">The parcel component with the current (old) road connection.</param>
             /// <param name="rcData">The update data containing the new road connection.</param>
+#if USE_BURST
+            [BurstCompile]
+#endif
             private void UpdateConnectedParcelBuffers(Parcel parcel, RCData rcData) {
                 // Remove from old road's connected parcels
                 if (parcel.m_RoadEdge != Entity.Null &&

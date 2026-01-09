@@ -16,10 +16,10 @@ namespace Platter.Systems {
     #endregion
 
     /// <summary>
-    /// System responsible for patching parcels and removing the overridable flag.
+    /// System responsible for patching parcels and removing the Overridden flag.
     /// </summary>
     public partial class P_RemoveOverriddenSystem : PlatterGameSystemBase {
-        private EntityQuery    m_Query;
+        private EntityQuery m_Query;
 
         /// <inheritdoc/>
         protected override void OnCreate() {

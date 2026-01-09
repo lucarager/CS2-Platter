@@ -141,6 +141,9 @@ namespace Platter.Systems {
                 }
             }
 
+#if USE_BURST
+            [BurstCompile]
+#endif
             private struct FindParcelNextToRoadIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ> {
                 public required NativeQueue<Entity>.ParallelWriter m_EntitiesQueue;
                 public required Entity m_Road;
