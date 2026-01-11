@@ -32,9 +32,8 @@ namespace Platter.Systems {
         private const GeometryFlags PermGeometryFlags =
             CommonGeometryFlags |
             // Allows buildings and objects to grow over the parcel. However, we then remove the Overridden flag in another system.
-            GeometryFlags.Overridable |
-            // Reduces collision priority to avoid interference with other objects.
-            GeometryFlags.LowCollisionPriority;
+            GeometryFlags.Marker |
+            GeometryFlags.IgnoreBottomCollision;
 
         // PlaceholderGeometryFlags: Assigned to placeholder parcels (before placing)
         private const GeometryFlags PlaceholderGeometryFlags =

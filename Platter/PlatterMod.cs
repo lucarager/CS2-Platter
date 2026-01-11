@@ -203,7 +203,6 @@ namespace Platter {
             updateSystem.UpdateAt<P_ParcelToBlockReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_BlockToRoadReferenceSystem>(SystemUpdatePhase.Modification5);
             updateSystem.UpdateAt<P_ParcelSearchSystem>(SystemUpdatePhase.Modification5);
-            updateSystem.UpdateBefore<P_RemoveOverriddenSystem>(SystemUpdatePhase.ModificationEnd); // Run after Mod5 when overrides are applied
             updateSystem.UpdateAt<P_ParcelBlockClassifySystem>(SystemUpdatePhase.ModificationEnd);
 
             // UI/Rendering
