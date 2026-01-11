@@ -23,19 +23,28 @@ namespace Platter.Systems {
     /// This runs after ObjectInitializeSystem and manually sets things like geometry data.
     /// </summary>
     public partial class P_ParcelInitializeSystem : PlatterGameSystemBase {
-        // Shared GeometryFlags for all parcels.
+        /// <summary>
+        /// Shared GeometryFlags for all parcels.
+        /// </summary>
         private const GeometryFlags CommonGeometryFlags =
             // Ensures the parcel can be walked through.
             GeometryFlags.WalkThrough;
 
-        // PermGeometryFlags: Assigned to permanent parcels (after placing)
+        /// <summary>
+        /// Assigned to permanent parcels (after placing)
+        /// </summary>
         private const GeometryFlags PermGeometryFlags =
             CommonGeometryFlags |
-            // Allows buildings and objects to grow over the parcel. However, we then remove the Overridden flag in another system.
+            /// Allows buildings and objects to grow over the parcel. As Markers are ignored by most systems,
+            /// we require harmony patches to ensure parcels can still be selected by Bulldozer and Default tools.
+            /// See <reference>Platter.Patches.MarkerPatches</reference> for more information.
+            /// todo: Add custom collision detection for placed parcels to avoid issues with overlapping parcels.
             GeometryFlags.Marker |
             GeometryFlags.IgnoreBottomCollision;
 
-        // PlaceholderGeometryFlags: Assigned to placeholder parcels (before placing)
+        /// <summary>
+        /// Assigned to placeholder parcels (before placing)
+        /// </summary>
         private const GeometryFlags PlaceholderGeometryFlags =
             CommonGeometryFlags       |
             // Checks that no ground collision exists.
@@ -44,7 +53,9 @@ namespace Platter.Systems {
             // Necessary for ObjectTool to include linetool options.
             GeometryFlags.Brushable;
 
-        // Shared PlacementFlags for all parcels.
+        /// <summary>
+        /// Shared PlacementFlags for all parcels.
+        /// </summary>
         private const PlacementFlags CommonPlacementFlags =
             // Added to make sure EDT doesn't pick up parcels.
             PlacementFlags.OwnerSide;
