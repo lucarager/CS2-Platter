@@ -50,6 +50,10 @@ namespace Platter.Settings {
         public const string SetbackScrollName         = nameof(PlatterSetbackScrollAction);
         public const string RemoveParcelsName         = nameof(RemoveParcels);
         public const string EnableOverlayForToolsName = nameof(EnableOverlayForTools);
+        public const string PlatterDepthIncreaseName  = nameof(PlatterDepthIncreaseAction);
+        public const string PlatterDepthDecreaseName  = nameof(PlatterDepthDecreaseAction);
+        public const string PlatterWidthIncreaseName  = nameof(PlatterWidthIncreaseAction);
+        public const string PlatterWidthDecreaseName  = nameof(PlatterWidthDecreaseAction);
         // Statics
         private const string Credit = "Made with <3 by Luca.";
 
@@ -132,6 +136,22 @@ namespace Platter.Settings {
         [SettingsUIKeyboardBinding(BindingKeyboard.P, ToggleSpawnName, ctrl: true, shift: true, alt: true)]
         public ProxyBinding PlatterToggleSpawn { get; set; }
 
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.UpArrow, PlatterDepthIncreaseName, ctrl: true)]
+        public ProxyBinding PlatterDepthIncreaseAction { get; set; }
+
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.DownArrow, PlatterDepthDecreaseName, ctrl: true)]
+        public ProxyBinding PlatterDepthDecreaseAction { get; set; }
+
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.UpArrow, PlatterWidthIncreaseName, alt: true)]
+        public ProxyBinding PlatterWidthIncreaseAction { get; set; }
+
+        [SettingsUISection(KeybindingsTab, KeybindingsGroup)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.DownArrow, PlatterWidthDecreaseName, alt: true)]
+        public ProxyBinding PlatterWidthDecreaseAction { get; set; }
+
         // Fake binding to show in settings UI
         [SettingsUISection(KeybindingsTab, MousebindingsGroup)]
         public string PlatterDepthScrollAction => "Ctrl + ScrollWheel";
@@ -145,7 +165,6 @@ namespace Platter.Settings {
         public string PlatterSetbackScrollAction => "Ctrl + Shift + ScrollWheel";
 
         #endregion
-
 
         #region Advanced
 

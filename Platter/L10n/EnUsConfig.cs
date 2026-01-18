@@ -80,6 +80,20 @@ namespace Platter.L10n {
                 { m_Setting.GetOptionDescLocaleID(PS.SetbackScrollName), "Shortcut to increase/decrease a Parcel's setback from the road." },
                 { "Common.ACTION[Platter.Platter.PlatterMod/SetbackAction]", "Increase/Decrease setback" },
 
+                // Block Actions
+                { m_Setting.GetOptionLabelLocaleID(PS.PlatterDepthIncreaseName), "Increase Parcel depth" },
+                { m_Setting.GetBindingKeyLocaleID(PS.PlatterDepthIncreaseName), "Increase Parcel depth" },
+                { m_Setting.GetOptionDescLocaleID(PS.PlatterDepthIncreaseName), "Shortcut to increase a Parcel's depth" },
+                { m_Setting.GetOptionLabelLocaleID(PS.PlatterDepthDecreaseName), "Decrease Parcel depth" },
+                { m_Setting.GetBindingKeyLocaleID(PS.PlatterDepthDecreaseName), "Decrease Parcel depth" },
+                { m_Setting.GetOptionDescLocaleID(PS.PlatterDepthDecreaseName), "Shortcut to decrease a Parcel's depth" },
+                { m_Setting.GetOptionLabelLocaleID(PS.PlatterWidthIncreaseName), "Increase Parcel width" },
+                { m_Setting.GetBindingKeyLocaleID(PS.PlatterWidthIncreaseName), "Increase Parcel width" },
+                { m_Setting.GetOptionDescLocaleID(PS.PlatterWidthIncreaseName), "Shortcut to increase a Parcel's width" },
+                { m_Setting.GetOptionLabelLocaleID(PS.PlatterWidthDecreaseName), "Decrease Parcel width" },
+                { m_Setting.GetBindingKeyLocaleID(PS.PlatterWidthDecreaseName), "Decrease Parcel width" },
+                { m_Setting.GetOptionDescLocaleID(PS.PlatterWidthDecreaseName), "Shortcut to decrease a Parcel's width" },
+
                 // ToggleSpawnActionName
                 { m_Setting.GetBindingKeyLocaleID(PS.ToggleSpawnName), "Toggle \"Allow Spawning on Parcels\"" },
                 { m_Setting.GetOptionLabelLocaleID(PS.ToggleSpawnName), "Toggle \"Allow Spawning on Parcels\"" },
@@ -216,8 +230,8 @@ namespace Platter.L10n {
             var lotSizes = Platter.Systems.P_PrefabsCreateSystem.AvailableParcelLotSizes;
             for (var width = lotSizes.x; width <= lotSizes.z; width++) {
                 for (var depth = lotSizes.y; depth <= lotSizes.w; depth++) {
-                    m_Localization[$"Assets.NAME[Parcel {width}x{depth}]"] = $"Parcel ({width}x{depth})";
-                    m_Localization[$"Assets.DESCRIPTION[Parcel {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
+                    m_Localization[$"Assets.NAME[ParcelPlaceholder {width}x{depth}]"] = $"Parcel ({width}x{depth})";
+                    m_Localization[$"Assets.DESCRIPTION[ParcelPlaceholder {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
                 }
             }
         }
