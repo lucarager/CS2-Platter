@@ -52,6 +52,10 @@ namespace Platter.Systems {
         private ProxyAction                      m_SetbackAction;
         private ProxyAction                      m_ToggleRender;
         private ProxyAction                      m_ToggleSpawn;
+        private ProxyAction m_BlockDepthIncreaseAction;
+        private ProxyAction m_BlockDepthDecreaseAction;
+        private ProxyAction m_BlockWidthIncreaseAction;
+        private ProxyAction m_BlockWidthDecreaseAction;
         private ToolbarUISystem                  m_ToolbarUISystem;
         private ToolSystem                       m_ToolSystem;
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
@@ -137,13 +141,17 @@ namespace Platter.Systems {
             CreateTrigger("CREATE_PARCEL_WITH_ZONE", HandleCreateParcelWithZone);
 
             // Shortcuts
-            m_ToggleRender     = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderName);
-            m_ToggleSpawn      = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnName);
-            m_OpenPlatterPanel = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.OpenPanelName);
-            m_BlockWidthAction = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockWidthAction");
-            m_BlockDepthAction = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockDepthAction");
-            m_BlockSizeAction  = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockSizeAction");
-            m_SetbackAction    = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction");
+            m_ToggleRender             = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderName);
+            m_ToggleSpawn              = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleSpawnName);
+            m_OpenPlatterPanel         = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.OpenPanelName);
+            m_BlockDepthIncreaseAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.PlatterDepthIncreaseName);
+            m_BlockDepthDecreaseAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.PlatterDepthDecreaseName);
+            m_BlockWidthIncreaseAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.PlatterWidthIncreaseName);
+            m_BlockWidthDecreaseAction = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.PlatterWidthDecreaseName);
+            m_BlockWidthAction         = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockWidthAction");
+            m_BlockDepthAction         = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockDepthAction");
+            m_BlockSizeAction          = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockSizeAction");
+            m_SetbackAction            = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction");
 
             // Always enable
             m_OpenPlatterPanel.shouldBeEnabled = true;
@@ -156,6 +164,10 @@ namespace Platter.Systems {
             m_BlockDepthAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
             m_BlockSizeAction.shouldBeEnabled  = CurrentlyUsingParcelsInObjectTool;
             m_SetbackAction.shouldBeEnabled    = CurrentlyUsingParcelsInObjectTool;
+            m_BlockDepthIncreaseAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
+            m_BlockDepthDecreaseAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
+            m_BlockWidthIncreaseAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
+            m_BlockWidthDecreaseAction.shouldBeEnabled = CurrentlyUsingParcelsInObjectTool;
 
             // Handle Shortcuts
             HandleProxyActions();
@@ -217,6 +229,22 @@ namespace Platter.Systems {
 
             if (m_OpenPlatterPanel.WasPerformedThisFrame()) {
                 OpenPlatterPanel();
+            }
+
+            if (m_BlockDepthIncreaseAction.WasPerformedThisFrame()) {
+                IncreaseBlockDepth();
+            }
+
+            if (m_BlockDepthDecreaseAction.WasPerformedThisFrame()) {
+                DecreaseBlockDepth();
+            }
+
+            if (m_BlockWidthIncreaseAction.WasPerformedThisFrame()) {
+                IncreaseBlockWidth();
+            }
+
+            if (m_BlockWidthDecreaseAction.WasPerformedThisFrame()) {
+                DecreaseBlockWidth();
             }
 
             if (m_BlockWidthAction.IsInProgress()) {

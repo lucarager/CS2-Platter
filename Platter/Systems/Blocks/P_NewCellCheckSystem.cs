@@ -55,8 +55,7 @@ namespace Platter.Systems {
     /// If placed overlaying vanilla grid at an offset, they are blocked.
     /// Most importantly, the logic that "occpies" them if they are 1 wide is caused by the depth smoothing logic inside the CellReduction struct within CellOverlapJobs.cs.
     ///
-    /// Note the difference between the Occupied and Blocked flags:
-    /// - 
+    /// Note the difference between the Occupied and Blocked flags
     ///
     /// </summary>
     public partial class P_NewCellCheckSystem : PlatterGameSystemBase {
@@ -67,7 +66,6 @@ namespace Platter.Systems {
         private Game.Objects.UpdateCollectSystem m_ObjectUpdateCollectSystem;
         private Game.Zones.UpdateCollectSystem   m_ZoneUpdateCollectSystem;
         private ZoneSystem                       m_ZoneSystem;
-        private ModificationBarrier5             m_ModificationBarrier5;
         private EntityQuery                      m_DeletedBlocksQuery;
 
         /// <inheritdoc/>
@@ -82,7 +80,6 @@ namespace Platter.Systems {
             m_ZoneSearchSystem          = World.GetOrCreateSystemManaged<Game.Zones.SearchSystem>();
             m_ObjectSearchSystem        = World.GetOrCreateSystemManaged<Game.Objects.SearchSystem>();
             m_ZoneSystem                = World.GetOrCreateSystemManaged<ZoneSystem>();
-            m_ModificationBarrier5      = World.GetOrCreateSystemManaged<ModificationBarrier5>();
 
             m_DeletedBlocksQuery = SystemAPI.QueryBuilder().WithAll<Block, Deleted>().WithNone<Temp>().Build();
         }
@@ -105,16 +102,16 @@ namespace Platter.Systems {
             var blockOverlapList   = new NativeList<BlockOverlap>(Allocator.TempJob);
             var overlapGroupsList  = new NativeList<OverlapGroup>(Allocator.TempJob);
             var boundsQueue        = new NativeQueue<Bounds2>(Allocator.TempJob);
-            var filteredBlocksList = new NativeList<SortedEntity>(Allocator.TempJob);
+            //var filteredBlocksList = new NativeList<SortedEntity>(Allocator.TempJob);
             Dependency = JobHandle.CombineDependencies(Dependency, CollectUpdatedBlocks(updatedBlocksList));
 
             // Filter blocks to only include those that are part of a parcel
-            var filterBlocksJobHandle = new FilterBlocksToParcelsJob {
-                m_InputBlocks       = updatedBlocksList,
-                m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(true),
-                m_OutputBlocks      = filteredBlocksList,
-            }.Schedule(Dependency);
-            var filteredBlocks = filteredBlocksList.AsDeferredJobArray();
+            //var filterBlocksJobHandle = new FilterBlocksToParcelsJob {
+            //    m_InputBlocks       = updatedBlocksList,
+            //    m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
+            //    m_OutputBlocks      = filteredBlocksList,
+            //}.Schedule(Dependency);
+            var filteredBlocks = updatedBlocksList.AsDeferredJobArray();
 
             // Process Updated Blocks. This is one of the jobs we maintain ourselves.
             var processUpdatedBlocksJobHandle = new BlockCellsJob {
@@ -125,18 +122,18 @@ namespace Platter.Systems {
                 m_PrefabRefLookup             = SystemAPI.GetComponentLookup<PrefabRef>(),
                 m_CellsLookup                 = SystemAPI.GetBufferLookup<Cell>(),
                 m_ValidAreaLookup             = SystemAPI.GetComponentLookup<ValidArea>(),
-            }.Schedule(filteredBlocksList, 1, filterBlocksJobHandle);
+            }.Schedule(updatedBlocksList, 1, Dependency);
 
             // Find Overlapping Blocks
             var zoneSearchTree = m_ZoneSearchSystem.GetSearchTree(true, out var zoneSearchJobHandle);
             var findOverlappingBlocksJobHandle = new CellCheckHelpers.FindOverlappingBlocksJob {
                 m_Blocks         = filteredBlocks,
                 m_SearchTree     = zoneSearchTree,
-                m_BlockData      = SystemAPI.GetComponentLookup<Block>(true),
-                m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(true),
-                m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(true),
+                m_BlockData      = SystemAPI.GetComponentLookup<Block>(),
+                m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(),
+                m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(),
                 m_ResultQueue    = blockOverlapQueue.AsParallelWriter(),
-            }.Schedule(filteredBlocksList, 1, JobHandle.CombineDependencies(processUpdatedBlocksJobHandle, zoneSearchJobHandle));
+            }.Schedule(updatedBlocksList, 1, JobHandle.CombineDependencies(processUpdatedBlocksJobHandle, zoneSearchJobHandle));
             m_ZoneSearchSystem.AddSearchTreeReader(findOverlappingBlocksJobHandle);
 
             // Group Overlapping Blocks
@@ -155,62 +152,63 @@ namespace Platter.Systems {
                 m_DeletedBlockChunks            = deletedBlocksList,
                 m_ZonePrefabs                   = m_ZoneSystem.GetPrefabs(),
                 m_EntityType                    = SystemAPI.GetEntityTypeHandle(),
-                m_BlockData                     = SystemAPI.GetComponentLookup<Block>(true),
-                m_ValidAreaData                 = SystemAPI.GetComponentLookup<ValidArea>(true),
+                m_BlockData                     = SystemAPI.GetComponentLookup<Block>(),
+                m_ValidAreaData                 = SystemAPI.GetComponentLookup<ValidArea>(),
                 m_ObjectSearchTree              = m_ObjectSearchSystem.GetStaticSearchTree(true, out var objectSearchJobHandle),
-                m_TransformData                 = SystemAPI.GetComponentLookup<Game.Objects.Transform>(true),
-                m_ElevationData                 = SystemAPI.GetComponentLookup<Game.Objects.Elevation>(true),
-                m_PrefabRefData                 = SystemAPI.GetComponentLookup<PrefabRef>(true),
-                m_PrefabObjectGeometryData      = SystemAPI.GetComponentLookup<ObjectGeometryData>(true),
-                m_PrefabSpawnableBuildingData   = SystemAPI.GetComponentLookup<SpawnableBuildingData>(true),
-                m_PrefabSignatureBuildingData   = SystemAPI.GetComponentLookup<SignatureBuildingData>(true),
-                m_PrefabPlaceholderBuildingData = SystemAPI.GetComponentLookup<PlaceholderBuildingData>(true),
-                m_PrefabZoneData                = SystemAPI.GetComponentLookup<ZoneData>(true),
-                m_PrefabData                    = SystemAPI.GetComponentLookup<PrefabData>(true),
-                m_Cells                         = SystemAPI.GetBufferLookup<Cell>(false),
-            }.Schedule(filteredBlocksList, 1, JobHandle.CombineDependencies(processUpdatedBlocksJobHandle, objectSearchJobHandle, deletedBlocksJobHandle));
+                m_TransformData                 = SystemAPI.GetComponentLookup<Game.Objects.Transform>(),
+                m_ElevationData                 = SystemAPI.GetComponentLookup<Game.Objects.Elevation>(),
+                m_PrefabRefData                 = SystemAPI.GetComponentLookup<PrefabRef>(),
+                m_PrefabObjectGeometryData      = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
+                m_PrefabSpawnableBuildingData   = SystemAPI.GetComponentLookup<SpawnableBuildingData>(),
+                m_PrefabSignatureBuildingData   = SystemAPI.GetComponentLookup<SignatureBuildingData>(),
+                m_PrefabPlaceholderBuildingData = SystemAPI.GetComponentLookup<PlaceholderBuildingData>(),
+                m_PrefabZoneData                = SystemAPI.GetComponentLookup<ZoneData>(),
+                m_PrefabData                    = SystemAPI.GetComponentLookup<PrefabData>(),
+                m_Cells                         = SystemAPI.GetBufferLookup<Cell>(),
+            }.Schedule(updatedBlocksList, 1, JobHandle.CombineDependencies(processUpdatedBlocksJobHandle, objectSearchJobHandle, deletedBlocksJobHandle));
             m_ObjectSearchSystem.AddStaticSearchTreeReader(zoneAndOccupyCellsJobHandle);
 
             // Check Block Overlap
-            var checkBlockOverlapJobHandle = new CheckBlockOverlapJob {
-                m_BlockOverlaps   = blockOverlapList.AsDeferredJobArray(),
-                m_OverlapGroups   = overlapGroupsList.AsDeferredJobArray(),
-                m_ZonePrefabs     = m_ZoneSystem.GetPrefabs(),
-                m_BlockData       = SystemAPI.GetComponentLookup<Block>(true),
-                m_BuildOrderData  = SystemAPI.GetComponentLookup<BuildOrder>(true),
-                m_ZoneData        = SystemAPI.GetComponentLookup<ZoneData>(true),
-                m_Cells           = SystemAPI.GetBufferLookup<Cell>(false),
-                m_ValidAreaData   = SystemAPI.GetComponentLookup<ValidArea>(false),
-                m_ParcelOwnerData = SystemAPI.GetComponentLookup<ParcelOwner>(true),
-                m_PrefabRefData   = SystemAPI.GetComponentLookup<PrefabRef>(true),
-                m_ParcelData      = SystemAPI.GetComponentLookup<ParcelData>(true),
+            var checkBlockOverlapJobHandle = new CustomCellsJob {
+                m_BlockOverlaps     = blockOverlapList.AsDeferredJobArray(),
+                m_OverlapGroups     = overlapGroupsList.AsDeferredJobArray(),
+                m_BlockLookup       = SystemAPI.GetComponentLookup<Block>(),
+                m_BuildOrderLookup  = SystemAPI.GetComponentLookup<BuildOrder>(),
+                m_CellLookup        = SystemAPI.GetBufferLookup<Cell>(),
+                m_ValidAreaLookup   = SystemAPI.GetComponentLookup<ValidArea>(),
+                m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
+                m_ParcelDataLookup  = SystemAPI.GetComponentLookup<ParcelData>(),
+                m_PrefabRefLookup   = SystemAPI.GetComponentLookup<PrefabRef>(),
             }.Schedule(overlapGroupsList, 1, JobHandle.CombineDependencies(groupOverlappingBlocksJobHandle, zoneAndOccupyCellsJobHandle));
 
             // Update Blocks
-            var updateBlocksJobHandle = new CellCheckHelpers.UpdateBlocksJob {
+            var updateBlocksJobHandle = new CellCheckHelpers.UpdateBlocksJob
+            {
                 m_Blocks    = filteredBlocks,
-                m_BlockData = SystemAPI.GetComponentLookup<Block>(true),
-                m_Cells     = SystemAPI.GetBufferLookup<Cell>(false),
-            }.Schedule(filteredBlocksList, 1, checkBlockOverlapJobHandle);
+                m_BlockData = SystemAPI.GetComponentLookup<Block>(),
+                //m_ValidAreaData = SystemAPI.GetComponentLookup<ValidArea>(),
+                m_Cells     = SystemAPI.GetBufferLookup<Cell>(),
+                //m_VacantLots     = SystemAPI.GetBufferLookup<VacantLot>(),
+            }.Schedule(updatedBlocksList, 1, checkBlockOverlapJobHandle);
 
             // Update Lot Size
+            var ecb = new EntityCommandBuffer(Allocator.TempJob);
             var updateLotSizeJobHandle = new LotSizeJobs.UpdateLotSizeJob {
                 m_Blocks         = filteredBlocks,
                 m_ZonePrefabs    = m_ZoneSystem.GetPrefabs(),
-                m_BlockData      = SystemAPI.GetComponentLookup<Block>(true),
-                m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(true),
-                m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(true),
-                m_UpdatedData    = SystemAPI.GetComponentLookup<Updated>(true),
-                m_ZoneData       = SystemAPI.GetComponentLookup<ZoneData>(true),
-                m_Cells          = SystemAPI.GetBufferLookup<Cell>(true),
+                m_BlockData      = SystemAPI.GetComponentLookup<Block>(),
+                m_ValidAreaData  = SystemAPI.GetComponentLookup<ValidArea>(),
+                m_BuildOrderData = SystemAPI.GetComponentLookup<BuildOrder>(),
+                m_UpdatedData    = SystemAPI.GetComponentLookup<Updated>(),
+                m_ZoneData       = SystemAPI.GetComponentLookup<ZoneData>(),
+                m_Cells          = SystemAPI.GetBufferLookup<Cell>(),
                 m_SearchTree     = zoneSearchTree,
-                m_VacantLots     = SystemAPI.GetBufferLookup<VacantLot>(false),
-                m_CommandBuffer  = m_ModificationBarrier5.CreateCommandBuffer().AsParallelWriter(),
+                m_VacantLots     = SystemAPI.GetBufferLookup<VacantLot>(),
+                m_CommandBuffer  = ecb.AsParallelWriter(),
                 m_BoundsQueue    = boundsQueue.AsParallelWriter(),
-            }.Schedule(filteredBlocksList, 1, updateBlocksJobHandle);
+            }.Schedule(updatedBlocksList, 1, updateBlocksJobHandle);
             m_ZoneSearchSystem.AddSearchTreeReader(updateLotSizeJobHandle);
             m_ZoneSystem.AddPrefabsReader(updateLotSizeJobHandle);
-            m_ModificationBarrier5.AddJobHandleForProducer(updateLotSizeJobHandle);
 
             // Update Bounds
             var updateBoundsJobHandle = new LotSizeJobs.UpdateBoundsJob {
@@ -219,8 +217,8 @@ namespace Platter.Systems {
             }.Schedule(JobHandle.CombineDependencies(updateLotSizeJobHandle, zoneUpdateJobHandle));
             m_ZoneUpdateCollectSystem.AddBoundsWriter(updateBoundsJobHandle);
 
-            updatedBlocksList.Dispose(filterBlocksJobHandle);
-            filteredBlocksList.Dispose(updateLotSizeJobHandle);
+            //updatedBlocksList.Dispose(filterBlocksJobHandle);
+            updatedBlocksList.Dispose(updateLotSizeJobHandle);
             filteredBlocks.Dispose(updateLotSizeJobHandle);
             blockOverlapQueue.Dispose(groupOverlappingBlocksJobHandle);
             blockOverlapList.Dispose(checkBlockOverlapJobHandle);
@@ -229,6 +227,9 @@ namespace Platter.Systems {
             deletedBlocksList.Dispose(zoneAndOccupyCellsJobHandle);
 
             Dependency = updateLotSizeJobHandle;
+            Dependency.Complete();
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private JobHandle CollectUpdatedBlocks(NativeList<SortedEntity> updateBlocksList) {
@@ -321,9 +322,9 @@ namespace Platter.Systems {
         /// <summary>
         /// Filters the input list of blocks to only include those that are part of a parcel.
         /// </summary>
-        #if USE_BURST
+#if USE_BURST
         [BurstCompile]
-        #endif
+#endif
         private struct FilterBlocksToParcelsJob : IJob {
             [ReadOnly] public required NativeList<SortedEntity>     m_InputBlocks;
             [ReadOnly] public required ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
