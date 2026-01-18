@@ -39,8 +39,7 @@ namespace Platter.Systems {
             /// we require harmony patches to ensure parcels can still be selected by Bulldozer and Default tools.
             /// See <reference>Platter.Patches.MarkerPatches</reference> for more information.
             /// todo: Add custom collision detection for placed parcels to avoid issues with overlapping parcels.
-            GeometryFlags.Marker |
-            GeometryFlags.IgnoreBottomCollision;
+            GeometryFlags.Marker;
 
         /// <summary>
         /// Assigned to placeholder parcels (before placing)
