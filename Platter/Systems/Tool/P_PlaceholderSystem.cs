@@ -44,8 +44,7 @@ namespace Platter.Systems {
 
             // Parcels (with ParcelPlaceholder) created by a tool (Temp)
             m_TempQuery = SystemAPI.QueryBuilder()
-                                   .WithAllRW<ParcelPlaceholder>()
-                                   .WithAll<Temp>()
+                                   .WithAll<ParcelPlaceholder, Temp>()
                                    .WithNone<Deleted>()
                                    .Build();
 
@@ -99,8 +98,7 @@ namespace Platter.Systems {
 
                     parcel.m_PreZoneType = m_ZoneType;
                     parcelArray[i]       = parcel;
-                    BurstLogger.Debug($"[UpdateTempPlaceholderJob]", $"Updated parcel {entity}");
-
+                    // BurstLogger.Debug($"[UpdateTempPlaceholderJob]", $"Updated parcel {entity}");
                 }
             }
         }
@@ -125,7 +123,7 @@ namespace Platter.Systems {
                     var entity = entityArray[i];
                     var prefabRef = prefabRefArray[i];
 
-                    BurstLogger.Debug($"[SwapPlaceholderRefJob]", $"Swapping parcel {entity}");
+                    // BurstLogger.Debug($"[SwapPlaceholderRefJob]", $"Swapping parcel {entity}");
 
                     // Use the parcel pair cache to get the paired prefab entity directly
                     if (!m_ParcelPairCache.TryGetValue(prefabRef.m_Prefab, out var pairedPrefabEntity)) {
