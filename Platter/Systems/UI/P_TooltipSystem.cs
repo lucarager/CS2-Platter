@@ -28,8 +28,6 @@ namespace Platter.Systems {
         private InputHintTooltip      m_Tooltip_Width;
         private InputHintTooltip      m_Tooltip_Setback;
         private StringTooltip         m_Tooltip_ZoneBuildingCount;
-        private StringTooltip         m_Tooltip_BuildingCornerCount;
-        private ObjectToolSystem      m_ObjectToolSystem;
         private P_BuildingCacheSystem m_BuildingCacheSystem;
         private P_UISystem            m_UISystem;
         private ToolSystem            m_ToolSystem;
@@ -40,7 +38,6 @@ namespace Platter.Systems {
             base.OnCreate();
 
             m_ToolSystem          = World.GetOrCreateSystemManaged<ToolSystem>();
-            m_ObjectToolSystem    = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_BuildingCacheSystem = World.GetOrCreateSystemManaged<P_BuildingCacheSystem>();
             m_UISystem            = World.GetOrCreateSystemManaged<P_UISystem>();
 
@@ -54,10 +51,6 @@ namespace Platter.Systems {
             m_Tooltip_Setback = new InputHintTooltip(InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction"));
             m_Tooltip_ZoneBuildingCount = new StringTooltip() {
                 path = "Platter.BuildingCount",
-                icon = "coui://platter/logo.svg",
-            };
-            m_Tooltip_BuildingCornerCount = new StringTooltip() {
-                path = "Platter.BuildingCornerCount",
                 icon = "coui://platter/logo.svg",
             };
         }
