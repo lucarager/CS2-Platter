@@ -19,15 +19,15 @@ Please note that this branch may contain bugs or unfinished features, so use it 
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
   <!--Version of the mod-->
-  <ModVersion Value="0.1.4" />
+  <ModVersion Value="0.1.5" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog>- Refactor cell system, should address issues with duplicate lots in some edge cases
-- Add new keyboard based shortcuts
-- Various fixes and improvements</ChangeLog>
+  <ChangeLog>
+* Remove accidentally included debug code.
+</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
   <ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
