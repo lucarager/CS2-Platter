@@ -16,6 +16,7 @@ namespace Platter.Systems {
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Game.Zones;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -24,6 +25,7 @@ namespace Platter.Systems {
     using Unity.Mathematics;
     using UnityEngine;
     using Utils;
+    using static Game.Rendering.OverlayRenderSystem;
     using Transform = Game.Objects.Transform;
 
     #endregion
@@ -36,8 +38,8 @@ namespace Platter.Systems {
         private EntityQuery         m_ParcelQuery;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private P_ZoneCacheSystem   m_ZoneCacheSystem;
-        private PreCullingSystem    m_PreCullingSystem;
         private ToolSystem          m_ToolSystem;
+        private P_UISystem          m_PlatterUISystem;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -51,9 +53,9 @@ namespace Platter.Systems {
 
             // Systems & References
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
-            m_PreCullingSystem    = World.GetOrCreateSystemManaged<PreCullingSystem>();
             m_ZoneCacheSystem     = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
-            m_ToolSystem     = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_ToolSystem          = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_PlatterUISystem     = World.GetOrCreateSystemManaged<P_UISystem>();
         }
 
         /// <inheritdoc/>
@@ -86,19 +88,16 @@ namespace Platter.Systems {
                     m_TempComponentTypeHandle        = SystemAPI.GetComponentTypeHandle<Temp>(),
                     m_ParcelDataComponentLookup      = SystemAPI.GetComponentLookup<ParcelData>(),
                     m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
-                    m_CullingData                    = m_PreCullingSystem.GetCullingData(true, out var cullingDataJobHandle),
-                    m_CullingInfoComponentTypeHandle = SystemAPI.GetComponentTypeHandle<CullingInfo>(),
+                    m_CurrentPreZoneType             = m_PlatterUISystem.PreZoneType,
                 };
 
                 var drawOverlaysJob = drawOverlaysJobData.ScheduleByRef(
                     m_ParcelQuery,
                     JobHandle.CombineDependencies(
                         Dependency,
-                        overlayRenderBufferJobHandle,
-                        cullingDataJobHandle));
+                        overlayRenderBufferJobHandle));
 
                 m_OverlayRenderSystem.AddBufferWriter(drawOverlaysJob);
-                m_PreCullingSystem.AddCullingDataReader(drawOverlaysJob);
 
                 drawOverlaysJob.Complete();
                 colorsMap.Dispose();
@@ -162,8 +161,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentTypeHandle<Parcel>      m_ParcelComponentTypeHandle;
             [ReadOnly] public required ComponentLookup<ParcelData>      m_ParcelDataComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
-            [ReadOnly] public required NativeList<PreCullingData>       m_CullingData;
-            [ReadOnly] public required ComponentTypeHandle<CullingInfo> m_CullingInfoComponentTypeHandle;
+            [ReadOnly] public required ZoneType                         m_CurrentPreZoneType;
 
             /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk,
@@ -179,12 +177,6 @@ namespace Platter.Systems {
 
                 while (enumerator.NextEntityIndex(out var i)) {
                     var entity      = entitiesArray[i];
-                    //var cullingInfo = cullingInfoArray[i];
-
-                    // Temporary fix until we can figure out how to avoid culling overridden Parcels
-                    //if (!IsNearCamera(cullingInfo)) {
-                    //    continue;
-                    //}
 
                     var transform = transformsArray[i];
                     var prefabRef = prefabRefsArray[i];
@@ -196,6 +188,8 @@ namespace Platter.Systems {
                     }
 
                     var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
+                    var isTemp    = chunk.Has<Temp>(ref m_TempComponentTypeHandle);
+                    var zoneIndex = isTemp ? m_CurrentPreZoneType : parcel.m_PreZoneType;
 
                     // Combines the translation part of the trs matrix (c3.xyz) with the local
                     // center to calculate the cube's world position.
@@ -203,7 +197,7 @@ namespace Platter.Systems {
                         m_OverlayRenderBuffer,
                         parcelData.m_LotSize,
                         trs,
-                        m_ColorsMap[parcel.m_PreZoneType.m_Index],
+                        m_ColorsMap[zoneIndex.m_Index],
                         parcel.m_State,
                         spawnable || chunk.Has(ref m_TempComponentTypeHandle)
                     );
@@ -344,7 +338,7 @@ namespace Platter.Systems {
                     parcelFrontIndicatorColor,
                     spawnable ? parcelFrontIndicatorColor : transparentColor,
                     frontIndicatorLine,
-                    OverlayRenderSystem.StyleFlags.Grid,
+                    StyleFlags.DepthFadeBelow | StyleFlags.Projected,
                     new float2(1, 1),
                     ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
                     frontIndicatorDiam

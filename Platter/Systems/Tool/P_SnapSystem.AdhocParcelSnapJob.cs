@@ -1017,7 +1017,7 @@ namespace Platter.Systems {
                     newCenter.xz += existingRight     * newHalfWidth * (isRightSide ? -1f : 1f);
                     newCenter.xz -= existingDirection * newHalfDepth;
 
-                    var distanceToHit = math.distance(newCenter.xz, m_ControlPoint.m_HitPosition.xz);
+                    var distanceToHit = math.distance(cornerPosition, m_ControlPoint.m_HitPosition.xz);
 
                     if (distanceToHit >= m_BestDistance) {
                         return;

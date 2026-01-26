@@ -42,10 +42,10 @@ namespace Platter.Systems {
 
         private static class SnapLevel {
             public const float None             = 0f;
-            public const float ParcelEdge       = 1.5f;
+            public const float ParcelEdge       = 1f;
             public const float RoadSide         = 2f;
-            public const float ParcelFrontAlign = 2.5f;
-            public const float ZoneSide         = 2.5f;
+            public const float ParcelFrontAlign = 3f;
+            public const float ZoneSide         = 3f;
         }
 
         private EntityQuery m_Query;
