@@ -31,7 +31,6 @@ namespace Platter {
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
-    using Game.Zones;
     using HarmonyLib;
     using Newtonsoft.Json;
     using Settings;
@@ -195,6 +194,7 @@ namespace Platter {
 
             // Parcels
             updateSystem.UpdateAt<P_PlaceholderSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<P_PlaceholderPatchSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<P_ParcelUpdateSystem>(SystemUpdatePhase.Modification2);
             updateSystem.UpdateAt<P_UnzonedSystem>(SystemUpdatePhase.Modification3);
             updateSystem.UpdateAt<P_AllowSpawnSystem>(SystemUpdatePhase.Modification3);
