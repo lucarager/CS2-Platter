@@ -11,12 +11,12 @@
   "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "Général",
   "Options.GROUP[Platter.Platter.PlatterMod.AdvancedGroup]": "Avancé",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Activer automatiquement l’affichage des parcelles pour les outils clés",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Lorsque cette option est activée, les surcouches des parcelles s'affichent lorsque vous utilisez des outils clés du jeu de base tels que l'outil Net, etc. \n\n Désactivez ceci pour contrôler la superposition avec l'option \"Basculer la superposition\" manuellement.",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Lorsque cette option est activée, les parcelles s’affichent lorsque vous utilisez des outils clés du jeu de base tels que la construction de routes, le bulldozer, etc.\n\nDésactivez ceci pour contrôler l’affichage manuellement avec l’option « Activer/désactiver l’affichage permanent des parcelles ».",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Supprimer toutes les parcelles",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "Supprime toutes les parcelles de la map, définitivement. Les bâtiments qui ne se retrouvent pas sur une zone Vanilla seront abandonnée et disparaîtront, sauf si vous avez un mod qui empêche cela.",
   "Options.WARNING[Platter.Platter.PlatterMod.PlatterModSettings.RemoveParcels]": "ATTENTION : Supprimer définitivement toutes les parcelles de cette sauvegarde ?",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveIcons]": "Supprimer les icônes orphelines",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveIcons]": "Supprime les entités d'icônes orphelines de la carte qui peuvent avoir été laissées en arrière.",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.RemoveIcons]": "Supprime les entités d’icônes orphelines de la map.",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterToggleRender/binding]": "Activer/désactiver l’affichage des parcelles",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Activer/désactiver l’affichage des parcelles",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterToggleRender]": "Raccourci pour activer/désactiver l’affichage permanent des parcelles.",
@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Une parcelle avec des blocs de zonage. 6 cellules de large, 5 cellules de profondeur.",
   "Assets.NAME[Parcel 6x6]": "Parcelle (6×6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Une parcelle avec des blocs de zonage. 6 cellules de large, 6 cellules de profondeur.",
-  "Assets.NAME[PlatterUnzoned]": "Non zoné"
+  "Assets.NAME[Unzoned]": "Non zoné"
 }
