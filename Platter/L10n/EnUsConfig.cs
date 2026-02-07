@@ -159,7 +159,6 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.Tooltip.BlockDepthNumber", "Parcel depth" },
                 { "PlatterMod.UI.Tooltip.ToggleRenderParcels", "Toggle Parcels Overlay" },
                 { "PlatterMod.UI.Tooltip.ToggleAllowSpawn", "Toggle allowing buildings to spawn on Parcels" },
-                { "PlatterMod.UI.Tooltip.ShowZonbes", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
 
