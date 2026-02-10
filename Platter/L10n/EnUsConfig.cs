@@ -176,23 +176,6 @@ namespace Platter.L10n {
                     "No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on parcel."
                 },
                 
-                {
-                    "PlatterMod.UI.Tooltip.BuildingCount",// Deprecated
-                    "[Front] {COUNT} available {X}x{Y} front access buildings in the selected zone."
-                },
-                {
-                    "PlatterMod.UI.Tooltip.BuildingCountWarning",// Deprecated
-                    "[Front] No {X}x{Y} front access buildings in selected zone. Smaller buildings may spawn on this parcel."
-                },
-                { 
-                    "PlatterMod.UI.Tooltip.BuildingCornerCount",// Deprecated
-                    "[Corner] {COUNT} available {X}x{Y} corner access buildings in the selected zone."
-                },
-                {
-                    "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",// Deprecated
-                    "[Corner] No {X}x{Y} corner access buildings in selected zone. Smaller buildings may spawn on this parcel."
-                },
-
                 // FirstLaunch Modal
                 { "PlatterMod.UI.Modals.FirstLaunch.Title", "Thanks for installing Platter!" },
                 { "PlatterMod.UI.Modals.FirstLaunch.Subtitle", "Here's a quick intro to get you started" },
