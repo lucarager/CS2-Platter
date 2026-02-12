@@ -1,3 +1,3 @@
 files:
-  - source: /Internationalization/lang/en-US.json
-    translation: /Internationalization/lang/%locale%.json
+  - source: /Platter/L10n/lang/en-US.json
+    translation: /Platter/L10n/lang/%locale%.json
