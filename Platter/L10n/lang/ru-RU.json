@@ -1,14 +1,14 @@
 {
   "Options.SECTION[Platter.Platter.PlatterMod]": "Platter",
   "Options.INPUT_MAP[Platter.Platter.PlatterMod]": "Platter",
-  "Options.TAB[Platter.Platter.PlatterMod.GeneralTab]": "Общие положения",
-  "Options.TAB[Platter.Platter.PlatterMod.KeybindingsTab]": "Привязки клавиш",
+  "Options.TAB[Platter.Platter.PlatterMod.GeneralTab]": "Общее",
+  "Options.TAB[Platter.Platter.PlatterMod.KeybindingsTab]": "Привязка клавиш",
   "Options.TAB[Platter.Platter.PlatterMod.AdvancedTab]": "Расширенные",
   "Options.GROUP[Platter.Platter.PlatterMod.KeybindingsGroup]": "Горячие клавиши",
   "Options.GROUP[Platter.Platter.PlatterMod.MousebindingsGroup]": "Мышь",
   "Options.GROUP[Platter.Platter.PlatterMod.UninstallGroup]": "Удаление",
   "Options.GROUP[Platter.Platter.PlatterMod.AboutGroup]": "Подробно",
-  "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "Общие положения",
+  "Options.GROUP[Platter.Platter.PlatterMod.GeneralGroup]": "Общее",
   "Options.GROUP[Platter.Platter.PlatterMod.AdvancedGroup]": "Расширенные",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Автовключение Parcel Overlay для ключевых инструментов",
   "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.EnableOverlayForTools]": "Если включено, слои посылок будут отображаться при использовании ключевых ванильных инструментов, таких как Net Tool и т.д. \n\r Отключите это для управления наслоением с помощью опции «Переключить наложение» вручную.",
@@ -162,5 +162,5 @@
   "Assets.DESCRIPTION[Parcel 6x5]": "Участок для зонирования 6 клеток в ширину, 5 клеток в глубину",
   "Assets.NAME[Parcel 6x6]": "Участок (6х6)",
   "Assets.DESCRIPTION[Parcel 6x6]": "Участок для зонирования 6 клеток в ширину, 6 клеток в глубину",
-  "Assets.NAME[PlatterUnzoned]": "Не зонировано"
+  "Assets.NAME[Unzoned]": "Не зонировано"
 }
