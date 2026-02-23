@@ -133,9 +133,6 @@ namespace Platter.Systems {
                     enqueuedCount++;
                     m_ParcelEntitiesQueue.Enqueue(entity);
                 }
-
-                if (enqueuedCount > 0)                     
-                }
             }
 
 #if USE_BURST
