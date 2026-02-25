@@ -48,7 +48,7 @@ namespace Platter.Systems {
             // Queries
             m_ParcelQuery = SystemAPI.QueryBuilder()
                                      .WithAll<Parcel>()
-                                     .WithNone<Deleted>()
+                                     .WithNone<Hidden, Deleted>()
                                      .Build();
 
             // Systems & References
@@ -173,6 +173,7 @@ namespace Platter.Systems {
                 var transformsArray  = chunk.GetNativeArray(ref m_TransformComponentTypeHandle);
                 var prefabRefsArray  = chunk.GetNativeArray(ref m_PrefabRefComponentTypeHandle);
                 var parcelsArray     = chunk.GetNativeArray(ref m_ParcelComponentTypeHandle);
+                var tempArray        = chunk.GetNativeArray(ref m_TempComponentTypeHandle);
                 //var cullingInfoArray = chunk.GetNativeArray(ref m_CullingInfoComponentTypeHandle);
 
                 while (enumerator.NextEntityIndex(out var i)) {
@@ -191,6 +192,13 @@ namespace Platter.Systems {
                     var isTemp    = chunk.Has<Temp>(ref m_TempComponentTypeHandle);
                     var zoneIndex = isTemp ? m_CurrentPreZoneType : parcel.m_PreZoneType;
 
+                    var highlighted = false;
+
+                    if (isTemp) {
+                        var temp = tempArray[i];
+                        highlighted = (temp.m_Flags & TempFlags.Select) != 0;
+                    }
+
                     // Combines the translation part of the trs matrix (c3.xyz) with the local
                     // center to calculate the cube's world position.
                     DrawParcel(
@@ -199,7 +207,8 @@ namespace Platter.Systems {
                         trs,
                         m_ColorsMap[zoneIndex.m_Index],
                         parcel.m_State,
-                        spawnable || chunk.Has(ref m_TempComponentTypeHandle)
+                        spawnable || chunk.Has(ref m_TempComponentTypeHandle),
+                        highlighted
                     );
                 }
             }
@@ -209,11 +218,13 @@ namespace Platter.Systems {
                                           float4x4                   trs,
                                           Color                      backgroundColor,
                                           ParcelState                parcelState,
-                                          bool                       spawnable = false) {
+                                          bool                       spawnable = false,
+                                          bool highlighted = false) {
                 // Constants
                 const float accessMult         = 3.5f;
                 const float opacityLow         = 0.13f;
                 const float opacityMedium      = 0.4f;
+                const float opacityHigh        = 1f;
                 const float outlineWidth       = DimensionConstants.ParcelOutlineWidth;
                 const float cellSize           = DimensionConstants.CellSize;
                 const float cellOutlineWidth   = DimensionConstants.ParcelCellOutlineWidth;
@@ -221,8 +232,8 @@ namespace Platter.Systems {
                 const float frontIndicatorLine = DimensionConstants.ParcelFrontIndicatorHollowLineWidth;
 
                 // Colors
-                var parcelOutlineColor        = new Color(1f, 1f, 1f, opacityMedium);
-                var parcelInlineColor         = new Color(1f, 1f, 1f, opacityLow);
+                var parcelOutlineColor        = new Color(1f, 1f, 1f, highlighted ? opacityHigh : opacityMedium);
+                var parcelInlineColor         = new Color(1f, 1f, 1f, highlighted ? opacityMedium : opacityLow);
                 var parcelFrontIndicatorColor = new Color(1f, 1f, 1f, 1f);
                 var transparentColor          = new Color(1f, 1f, 1f, 0f);
 

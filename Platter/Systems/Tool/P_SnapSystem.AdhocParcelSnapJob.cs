@@ -37,6 +37,7 @@ namespace Platter.Systems {
 #endif
         public struct AdhocParcelSnapJob : IJob {
             [ReadOnly] public required Entity                                   m_PrefabEntity;
+            [ReadOnly] public required Entity                                   m_Original;
             [ReadOnly] public required NativeQuadTree<Entity, Bounds2>          m_ZoneTree;
             [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_NetTree;
             [ReadOnly] public required NativeQuadTree<Entity, QuadTreeBoundsXZ> m_ParcelTree;
@@ -48,6 +49,7 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentLookup<ParcelData>              m_ParcelDataComponentLookup;
             [ReadOnly] public required ComponentLookup<Transform>               m_TransformComponentLookup;
             [ReadOnly] public required ComponentLookup<Parcel>                  m_ParcelComponentLookup;
+            [ReadOnly] public required ComponentLookup<Temp>                    m_TempComponentLookup;
             [ReadOnly] public required float                                    m_SnapSetback;
             [ReadOnly] public required EntityTypeHandle                         m_EntityTypeHandle;
             [ReadOnly] public required ComponentLookup<Node>                    m_NodeLookup;
@@ -102,7 +104,7 @@ namespace Platter.Systems {
                 var enableParcelEdge       = (m_SnapMode & SnapMode.ParcelEdge)       != 0;
                 var enableParcelFrontAlign = (m_SnapMode & SnapMode.ParcelFrontAlign) != 0;
                 if (enableParcelEdge || enableParcelFrontAlign) {
-                    SnapToParcelEdge(ref bestSnapPosition, controlPoint, bounds, parcelData, math.cmax(parcelData.m_LotSize) * 4f + 4f, enableParcelEdge, enableParcelFrontAlign);
+                    SnapToParcelEdge(ref bestSnapPosition, controlPoint, bounds, parcelData, math.cmax(parcelData.m_LotSize) * 4f + 4f, enableParcelEdge, enableParcelFrontAlign, m_Original);
                 }
 
                 // Snap End
@@ -198,7 +200,8 @@ namespace Platter.Systems {
                                           ParcelData       parcelData,
                                           float            minDistance,
                                           bool             enableEdgeSnap,
-                                          bool             enableFrontAlign) {
+                                          bool             enableFrontAlign,
+                                          Entity originalEntity) {
                 var iterator = new ParcelEdgeIterator(
                     controlPoint,
                     controlPoint,
@@ -212,7 +215,9 @@ namespace Platter.Systems {
                     m_TransformComponentLookup,
                     m_PrefabRefLookup,
                     m_ParcelDataComponentLookup,
-                    m_ParcelComponentLookup
+                    m_ParcelComponentLookup,
+                    m_TempComponentLookup,
+                    originalEntity
                 );
 
                 m_ParcelTree.Iterate(ref iterator);
@@ -724,10 +729,12 @@ namespace Platter.Systems {
                 private float                       m_SnapLevelFrontAlign;
                 private bool                        m_EnableEdgeSnap;
                 private bool                        m_EnableFrontAlign;
+                private ComponentLookup<Temp>       m_TempLookup;
                 private ComponentLookup<Transform>  m_TransformLookup;
                 private ComponentLookup<PrefabRef>  m_PrefabRefLookup;
                 private ComponentLookup<ParcelData> m_ParcelDataLookup;
                 private ComponentLookup<Parcel>     m_ParcelLookup;
+                private Entity                      m_OriginalEntity;
 
                 public ParcelEdgeIterator(ControlPoint                controlPoint,
                                           ControlPoint                bestSnapPosition,
@@ -741,7 +748,9 @@ namespace Platter.Systems {
                                           ComponentLookup<Transform>  transformLookup,
                                           ComponentLookup<PrefabRef>  prefabRefLookup,
                                           ComponentLookup<ParcelData> parcelDataLookup,
-                                          ComponentLookup<Parcel>     parcelLookup) {
+                                          ComponentLookup<Parcel>     parcelLookup,
+                                          ComponentLookup<Temp> tempLookup,
+                                          Entity originalEntity) {
                     m_ControlPoint        = controlPoint;
                     m_BestSnapPosition    = bestSnapPosition;
                     m_Bounds              = bounds;
@@ -757,6 +766,8 @@ namespace Platter.Systems {
                     m_PrefabRefLookup     = prefabRefLookup;
                     m_ParcelDataLookup    = parcelDataLookup;
                     m_ParcelLookup        = parcelLookup;
+                    m_TempLookup          = tempLookup;
+                    m_OriginalEntity      = originalEntity;
                 }
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) { return MathUtils.Intersect(bounds.m_Bounds, m_Bounds); }
@@ -770,6 +781,11 @@ namespace Platter.Systems {
                     if (!m_ParcelLookup.HasComponent(existingEntity)    ||
                         !m_TransformLookup.HasComponent(existingEntity) ||
                         !m_PrefabRefLookup.HasComponent(existingEntity)) {
+                        return;
+                    }
+
+                    // Ignore original when moving
+                    if (m_OriginalEntity == existingEntity) {
                         return;
                     }
 

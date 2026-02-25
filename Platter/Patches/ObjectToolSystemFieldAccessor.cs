@@ -13,6 +13,7 @@ namespace Platter.Patches {
     using Game.Tools;
     using HarmonyLib;
     using Unity.Collections;
+    using Unity.Entities;
 
     #endregion
 
@@ -20,20 +21,22 @@ namespace Platter.Patches {
     /// Cached field accessors for ObjectToolSystem to avoid repeated reflection lookups in hot paths.
     /// </summary>
     internal static class ObjectToolSystemFieldAccessor {
-        private static readonly Func<ObjectToolSystem, Game.Zones.SearchSystem> getZoneSearchSystem;
-        private static readonly Func<ObjectToolSystem, Game.Net.SearchSystem> getNetSearchSystem;
-        private static readonly Func<ObjectToolSystem, TerrainSystem> getTerrainSystem;
-        private static readonly Func<ObjectToolSystem, WaterSystem> getWaterSystem;
+        private static readonly Func<ObjectToolSystem, Game.Zones.SearchSystem>  getZoneSearchSystem;
+        private static readonly Func<ObjectToolSystem, Game.Net.SearchSystem>    getNetSearchSystem;
+        private static readonly Func<ObjectToolSystem, TerrainSystem>            getTerrainSystem;
+        private static readonly Func<ObjectToolSystem, WaterSystem>              getWaterSystem;
         private static readonly Func<ObjectToolSystem, NativeList<ControlPoint>> getControlPoints;
-        private static readonly Func<ObjectToolSystem, PrefabBase> getPrefab;
+        private static readonly Func<ObjectToolSystem, PrefabBase>               getPrefab;
+        private static readonly Func<ObjectToolSystem, Entity>                   getMovingObject;
 
         static ObjectToolSystemFieldAccessor() {
             getZoneSearchSystem = CreateFieldGetter<Game.Zones.SearchSystem>("m_ZoneSearchSystem");
-            getNetSearchSystem = CreateFieldGetter<Game.Net.SearchSystem>("m_NetSearchSystem");
-            getTerrainSystem = CreateFieldGetter<TerrainSystem>("m_TerrainSystem");
-            getWaterSystem = CreateFieldGetter<WaterSystem>("m_WaterSystem");
-            getControlPoints = CreateFieldGetter<NativeList<ControlPoint>>("m_ControlPoints");
-            getPrefab = CreateFieldGetter<PrefabBase>("m_Prefab");
+            getNetSearchSystem  = CreateFieldGetter<Game.Net.SearchSystem>("m_NetSearchSystem");
+            getTerrainSystem    = CreateFieldGetter<TerrainSystem>("m_TerrainSystem");
+            getWaterSystem      = CreateFieldGetter<WaterSystem>("m_WaterSystem");
+            getControlPoints    = CreateFieldGetter<NativeList<ControlPoint>>("m_ControlPoints");
+            getPrefab           = CreateFieldGetter<PrefabBase>("m_Prefab");
+            getMovingObject     = CreateFieldGetter<Entity>("m_MovingObject");
         }
 
         private static Func<ObjectToolSystem, T> CreateFieldGetter<T>(string fieldName) {
@@ -81,5 +84,11 @@ namespace Platter.Patches {
         /// </summary>
         public static PrefabBase GetPrefab(ObjectToolSystem instance) =>
             getPrefab?.Invoke(instance);
+
+        /// <summary>
+        /// Gets the cached Entity field value.
+        /// </summary>
+        public static Entity GetMovingObject(ObjectToolSystem instance) =>
+            getMovingObject.Invoke(instance);
     }
 }

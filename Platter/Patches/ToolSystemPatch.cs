@@ -8,30 +8,24 @@
 namespace Platter.Patches {
     #region Using Statements
 
-    using System;
-    using System.Security.Cryptography;
     using Colossal.Entities;
     using Game.Net;
+    using Game.Objects;
     using Game.Prefabs;
-    using Game.Simulation;
     using Game.Tools;
+    using Game.Zones;
     using HarmonyLib;
     using Platter.Components;
-    using Systems;
-    using Unity.Collections;
-    using Unity.Collections.LowLevel.Unsafe;
+    using Platter.Systems;
     using Unity.Entities;
     using Unity.Jobs;
-    using Unity.Mathematics;
-    using Utils;
-    using static Platter.Systems.P_SnapSystem;
+    using static Systems.P_SnapSystem;
 
     #endregion
 
     internal class ToolSystemPatch {
-
         /// <summary>
-        /// Patch to modify the snap behavior when using platter.
+        ///     Patch to modify the snap behavior when using platter.
         /// </summary>
         [HarmonyPatch(typeof(ToolBaseSystem))]
         [HarmonyPatch(nameof(ToolBaseSystem.GetActualSnap))]
@@ -55,7 +49,7 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        /// Patch to toggle the zone overlay when using platter.
+        ///     Patch to toggle the zone overlay when using platter.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("OnUpdate")]
@@ -71,7 +65,7 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        /// Patch to prevent rotation when snapped in snap mode using platter.
+        ///     Patch to prevent rotation when snapped in snap mode using platter.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("GetAllowRotation")]
@@ -100,59 +94,71 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        /// Patch to inject custom snap job when using platter.
+        ///     Patch to inject custom snap job when using platter.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("SnapControlPoint")]
         private class ObjectToolSystem_SnapControlPoint {
             private static bool Prefix(ObjectToolSystem __instance, JobHandle inputDeps, ref JobHandle __result) {
-                var  pSnapSystem        = __instance.World.GetOrCreateSystemManaged<P_SnapSystem>();
-                var  parcelSearchSystem = __instance.World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
-                var  prefabSystem       = __instance.World.GetOrCreateSystemManaged<PrefabSystem>();
-                var  zoneSearchSystem   = ObjectToolSystemFieldAccessor.GetZoneSearchSystem(__instance);
-                var  netSearchSystem    = ObjectToolSystemFieldAccessor.GetNetSearchSystem(__instance);
-                var  terrainSystem      = ObjectToolSystemFieldAccessor.GetTerrainSystem(__instance);
-                var  waterSystem        = ObjectToolSystemFieldAccessor.GetWaterSystem(__instance);
-                var  controlPoints      = ObjectToolSystemFieldAccessor.GetControlPoints(__instance);
-                var  prefab             = ObjectToolSystemFieldAccessor.GetPrefab(__instance);
+                var pSnapSystem        = __instance.World.GetOrCreateSystemManaged<P_SnapSystem>();
+                var parcelSearchSystem = __instance.World.GetOrCreateSystemManaged<P_ParcelSearchSystem>();
+                var prefabSystem       = __instance.World.GetOrCreateSystemManaged<PrefabSystem>();
+                var zoneSearchSystem   = ObjectToolSystemFieldAccessor.GetZoneSearchSystem(__instance);
+                var netSearchSystem    = ObjectToolSystemFieldAccessor.GetNetSearchSystem(__instance);
+                var terrainSystem      = ObjectToolSystemFieldAccessor.GetTerrainSystem(__instance);
+                var waterSystem        = ObjectToolSystemFieldAccessor.GetWaterSystem(__instance);
+                var controlPoints      = ObjectToolSystemFieldAccessor.GetControlPoints(__instance);
+                var prefab             = ObjectToolSystemFieldAccessor.GetPrefab(__instance);
+                var movingObject       = ObjectToolSystemFieldAccessor.GetMovingObject(__instance);
 
                 if (__instance.prefab is not ParcelPlaceholderPrefab) {
-                    return true; 
+                    return true;
                 }
-                
+
                 // Schedule custom job
-                var customSnapJobHandle = new P_SnapSystem.AdhocParcelSnapJob {
-                    m_ZoneTree                     = zoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
-                    m_NetTree                      = netSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
-                    m_ParcelTree                   = parcelSearchSystem.GetStaticSearchTree(true, out var parcelTreeJobHandle),
-                    m_SnapMode                     = pSnapSystem.CurrentSnapMode,
-                    m_ControlPoints                = controlPoints,
-                    m_PrefabEntity                 = prefabSystem.GetEntity(prefab),
-                    m_BlockComponentLookup         = __instance.GetComponentLookup<Game.Zones.Block>(true),
-                    m_ParcelDataComponentLookup    = __instance.GetComponentLookup<ParcelData>(true),
-                    m_ParcelOwnerComponentLookup   = __instance.GetComponentLookup<ParcelOwner>(true),
-                    m_TransformComponentLookup     = __instance.GetComponentLookup<Game.Objects.Transform>(true),
-                    m_ParcelComponentLookup        = __instance.GetComponentLookup<Parcel>(true),
-                    m_NodeLookup                   = __instance.GetComponentLookup<Node>(true),
-                    m_EdgeLookup                   = __instance.GetComponentLookup<Edge>(true),
-                    m_CurveLookup                  = __instance.GetComponentLookup<Curve>(true),
-                    m_CompositionLookup            = __instance.GetComponentLookup<Composition>(true),
-                    m_PrefabRefLookup              = __instance.GetComponentLookup<PrefabRef>(true),
-                    m_NetDataLookup                = __instance.GetComponentLookup<NetData>(true),
-                    m_NetGeometryDataLookup        = __instance.GetComponentLookup<NetGeometryData>(true),
-                    m_NetCompositionDataLookup     = __instance.GetComponentLookup<NetCompositionData>(true),
-                    m_EdgeGeoLookup                = __instance.GetComponentLookup<EdgeGeometry>(true),
-                    m_StartNodeGeoLookup           = __instance.GetComponentLookup<StartNodeGeometry>(true),
-                    m_EndNodeGeoLookup             = __instance.GetComponentLookup<EndNodeGeometry>(true),
-                    m_ConnectedEdgeLookup          = __instance.GetBufferLookup<ConnectedEdge>(),
-                    m_TerrainHeightData            = terrainSystem.GetHeightData(),
-                    m_WaterSurfaceData             = waterSystem.GetSurfaceData(out var waterSurfaceJobHandle),
-                    m_SnapSetback                  = pSnapSystem.CurrentSnapSetback,
-                    m_EntityTypeHandle             = __instance.GetEntityTypeHandle(),
-                    m_ConnectedParcelLookup        = __instance.GetBufferLookup<ConnectedParcel>(true),
-                    m_SubBlockLookup               = __instance.GetBufferLookup<Game.Zones.SubBlock>(true),
-                    m_IsSnapped                    = pSnapSystem.IsSnapped,
-                }.Schedule(JobUtils.CombineDependencies(inputDeps, zoneTreeJobHandle, netTreeJobHandle, parcelTreeJobHandle, waterSurfaceJobHandle));
+                var customSnapJobHandle = new AdhocParcelSnapJob
+                                          {
+                                              m_ZoneTree                   = zoneSearchSystem.GetSearchTree(true, out var zoneTreeJobHandle),
+                                              m_NetTree                    = netSearchSystem.GetNetSearchTree(true, out var netTreeJobHandle),
+                                              m_ParcelTree                 = parcelSearchSystem.GetStaticSearchTree(true, out var parcelTreeJobHandle),
+                                              m_SnapMode                   = pSnapSystem.CurrentSnapMode,
+                                              m_ControlPoints              = controlPoints,
+                                              m_PrefabEntity               = prefabSystem.GetEntity(prefab),
+                                              m_BlockComponentLookup       = __instance.GetComponentLookup<Block>(true),
+                                              m_ParcelDataComponentLookup  = __instance.GetComponentLookup<ParcelData>(true),
+                                              m_ParcelOwnerComponentLookup = __instance.GetComponentLookup<ParcelOwner>(true),
+                                              m_TransformComponentLookup   = __instance.GetComponentLookup<Transform>(true),
+                                              m_ParcelComponentLookup      = __instance.GetComponentLookup<Parcel>(true),
+                                              m_TempComponentLookup        = __instance.GetComponentLookup<Temp>(true),
+                                              m_NodeLookup                 = __instance.GetComponentLookup<Node>(true),
+                                              m_EdgeLookup                 = __instance.GetComponentLookup<Edge>(true),
+                                              m_CurveLookup                = __instance.GetComponentLookup<Curve>(true),
+                                              m_CompositionLookup          = __instance.GetComponentLookup<Composition>(true),
+                                              m_PrefabRefLookup            = __instance.GetComponentLookup<PrefabRef>(true),
+                                              m_NetDataLookup              = __instance.GetComponentLookup<NetData>(true),
+                                              m_NetGeometryDataLookup      = __instance.GetComponentLookup<NetGeometryData>(true),
+                                              m_NetCompositionDataLookup   = __instance.GetComponentLookup<NetCompositionData>(true),
+                                              m_EdgeGeoLookup              = __instance.GetComponentLookup<EdgeGeometry>(true),
+                                              m_StartNodeGeoLookup         = __instance.GetComponentLookup<StartNodeGeometry>(true),
+                                              m_EndNodeGeoLookup           = __instance.GetComponentLookup<EndNodeGeometry>(true),
+                                              m_ConnectedEdgeLookup        = __instance.GetBufferLookup<ConnectedEdge>(),
+                                              m_TerrainHeightData          = terrainSystem.GetHeightData(),
+                                              m_WaterSurfaceData           = waterSystem.GetSurfaceData(out var waterSurfaceJobHandle),
+                                              m_SnapSetback                = pSnapSystem.CurrentSnapSetback,
+                                              m_EntityTypeHandle           = __instance.GetEntityTypeHandle(),
+                                              m_ConnectedParcelLookup      = __instance.GetBufferLookup<ConnectedParcel>(true),
+                                              m_SubBlockLookup             = __instance.GetBufferLookup<SubBlock>(true),
+                                              m_IsSnapped                  = pSnapSystem.IsSnapped,
+                                              m_Original = (__instance.actualMode == ObjectToolSystem.Mode.Move) ?
+                                                               movingObject :
+                                                               Entity.Null,
+                                          }.Schedule(
+                                                     JobUtils.CombineDependencies(
+                                                                                  inputDeps,
+                                                                                  zoneTreeJobHandle,
+                                                                                  netTreeJobHandle,
+                                                                                  parcelTreeJobHandle,
+                                                                                  waterSurfaceJobHandle));
 
                 zoneSearchSystem.AddSearchTreeReader(customSnapJobHandle);
                 netSearchSystem.AddNetSearchTreeReader(customSnapJobHandle);
@@ -165,7 +171,7 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        /// Patch to replace the ParcelPrefab with the Placeholder prefab when using move tool.
+        ///     Patch to replace the ParcelPrefab with the Placeholder prefab when using move tool.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch(nameof(ObjectToolSystem.StartMoving))]
@@ -187,8 +193,8 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        /// Patch to replace the ParcelPrefab with the Placeholder prefab when object tool TrySetPrefab is called.
-        /// This currently only happens with FindIt! - vanilla game code does not call TrySetPrefab with ParcelPrefab.
+        ///     Patch to replace the ParcelPrefab with the Placeholder prefab when object tool TrySetPrefab is called.
+        ///     This currently only happens with FindIt! - vanilla game code does not call TrySetPrefab with ParcelPrefab.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch(nameof(ObjectToolSystem.TrySetPrefab))]
@@ -207,6 +213,24 @@ namespace Platter.Patches {
                 }
 
                 return true; // Run original method with modified prefab
+            }
+        }
+
+        /// <summary>
+        ///     Patch to replace the ParcelPrefab with the Placeholder prefab when object tool GetObjectPrefab is called.
+        /// </summary>
+        [HarmonyPatch(typeof(ObjectToolSystem))]
+        [HarmonyPatch("GetObjectPrefab")]
+        private class ObjectToolSystem_GetObjectPrefab {
+            public static void Postfix(ObjectToolSystem __instance, ref ObjectPrefab __result) {
+                if (__result is not ParcelPrefab) {
+                    return;
+                }
+
+                var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+                if (m_PPrefabsCreateSystem.TryGetParcelPairPrefabBase<ParcelPlaceholderPrefab>(__result, out var placeholderPrefab)) {
+                    __result = placeholderPrefab;
+                }
             }
         }
     }

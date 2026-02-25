@@ -169,26 +169,24 @@ namespace Platter.Systems {
             m_ObjectSearchSystem.AddStaticSearchTreeReader(zoneAndOccupyCellsJobHandle);
 
             // Check Block Overlap
-            var checkBlockOverlapJobHandle = new CustomCellsJob {
-                m_BlockOverlaps     = blockOverlapList.AsDeferredJobArray(),
-                m_OverlapGroups     = overlapGroupsList.AsDeferredJobArray(),
-                m_BlockLookup       = SystemAPI.GetComponentLookup<Block>(),
-                m_BuildOrderLookup  = SystemAPI.GetComponentLookup<BuildOrder>(),
-                m_CellLookup        = SystemAPI.GetBufferLookup<Cell>(),
-                m_ValidAreaLookup   = SystemAPI.GetComponentLookup<ValidArea>(),
-                m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
-                m_ParcelDataLookup  = SystemAPI.GetComponentLookup<ParcelData>(),
-                m_PrefabRefLookup   = SystemAPI.GetComponentLookup<PrefabRef>(),
-            }.Schedule(overlapGroupsList, 1, JobHandle.CombineDependencies(groupOverlappingBlocksJobHandle, zoneAndOccupyCellsJobHandle));
+            var checkBlockOverlapJobHandle = new CustomCellsJob
+             {
+                 m_BlockOverlaps     = blockOverlapList.AsDeferredJobArray(),
+                 m_OverlapGroups     = overlapGroupsList.AsDeferredJobArray(),
+                 m_BlockLookup       = SystemAPI.GetComponentLookup<Block>(),
+                 m_CellLookup        = SystemAPI.GetBufferLookup<Cell>(),
+                 m_ValidAreaLookup   = SystemAPI.GetComponentLookup<ValidArea>(),
+                 m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
+                 m_ParcelDataLookup  = SystemAPI.GetComponentLookup<ParcelData>(),
+                 m_PrefabRefLookup   = SystemAPI.GetComponentLookup<PrefabRef>(),
+             }.Schedule(overlapGroupsList, 1, JobHandle.CombineDependencies(groupOverlappingBlocksJobHandle, zoneAndOccupyCellsJobHandle));
 
             // Update Blocks
             var updateBlocksJobHandle = new CellCheckHelpers.UpdateBlocksJob
             {
                 m_Blocks    = filteredBlocks,
                 m_BlockData = SystemAPI.GetComponentLookup<Block>(),
-                //m_ValidAreaData = SystemAPI.GetComponentLookup<ValidArea>(),
                 m_Cells     = SystemAPI.GetBufferLookup<Cell>(),
-                //m_VacantLots     = SystemAPI.GetBufferLookup<VacantLot>(),
             }.Schedule(updatedBlocksList, 1, checkBlockOverlapJobHandle);
 
             // Update Lot Size
