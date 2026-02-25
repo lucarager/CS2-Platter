@@ -56,6 +56,14 @@ export const ChangelogModal = () => {
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
                             <ChangelogItem
+                                date="2026-02-25"
+                                title="Platter 1.5.0 - Major Update: 1-wide Parcels, Snapping Overhaul, Stability"
+                                image="coui://platter/changelog/4.jpg"
+                                text={`Introducing __Narrow (1-wide)__ parcels and __Extra-Wide (7-8)__ sizes, plus a fully reworked __snapping system__ with cleaner multi-snap behavior, start/end line tool snapping, and tighter integration with the base game (including better snap feedback).
+
+Stability and performance are substantially improved with faster UI data delivery, smarter prefab caching, and a wave of fixes for crashes, parcel-road interactions, zone index sync, and picker/relocate behavior. This includes fixes for __parcel cells being "eaten" by vanilla cells__ and __road drawing related game crashes__. The parcel overlay and road connection icons have also been refined, and early testing has begun for __parcel anarchy__.`}
+                            />
+                            <ChangelogItem
                                 date="2025-12-12"
                                 title="Platter 1.3.1 - Snap improvements & new auto-overlay Setting"
                                 text={`Snap to Parcel Sides now allows snapping parcels together in any orientation, making creating complex layouts easier than ever! Other snapping options have been tweaked to improve usability.
