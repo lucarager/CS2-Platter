@@ -159,7 +159,6 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.Tooltip.BlockDepthNumber", "Parcel depth" },
                 { "PlatterMod.UI.Tooltip.ToggleRenderParcels", "Toggle Parcels Overlay" },
                 { "PlatterMod.UI.Tooltip.ToggleAllowSpawn", "Toggle allowing buildings to spawn on Parcels" },
-                { "PlatterMod.UI.Tooltip.ShowZonbes", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
 
@@ -177,23 +176,6 @@ namespace Platter.L10n {
                     "No {X}x{Y} buildings in selected zone. Smaller buildings may spawn on parcel."
                 },
                 
-                {
-                    "PlatterMod.UI.Tooltip.BuildingCount",// Deprecated
-                    "[Front] {COUNT} available {X}x{Y} front access buildings in the selected zone."
-                },
-                {
-                    "PlatterMod.UI.Tooltip.BuildingCountWarning",// Deprecated
-                    "[Front] No {X}x{Y} front access buildings in selected zone. Smaller buildings may spawn on this parcel."
-                },
-                { 
-                    "PlatterMod.UI.Tooltip.BuildingCornerCount",// Deprecated
-                    "[Corner] {COUNT} available {X}x{Y} corner access buildings in the selected zone."
-                },
-                {
-                    "PlatterMod.UI.Tooltip.BuildingCornerCountWarning",// Deprecated
-                    "[Corner] No {X}x{Y} corner access buildings in selected zone. Smaller buildings may spawn on this parcel."
-                },
-
                 // FirstLaunch Modal
                 { "PlatterMod.UI.Modals.FirstLaunch.Title", "Thanks for installing Platter!" },
                 { "PlatterMod.UI.Modals.FirstLaunch.Subtitle", "Here's a quick intro to get you started" },
@@ -231,6 +213,7 @@ namespace Platter.L10n {
             for (var width = lotSizes.x; width <= lotSizes.z; width++) {
                 for (var depth = lotSizes.y; depth <= lotSizes.w; depth++) {
                     m_Localization[$"Assets.NAME[ParcelPlaceholder {width}x{depth}]"] = $"Parcel ({width}x{depth})";
+                    m_Localization[$"Assets.NAME[Parcel {width}x{depth}]"] = $"Parcel ({width}x{depth})";
                     m_Localization[$"Assets.DESCRIPTION[ParcelPlaceholder {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
                 }
             }

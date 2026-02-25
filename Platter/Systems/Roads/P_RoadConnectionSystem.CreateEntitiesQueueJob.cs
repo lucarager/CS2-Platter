@@ -74,9 +74,7 @@ namespace Platter.Systems {
                                 // Enqueue parcel for re-evaluation
                                 m_ParcelEntitiesQueue.Enqueue(connectedParcelsBuffer[j].m_Parcel);
                             }
-                        }
-
-                        // BurstLogger.Debug("RCS", $"Processed {connectedParcelBufferAccessor.Length} deleted edges. Enqueued {enqueuedCount} parcels.");
+                        }                        
 
                         return;
                     }
@@ -134,10 +132,6 @@ namespace Platter.Systems {
 
                     enqueuedCount++;
                     m_ParcelEntitiesQueue.Enqueue(entity);
-                }
-
-                if (enqueuedCount > 0) {
-                    // BurstLogger.Debug("RCS", $"Enqueued {enqueuedCount} of {entityArray.Length} parcels.");
                 }
             }
 
@@ -223,9 +217,7 @@ namespace Platter.Systems {
                         // New road just dropped! Add parcel to queue
                         m_EntitiesQueue.Enqueue(parcelEntity);
                         enqueuedCount++;
-                    }
-
-                    // BurstLogger.Debug("RCS", $"Analyzed updated edge and enqueued {enqueuedCount} parcels.");
+                    }                    
                 }
             }
         }

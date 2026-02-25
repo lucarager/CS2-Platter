@@ -111,16 +111,8 @@ namespace Platter.Systems {
             }
 
             // Override distance scale
-            // ObjectToolSystem calculates distance between objects by taking distanceScale and multiplying it
-            // by distance, which is based on the in-game slider, ranging from 1.5f to 6f.
-            // By dividing the lot width by 1.5f, we ensure that the minimum distance on the slider creates an edge-to-edge placement.
-            var width = (parcelPrefab.m_LotWidth * 8f) / 1.5f;
+            var width = (parcelPrefab.m_LotWidth * 8f);
             m_ObjectToolSystem.SetMemberValue("distanceScale", width);
-            // Patch an edge case where `distance` is set to 1.4f or lower, causing incorrect placement.
-            var currentScaleMult = (float)m_ObjectToolSystem.GetMemberValue("distance");
-            if (currentScaleMult < 1.6f) {
-                m_ObjectToolSystem.SetMemberValue("distance", 1.5f);
-            }
         }
     }
 }
