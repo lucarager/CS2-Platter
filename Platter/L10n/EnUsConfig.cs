@@ -213,6 +213,7 @@ namespace Platter.L10n {
             for (var width = lotSizes.x; width <= lotSizes.z; width++) {
                 for (var depth = lotSizes.y; depth <= lotSizes.w; depth++) {
                     m_Localization[$"Assets.NAME[ParcelPlaceholder {width}x{depth}]"] = $"Parcel ({width}x{depth})";
+                    m_Localization[$"Assets.NAME[Parcel {width}x{depth}]"] = $"Parcel ({width}x{depth})";
                     m_Localization[$"Assets.DESCRIPTION[ParcelPlaceholder {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
                 }
             }
