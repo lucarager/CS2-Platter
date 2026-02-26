@@ -86,6 +86,8 @@ namespace Platter.Systems {
                     m_PrefabRefComponentTypeHandle   = SystemAPI.GetComponentTypeHandle<PrefabRef>(),
                     m_ParcelComponentTypeHandle      = SystemAPI.GetComponentTypeHandle<Parcel>(),
                     m_TempComponentTypeHandle        = SystemAPI.GetComponentTypeHandle<Temp>(),
+                    m_TransformComponentLookup       = SystemAPI.GetComponentLookup<Transform>(),
+                    m_ParcelComponentLookup          = SystemAPI.GetComponentLookup<Parcel>(),
                     m_ParcelDataComponentLookup      = SystemAPI.GetComponentLookup<ParcelData>(),
                     m_ParcelSpawnableComponentLookup = SystemAPI.GetComponentLookup<ParcelSpawnable>(),
                     m_CurrentPreZoneType             = m_PlatterUISystem.PreZoneType,
@@ -159,6 +161,8 @@ namespace Platter.Systems {
             [ReadOnly] public required ComponentTypeHandle<Temp>        m_TempComponentTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<PrefabRef>   m_PrefabRefComponentTypeHandle;
             [ReadOnly] public required ComponentTypeHandle<Parcel>      m_ParcelComponentTypeHandle;
+            [ReadOnly] public required ComponentLookup<Transform>       m_TransformComponentLookup;
+            [ReadOnly] public required ComponentLookup<Parcel>          m_ParcelComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelData>      m_ParcelDataComponentLookup;
             [ReadOnly] public required ComponentLookup<ParcelSpawnable> m_ParcelSpawnableComponentLookup;
             [ReadOnly] public required ZoneType                         m_CurrentPreZoneType;
@@ -177,38 +181,37 @@ namespace Platter.Systems {
                 //var cullingInfoArray = chunk.GetNativeArray(ref m_CullingInfoComponentTypeHandle);
 
                 while (enumerator.NextEntityIndex(out var i)) {
-                    var entity      = entitiesArray[i];
+                    var parcelSourceEntity = entitiesArray[i];
+                    var prefabRef          = prefabRefsArray[i];
+                    var isTemp             = chunk.Has(ref m_TempComponentTypeHandle);
+                    var isHoverPreview     = isTemp && (tempArray[i].m_Flags & TempFlags.Select) != 0;
+                    var isTempPreview      = isTemp && (tempArray[i].m_Flags & TempFlags.Select) == 0;
 
-                    var transform = transformsArray[i];
-                    var prefabRef = prefabRefsArray[i];
-                    var parcel    = parcelsArray[i];
-                    var trs       = ParcelGeometryUtils.GetTransformMatrix(transform);
+                    if (isHoverPreview) {
+                        var temp = tempArray[i];
+                        parcelSourceEntity = temp.m_Original;
+                    }
+
+                    var transform     = isHoverPreview ? m_TransformComponentLookup[parcelSourceEntity] : transformsArray[i];
+                    var parcel        = isHoverPreview ? m_ParcelComponentLookup[parcelSourceEntity] : parcelsArray[i];
+                    var zoneIndex     = isTempPreview ? m_CurrentPreZoneType : parcel.m_PreZoneType;
+                    var isSpawnable   = m_ParcelSpawnableComponentLookup.HasComponent(parcelSourceEntity);
+                    var isHighlighted = isHoverPreview;
+                    var trs           = ParcelGeometryUtils.GetTransformMatrix(transform);
+
 
                     if (!m_ParcelDataComponentLookup.TryGetComponent(prefabRef, out var parcelData)) {
                         continue;
                     }
 
-                    var spawnable = m_ParcelSpawnableComponentLookup.HasComponent(entity);
-                    var isTemp    = chunk.Has<Temp>(ref m_TempComponentTypeHandle);
-                    var zoneIndex = isTemp ? m_CurrentPreZoneType : parcel.m_PreZoneType;
-
-                    var highlighted = false;
-
-                    if (isTemp) {
-                        var temp = tempArray[i];
-                        highlighted = (temp.m_Flags & TempFlags.Select) != 0;
-                    }
-
-                    // Combines the translation part of the trs matrix (c3.xyz) with the local
-                    // center to calculate the cube's world position.
                     DrawParcel(
                         m_OverlayRenderBuffer,
                         parcelData.m_LotSize,
                         trs,
                         m_ColorsMap[zoneIndex.m_Index],
                         parcel.m_State,
-                        spawnable || chunk.Has(ref m_TempComponentTypeHandle),
-                        highlighted
+                        isSpawnable || isTemp,
+                        isHighlighted
                     );
                 }
             }
