@@ -55,6 +55,7 @@ export const ChangelogModal = () => {
                     <div className={styles.changelog}>
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
+                            {/* February 25th */}
                             <ChangelogItem
                                 date="2026-02-25"
                                 title="Platter 1.5.0 - Major Update: 1-wide Parcels, Snapping Overhaul, Stability"
@@ -63,6 +64,7 @@ export const ChangelogModal = () => {
 
 Stability and performance are substantially improved with faster UI data delivery, smarter prefab caching, and a wave of fixes for crashes, parcel-road interactions, zone index sync, and picker/relocate behavior. This includes fixes for __parcel cells being "eaten" by vanilla cells__ and __road drawing related game crashes__. The parcel overlay and road connection icons have also been refined, and early testing has begun for __parcel anarchy__.`}
                             />
+                            {/* December 12th */}
                             <ChangelogItem
                                 date="2025-12-12"
                                 title="Platter 1.3.1 - Snap improvements & new auto-overlay Setting"
@@ -70,6 +72,7 @@ Stability and performance are substantially improved with faster UI data deliver
 
 Added a new setting to the Settings Page that allows disabling the "auto-overlay" for vanilla tools. For those that want to fully control when those overlays pop up!`}
                             />
+                            {/* December 10th */}
                             <ChangelogItem
                                 date="2025-12-10"
                                 title="Platter 1.3.0 - The Snapping & Performance Update"
@@ -80,6 +83,7 @@ Select multiple snap options simultaneously, including snapping to __parcel side
 Performance and stability have been greatly improved. The __road connection system__ and __parcel overlays__ were heavily refactored and optimized.
 Also, a new changelog UI has been added to keep up with Platter's updates as they release.`}
                             />
+                            {/* December 8th */}
                             <ChangelogItem
                                 date="2025-12-8"
                                 title="Platter 1.2.4 - Reworked Pre-Zone Panel"
