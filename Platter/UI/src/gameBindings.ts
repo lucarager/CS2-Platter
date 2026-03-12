@@ -43,6 +43,8 @@ export const GAME_BINDINGS = {
     INFOPANEL_PARCEL_DATA: new TwoWayBinding<ParcelUIData>("INFOPANEL_PARCEL_DATA"),
     INFOPANEL_PARCEL_DATA_BUILDING: new TwoWayBinding<Entity>("INFOPANEL_PARCEL_DATA_BUILDING"),
     INFOPANEL_PARCEL_DATA_ROAD: new TwoWayBinding<Entity>("INFOPANEL_PARCEL_DATA_ROAD"),
+
+    AVAILABLE_LOT_SIZES: new TwoWayBinding<string[]>("AVAILABLE_LOT_SIZES", []),
 };
 
 export const GAME_TRIGGERS = {

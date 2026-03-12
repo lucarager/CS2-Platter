@@ -47,6 +47,7 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component: any) =>
 
 const ToolPanel = function ToolPanel() {
     useRenderTracker("ToolPanel/ToolPanel");
+    const availableSizes = useValueWrap(GAME_BINDINGS.AVAILABLE_LOT_SIZES.binding, "AvailableSizes") || [];
     const stylesheet = useRef(document.createElement("style"));
     stylesheet.current.type = "text/css";
     stylesheet.current.innerHTML = `
@@ -73,6 +74,40 @@ const ToolPanel = function ToolPanel() {
             }
         };
     }, []);
+
+    useEffect(() => {
+        // We use an interval because the vanilla item grid dynamically rebuilds
+        // DOM nodes when scrolling, which would wipe out our manual changes.
+        const interval = setInterval(() => {
+            // Find all parcel icons in the vanilla menu using their image source
+            const parcelImgs = document.querySelectorAll('img[src^="coui://platter/Parcel_"]');
+
+            parcelImgs.forEach(img => {
+                const src = img.getAttribute("src");
+                const match = src?.match(/Parcel_(\d+x\d+)\.svg/);
+
+                if (match) {
+                    const size = match[1];
+                    // The vanilla item button is typically the parent container of the image
+                    const button = img.closest(`.${VT.itemGrid.item.split(" ")[0]}`) || img.parentElement;
+
+                    if (button) {
+                        const htmlBtn = button as HTMLElement;
+                        if (availableSizes.includes(size)) {
+                            htmlBtn.style.opacity = "1";
+                            htmlBtn.style.filter = "none";
+                        } else {
+                            // Dim and grayscale parcels with no valid buildings
+                            htmlBtn.style.opacity = "0.25";
+                            htmlBtn.style.filter = "grayscale(100%)";
+                        }
+                    }
+                }
+            });
+        }, 100); // 100ms prevents flickering
+
+        return () => clearInterval(interval);
+    }, [availableSizes]);
 
     return (
         <FocusDisabled>

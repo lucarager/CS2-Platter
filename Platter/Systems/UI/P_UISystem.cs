@@ -9,6 +9,7 @@ namespace Platter.Systems {
     using System;
     using System.Linq;
     using System.Reflection;
+    using Colossal.Entities;
     using Colossal.Serialization.Entities;
     using Extensions;
     using Game;
@@ -18,6 +19,7 @@ namespace Platter.Systems {
     using Game.UI.InGame;
     using Game.Zones;
     using Settings;
+    using Unity.Entities;
     using Unity.Mathematics;
     using Utils;
     using static P_SnapSystem;
@@ -90,6 +92,9 @@ namespace Platter.Systems {
         public bool     ShowZones        { get; set; }
         public ZoneType PreZoneType      { get; set; } = ZoneType.None;
 
+        private EntityQuery                  m_SpawnableBuildingsQuery;
+        private ValueBindingHelper<string[]> m_AvailableLotSizesBinding;
+        
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -153,6 +158,13 @@ namespace Platter.Systems {
             m_BlockSizeAction          = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "BlockSizeAction");
             m_SetbackAction            = InputManager.instance.FindAction("Platter.Platter.PlatterMod", "SetbackAction");
 
+            // Setup query for all spawnable buildings
+            m_SpawnableBuildingsQuery = GetEntityQuery(new EntityQueryDesc() {
+                All = new[] { ComponentType.ReadOnly<SpawnableBuildingData>() }
+            });
+            // Create a new binding to pass the array of available sizes strings to the UI
+            m_AvailableLotSizesBinding = CreateBinding("AVAILABLE_LOT_SIZES", new string[0]);
+            
             // Always enable
             m_OpenPlatterPanel.shouldBeEnabled = true;
         }
@@ -216,6 +228,26 @@ namespace Platter.Systems {
                 Array.Sort(zoneGroupArray, (a, b) => a.Priority.CompareTo(b.Priority));
                 m_ZoneGroupDataBinding.Value = zoneGroupArray;
             }
+        }
+        
+        private void UpdateAvailableLotSizes() {
+            var sizes = new System.Collections.Generic.HashSet<string>();
+    
+            // Check if we have a valid zone entity for the currently selected PreZoneType
+            if (m_ZoneCacheSystem.ZonePrefabs.TryGetValue(PreZoneType.m_Index, out var preZoneEntity)) {
+                var buildings = m_SpawnableBuildingsQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
+        
+                foreach (var entity in buildings) {
+                    if (EntityManager.TryGetComponent<SpawnableBuildingData>(entity, out var sbd) && sbd.m_ZonePrefab == preZoneEntity) {
+                        if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase) && prefabBase is BuildingPrefab buildingPrefab) {
+                            sizes.Add($"{buildingPrefab.m_LotWidth}x{buildingPrefab.m_LotDepth}");
+                        }
+                    }
+                }
+                buildings.Dispose();
+            }
+    
+            m_AvailableLotSizesBinding.Value = System.Linq.Enumerable.ToArray(sizes);
         }
 
         private void HandleProxyActions() {
@@ -550,6 +582,8 @@ namespace Platter.Systems {
         ///  Called from the UI.
         /// </summary>
         private void UpdateSelectedPrefab() {
+            UpdateAvailableLotSizes();
+            
             var id = ParcelUtils.GetPrefabID(m_SelectedParcelSize, true);
             m_Log.Debug($"UpdateSelectedPrefab() -- ${id}");
 
