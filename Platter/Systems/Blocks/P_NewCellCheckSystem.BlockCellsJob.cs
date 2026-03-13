@@ -1,4 +1,4 @@
-﻿// <copyright file="P_NewCellCheckSystem.BlockCellsJob.cs" company="Luca Rager">
+﻿// <copyright file="P_NewCellCheckSystem.NormalizeParcelCellsJob.cs" company="Luca Rager">
 // Copyright (c) lucar. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -20,13 +20,13 @@ namespace Platter.Systems {
 
     public partial class P_NewCellCheckSystem {
         /// <summary>
-        /// Similar to base-game BlockCellsJob, but adapted to Platter's zoning system.
+        /// Similar to base-game NormalizeParcelCellsJob, but adapted to Platter's zoning system.
         /// Normalizes parcel cells and checks for conflicts with Net and Area geometry to mark blocked cells.
         /// </summary>
 #if USE_BURST
         [BurstCompile]
 #endif
-        public struct BlockCellsJob : IJobParallelForDefer {
+        public struct NormalizeParcelCellsJob : IJobParallelForDefer {
             [ReadOnly] public required NativeArray<CellCheckHelpers.SortedEntity> m_Blocks;
             [ReadOnly] public required ComponentLookup<Block> m_BlockLookup;
             [ReadOnly] public required ComponentLookup<ParcelOwner> m_ParcelOwnerLookup;
@@ -54,24 +54,13 @@ namespace Platter.Systems {
                     m_Area = new int4(0, parcelData.m_LotSize.x, 0, parcelData.m_LotSize.y),
                 };
 
-                if (parcelData.m_LotSize.x > 1) {
-                    // Normalize "wide" parcel's cells.
-                    NormalizeWideParcelCells(ref block, ref parcelData, ref cellBuffer);
-                } else {
-                    // Normalize "narrow" parcel's cells so they are processed from a clean state.
-                    NormalizeNarrowParcelCells(ref block, ref parcelData, ref cellBuffer);
-                }
-
-                // Process the results, calculating the final valid area.
+                NormalizeParcelCells(ref block, ref parcelData, ref cellBuffer);
                 CleanBlockedCells(ref block, ref validArea, ref cellBuffer);
-
-                // Set final valid area data
                 m_ValidAreaLookup[entity] = validArea;
             }
 
             /// <summary>
-            /// Normalizes the cells of "wide" parcels (width > 1) by marking cells outside the lot size as blocked and occupied.
-            /// The rest of the cells should have the correct flags at this stage.
+            /// Normalizes the cells of parcels
             /// </summary>
             /// <param name="block"></param>
             /// <param name="parcelData"></param>
@@ -79,50 +68,33 @@ namespace Platter.Systems {
             #if USE_BURST
             [BurstCompile]
             #endif
-            private static void NormalizeWideParcelCells(ref Block block,
-                                                         ref ParcelData parcelData,
+            private static void NormalizeParcelCells(ref     Block               block,
+                                                         ref ParcelData          parcelData,
                                                          ref DynamicBuffer<Cell> cells) {
+                var isNarrowParcel = parcelData.m_LotSize.x == 1;
+                var isTwoCellWideParcel = parcelData.m_LotSize.x == 2;
+
                 for (var row = 0; row < block.m_Size.y; row++)
                     for (var col = 0; col < block.m_Size.x; col++) {
-                        var isOutsideLot = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
-
-                        if (!isOutsideLot) {
-                            continue;
-                        }
-
-                        var i = row * block.m_Size.x + col;
-                        var cell = cells[i];
-
-                        cell.m_State = CellFlags.Blocked;
-                        cell.m_Zone = ZoneType.None;
-
-                        cells[i] = cell;
-                    }
-            }
-
-            /// <summary>
-            /// Normalizes the cells of a 1-cell-wide parcel block.
-            /// </summary>
-            /// <param name="block"></param>
-            /// <param name="parcelData"></param>
-            /// <param name="cells"></param>
-            #if USE_BURST
-            [BurstCompile]
-            #endif
-            private static void NormalizeNarrowParcelCells(ref Block block,
-                                                           ref ParcelData parcelData,
-                                                           ref DynamicBuffer<Cell> cells) {
-                for (var row = 0; row < block.m_Size.y; row++)
-                    for (var col = 0; col < block.m_Size.x; col++) {
-                        var isOutsideLot = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
-                        var i = row * block.m_Size.x + col;
-                        var cell = cells[i];
+                        var isOutsideLot       = col >= parcelData.m_LotSize.x || row >= parcelData.m_LotSize.y;
+                        var i                  = row * block.m_Size.x + col;
+                        var cell               = cells[i];
 
                         if (isOutsideLot) {
-                            cell.m_State = CellFlags.Blocked;
+                            // Add the "Blocked" flag which denotes a cell covered by a road or area.
+                            cell.m_State |= CellFlags.Blocked;
+                            // Dezone the cell
                             cell.m_Zone = ZoneType.None;
                         } else {
-                            cell.m_State &= ~(CellFlags.Occupied | CellFlags.Blocked);
+                            // Capture some edge cases
+                            if (isNarrowParcel || (isTwoCellWideParcel && col == 0)) {
+                                // Narrow parcels or a 2-cells's first column should never be "Blocked".
+                                // This means parcels covered by roads will still work, which is not ideal.
+                                // The alternative would mean re-running custom collision detection for just narrow parcels, which is a lot for just 
+                                // Blocking them for roads. So we compromise a little here. In the future, we could run that custom collision detection
+                                // for narrow parcels to get more accurate blocking, but for now this is good enough.
+                                cell.m_State &= ~CellFlags.Blocked;
+                            }
                         }
 
                         cells[i] = cell;

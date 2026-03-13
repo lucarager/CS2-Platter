@@ -8,6 +8,7 @@ namespace Platter.Utils {
 
     using Colossal.Mathematics;
     using Constants;
+    using Platter.Systems;
     using Unity.Mathematics;
     using Transform = Game.Objects.Transform;
 
@@ -77,7 +78,7 @@ namespace Platter.Utils {
         /// <returns>Block size as a float3 (width, height, depth).</returns>
         public static float3 GetBlockSize(int2 lotSize) {
             return new float3(
-                math.max(2, lotSize.x) * DimensionConstants.CellSize,
+                math.max(P_ParcelUpdateSystem.MinBlockWidth, lotSize.x) * DimensionConstants.CellSize,
                 DimensionConstants.ParcelHeight,
                 6 * DimensionConstants.CellSize
             );
