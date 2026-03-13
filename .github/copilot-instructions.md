@@ -1,8 +1,9 @@
 # Copilot Instructions — CS2-Platter
 
 ## Project Overview
-
-**Platter** is a **Cities: Skylines II** mod that introduces a custom **parcel** system to the game's zoning and building mechanics. It allows players to place, resize, snap, and manage individual lot parcels on the map — overriding or augmenting the vanilla zone-block grid.
+This is **Platter**, a Cities: Skylines 2 mod.
+Platter introduces a new way for players to manage their city's zoning and building by implementing a custom "parcel" entity. Parcels are flexible, player-defined areas that can be freely placed, allowing for more precise control over zoning and building placement compared to the vanilla zone-block system.
+In the base game, the zoning system is based on "blocks" that are automatically created alongside roads, each containing a grid of cells. Players can zone these blocks, but they have limited control over the position of the blocks. Parcels decouple the zoning system from the road network, allowing players to create custom-shaped zones that can be placed anywhere, even overlapping existing blocks. This enables more creative and efficient city layouts.
 
 The mod has two major layers:
 
@@ -35,11 +36,6 @@ A: The UI is a React/TypeScript module built with webpack (`Platter/UI/`). It is
 
 **Q: How do C# and TypeScript communicate?**
 A: Through `ValueBinding` / `TriggerBinding` pairs. C# side: `ExtendedUISystemBase.CreateBinding` / `CreateTrigger`. TS side: `TwoWayBinding` class in `utils/bidirectionalBinding.ts`. The binding key convention is `"BINDING:<KEY>"` / `"TRIGGER:<KEY>"`.
-
-**Q: How do I run tests?**
-A: There are two kinds of tests:
-  - **Unit tests** (`Platter.Tests/` project) — NUnit 4 tests that run outside the game. Run via `dotnet test`.
-  - **Integration / in-game tests** (`Platter/Tests/Integration/`) — `TestScenario`-based tests that run inside the game engine using the CS2 test framework. These are registered in debug builds via `#if IS_DEBUG`.
 
 **Q: What are the build configurations?**
 A: `Debug` (profiler + debug defines), `Release` (Burst enabled), and `I18N` (debug + locale export).
@@ -159,11 +155,6 @@ A: `Debug` (profiler + debug defines), `Release` (Burst enabled), and `I18N` (de
 2. **Add components** under `Platter/UI/src/components/<feature>/` with a matching `.module.scss` file.
 3. **Register** new top-level components in `Platter/UI/src/index.tsx` using `moduleRegistry.append` or `moduleRegistry.extend`.
 4. **Build the UI** with `npm run build` from the `Platter/UI/` directory (this is also triggered automatically as a post-build MSBuild target).
-
-### Adding Tests
-
-- **Unit tests**: Add to `Platter.Tests/` project. Use NUnit 4 attributes (`[TestFixture]`, `[Test]`).
-- **In-game tests**: Add to `Platter/Tests/Integration/`. Use `TestScenario` base class and `TestRunner` helper. Wrap registration in `#if IS_DEBUG`.
 
 ### Common Pitfalls
 
