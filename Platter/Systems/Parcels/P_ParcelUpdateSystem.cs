@@ -29,10 +29,10 @@ namespace Platter.Systems {
     public partial class P_ParcelUpdateSystem : PlatterGameSystemBase {
         // Hardcoded block size minimums
         // This is needed because the game requires
-        //   - blocks to be at least 2 wide to not be automatically set to occupied (even though LOTS can be 1 wide, like for townhomes)
+        //   - (now handled by NewCellCheckSystem) blocks to be at least 2 wide to not be automatically set to "Blocked" (even though LOTS can be 1 wide, like for townhomes)
         //   - blocks to be 6 deep so that the rendering / culling system does not get confused and not render cells on certain smaller parcel sizes
         public const int                  MinBlockDepth = 6;
-        public const int                  MinBlockWidth = 2;
+        public const int                  MinBlockWidth = 1;
         private      EntityQuery          m_DeletedQuery;
         private      EntityQuery          m_UpdatedQuery;
         private      ModificationBarrier2 m_ModificationBarrier2;
