@@ -17,6 +17,7 @@ namespace Platter.Systems {
     using Platter.Components;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Burst;
     using Unity.Jobs;
     using static Game.Zones.CellCheckHelpers;
     using static Game.Zones.CellOccupyJobs;
