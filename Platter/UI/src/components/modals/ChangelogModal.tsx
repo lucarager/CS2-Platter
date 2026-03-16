@@ -120,7 +120,8 @@ const ChangelogItem: React.FC<{
     date: string;
     text: string;
     image?: string;
-}> = ({ title, date, text, image }) => {
+    alertText?: string;
+}> = ({ title, date, text, image, alertText }) => {
     return (
         <>
             <div className={styles.versionDivider}>
@@ -147,6 +148,13 @@ const ChangelogItem: React.FC<{
                         <p className={styles.card__text} cohinline="true">
                             <HighlightedText text={text} />
                         </p>
+                        {alertText && (
+                            <div className={styles.alert}>
+                                <p className={styles.card__text} cohinline="true">
+                                    <HighlightedText text={alertText} />
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
