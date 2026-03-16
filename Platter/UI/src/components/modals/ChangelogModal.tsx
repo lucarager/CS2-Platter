@@ -27,7 +27,7 @@ export const ChangelogModal = () => {
     return (
         <div className={styles.wrapper}>
             <Panel
-                className={styles.panel}
+                className={c(styles.panel, styles.changelogPanel)}
                 theme={{
                     ...VT.panel,
                     header: styles.header,
@@ -55,14 +55,17 @@ export const ChangelogModal = () => {
                     <div className={styles.changelog}>
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
-                            {/* February 25th */}
+                            {/* March 16th */}
                             <ChangelogItem
-                                date="2026-02-25"
+                                date="2026-03-16"
                                 title="Platter 1.5.0 - Major Update: 1-wide Parcels, Snapping Overhaul, Stability"
                                 image="coui://platter/changelog/4.jpg"
+                                alertText={`Because of this update's size and scope, unexpected issues may still occur. It's been tested extensively, but as a solo developer I can't catch every edge case.
+
+If you run into an issue, it will be prioritized and fixed as quickly as possible. To report one, use the "CS:2 Modding Discord" button on the Platter panel to join the Modding Discord and submit a report to the dedicated "Platter" channel.`}
                                 text={`Introducing __Narrow (1-wide)__ parcels and __Extra-Wide (7-8)__ sizes, plus a fully reworked __snapping system__ with cleaner multi-snap behavior, start/end line tool snapping, and tighter integration with the base game (including better snap feedback).
 
-Stability and performance are substantially improved with faster UI data delivery, smarter prefab caching, and a wave of fixes for crashes, parcel-road interactions, zone index sync, and picker/relocate behavior. This includes fixes for __parcel cells being "eaten" by vanilla cells__ and __road drawing related game crashes__. The parcel overlay and road connection icons have also been refined, and early testing has begun for __parcel anarchy__.`}
+Stability and performance are substantially improved with faster UI data delivery, smarter prefab caching, and a wave of fixes for crashes, parcel-road interactions, zone index desync behavior, and picker/relocate behavior. This includes fixes for __parcel cells being "eaten" by vanilla cells__ and __road drawing related game crashes__. The parcel overlay has been reworked significantly for better clarity and performance. Road connection icons have also been refined. `}
                             />
                             {/* December 12th */}
                             <ChangelogItem
