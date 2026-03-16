@@ -101,17 +101,6 @@ namespace Platter.Settings {
             set => Modals_FirstLaunchTutorial = false;
         }
 
-        [SettingsUISection(GeneralTab, UninstallGroup)]
-        [SettingsUIButton]
-        [SettingsUIConfirmation]
-        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
-        public bool RemoveParcels {
-            set {
-                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
-                uninstallSystem.UninstallPlatter();
-            }
-        }
-
 #if IS_DEBUG
         [SettingsUISection(GeneralTab, AboutGroup)]
         [SettingsUIButton]
@@ -167,6 +156,18 @@ namespace Platter.Settings {
         #endregion
 
         #region Advanced
+
+
+        [SettingsUISection(AdvancedTab, AdvancedGroup)]
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUIDisableByCondition(typeof(PlatterModSettings), nameof(IsNotInGame))]
+        public bool RemoveParcels {
+            set {
+                var uninstallSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<P_UninstallSystem>();
+                uninstallSystem.UninstallPlatter();
+            }
+        }
 
         [SettingsUISection(AdvancedTab, AdvancedGroup)]
         [SettingsUIButton]

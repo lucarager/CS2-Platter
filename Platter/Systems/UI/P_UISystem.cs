@@ -139,6 +139,7 @@ namespace Platter.Systems {
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
             CreateTrigger<string>("MODAL_DISMISS", HandleModalDismiss);
             CreateTrigger("CREATE_PARCEL_WITH_ZONE", HandleCreateParcelWithZone);
+            CreateTrigger("OPEN_DISCORD", HandleOpenDiscord);
 
             // Shortcuts
             m_ToggleRender             = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderName);
@@ -312,6 +313,18 @@ namespace Platter.Systems {
         private void HandleModalDismiss(string modal) {
             m_Log.Debug($"HandleModalDismiss(modal: {modal})");
             PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial = true;
+        }
+
+        /// <summary>
+        /// Opens the Discord invite link in the default browser.
+        /// </summary>
+        private void HandleOpenDiscord() {
+            m_Log.Debug("HandleOpenDiscord()");
+            try {
+                UnityEngine.Application.OpenURL("https://discord.gg/QFxmPa2wCa");
+            } catch (Exception e) {
+                m_Log.Error($"Failed to open Discord URL: {e.Message}");
+            }
         }
 
         /// <summary>
