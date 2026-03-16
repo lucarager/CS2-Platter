@@ -94,10 +94,16 @@ namespace Platter.Systems {
                         continue;
                     }
 
+                    // Flatten rotation to yaw-only so overlays render horizontally on slopes
+                    var forward      = math.mul(transform.m_Rotation, new float3(0f, 0f, 1f));
+                    forward.y        = 0f;
+                    forward          = math.normalizesafe(forward, new float3(0f, 0f, 1f));
+                    var flatRotation = quaternion.LookRotationSafe(forward, math.up());
+
                     EmitParcelCommands(
                         ref m_CommandWriter,
                         parcelData.m_LotSize,
-                        ParcelGeometryUtils.GetTransformMatrix(transform),
+                        ParcelGeometryUtils.GetTransformMatrix(flatRotation, transform.m_Position),
                         m_ColorsMap[zoneIndex.m_Index],
                         parcel.m_State,
                         isSpawnable || isTemp,
