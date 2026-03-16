@@ -206,6 +206,7 @@ namespace Platter.Systems {
 
                     DrawParcel(
                         m_OverlayRenderBuffer,
+                        entitiesArray[i],
                         parcelData.m_LotSize,
                         trs,
                         m_ColorsMap[zoneIndex.m_Index],
@@ -217,6 +218,7 @@ namespace Platter.Systems {
             }
 
             private static void DrawParcel(OverlayRenderSystem.Buffer buffer,
+                                           Entity entity,
                                           int2                       lotSize,
                                           float4x4                   trs,
                                           Color                      backgroundColor,
@@ -268,50 +270,98 @@ namespace Platter.Systems {
                 //  c1 └┘ c0
 
                 // Front edge
+                var frontSegment = new Line3.Segment(
+                                                     ParcelGeometryUtils.GetWorldPosition(
+                                                                                          trs,
+                                                                                          parcelCenter,
+                                                                                          parcelCorners.c0 + new float3(+rightLineWidth, 0f, -frontLineHalf)),
+                                                     ParcelGeometryUtils.GetWorldPosition(
+                                                                                          trs,
+                                                                                          parcelCenter,
+                                                                                          parcelCorners.c1 + new float3(-leftLineWidth, 0f, -frontLineHalf))
+                                                    );
+                //PlatterMod.Instance.Log.Debug($"[{entity}] Drawing FRONT edge from position a {frontSegment.a} to {frontSegment.b}");
                 buffer.DrawLine(
                     parcelOutlineColor,
-                    new Line3.Segment(
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineWidth, 0f, -frontLineHalf)),
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineWidth, 0f, -frontLineHalf))
-                    ),
-                    frontLineWidth);
+                    parcelOutlineColor,
+                    0f,
+                    0,
+                    frontSegment,
+                    frontLineWidth,
+                    0f);
 
                 // Left edge
-                buffer.DrawLine(
-                    parcelOutlineColor,
-                    new Line3.Segment(
+                var leftSegment = new Line3.Segment(
                         ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c1 + new float3(-leftLineHalf, 0f, 0f)),
                         ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineHalf, 0f, 0f))
-                    ),
-                    leftLineWidth);
+                    );
+                //PlatterMod.Instance.Log.Debug($"[{entity}] Drawing LEFT edge from position a {leftSegment.a} to {leftSegment.b}");
+                buffer.DrawLine(
+                    parcelOutlineColor,
+                    parcelOutlineColor,
+                    0f,
+                    0,
+                    leftSegment,
+                    leftLineWidth,
+                    0f);
 
                 // Back edge
+                var backSegment = new Line3.Segment(
+                                                    ParcelGeometryUtils.GetWorldPosition(
+                                                                                         trs,
+                                                                                         parcelCenter,
+                                                                                         parcelCorners.c2 + new float3(-leftLineWidth, 0f, +backLineHalf)),
+                                                    ParcelGeometryUtils.GetWorldPosition(
+                                                                                         trs,
+                                                                                         parcelCenter,
+                                                                                         parcelCorners.c3 + new float3(+rightLineWidth, 0f, +backLineHalf))
+                                                   );
+                //PlatterMod.Instance.Log.Debug($"[{entity}] Drawing BACK edge from position a {backSegment.a} to {backSegment.b}");
                 buffer.DrawLine(
                     parcelOutlineColor,
-                    new Line3.Segment(
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c2 + new float3(-leftLineWidth, 0f, +backLineHalf)),
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineWidth, 0f, +backLineHalf))
-                    ),
-                    outlineWidth);
+                    parcelOutlineColor,
+                    0f,
+                    0,
+                    backSegment,
+                    outlineWidth,
+                    0f);
 
                 // Right edge
+                var rightSegment = new Line3.Segment(
+                                                     ParcelGeometryUtils.GetWorldPosition(
+                                                                                          trs,
+                                                                                          parcelCenter,
+                                                                                          parcelCorners.c3 + new float3(+rightLineHalf, 0f, 0f)),
+                                                     ParcelGeometryUtils.GetWorldPosition(
+                                                                                          trs,
+                                                                                          parcelCenter,
+                                                                                          parcelCorners.c0 + new float3(+rightLineHalf, 0f, 0f))
+                                                    );
+                //PlatterMod.Instance.Log.Debug($"[{entity}] Drawing RIGHT edge from position a {rightSegment.a} to {rightSegment.b}");
                 buffer.DrawLine(
                     parcelOutlineColor,
-                    new Line3.Segment(
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c3 + new float3(+rightLineHalf, 0f, 0f)),
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelCorners.c0 + new float3(+rightLineHalf, 0f, 0f))
-                    ),
-                    rightLineWidth);
+                    parcelOutlineColor,
+                    0f,
+                    0,
+                    rightSegment,
+                    rightLineWidth, 
+                    0f);
 
                 // Background fill
+                var backgroundSegment = new Line3.Segment(
+                                                          ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
+                                                          ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelBack)
+                                                         );
                 backgroundColor.a = opacityLow;
+                //PlatterMod.Instance.Log.Debug($"[{entity}] Drawing BACKGROUND edge from position a {backgroundSegment.a} to {backgroundSegment.b}");
                 buffer.DrawLine(
                     backgroundColor,
-                    new Line3.Segment(
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
-                        ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelBack)
-                    ),
-                    parcelSize.x);
+                    backgroundColor,
+                    0f,
+                    0,
+                    backgroundSegment,
+                    parcelSize.x, 
+                    0f);
 
                 // Inner grid lines (front to back)
                 var frontNode = parcelCorners.c1;
@@ -323,11 +373,15 @@ namespace Platter.Systems {
                     backNode.x  -= cellSize;
                     buffer.DrawLine(
                         parcelInlineColor,
+                        parcelInlineColor,
+                        0f,
+                        0,
                         new Line3.Segment(
                             ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, frontNode),
                             ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, backNode)
                         ),
-                        cellOutlineWidth);
+                        cellOutlineWidth,
+                        0f);
                 }
 
                 // Inner grid lines (left to right)
@@ -340,11 +394,15 @@ namespace Platter.Systems {
                     rightNode.z -= cellSize;
                     buffer.DrawLine(
                         parcelInlineColor,
+                        parcelInlineColor,
+                        0f,
+                        0,
                         new Line3.Segment(
                             ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, leftNode),
                             ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, rightNode)
                         ),
-                        cellOutlineWidth);
+                        cellOutlineWidth,
+                        0f);
                 }
 
                 // Front access indicator (filled circle if spawnable, hollow otherwise)
@@ -352,7 +410,7 @@ namespace Platter.Systems {
                     parcelFrontIndicatorColor,
                     spawnable ? parcelFrontIndicatorColor : transparentColor,
                     frontIndicatorLine,
-                    StyleFlags.DepthFadeBelow | StyleFlags.Projected,
+                    0,
                     new float2(1, 1),
                     ParcelGeometryUtils.GetWorldPosition(trs, parcelCenter, parcelFront),
                     frontIndicatorDiam
