@@ -145,8 +145,8 @@ namespace Platter.Systems {
                 m_Log.Error($"{logMethodPrefix} Failed retrieving zonePrefabUIObject and must exit.");
             }
 
-            m_Log.Debug($"{logMethodPrefix} Creating Area Prefab...");
-            CreateParcelAreaPrefab((AreaPrefab)prefabBaseDict["area"], (NetLanePrefab)prefabBaseDict["netLane"], out var areaPrefab);
+            //m_Log.Debug($"{logMethodPrefix} Creating Area Prefab...");
+            //CreateParcelAreaPrefab((AreaPrefab)prefabBaseDict["area"], (NetLanePrefab)prefabBaseDict["netLane"], out var areaPrefab);
 
             m_Log.Debug($"{logMethodPrefix} Creating Category Prefab...");
             CreateCategoryPrefab((UIAssetCategoryPrefab)prefabBaseDict["uiAssetCategory"], out var uiCategoryPrefab);
@@ -160,13 +160,13 @@ namespace Platter.Systems {
                 Entity parcelEntity = Entity.Null;
                 Entity placeholderEntity = Entity.Null;
 
-                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, false, out parcelEntity)) {
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, false, out parcelEntity)) {
                     m_Log.Debug($"Created Parcel Prefab {i}x{j}");
                 } else {
                     m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
                 }
 
-                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, areaPrefab, true, out placeholderEntity)) {
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, true, out placeholderEntity)) {
                     m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
                 } else {
                     m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
@@ -205,7 +205,7 @@ namespace Platter.Systems {
         /// <param name="placeholder">If true, creates a placeholder prefab; otherwise creates a regular parcel prefab.</param>
         /// <param name="entity">When this method returns, contains the created entity if successful; otherwise, Entity.Null.</param>
         /// <returns>True if the prefab was successfully created and added to the prefab system; otherwise, false.</returns>
-        private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase,
+        private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, 
                                         bool placeholder, out Entity entity) {
             var prefix    = placeholder ? "ParcelPlaceholder" : "Parcel";
             var name      = $"{prefix} {lotWidth}x{lotDepth}";
@@ -252,12 +252,6 @@ namespace Platter.Systems {
             return false;
         }
 
-        // Overload for backward compatibility
-        private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, AreaPrefab areaPrefabBase,
-                                        bool placeholder = false) {
-            return CreateParcelPrefab(lotWidth, lotDepth, roadPrefab, uiCategoryPrefab, areaPrefabBase, placeholder, out _);
-        }
-
         /// <summary>
         /// Creates a UI category prefab for organizing parcel prefabs in the game UI.
         /// </summary>
@@ -289,35 +283,6 @@ namespace Platter.Systems {
             }
 
             return success;
-        }
-
-        /// <summary>
-        /// Creates an area prefab for parcel enclosed areas with border configuration.
-        /// </summary>
-        /// <param name="originalAreaPrefab">The original area prefab to clone and modify.</param>
-        /// <param name="borderPrefab">The net lane prefab to use for the border of the enclosed area.</param>
-        /// <param name="areaPrefab">When this method returns, contains the created area prefab if successful; otherwise, null.</param>
-        /// <returns>True if the area prefab was successfully created and added to the prefab system; otherwise, false.</returns>
-        private bool CreateParcelAreaPrefab(AreaPrefab originalAreaPrefab, NetLanePrefab borderPrefab, out AreaPrefab areaPrefab) {
-            var parecelAreaPrefab = (AreaPrefab)originalAreaPrefab.Clone("Parcel Enclosed Area");
-
-            var enclosedArea = ScriptableObject.CreateInstance<EnclosedArea>();
-            enclosedArea.name               = "EnclosedArea";
-            enclosedArea.m_BorderLaneType   = borderPrefab;
-            enclosedArea.m_CounterClockWise = false;
-
-            parecelAreaPrefab.AddComponentFrom(enclosedArea);
-
-            var success = m_PrefabSystem.AddPrefab(parecelAreaPrefab);
-
-            if (success) {
-                RegisterPrefabInCache(parecelAreaPrefab);
-                areaPrefab = parecelAreaPrefab;
-                return true;
-            }
-
-            areaPrefab = null;
-            return false;
         }
 
         /// <summary>
