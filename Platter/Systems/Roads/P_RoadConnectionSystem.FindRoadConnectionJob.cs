@@ -94,13 +94,20 @@ namespace Platter.Systems {
                 ParcelGeometryUtils.ParcelNode accessNode, float3 parcelSize, Transform parcelTransform, float maxDistance,
                 out Entity road, out float3 position, out float curvePos) {
 
-                var nodeOffset     = ParcelGeometryUtils.NodeMult(accessNode) * parcelSize;
+                var nodeMult       = ParcelGeometryUtils.NodeMult(accessNode);
+                var nodeOffset     = nodeMult * parcelSize;
                 var accessPosition = ParcelGeometryUtils.GetWorldPosition(parcelTransform, nodeOffset);
+                var isSideAccess   = accessNode == ParcelGeometryUtils.ParcelNode.LeftAccess ||
+                                     accessNode == ParcelGeometryUtils.ParcelNode.RightAccess;
+                var outwardDir     = isSideAccess
+                    ? math.mul(parcelTransform.m_Rotation, math.normalizesafe(nodeMult)).xz
+                    : float2.zero;
 
                 var iterator = new FindRoadConnectionIterator(
                     bestCurvePos: 0f,
                     bestRoad: Entity.Null,
                     canBeOnRoad: true,
+                    outwardDirection: outwardDir,
                     subBlockBufferLookup: m_SubBlockBufferLookup,
                     connectedParcelsBufferLookup: m_ConnectedParcelBufferLookup,
                     curveDataComponentLookup: m_CurveDataComponentLookup,
@@ -139,6 +146,7 @@ namespace Platter.Systems {
                 private Bounds3                             m_Bounds;
                 private float                               m_MinDistance;
                 private bool                                m_CanBeOnRoad;
+                private float2                              m_OutwardDirection;
                 private BufferLookup<ConnectedParcel>       m_ConnectedParcelsBufferLookup;
                 private BufferLookup<SubBlock>              m_SubBlockBufferLookup;
                 private ComponentLookup<Curve>              m_CurveDataComponentLookup;
@@ -150,7 +158,7 @@ namespace Platter.Systems {
                 private ComponentLookup<Deleted>            m_DeletedDataComponentLookup;
 
                 public FindRoadConnectionIterator(Bounds3 bounds, float minDistance, float bestCurvePos, Entity bestRoad, float3 frontPosition,
-                                                  bool canBeOnRoad, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, BufferLookup<SubBlock> subBlockBufferLookup,
+                                                  bool canBeOnRoad, float2 outwardDirection, BufferLookup<ConnectedParcel> connectedParcelsBufferLookup, BufferLookup<SubBlock> subBlockBufferLookup,
                                                   ComponentLookup<Curve> curveDataComponentLookup, ComponentLookup<Composition> compositionDataComponentLookup,
                                                   ComponentLookup<EdgeGeometry> edgeGeometryDataComponentLookup,
                                                   ComponentLookup<StartNodeGeometry> startNodeGeometryDataComponentLookup,
@@ -163,6 +171,7 @@ namespace Platter.Systems {
                     BestRoad                                  = bestRoad;
                     FrontPosition                             = frontPosition;
                     m_CanBeOnRoad                             = canBeOnRoad;
+                    m_OutwardDirection                        = outwardDirection;
                     m_ConnectedParcelsBufferLookup            = connectedParcelsBufferLookup;
                     m_SubBlockBufferLookup                    = subBlockBufferLookup;
                     m_CurveDataComponentLookup                = curveDataComponentLookup;
@@ -230,6 +239,9 @@ namespace Platter.Systems {
                     // Finds the nearest point on the curve to the entity's front position.
                     MathUtils.Distance(curve.m_Bezier.xz, FrontPosition.xz, out var nearestPointToFront);
                     var positionOfNearestPointToBuildingFront = MathUtils.Position(curve.m_Bezier, nearestPointToFront);
+
+                    // Reject roads on the inward side of the access node
+                    if (math.dot(positionOfNearestPointToBuildingFront.xz - FrontPosition.xz, m_OutwardDirection) < 0f) return;
 
                     // Compute the tangent vector and determine the side of the curve (right or left)
                     var tangent     = MathUtils.Tangent(curve.m_Bezier, nearestPointToFront).xz;
