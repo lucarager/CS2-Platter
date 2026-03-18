@@ -76,6 +76,8 @@
   "PlatterMod.UI.SectionTitle.Category": "분류",
   "PlatterMod.UI.SectionTitle.AssetPacks": "애셋 팩",
   "PlatterMod.UI.SectionTitle.Changelog": "변경 사항 보기",
+  "PlatterMod.UI.SectionTitle.Discord": "Discord",
+  "PlatterMod.UI.Tooltip.Discord": "Join the CS:2 Modding Discord to connect with me and share feedback or issues.",
   "PlatterMod.UI.Label.ParcelSizeUnit": "셀",
   "PlatterMod.UI.Label.NewUpdatesAvailable": "(새 업데이트)",
   "PlatterMod.UI.Label.NoZoneMatchesFilter": "필터와 일치 하는 구역 없음",
