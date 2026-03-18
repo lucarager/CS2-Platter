@@ -54,5 +54,5 @@ export const GAME_TRIGGERS = {
     INFOPANEL_PARCEL_RELOCATE: TriggerBuilder.create<[Entity]>("INFOPANEL_PARCEL_RELOCATE"),
     ROAD_SIDE__REQUEST_APPLY: TriggerBuilder.create<[]>("ROAD_SIDE__REQUEST_APPLY"),
     CREATE_PARCEL_WITH_ZONE: TriggerBuilder.create<[]>("CREATE_PARCEL_WITH_ZONE"),
-    OPEN_DISCORD: TriggerBuilder.create<[]>("OPEN_DISCORD"),
+    OPEN_LINK: TriggerBuilder.create<[string]>("OPEN_LINK"),
 };

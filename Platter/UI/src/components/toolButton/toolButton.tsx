@@ -119,7 +119,7 @@ export const ToolPanel = memo(function ToolPanel(props: { initialShowUpdateBadge
                     title={translate("PlatterMod.UI.SectionTitle.Discord", "CS:2 Modding Discord")}>
                     <VC.ToolButton
                         src={"coui://uil/Standard/ArrowRight.svg"}
-                        onSelect={() => GAME_TRIGGERS.OPEN_DISCORD()}
+                        onSelect={() => GAME_TRIGGERS.OPEN_LINK("discord")}
                         focusKey={VF.FOCUS_DISABLED}
                         tooltip={translate(
                             "PlatterMod.UI.Tooltip.Discord",

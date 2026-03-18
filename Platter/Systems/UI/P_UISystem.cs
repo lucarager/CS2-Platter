@@ -7,6 +7,7 @@ namespace Platter.Systems {
     #region Using Statements
 
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using Colossal.Serialization.Entities;
@@ -139,7 +140,7 @@ namespace Platter.Systems {
             CreateTrigger<string>("ADJUST_BLOCK_SIZE", HandleBlockSizeAdjustment);
             CreateTrigger<string>("MODAL_DISMISS", HandleModalDismiss);
             CreateTrigger("CREATE_PARCEL_WITH_ZONE", HandleCreateParcelWithZone);
-            CreateTrigger("OPEN_DISCORD", HandleOpenDiscord);
+            CreateTrigger<string>("OPEN_LINK", HandleOpenLink);
 
             // Shortcuts
             m_ToggleRender             = PlatterMod.Instance.Settings.GetAction(PlatterModSettings.ToggleRenderName);
@@ -315,15 +316,28 @@ namespace Platter.Systems {
             PlatterMod.Instance.Settings.Modals_FirstLaunchTutorial = true;
         }
 
+        private static readonly Dictionary<string, string> AllowedLinks = new Dictionary<string, string> {
+            { "discord",       "https://discord.gg/QFxmPa2wCa" },
+            { "github",        "https://github.com/lucarager/CS2-Platter" },
+            { "CHANGELOG_150", "https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699/post-31179260" },
+        };
+
         /// <summary>
-        /// Opens the Discord invite link in the default browser.
+        /// Opens a known link by key. Only URLs in <see cref="AllowedLinks"/> can be opened.
         /// </summary>
-        private void HandleOpenDiscord() {
-            m_Log.Debug("HandleOpenDiscord()");
+        private void HandleOpenLink(string key) {
+            m_Log.Debug($"HandleOpenLink(key = {key})");
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            if (!AllowedLinks.TryGetValue(key, out var url)) {
+                m_Log.Warn($"HandleOpenLink: unknown link key '{key}'");
+                return;
+            }
+
             try {
-                UnityEngine.Application.OpenURL("https://discord.gg/QFxmPa2wCa");
+                UnityEngine.Application.OpenURL(url);
             } catch (Exception e) {
-                m_Log.Error($"Failed to open Discord URL: {e.Message}");
+                m_Log.Error($"Failed to open link '{key}': {e.Message}");
             }
         }
 
