@@ -55,17 +55,23 @@ export const ChangelogModal = () => {
                     <div className={styles.changelog}>
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
-                            {/* March 16th */}
+                            {/* March 19th */}
                             <ChangelogItem
-                                date="2026-03-16"
-                                title="Platter 1.5.0 - Major Update: 1-wide Parcels, Snapping Overhaul, Stability"
+                                date="2026-03-19"
+                                title="Platter 1.5 - Big Spring Update: 1-wide Parcels, Snapping, Stability, and more"
                                 image="coui://platter/changelog/4.jpg"
-                                alertText={`Because of this update's size and scope, unexpected issues may still occur. It's been tested extensively, but as a solo developer I can't catch every edge case.
+                                linkKey="CHANGELOG_150"
+                                linkLabel="Full Changelog"
+                                alertKey="CHANGELOG_150"
+                                alertLink="Open CS:2 Modding Discord"
+                                alertText={`A lot changed in this release. Being a solo dev, unexpected bugs can still slip through (even with extensive testing). If you run into one, you can let me know on Discord via the link below!`}
+                                text={`
+Introducing __Narrow (1-wide)__ and __Extra-Wide (7-8)__ parcels, plus a fully reworked __snapping system__, and a number of fixes and improvements to stability and performance.
 
-If you run into an issue, it will be prioritized and fixed as quickly as possible. To report one, use the "CS:2 Modding Discord" button on the Platter panel to join the Modding Discord and submit a report to the dedicated "Platter" channel.`}
-                                text={`Introducing __Narrow (1-wide)__ parcels and __Extra-Wide (7-8)__ sizes, plus a fully reworked __snapping system__ with cleaner multi-snap behavior, start/end line tool snapping, and tighter integration with the base game (including better snap feedback).
-
-Stability and performance are substantially improved with faster UI data delivery, smarter prefab caching, and a wave of fixes for crashes, parcel-road interactions, zone index desync behavior, and picker/relocate behavior. This includes fixes for __parcel cells being "eaten" by vanilla cells__ and __road drawing related game crashes__. The parcel overlay has been reworked significantly for better clarity and performance. Road connection icons have also been refined. `}
+- ___Snapping___ is improved with __line tool start/end point snapping__, cleaner multi-snap behavior, and better snap feedback.
+- ___Stability___ was improved with fixes for __road drawing related game crashes__ and __parcel cells being "eaten" by vanilla cells__, plus a number of fixes for parcel-road interactions, zone index desync, and picker/relocate behavior.
+- ___Performance___ is substantially improved with faster UI data delivery, smarter prefab caching, and optimized parcel updates.
+- ___Parcel Overlays___ have been reworked significantly. Road connection icons have also been refined. `}
                             />
                             {/* December 12th */}
                             <ChangelogItem
@@ -138,9 +144,21 @@ const ChangelogItem: React.FC<{
     text: string;
     image?: string;
     alertText?: string;
+    alertLink?: string;
+    alertKey?: string;
     linkKey?: string;
     linkLabel?: string;
-}> = ({ title, date, text, image, alertText, linkKey, linkLabel }) => {
+}> = ({
+    title,
+    date,
+    text,
+    image,
+    alertText,
+    alertLink,
+    alertKey,
+    linkKey,
+    linkLabel,
+}) => {
     return (
         <>
             <div className={styles.versionDivider}>
@@ -184,6 +202,16 @@ const ChangelogItem: React.FC<{
                                 <p className={styles.card__text} cohinline="true">
                                     <HighlightedText text={alertText} />
                                 </p>
+                                {alertKey && (
+                                    <div className={styles.alertLinkWrap}>
+                                        <Button
+                                            variant="text"
+                                            className={c(styles.linkButton, styles.alertLinkButton)}
+                                            onSelect={() => GAME_TRIGGERS.OPEN_LINK(alertKey)}>
+                                            {alertLink || "Open link"}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -226,22 +254,31 @@ interface HighlightedTextProps {
 }
 
 function parseHighlightedText(input: string) {
-    const parts: { text: string; highlight: boolean }[] = [];
+    const parts: { text: string; highlight: boolean; bold: boolean }[] = [];
 
-    // Split on __ while keeping the delimited text
-    const split = input.split(/(__.*?__)/);
+    // Split on ___ and __ while keeping the delimited text
+    const split = input.split(/(___.*?___|__.*?__)/);
 
     for (const part of split) {
-        if (part.startsWith("__") && part.endsWith("__")) {
+        if (part.startsWith("___") && part.endsWith("___")) {
+            // Remove the ___ markers
+            parts.push({
+                text: part.slice(3, -3),
+                highlight: false,
+                bold: true,
+            });
+        } else if (part.startsWith("__") && part.endsWith("__")) {
             // Remove the __ markers
             parts.push({
                 text: part.slice(2, -2),
                 highlight: true,
+                bold: false,
             });
         } else if (part.length > 0) {
             parts.push({
                 text: part,
                 highlight: false,
+                bold: false,
             });
         }
     }
@@ -257,7 +294,9 @@ export const HighlightedText: React.FC<HighlightedTextProps> = ({ text }) => {
     return (
         <>
             {parts.map((part, i) =>
-                part.highlight ? (
+                part.bold ? (
+                    <strong key={i}>{part.text}</strong>
+                ) : part.highlight ? (
                     <span key={i} className={styles.highlight}>
                         {part.text}
                     </span>

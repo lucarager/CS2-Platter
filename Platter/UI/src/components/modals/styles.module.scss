@@ -280,6 +280,16 @@
     color: #87b3ff;
 }
 
+.alertLinkWrap {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 8rem;
+}
+
+.alertLinkButton {
+    text-align: left;
+}
+
 .disclaimer_container {
     height: 100%;
     margin: 0;
