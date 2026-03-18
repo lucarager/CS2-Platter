@@ -76,6 +76,8 @@
   "PlatterMod.UI.SectionTitle.Category": "Категория",
   "PlatterMod.UI.SectionTitle.AssetPacks": "Наборы",
   "PlatterMod.UI.SectionTitle.Changelog": "Список изменений",
+  "PlatterMod.UI.SectionTitle.Discord": "Discord",
+  "PlatterMod.UI.Tooltip.Discord": "Join the CS:2 Modding Discord to connect with me and share feedback or issues.",
   "PlatterMod.UI.Label.ParcelSizeUnit": "кл",
   "PlatterMod.UI.Label.NewUpdatesAvailable": "(Обновления)",
   "PlatterMod.UI.Label.NoZoneMatchesFilter": "Ни одна зона не соответствует фильтру",
