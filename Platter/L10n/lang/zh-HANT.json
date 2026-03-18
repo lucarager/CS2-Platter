@@ -76,6 +76,8 @@
   "PlatterMod.UI.SectionTitle.Category": "類別",
   "PlatterMod.UI.SectionTitle.AssetPacks": "資產包",
   "PlatterMod.UI.SectionTitle.Changelog": "檢視更新日誌",
+  "PlatterMod.UI.SectionTitle.Discord": "Discord",
+  "PlatterMod.UI.Tooltip.Discord": "Join the CS:2 Modding Discord to connect with me and share feedback or issues.",
   "PlatterMod.UI.Label.ParcelSizeUnit": "格",
   "PlatterMod.UI.Label.NewUpdatesAvailable": "（更新）",
   "PlatterMod.UI.Label.NoZoneMatchesFilter": "No zone matches filter",
