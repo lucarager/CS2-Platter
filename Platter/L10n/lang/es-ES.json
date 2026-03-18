@@ -76,6 +76,8 @@
   "PlatterMod.UI.SectionTitle.Category": "Categoría",
   "PlatterMod.UI.SectionTitle.AssetPacks": "Paquetes de recursos",
   "PlatterMod.UI.SectionTitle.Changelog": "Ver registro de cambios",
+  "PlatterMod.UI.SectionTitle.Discord": "Discord",
+  "PlatterMod.UI.Tooltip.Discord": "Join the CS:2 Modding Discord to connect with me and share feedback or issues.",
   "PlatterMod.UI.Label.ParcelSizeUnit": "celdas",
   "PlatterMod.UI.Label.NewUpdatesAvailable": "(Nuevas actualizaciones)",
   "PlatterMod.UI.Label.NoZoneMatchesFilter": "Ninguna zona coincide con el filtro",
