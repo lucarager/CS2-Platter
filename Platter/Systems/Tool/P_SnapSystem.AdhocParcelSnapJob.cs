@@ -604,22 +604,26 @@ namespace Platter.Systems {
                     curvesFilter.Add(true);
                     curvesList.Add(edgeGeo.m_End.m_Right);
                     curvesFilter.Add(true);
+                    // Start Node -> Left
                     curvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Left);
-                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.x > 0.2f);
                     curvesList.Add(startNodeGeo.m_Geometry.m_Left.m_Right);
-                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !startIsConnected);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Left.m_Length.y > 0.2f);
+                    // Start Node -> Right
                     curvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Left);
-                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !startIsConnected);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.x > 0.2f);
                     curvesList.Add(startNodeGeo.m_Geometry.m_Right.m_Right);
-                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
+                    curvesFilter.Add(startNodeGeo.m_Geometry.m_Right.m_Length.y > 0.2f);
+                    // End Node -> Left
                     curvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Left);
-                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.x > 1);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.x > 0.2f);
                     curvesList.Add(endNodeGeo.m_Geometry.m_Left.m_Right);
-                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.y > 1 && !endIsConnected);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Left.m_Length.y > 0.2f);
+                    // End Node -> Right
                     curvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Left);
-                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.x > 1 && !endIsConnected);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.x > 0.2f);
                     curvesList.Add(endNodeGeo.m_Geometry.m_Right.m_Right);
-                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.y > 1);
+                    curvesFilter.Add(endNodeGeo.m_Geometry.m_Right.m_Length.y > 0.2f);
 
                     // Find curve closes to our control point.
                     var closestCurve = default(Bezier4x3);
