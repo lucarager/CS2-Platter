@@ -133,7 +133,7 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.SectionTitle.Category", "Category" },
                 { "PlatterMod.UI.SectionTitle.AssetPacks", "Asset Packs" },
                 { "PlatterMod.UI.SectionTitle.Changelog", "View Changelog" },
-                { "PlatterMod.UI.SectionTitle.Discord", "CS:2 Modding Discord" },
+                { "PlatterMod.UI.SectionTitle.Discord", "Cities Modding Discord (For support & feedback)" },
                 { "PlatterMod.UI.Tooltip.Discord", "Join the Discord server to connect with me and share feedback or issues." },
                 { "PlatterMod.UI.Label.ParcelSizeUnit", "cells" },
                 { "PlatterMod.UI.Label.NewUpdatesAvailable", "(New updates)" },
