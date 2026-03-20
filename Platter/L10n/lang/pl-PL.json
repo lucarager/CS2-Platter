@@ -90,7 +90,7 @@
   "PlatterMod.UI.Tooltip.SnapModeNone": "Brak przyciągania",
   "PlatterMod.UI.Tooltip.SnapModeZoneSide": "Przyciągaj do siatek stref",
   "PlatterMod.UI.Tooltip.SnapModeRoadSide": "Przyciągaj do boków drogi",
-  "PlatterMod.UI.Tooltip.SnapModeParcelEdge": "Przycigaj do parcel",
+  "PlatterMod.UI.Tooltip.SnapModeParcelEdge": "Przyciągaj do parcel",
   "PlatterMod.UI.Tooltip.SnapModeParcelFrontAlign": "Przyciągaj do narożników parcel",
   "PlatterMod.UI.Tooltip.SnapModeAll": "Włącz wszystkie tryby przyciągania",
   "PlatterMod.UI.Tooltip.SnapSpacingIncrease": "Zwiększ odstęp",
