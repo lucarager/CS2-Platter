@@ -4,7 +4,7 @@ import React, { useCallback } from "react";
 import { Button, Panel } from "cs2/ui";
 import styles from "./styles.module.scss";
 import { VC, VT } from "components/vanilla/Components";
-import { GAME_BINDINGS } from "gameBindings";
+import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import { useLocalization } from "cs2/l10n";
 import { useValue } from "cs2/api";
 import { c } from "utils/classes";
@@ -105,7 +105,9 @@ __Building verification tooltips__ now accurately track corner buildings, and cr
                             <ChangelogItem
                                 date="2025-12-3"
                                 title="The frontage update"
-                                text={"Buildings spawning on parcels will now always face the front of the parcel."}
+                                text={
+                                    "Buildings spawning on parcels will now always face the front of the parcel."
+                                }
                             />
                         </div>
                     </div>
@@ -120,7 +122,10 @@ const ChangelogItem: React.FC<{
     date: string;
     text: string;
     image?: string;
-}> = ({ title, date, text, image }) => {
+    alertText?: string;
+    linkKey?: string;
+    linkLabel?: string;
+}> = ({ title, date, text, image, alertText, linkKey, linkLabel }) => {
     return (
         <>
             <div className={styles.versionDivider}>
@@ -132,6 +137,18 @@ const ChangelogItem: React.FC<{
                     <h3>{title}</h3>
                 </div>
             </div>
+            {linkKey && (
+                <div className={styles.card}>
+                    <div className={c(styles.card__inner, styles.card__inner__btn)}>
+                        <Button
+                            variant="text"
+                            className={styles.linkButton}
+                            onSelect={() => GAME_TRIGGERS.OPEN_LINK(linkKey)}>
+                            {linkLabel || "Read more"}
+                        </Button>
+                    </div>
+                </div>
+            )}
             {image && (
                 <div className={styles.card}>
                     <div className={c(styles.card__inner, styles.card__inner__cl)}>
@@ -147,6 +164,13 @@ const ChangelogItem: React.FC<{
                         <p className={styles.card__text} cohinline="true">
                             <HighlightedText text={text} />
                         </p>
+                        {alertText && (
+                            <div className={styles.alert}>
+                                <p className={styles.card__text} cohinline="true">
+                                    <HighlightedText text={alertText} />
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

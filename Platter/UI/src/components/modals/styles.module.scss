@@ -39,6 +39,10 @@
     }
 }
 
+.changelogPanel {
+    height: 90vh;
+}
+
 .header {
     background-image: url("coui://platter/header.png");
     display: flex;
@@ -186,6 +190,12 @@
             padding-bottom: 0;
         }
 
+        &__btn {
+            align-items: flex-start;
+            padding-bottom: 0;
+            padding-top: 0;
+        }
+
         &__image {
             display: flex;
             align-items: center;
@@ -264,6 +274,10 @@
     p {
         margin: 0;
     }
+}
+
+.linkButton {
+    color: #87b3ff;
 }
 
 .disclaimer_container {

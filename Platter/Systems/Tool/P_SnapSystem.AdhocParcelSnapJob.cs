@@ -1028,16 +1028,16 @@ namespace Platter.Systems {
                 private void TrySnapToCorner(Entity existingEntity,    Transform existingTransform, float2 cornerPosition,
                                              float2 existingDirection, float2    existingRight,
                                              float  newHalfWidth,      float     newHalfDepth, bool isRightSide) {
-                    // Calculate new parcel center based on which side we're snapping to
-                    var newCenter = new float3(cornerPosition.x, existingTransform.m_Position.y, cornerPosition.y);
-                    newCenter.xz += existingRight     * newHalfWidth * (isRightSide ? -1f : 1f);
-                    newCenter.xz -= existingDirection * newHalfDepth;
-
                     var distanceToHit = math.distance(cornerPosition, m_ControlPoint.m_HitPosition.xz);
 
                     if (distanceToHit >= m_BestDistance) {
                         return;
                     }
+
+                    // Calculate new parcel center based on which side we're snapping to
+                    var newCenter = new float3(cornerPosition.x, existingTransform.m_Position.y, cornerPosition.y);
+                    newCenter.xz += existingRight * newHalfWidth * (isRightSide ? -1f : 1f);
+                    newCenter.xz -= existingDirection * newHalfDepth;
 
                     var priority = CalculateSnapPriority(
                         m_SnapLevelFrontAlign,
@@ -1048,9 +1048,9 @@ namespace Platter.Systems {
                         existingDirection
                     );
 
-                    if (!CompareSnapPriority(priority, m_BestSnapPosition.m_SnapPriority)) {
-                        return;
-                    }
+                    //if (!CompareSnapPriority(priority, m_BestSnapPosition.m_SnapPriority)) {
+                    //    return;
+                    //}
 
                     m_BestDistance                      = distanceToHit;
                     m_BestSnapPosition.m_Position       = newCenter;

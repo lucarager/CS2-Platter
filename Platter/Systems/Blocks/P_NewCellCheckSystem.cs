@@ -17,6 +17,7 @@ namespace Platter.Systems {
     using Platter.Components;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Burst;
     using Unity.Jobs;
     using static Game.Zones.CellCheckHelpers;
     using static Game.Zones.CellOccupyJobs;
@@ -46,7 +47,9 @@ namespace Platter.Systems {
     ///     If placed overlaying vanilla grid at an offset, they are blocked.
     ///     Most importantly, the logic that "occpies" them if they are 1 wide is caused by the depth smoothing logic inside
     ///     the CellReduction struct within CellOverlapJobs.cs.
-    ///     Note the difference between the Occupied and Blocked flags
+    ///     Note the difference between the Occupied and Blocked flags:
+    ///       - Occupied: Means a building is currently occupying the cell. 
+    ///       - Blocked: Means the cell is blocked by a road or area. Narrow blocks are also set to blocked by the game.
     /// </summary>
     public partial class P_NewCellCheckSystem : PlatterGameSystemBase {
         private Game.Areas.SearchSystem          m_AreaSearchSystem;
@@ -92,7 +95,6 @@ namespace Platter.Systems {
             m_Log.Debug("Running P_NewCellCheckSystem");
 
             var allBlocksList     = new NativeList<SortedEntity>(Allocator.TempJob);
-            var parcelBlocksList  = new NativeList<SortedEntity>(Allocator.TempJob);
             var blockOverlapQueue = new NativeQueue<BlockOverlap>(Allocator.TempJob);
             var blockOverlapList  = new NativeList<BlockOverlap>(Allocator.TempJob);
             var overlapGroupsList = new NativeList<OverlapGroup>(Allocator.TempJob);
@@ -100,52 +102,18 @@ namespace Platter.Systems {
             Dependency = JobHandle.CombineDependencies(Dependency, CollectUpdatedBlocks(allBlocksList));
             var allBlocks = allBlocksList.AsDeferredJobArray();
 
-            // Filter blocks to only include those that are part of a parcel
-            var filterBlocksJobHandle = new FilterBlocksToParcelsJob {
-                m_InputBlocks = allBlocksList,
-                m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
-                m_OutputBlocks = parcelBlocksList,
-            }.Schedule(Dependency);
-            var parcelBlocks = parcelBlocksList.AsDeferredJobArray();
-
-            // First, we re-run the vanilla BlockCellsJob on our parcel blocks to sanitize the cell data and check for network or object conflicts
-            var blockCellsJobHandle = new CellBlockJobs.BlockCellsJob {
-                m_Blocks                    = parcelBlocks,
-                m_BlockData                 = SystemAPI.GetComponentLookup<Block>(),
-                m_NetSearchTree             = m_NetSearchSystem.GetNetSearchTree(true, out var netSearchJobHandle),
-                m_AreaSearchTree            = m_AreaSearchSystem.GetSearchTree(true, out var areaSearchJobHandle),
-                m_OwnerData                 = SystemAPI.GetComponentLookup<Owner>(),
-                m_TransformData             = SystemAPI.GetComponentLookup<Transform>(),
-                m_EdgeGeometryData          = SystemAPI.GetComponentLookup<EdgeGeometry>(),
-                m_StartNodeGeometryData     = SystemAPI.GetComponentLookup<StartNodeGeometry>(),
-                m_EndNodeGeometryData       = SystemAPI.GetComponentLookup<EndNodeGeometry>(),
-                m_CompositionData           = SystemAPI.GetComponentLookup<Composition>(),
-                m_PrefabRefData             = SystemAPI.GetComponentLookup<PrefabRef>(),
-                m_PrefabCompositionData     = SystemAPI.GetComponentLookup<NetCompositionData>(),
-                m_PrefabRoadCompositionData = SystemAPI.GetComponentLookup<RoadComposition>(),
-                m_PrefabAreaGeometryData    = SystemAPI.GetComponentLookup<AreaGeometryData>(),
-                m_PrefabObjectGeometryData  = SystemAPI.GetComponentLookup<ObjectGeometryData>(),
-                m_NativeData                = SystemAPI.GetComponentLookup<Native>(),
-                m_AreaNodes                 = SystemAPI.GetBufferLookup<Node>(),
-                m_AreaTriangles             = SystemAPI.GetBufferLookup<Triangle>(),
-                m_Cells                     = SystemAPI.GetBufferLookup<Cell>(),
-                m_ValidAreaData             = SystemAPI.GetComponentLookup<ValidArea>(),
-            }.Schedule(parcelBlocksList, 1, JobHandle.CombineDependencies(filterBlocksJobHandle, netSearchJobHandle, areaSearchJobHandle));
-            m_NetSearchSystem.AddNetSearchTreeReader(blockCellsJobHandle);
-            m_AreaSearchSystem.AddSearchTreeReader(blockCellsJobHandle);
-
-            // Then, we run our own modified BlockCellsJob to process the updated parcel blocks.
+            // Run our own modified NormalizeParcelCellsJob to process the updated parcel blocks.
             // This will fix up the cell data for our custom parcels, which the vanilla job doesn't know how to handle.
-            var processUpdatedBlocksJobHandle = new BlockCellsJob
+            var normalizeParcelCellsJobHandle = new NormalizeParcelCellsJob
                                                 {
-                                                    m_Blocks            = parcelBlocks,
+                                                    m_Blocks            = allBlocks,
                                                     m_BlockLookup       = SystemAPI.GetComponentLookup<Block>(),
                                                     m_ParcelOwnerLookup = SystemAPI.GetComponentLookup<ParcelOwner>(),
                                                     m_ParcelDataLookup  = SystemAPI.GetComponentLookup<ParcelData>(),
                                                     m_PrefabRefLookup   = SystemAPI.GetComponentLookup<PrefabRef>(),
                                                     m_CellsLookup       = SystemAPI.GetBufferLookup<Cell>(),
                                                     m_ValidAreaLookup   = SystemAPI.GetComponentLookup<ValidArea>(),
-                                                }.Schedule(parcelBlocksList, 1, blockCellsJobHandle);
+                                                }.Schedule(allBlocksList, 1, Dependency);
 
             // We proceed with vanilla jobs...
             // Find Overlapping Blocks.
@@ -162,7 +130,7 @@ namespace Platter.Systems {
                                                             allBlocksList,
                                                             1,
                                                             JobHandle.CombineDependencies(
-                                                                                          processUpdatedBlocksJobHandle,
+                                                                                          normalizeParcelCellsJobHandle,
                                                                                           zoneSearchJobHandle));
             m_ZoneSearchSystem.AddSearchTreeReader(findOverlappingBlocksJobHandle);
 
@@ -207,7 +175,7 @@ namespace Platter.Systems {
                                                          allBlocksList,
                                                          1,
                                                          JobHandle.CombineDependencies(
-                                                                                       processUpdatedBlocksJobHandle,
+                                                                                       normalizeParcelCellsJobHandle,
                                                                                        objectSearchJobHandle,
                                                                                        deletedBlocksJobHandle));
             m_ObjectSearchSystem.AddStaticSearchTreeReader(zoneAndOccupyCellsJobHandle);
@@ -268,8 +236,6 @@ namespace Platter.Systems {
                                         }.Schedule(JobHandle.CombineDependencies(updateLotSizeJobHandle, zoneUpdateJobHandle));
             m_ZoneUpdateCollectSystem.AddBoundsWriter(updateBoundsJobHandle);
 
-            parcelBlocksList.Dispose(updateLotSizeJobHandle);
-            parcelBlocks.Dispose(updateLotSizeJobHandle);
             allBlocksList.Dispose(updateLotSizeJobHandle);
             allBlocks.Dispose(updateLotSizeJobHandle);
             blockOverlapQueue.Dispose(groupOverlappingBlocksJobHandle);

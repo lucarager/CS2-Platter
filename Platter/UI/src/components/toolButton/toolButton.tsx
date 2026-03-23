@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState } from "react";
 import { Button, Panel, PanelSection, Tooltip } from "cs2/ui";
 import styles from "./toolButton.module.scss";
 import { VF, VC, VT } from "../vanilla/Components";
-import { GAME_BINDINGS } from "gameBindings";
+import { GAME_BINDINGS, GAME_TRIGGERS } from "gameBindings";
 import { c } from "utils/classes";
 import { useLocalization } from "cs2/l10n";
 import { useRenderTracker, useValueWrap } from "../../debug";
@@ -114,6 +114,19 @@ export const ToolPanel = memo(function ToolPanel(props: { initialShowUpdateBadge
                             className={c(VT.checkbox.label)}
                         />
                     </div>
+                </VC.Section>
+                <VC.Section
+                    title={translate("PlatterMod.UI.SectionTitle.Discord", "CS:2 Modding Discord")}>
+                    <VC.ToolButton
+                        src={"coui://uil/Standard/ArrowRight.svg"}
+                        onSelect={() => GAME_TRIGGERS.OPEN_LINK("discord")}
+                        focusKey={VF.FOCUS_DISABLED}
+                        tooltip={translate(
+                            "PlatterMod.UI.Tooltip.Discord",
+                            "Join the CS:2 Modding Discord",
+                        )}
+                        className={c(VT.checkbox.label)}
+                    />
                 </VC.Section>
             </PanelSection>
         </Panel>
