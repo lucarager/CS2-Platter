@@ -76,10 +76,9 @@ const ToolPanel = function ToolPanel() {
     }, []);
 
     useEffect(() => {
-        // We use an interval because the vanilla item grid dynamically rebuilds
-        // DOM nodes when scrolling, which would wipe out our manual changes.
-        const interval = setInterval(() => {
-            // Find all parcel icons in the vanilla menu using their image source
+        let animationFrameId: number;
+
+        const applyStyles = () => {
             const parcelImgs = document.querySelectorAll('img[src^="coui://platter/Parcel_"]');
 
             parcelImgs.forEach(img => {
@@ -88,7 +87,6 @@ const ToolPanel = function ToolPanel() {
 
                 if (match) {
                     const size = match[1];
-                    // The vanilla item button is typically the parent container of the image
                     const button = img.closest(`.${VT.itemGrid.item.split(" ")[0]}`) || img.parentElement;
 
                     if (button) {
@@ -97,16 +95,30 @@ const ToolPanel = function ToolPanel() {
                             htmlBtn.style.opacity = "1";
                             htmlBtn.style.filter = "none";
                         } else {
-                            // Dim and grayscale parcels with no valid buildings
                             htmlBtn.style.opacity = "0.25";
                             htmlBtn.style.filter = "grayscale(100%)";
                         }
                     }
                 }
             });
-        }, 100); // 100ms prevents flickering
+        };
 
-        return () => clearInterval(interval);
+        applyStyles();
+
+        const observer = new MutationObserver(() => {
+            // Debounce the call using requestAnimationFrame.
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(() => {
+                applyStyles();
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(animationFrameId);
+        };
     }, [availableSizes]);
 
     return (
