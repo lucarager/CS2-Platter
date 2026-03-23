@@ -80,6 +80,7 @@ const ToolPanel = function ToolPanel() {
 
         const applyStyles = () => {
             const parcelImgs = document.querySelectorAll('img[src^="coui://platter/Parcel_"]');
+            const isAllValid = availableSizes.includes("ALL");
 
             parcelImgs.forEach(img => {
                 const src = img.getAttribute("src");
@@ -91,7 +92,7 @@ const ToolPanel = function ToolPanel() {
 
                     if (button) {
                         const htmlBtn = button as HTMLElement;
-                        if (availableSizes.includes(size)) {
+                        if (isAllValid || availableSizes.includes(size)) {
                             htmlBtn.style.opacity = "1";
                             htmlBtn.style.filter = "none";
                         } else {
