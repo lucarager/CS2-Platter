@@ -121,7 +121,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\CS2-LucaModsCommon\LucaModsCommon.csproj" />
+		<ProjectReference Include="..\CS2-LucaModsCommon\LucaModsCommon.csproj">
+			<Private>false</Private>
+		</ProjectReference>
 	</ItemGroup>
 
 	<!--Imports must be after PropertyGroup block-->
