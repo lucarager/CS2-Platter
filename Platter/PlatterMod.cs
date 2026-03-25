@@ -13,162 +13,63 @@ namespace Platter {
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using Colossal;
-    using Colossal.IO.AssetDatabase;
-    using Colossal.Json;
     using Colossal.Localization;
     using Colossal.Logging;
-    using Colossal.Reflection;
-    using Colossal.TestFramework;
-    using Colossal.UI;
     using Components;
-    using Extensions;
-    using L10n;
     using Game;
     using Game.Input;
     using Game.Modding;
     using Game.Prefabs;
-    using Game.SceneFlow;
     using Game.Serialization;
     using Game.Simulation;
     using Game.Tools;
-    using HarmonyLib;
+    using L10n;
+    using LucaModsCommon.Extensions;
+    using LucaModsCommon.Mod;
     using Newtonsoft.Json;
     using Settings;
     using Systems;
     using Unity.Entities;
-    using UnityEngine;
-    using Utils;
-    using StreamReader = System.IO.StreamReader;
 
     #endregion
 
     /// <summary>
     /// Mod entry point.
     /// </summary>
-    public class PlatterMod : IMod {
-        private const string HarmonyPatchId = $"{nameof(Platter)}.{nameof(PlatterMod)}";
-
-        /// <summary>
-        /// An id used for bindings between UI and C#.
-        /// </summary>
-        public const string Id = "Platter";
-
-        /// <summary>
-        /// The mod's default actionName.
-        /// </summary>
-        public const string ModName = "Platter";
-
-        /// <summary>
-        /// Harmony instance used for patching vanilla methods.
-        /// </summary>
-        private Harmony m_Harmony;
-
-        /// <summary>
-        /// Prefixed logger for module-level logging.
-        /// </summary>
-        private PrefixedLogger m_Log;
-
-        /// <summary>
-        /// Sets mod to test mode
-        /// </summary>
-        internal bool IsTestMode { get; set; } = false;
-
-        /// <summary>
-        /// Gets the mod's logger.
-        /// </summary>
-        internal ILog Log { get; private set; }
-
-        /// <summary>
-        /// Gets the instance reference.
-        /// </summary>
-        public static PlatterMod Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the mod's settings configuration.
-        /// </summary>
-        internal PlatterModSettings Settings { get; private set; }
-
-        /// <summary>
-        /// Gets the mod's informational version
-        /// </summary>
-        public static string InformationalVersion =>
-            Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
-        /// <summary>
-        /// Gets the mod's version
-        /// </summary>
-        public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
+    public class PlatterMod : LucaModBase<PlatterMod> {
+        /// <inheritdoc/>
+        public override string ModName => "Platter";
 
         /// <inheritdoc/>
-        public void OnLoad(UpdateSystem updateSystem) {
-            Instance = this;
-
-            // Initialize logger.
-            Log = LogManager
-                  .GetLogger(ModName)
-                  .SetShowsErrorsInUI(false);
-#if IS_DEBUG
-            Log = Log
-                  .SetBacktraceEnabled(true)
-                  .SetEffectiveness(Level.All);
-#endif
-            m_Log = new PrefixedLogger(nameof(PlatterMod));
-            m_Log.Info($"Loading {ModName} version {Assembly.GetExecutingAssembly().GetName().Version}");
-
-            InitializeSettings();
-#if IS_DEBUG && EXPORT_EN_US
-            GenerateLanguageFile();
-#endif
-            ModifyVabillaSubBlockSerialization(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
-            InitializeHarmonyPatches();
-
-            RegisterSystems(updateSystem);
-#if IS_DEBUG
-            AddTests();
-#endif
-
-            if (RegisterAssets()) {
-                return;
-            }
-
-            m_Log.Info($"Installed and enabled. RenderedFrame: {Time.renderedFrameCount}");
-        }
+        public override string Id => "Platter";
 
         /// <inheritdoc/>
-        public void OnDispose() {
-            m_Log.Info("OnDispose()");
-            Instance = null;
+        protected override string UiHostPrefix => "platter";
 
-            if (Settings != null) {
-                Settings.UnregisterInOptionsUI();
-                Settings = null;
-            }
-
-            TeardownHarmonyPatches();
+        /// <summary>
+        /// Gets or sets a value indicating whether the mod is in test mode.
+        /// Re-exposed from base class for cross-assembly access.
+        /// </summary>
+        internal new bool IsTestMode {
+            get => base.IsTestMode;
+            set => base.IsTestMode = value;
         }
 
         /// <summary>
-        /// Registers the mod's asset files, such as icon and model assets, with the game.
+        /// Gets the mod's typed settings (shadows base.Settings).
         /// </summary>
-        /// <returns>True if assets were successfully registered, false otherwise.</returns>
-        private bool RegisterAssets() {
-            m_Log.Debug("RegisterAssets()");
-            if (!GameManager.instance.modManager.TryGetExecutableAsset(this, out var modAsset)) {
-                m_Log.Error("Failed to get executable asset path. Exiting.");
-                return true;
-            }
+        public new PlatterModSettings Settings => (PlatterModSettings)base.Settings;
 
-            var assemblyPath = Path.GetDirectoryName(modAsset.GetMeta().path);
-            UIManager.defaultUISystem.AddHostLocation("platter", assemblyPath + "/Assets/");
-            return false;
-        }
+        /// <inheritdoc/>
+        protected override ModSetting CreateSettings(IMod mod) => new PlatterModSettings(mod);
 
-        /// <summary>
-        /// Registers all systems.
-        /// </summary>
-        /// <param name="updateSystem">The update system to register systems into.</param>
-        private void RegisterSystems(UpdateSystem updateSystem) {
-            m_Log.Debug("RegisterSystems()");
+        /// <inheritdoc/>
+        protected override IDictionarySource CreateEnUsLocalization(ModSetting settings)
+            => new EnUsConfig((PlatterModSettings)settings);
+
+        /// <inheritdoc/>
+        protected override void RegisterSystems(UpdateSystem updateSystem) {
+            ModLog.Debug("RegisterSystems()");
 
             // (De)Serializaztion
             updateSystem.UpdateBefore<PreDeserialize<P_ParcelSearchSystem>>(SystemUpdatePhase.Deserialize);
@@ -225,26 +126,38 @@ namespace Platter {
             #endif
         }
 
-        /// <summary>
-        /// Initializes mod settings, localizations, and key bindings.
-        /// </summary>
-        private void InitializeSettings() {
-            m_Log.Debug("InitializeSettings()");
-            Settings = new PlatterModSettings(this);
-            Settings.RegisterInOptionsUI();
+        /// <inheritdoc/>
+        protected override void OnAfterLoad(UpdateSystem updateSystem) {
+            ModifyVabillaSubBlockSerialization(updateSystem.World.GetOrCreateSystemManaged<SubBlockSystem>());
             RegisterCustomInputActions();
-            AssetDatabase.global.LoadSettings("Platter", Settings, new PlatterModSettings(this));
-            Settings.RegisterKeyBindings();
-            GameManager.instance.localizationManager.AddSource("en-US", new EnUsConfig(Settings));
-            LoadNonEnglishLocalizations();
         }
+
+#if IS_DEBUG && EXPORT_EN_US
+        /// <inheritdoc/>
+        protected override void GenerateLanguageFile() {
+            ModLog.Debug("GenerateLanguageFile()");
+            var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
+                                                     .ToDictionary(pair => pair.Key, pair => pair.Value);
+            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
+            try {
+                var path       = GetThisFilePath();
+                var directory  = Path.GetDirectoryName(path);
+                var exportPath = $@"{directory}/L10n/lang/en-US.json";
+                File.WriteAllText(exportPath, str);
+            } catch (Exception ex) {
+                ModLog.Error(ex.ToString());
+            }
+        }
+
+        private static string GetThisFilePath([CallerFilePath] string path = null) { return path; }
+#endif
 
         /// <summary>
         /// Registers custom input actions for parcel manipulation (depth, width, and setback adjustments).
         /// This is needed because the modding API doesn't allow creating mousewheel-based shortcuts directly.
         /// </summary>
         private void RegisterCustomInputActions() {
-            m_Log.Debug("RegisterCustomInputActions()");
+            ModLog.Debug("RegisterCustomInputActions()");
 
             RegisterCustomScrollAction(
                 "BlockDepthAction",
@@ -282,7 +195,7 @@ namespace Platter {
         private void RegisterCustomScrollAction(string name, Tuple<string, string>[] modifiers) {
             var preciseRotation = InputManager.instance.FindAction("Tool", "Precise Rotation");
             if (preciseRotation == null) {
-                m_Log.Error("RegisterCustomInputActions() -- Could not find Precise Rotation action");
+                ModLog.Error("RegisterCustomInputActions() -- Could not find Precise Rotation action");
                 return;
             }
 
@@ -324,131 +237,31 @@ namespace Platter {
 
             // Use reflection extension to call the internal AddActions instance method
             if (!InputManager.instance.TryInvokeMethod("AddActions", out _, new[] { blockWidthCustomAction })) {
-                m_Log.Error("RegisterCustomInputActions() -- Could not find or invoke InputManager.AddActions method");
+                ModLog.Error("RegisterCustomInputActions() -- Could not find or invoke InputManager.AddActions method");
                 return;
             }
 
-            m_Log.Debug($"RegisterCustomInputActions() -- Registered custom action {name}");
-        }
-
-        /// <summary>
-        /// Initializes Harmony patches for the assembly and logs all patched methods.
-        /// </summary>
-        private void InitializeHarmonyPatches() {
-            m_Log.Debug("InitializeHarmonyPatches()");
-
-            m_Harmony = new Harmony(HarmonyPatchId);
-            m_Harmony.PatchAll(typeof(PlatterMod).Assembly);
-            var patchedMethods = m_Harmony.GetPatchedMethods().ToArray();
-
-            foreach (var patchedMethod in patchedMethods) {
-                m_Log.Debug($"InitializeHarmonyPatches() -- Patched method: {patchedMethod.Module.ScopeName}:{patchedMethod.Name}");
-            }
-        }
-
-        /// <summary>
-        /// Removes all Harmony patches applied by this mod.
-        /// </summary>
-        private void TeardownHarmonyPatches() {
-            m_Log.Debug("TeardownHarmonyPatches()");
-            m_Harmony.UnpatchAll(HarmonyPatchId);
-        }
-
-        /// <summary>
-        /// Generates an en-US localization JSON file from the current localization dictionary.
-        /// Only executed in debug builds with EXPORT_EN_US compiler directive.
-        /// </summary>
-        private void GenerateLanguageFile() {
-            m_Log.Debug("GenerateLanguageFile()");
-            var localeDict = new EnUsConfig(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
-                                                     .ToDictionary(pair => pair.Key, pair => pair.Value);
-            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
-            try {
-                var path       = GetThisFilePath();
-                var directory  = Path.GetDirectoryName(path);
-                var exportPath = $@"{directory}/L10n/lang/en-US.json";
-                File.WriteAllText(exportPath, str);
-            } catch (Exception ex) {
-                m_Log.Error(ex.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Gets the file path of the calling source file using the CallerFilePath attribute.
-        /// </summary>
-        /// <param name="path">The path provided by the compiler via CallerFilePath attribute.</param>
-        /// <returns>The file path of the calling code.</returns>
-        private static string GetThisFilePath([CallerFilePath] string path = null) { return path; }
-
-        /// <summary>
-        /// Adds test scenarios from the assembly to the test framework.
-        /// </summary>
-        private void AddTests() {
-            m_Log.Info("AddTests()");
-
-            var log = LogManager.GetLogger(ModName);
-
-            var field = typeof(TestScenarioSystem).GetField("m_Scenarios", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (field == null) {
-                log.Error("AddTests() -- Could not find m_Scenarios");
-                return;
-            }
-
-            var scenarios = (Dictionary<string, TestScenarioSystem.Scenario>)field.GetValue(TestScenarioSystem.instance);
-
-            foreach (var type in GetTests()) {
-                if (!type.IsClass || type.IsAbstract || type.IsInterface || !type.TryGetAttribute(
-                        out TestDescriptorAttribute testDescriptorAttribute)) {
-                    continue;
-                }
-
-                log.Debug($"AddTests() -- {testDescriptorAttribute.description}");
-
-                scenarios.Add(
-                    testDescriptorAttribute.description,
-                    new TestScenarioSystem.Scenario
-                    {
-                        category  = testDescriptorAttribute.category,
-                        testPhase = testDescriptorAttribute.testPhase,
-                        test      = type,
-                        disabled  = testDescriptorAttribute.disabled,
-                    });
-            }
-
-            scenarios = TestScenarioSystem.SortScenarios(scenarios);
-
-            field.SetValue(TestScenarioSystem.instance, scenarios);
-        }
-
-        /// <summary>
-        /// Retrieves all test types from the assembly that implement the TestScenario interface.
-        /// </summary>
-        /// <returns>An enumerable collection of test scenario types.</returns>
-        private static IEnumerable<Type> GetTests() {
-            return from t in Assembly.GetExecutingAssembly().GetTypes()
-                where typeof(TestScenario).IsAssignableFrom(t)
-                select t;
+            ModLog.Debug($"RegisterCustomInputActions() -- Registered custom action {name}");
         }
 
         /// <summary>
         /// Modifies the vanilla SubBlockSystem's entity query to exclude parcels from serialization.
         /// </summary>
         /// <param name="originalSystem">The SubBlockSystem to modify.</param>
-        private static void ModifyVabillaSubBlockSerialization(ComponentSystemBase originalSystem) {
-            var log = LogManager.GetLogger(ModName);
-            log.Debug("ModifyVabillaSubBlockSerialization()");
+        private void ModifyVabillaSubBlockSerialization(ComponentSystemBase originalSystem) {
+            ModLog.Debug("ModifyVabillaSubBlockSerialization()");
 
             // get original system's EntityQuery
             var queryField = typeof(SubBlockSystem).GetField("m_Query", BindingFlags.Instance | BindingFlags.NonPublic);
             if (queryField == null) {
-                log.Error("ModifyVabillaSubBlockSerialization() -- Could not find m_Query for compatibility patching");
+                ModLog.Error("ModifyVabillaSubBlockSerialization() -- Could not find m_Query for compatibility patching");
                 return;
             }
 
             var originalQuery = (EntityQuery)queryField.GetValue(originalSystem);
 
             if (originalQuery.GetHashCode() == 0) {
-                log.Error("ModifyVabillaSubBlockSerialization() -- SubBlockSystem was not initialized!");
+                ModLog.Error("ModifyVabillaSubBlockSerialization() -- SubBlockSystem was not initialized!");
             }
 
             var originalQueryDescs = originalQuery.GetEntityQueryDescs();
@@ -480,45 +293,7 @@ namespace Platter {
                 originalSystem.RequireForUpdate(modifiedQuery);
             }
 
-            log.Debug("ModifyVabillaSubBlockSerialization() -- Patching complete.");
-        }
-
-        /// <summary>
-        /// Loads non-English localization files from embedded resources and registers them with the localization manager.
-        /// </summary>
-        private void LoadNonEnglishLocalizations() {
-            var thisAssembly  = Assembly.GetExecutingAssembly();
-            var resourceNames = thisAssembly.GetManifestResourceNames();
-
-            try {
-                m_Log.Debug("Reading localizations");
-
-                foreach (var localeID in GameManager.instance.localizationManager.GetSupportedLocales()) {
-                    var resourceName = $"Platter.L10n.lang.{localeID}.json";
-                    if (resourceNames.Contains(resourceName)) {
-                        m_Log.Debug($"Found localization file {resourceName}");
-                        try {
-                            m_Log.Debug($"Reading embedded translation file {resourceName}");
-
-                            // Read embedded file.
-                            using StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
-                            {
-                                var entireFile   = reader.ReadToEnd();
-                                var varient      = JSON.Load(entireFile);
-                                var translations = varient.Make<Dictionary<string, string>>();
-                                GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
-                            }
-                        } catch (Exception e) {
-                            // Don't let a single failure stop us.
-                            m_Log.Error($"Exception reading localization from embedded file {resourceName}: {e}");
-                        }
-                    } else {
-                        m_Log.Debug($"Did not find localization file {resourceName}");
-                    }
-                }
-            } catch (Exception e) {
-                m_Log.Error($"Exception reading embedded settings localization files {e}");
-            }
+            ModLog.Debug("ModifyVabillaSubBlockSerialization() -- Patching complete.");
         }
     }
 }

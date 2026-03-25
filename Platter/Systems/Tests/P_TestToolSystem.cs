@@ -18,7 +18,7 @@ namespace Platter.Systems {
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Mathematics;
-    using Utils;
+    using LucaModsCommon.Utils;
 
     #endregion
 
@@ -47,7 +47,7 @@ namespace Platter.Systems {
         protected override void OnCreate() {
             base.OnCreate();
 
-            m_Log = new PrefixedLogger(nameof(P_TestToolSystem));
+            m_Log = new PrefixedLogger(nameof(P_TestToolSystem), PlatterMod.Instance.Log);
 
             m_TempQuery = SystemAPI.QueryBuilder().WithAll<Temp>().Build();
             m_CreatedEntityQuery = SystemAPI.QueryBuilder()

@@ -20,7 +20,7 @@ namespace Platter.Tests {
         private int  passedTests;
 
         public TestRunner(ILog log) {
-            m_Log           = LogManager.GetLogger(PlatterMod.ModName + "Tests");
+            m_Log           = LogManager.GetLogger(PlatterMod.Instance.ModName + "Tests");
             describeCounter = 0;
             itCounter       = 0;
             passedTests     = 0;

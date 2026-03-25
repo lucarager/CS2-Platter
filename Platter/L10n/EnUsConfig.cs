@@ -28,8 +28,8 @@ namespace Platter.L10n {
 
             m_Localization = new Dictionary<string, string>
             {
-                { m_Setting.GetSettingsLocaleID(), PlatterMod.Id },
-                { m_Setting.GetBindingMapLocaleID(), PlatterMod.Id },
+                { m_Setting.GetSettingsLocaleID(), PlatterMod.Instance.Id },
+                { m_Setting.GetBindingMapLocaleID(), PlatterMod.Instance.Id },
 
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(PS.GeneralTab), "General" },

@@ -10,7 +10,7 @@ namespace Platter.Systems {
     using Colossal.Entities;
     using Colossal.Mathematics;
     using Components;
-    using Extensions;
+    using LucaModsCommon.Extensions;
     using Game;
     using Game.Common;
     using Game.Net;

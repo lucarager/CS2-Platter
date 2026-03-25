@@ -20,6 +20,7 @@ namespace Platter.Systems {
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using LucaModsCommon.Utils;
     using Utils;
     using GeometryFlags = Game.Objects.GeometryFlags;
 
@@ -64,7 +65,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_ParcelSearchSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelSearchSystem), PlatterMod.Instance.Log);
             m_Log.Debug("OnCreate()");
 
             // Systems

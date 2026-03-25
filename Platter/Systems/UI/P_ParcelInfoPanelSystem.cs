@@ -10,11 +10,11 @@ namespace Platter.Systems {
     using Colossal.Entities;
     using Colossal.UI.Binding;
     using Components;
-    using Extensions;
+    using LucaModsCommon.Extensions;
+    using LucaModsCommon.Utils;
     using Game.Prefabs;
     using Game.Tools;
     using Unity.Entities;
-    using Utils;
 
     #endregion
 
@@ -22,6 +22,9 @@ namespace Platter.Systems {
     /// Addes toggles to selected info panel for entites that can receive Anarchy mod components.
     /// </summary>
     public partial class P_ParcelInfoPanelSystem : ExtendedInfoSectionBase {
+        /// <inheritdoc/>
+        protected override string ModId => PlatterMod.Instance.Id;
+
         private ObjectToolSystem           m_ObjectToolSystem;
         private P_ZoneCacheSystem          m_ZoneCacheSystem;
         private PrefixedLogger             m_Log;
@@ -47,7 +50,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_ParcelInfoPanelSystem));
+            m_Log = new PrefixedLogger(nameof(P_ParcelInfoPanelSystem), PlatterMod.Instance.Log);
             m_Log.Debug("OnCreate()");
 
             // Add section to UI System

@@ -16,7 +16,7 @@ namespace Platter.Patches {
     using HarmonyLib;
     using Platter.Components;
     using Unity.Entities;
-    using Utils;
+    using LucaModsCommon.Utils;
     using Game.Common;
 
     #endregion
@@ -27,7 +27,8 @@ namespace Platter.Patches {
     /// Should markers be already enabled, no filtering is done, this should ensure compatibility with other mods or base game changes.
     /// </summary>
     internal class MarkerPatches {
-        private static readonly PrefixedLogger s_Log = new PrefixedLogger(nameof(MarkerPatches));
+        private static PrefixedLogger s_Log;
+        private static PrefixedLogger Log => s_Log ??= new PrefixedLogger(nameof(MarkerPatches), PlatterMod.Instance.Log);
         
         [ThreadStatic]
         private static bool m_BulldozeAddedMarkersFlag;

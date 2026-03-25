@@ -7,7 +7,7 @@ namespace Platter.Systems {
     #region Using Statements
 
     using Game;
-    using Utils;
+    using LucaModsCommon.Utils;
 
     #endregion
 
@@ -17,7 +17,7 @@ namespace Platter.Systems {
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
-            m_Log = new PrefixedLogger(GetType().Name);
+            m_Log = new PrefixedLogger(GetType().Name, PlatterMod.Instance.Log);
             m_Log.Debug("OnCreate()");
         }
     }

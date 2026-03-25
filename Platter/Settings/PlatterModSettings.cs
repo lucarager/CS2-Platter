@@ -65,10 +65,10 @@ namespace Platter.Settings {
         public bool EnableOverlayForTools { get; set; } = true;
 
         [SettingsUISection(GeneralTab, AboutGroup)]
-        public string InformationalVersion => PlatterMod.InformationalVersion;
+        public string InformationalVersion => PlatterMod.Instance.InformationalVersion;
 
         [SettingsUISection(GeneralTab, AboutGroup)]
-        public string Version => PlatterMod.Version;
+        public string Version => PlatterMod.Instance.Version;
 
         [SettingsUISection(GeneralTab, AboutGroup)]
         public string Credits => Credit;

@@ -11,7 +11,8 @@ namespace Platter.Systems {
     using System.Linq;
     using System.Reflection;
     using Colossal.Serialization.Entities;
-    using Extensions;
+    using LucaModsCommon.Extensions;
+    using LucaModsCommon.Utils;
     using Game;
     using Game.Input;
     using Game.Prefabs;
@@ -32,6 +33,9 @@ namespace Platter.Systems {
     /// System responsible for UI Bindings & Data Handling.
     /// </summary>
     public partial class P_UISystem : ExtendedUISystemBase {
+        /// <inheritdoc/>
+        protected override string ModId => PlatterMod.Instance.Id;
+
         public enum PlatterToolMode {
             Plop     = 0,
             RoadEdge = 1,
@@ -96,7 +100,7 @@ namespace Platter.Systems {
             base.OnCreate();
 
             // Logger
-            m_Log = new PrefixedLogger(nameof(P_UISystem));
+            m_Log = new PrefixedLogger(nameof(P_UISystem), PlatterMod.Instance.Log);
             m_Log.Debug("OnCreate()");
 
             // Systems
