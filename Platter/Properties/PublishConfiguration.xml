@@ -84,47 +84,14 @@ Donations are incredibly kind and appreciated. If you'd like to show appreciatio
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
   <!--Version of the mod-->
-  <ModVersion Value="1.5.1" />
+  <ModVersion Value="1.5.2" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Version 1.5.1
-(Same as 1.5.0, due to a publishing error)
-
-**New parcel sizes**
-- Added Narrow (1 cell wide) parcels
-- Added Extra-Wide (7,8 cells wide) parcels 
-
-**Snapping improvements**
-- Revamped snapping and added snap support for start and end of line tool
-- Refactored the way snapping injects itself into the base game
-- Improved logic and tweaked parameters for various snapping options, especially when multiple options are used together.
-- Improved the way platter let's the base game know a snap has occurred, which for example should remove the "rotation" options from view when snapped.
-
-**Notable Bug Fixes**
-- Fixed: Unzoned parcel cells would be "eaten" by the vanilla grid in some cases
-- Fixed: Game would crash when drawing roads in some cases
-- Fixed: Parcels would connect to unzoned RoadBuilder roads, causing issues
-- Fixed: Relocate and Picker would not work correctly when used with Parcels 
-- Fixed: Parcels would cause some buildings to lose props and trees when growing
-- Fixed: Zone indexes would get out of sync when adding or removing zones between save loads, causing incorrect parcel colors and prezoning behavior
-
-**Other notable improvements**
-- Improved the building count tooltip accuracy and clarity
-- Adds keyboard-based controls for parcel sizes
-- Adjusted look and feel of the parcel overlay
-- More reliably detect corner lots when placing parcels
-- Improve handling of vanilla bulldoze and select 
-- Significantly improved performance of the parcel overlay
-- Improved performance when caching and delivering data to the UI, especially for the pre-zone panel
-- Improved the way the road connection icon is added and removed
-- Improved performance of internal prefab selection mechanisms by caching references to important prefabs in memory
-- Numerous performance improvements to core systems/queries
-- Updated translations
-- Added a colored outline to unzoned Platter cells to distinguish them from vanilla unzoned cells
-- Fixed version mismatch between PDXMods version and binary version, which caused some confusion and issues with mod updates.</ChangeLog>
+  <ChangeLog># Version 1.5.2
+- Fix roadside snapping not working completely when snapping to roundabouts or cul-de-sacs.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
   <ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
