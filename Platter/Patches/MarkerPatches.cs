@@ -171,34 +171,25 @@ namespace Platter.Patches {
             ref bool result,
             ref ControlPoint controlPoint,
             bool weAddedMarkersFlag) {
-            // If no result, nothing to filter.
-            if (!result) {
+            if (!result || !weAddedMarkersFlag) {
                 return;
             }
 
-            // If we didn't add the Markers flag, don't filter anything.
-            if (!weAddedMarkersFlag) {
-                return;
-            }
+            var toolRaycastSystem = instance.World.GetOrCreateSystemManaged<ToolRaycastSystem>();
+            toolRaycastSystem.GetRaycastResult(out var raycastResult);
 
             var entityManager = instance.EntityManager;
-            var entity = controlPoint.m_OriginalEntity;
-            var isParcel = entityManager.HasComponent<Parcel>(entity);
+            var hitEntity = raycastResult.m_Hit.m_HitEntity;
 
-            // It's a parcel; allow it.
-            if (isParcel) {
+            if (entityManager.HasComponent<Parcel>(hitEntity)) {
                 return;
             }
 
-            // Not a parcel; check if it's a marker and block it if so.
-            if (entityManager.TryGetComponent(entity, out PrefabRef prefabRef) &&
-                entityManager.TryGetComponent(prefabRef.m_Prefab, out ObjectGeometryData geometryData) &&
-                (geometryData.m_Flags & GeometryFlags.Marker) != 0) {
+            if (IsMarkerEntity(entityManager, hitEntity) || IsMarkerEntity(entityManager, raycastResult.m_Owner)) {
                 result = false;
                 controlPoint = default;
             }
         }
-
 
         /// <summary>
         /// Common filtering logic for raycast results.
@@ -209,31 +200,33 @@ namespace Platter.Patches {
             ref bool result,
             ref Entity entity,
             bool weAddedMarkersFlag) {
-            // If no result, nothing to filter.
-            if (!result) {
-                return;
-            }
-
-            // If we didn't add the Markers flag, don't filter anything.
-            if (!weAddedMarkersFlag) {
+            if (!result || !weAddedMarkersFlag) {
                 return;
             }
 
             var entityManager = instance.EntityManager;
-            var isParcel = entityManager.HasComponent<Parcel>(entity);
 
-            // It's a parcel; allow it.
-            if (isParcel) {
+            if (entityManager.HasComponent<Parcel>(entity)) {
                 return;
             }
 
-            // Not a parcel; check if it's a marker and block it if so.
-            if (entityManager.TryGetComponent(entity, out PrefabRef prefabRef) &&
-                entityManager.TryGetComponent(prefabRef.m_Prefab, out ObjectGeometryData geometryData) &&
-                (geometryData.m_Flags & GeometryFlags.Marker) != 0) {
+            if (IsMarkerEntity(entityManager, entity)) {
                 result = false;
                 entity = Entity.Null;
             }
+        }
+
+        /// <summary>
+        /// Returns true if the entity is a marker, either via <see cref="ObjectGeometryData"/> flags or a <see cref="Game.Net.Marker"/> component.
+        /// </summary>
+        private static bool IsMarkerEntity(EntityManager entityManager, Entity entity) {
+            if (entityManager.HasComponent<Game.Net.Marker>(entity)) {
+                return true;
+            }
+
+            return entityManager.TryGetComponent(entity, out PrefabRef prefabRef) &&
+                   entityManager.TryGetComponent(prefabRef.m_Prefab, out ObjectGeometryData geometryData) &&
+                   (geometryData.m_Flags & GeometryFlags.Marker) != 0;
         }
     }
 }
