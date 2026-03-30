@@ -1,14 +1,13 @@
 # Platter: Custom Zoning Overhaul
 
-**Break free from the grid.**
-
-Platter completely reworks zoning in Cities: Skylines 2. It sits right between vanilla zoning and manual building plopping, giving you the control to create realistic neighborhoods, fill awkward gaps, and zone perfectly on curved roads without fighting the grid.
+Platter completely reworks zoning in Cities: Skylines 2. 
+It sits right between vanilla zoning and manual building plopping, giving you the control to create realistic neighborhoods, 
+fill awkward gaps, and zone perfectly on curved roads without fighting the grid.
 
 ### Key Features
-* **Manual Zoning:** Place "Parcels" exactly where you want them. No more relying on the grid.
-* **Precision Snapping:** Includes fully custom snapping options to align parcels perfectly and create exact layouts.
+* **Ploppable Zoning:** Place "Parcels" containing zone cells exactly where you want them.
+* **Precision Snapping:** Includes fully custom snapping options to align parcels perfectly.
 * **Custom Setbacks:** Place zones back from the road to create front yards or widen roads later without demolition.
-* **Curved Road Support:** Finally zone seamlessly along curves.
 * **Vanilla Simulation:** Parcels use the game's native logic for zoning. Buildings spawn based on actual demand, land value, and desirability.
 
 ### How to Use
@@ -16,23 +15,18 @@ Platter completely reworks zoning in Cities: Skylines 2. It sits right between v
 2. Select a parcel size and, optionally, your desired zone type.
 3. Click to place the parcel manually — anywhere, at any angle.
 
-### Alpha/Experimental Warning
-**Platter is currently in ALPHA.**
+### Experimental Warning
 This mod is experimental. While it is considered stable for testing, unexpected issues may occur.
 * **Backup your save** before using this mod.
 * Platter can be safely removed from a save by using the "Uninstall" button in the Mod Settings page.
 
 ### Support and Troubleshooting
-If you encounter issues, please head to the [Discord server](https://discord.gg/C2XQUYHwuV) for support.
+If you encounter issues, please head to the [CS2 Modding Discord](https://discord.gg/C2XQUYHwuV) for support.
 * Please use **Skyve** to share your logs and playset. This is essential for troubleshooting. Sharing your save is also extremely helpful.
 * Bug reports without logs are difficult to fix!
 
 ### Compatibility
-* Fully compatible with major mods such as **Move It**, **Zone Reorganizer**, **Advanced Line Tool**, etc.
-
-### Known Issues and FAQ
-* **Grid Overrides:** The vanilla grid may sometimes override the Parcel grid. Investigation and fix is underway.
-* **Snapping Quirks:** While custom snapping is included, snapping may sometimes act in unexpected ways depending on the angle. Improvements are planned.
+* Fully compatible with major mods such as **Move It**, **RoadBuilder**, **Zone Reorganizer**, **Advanced Line Tool**, etc.
 
 ### Translations
 I am looking for volunteers to help translate the mod into other languages.
@@ -40,7 +34,8 @@ I am looking for volunteers to help translate the mod into other languages.
 * You can also contribute directly via [CrowdIn](https://crowdin.com/project/platter-cs2).
 
 ### Donations
-Donations are incredibly kind and appreciated. If you'd like to show appreciation and help me continue developing mods, the link to Ko-fi is in the sidebar!
+If you'd like to show appreciation and help me continue developing mods, you may support me on [Ko-fi](https://ko-fi.com/lucadevdesign)!
+Donations are incredibly kind and appreciated.
 
 ### Credits
 **Creator**
