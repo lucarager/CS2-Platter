@@ -102,8 +102,6 @@ namespace Platter.Systems {
 
         /// <inheritdoc/>
         protected override void OnUpdate() {
-            // todo convert to harmony patch
-
             // Handle vanilla line tool when not in individual plop mode
             if (m_ObjectToolSystem.actualMode is ObjectToolSystem.Mode.Create ||
                 m_ObjectToolSystem.prefab is not ParcelPlaceholderPrefab parcelPrefab) {

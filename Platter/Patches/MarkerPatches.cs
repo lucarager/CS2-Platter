@@ -32,8 +32,8 @@ namespace Platter.Patches {
         [ThreadStatic]
         private static bool m_BulldozeAddedMarkersFlag;
         
-        [ThreadStatic]
-        private static bool m_DefaultToolAddedMarkersFlag;
+        //[ThreadStatic]
+        //private static bool m_DefaultToolAddedMarkersFlag;
 
         #region BulldozeToolSystem Patches
 
@@ -43,6 +43,8 @@ namespace Platter.Patches {
         /// </summary>
         [HarmonyPatch(typeof(BulldozeToolSystem))]
         [HarmonyPatch("InitializeRaycast")]
+        [HarmonyAfter("Mods_Yenyang_Better_Bulldozer")] // Ensure we run after BB which adds marker flags
+        [HarmonyPriority(Priority.Low)] // Generally, try to run last after other patches
         private class BulldozeToolSystem_InitializeRaycast {
             private static void Postfix(BulldozeToolSystem __instance) {
                 var toolRaycastSystem = BulldozeToolSystemAccessor.GetToolRaycastSystem(__instance);
@@ -95,72 +97,72 @@ namespace Platter.Patches {
 
         #endregion
 
-        #region DefaultToolSystem Patches
+        //#region DefaultToolSystem Patches
 
-        /// <summary>
-        /// Patch DefaultToolSystem.InitializeRaycast to enable marker raycasting for parcels.
-        /// Tracks whether we added the Markers flag vs the base game adding it.
-        /// </summary>
-        [HarmonyPatch(typeof(DefaultToolSystem))]
-        [HarmonyPatch("InitializeRaycast")]
-        private class DefaultToolSystem_InitializeRaycast {
-            private static void Postfix(DefaultToolSystem __instance) {
-                var toolRaycastSystem = DefaultToolSystemAccessor.GetToolRaycastSystem(__instance);
-                if (toolRaycastSystem == null) {
-                    return;
-                }
+        ///// <summary>
+        ///// Patch DefaultToolSystem.InitializeRaycast to enable marker raycasting for parcels.
+        ///// Tracks whether we added the Markers flag vs the base game adding it.
+        ///// </summary>
+        //[HarmonyPatch(typeof(DefaultToolSystem))]
+        //[HarmonyPatch("InitializeRaycast")]
+        //private class DefaultToolSystem_InitializeRaycast {
+        //    private static void Postfix(DefaultToolSystem __instance) {
+        //        var toolRaycastSystem = DefaultToolSystemAccessor.GetToolRaycastSystem(__instance);
+        //        if (toolRaycastSystem == null) {
+        //            return;
+        //        }
 
-                var hadMarkers = (toolRaycastSystem.raycastFlags & RaycastFlags.Markers) != 0;
+        //        var hadMarkers = (toolRaycastSystem.raycastFlags & RaycastFlags.Markers) != 0;
 
-                if (!hadMarkers) {
-                    toolRaycastSystem.raycastFlags |= RaycastFlags.Markers;
-                    m_DefaultToolAddedMarkersFlag = true;
-                } else {
-                    m_DefaultToolAddedMarkersFlag = false;
-                }
-            }
-        }
+        //        if (!hadMarkers) {
+        //            toolRaycastSystem.raycastFlags |= RaycastFlags.Markers;
+        //            m_DefaultToolAddedMarkersFlag = true;
+        //        } else {
+        //            m_DefaultToolAddedMarkersFlag = false;
+        //        }
+        //    }
+        //}
 
-        /// <summary>
-        /// Patch DefaultToolSystem.GetRaycastResult (overload)
-        /// </summary>
-        [HarmonyPatch(typeof(ToolBaseSystem))]
-        [HarmonyPatch("GetRaycastResult")]
-        [HarmonyPatch(new Type[] { typeof(Entity), typeof(RaycastHit) }, new ArgumentType[] { ArgumentType.Ref, ArgumentType.Ref })]
-        private class ToolBaseSystem_GetRaycastResult1 {
-            private static void Postfix(
-                ToolBaseSystem __instance,
-                ref bool __result,
-                ref Entity entity,
-                ref RaycastHit hit) {
-                if (__instance is not DefaultToolSystem) {
-                    return;
-                }
-                FilterMarkerRaycastResult(__instance, ref __result, ref entity, m_DefaultToolAddedMarkersFlag);
-            }
-        }
+        ///// <summary>
+        ///// Patch DefaultToolSystem.GetRaycastResult (overload)
+        ///// </summary>
+        //[HarmonyPatch(typeof(ToolBaseSystem))]
+        //[HarmonyPatch("GetRaycastResult")]
+        //[HarmonyPatch(new Type[] { typeof(Entity), typeof(RaycastHit) }, new ArgumentType[] { ArgumentType.Ref, ArgumentType.Ref })]
+        //private class ToolBaseSystem_GetRaycastResult1 {
+        //    private static void Postfix(
+        //        ToolBaseSystem __instance,
+        //        ref bool __result,
+        //        ref Entity entity,
+        //        ref RaycastHit hit) {
+        //        if (__instance is not DefaultToolSystem) {
+        //            return;
+        //        }
+        //        FilterMarkerRaycastResult(__instance, ref __result, ref entity, m_DefaultToolAddedMarkersFlag);
+        //    }
+        //}
 
-        /// <summary>
-        /// Patch ToolBaseSystem.GetRaycastResult (overload)
-        /// </summary>
-        [HarmonyPatch(typeof(ToolBaseSystem))]
-        [HarmonyPatch("GetRaycastResult")]
-        [HarmonyPatch(new Type[] { typeof(Entity), typeof(RaycastHit), typeof(bool) }, new ArgumentType[] { ArgumentType.Ref, ArgumentType.Ref, ArgumentType.Ref })]
-        private class ToolBaseSystem_GetRaycastResult2 {
-            private static void Postfix(
-                ToolBaseSystem __instance,
-                ref bool __result,
-                ref Entity entity,
-                ref RaycastHit hit,
-                ref bool forceUpdate) {
-                if (__instance is not DefaultToolSystem) {
-                    return;
-                }
-                FilterMarkerRaycastResult(__instance, ref __result, ref entity, m_DefaultToolAddedMarkersFlag);
-            }
-        }
+        ///// <summary>
+        ///// Patch ToolBaseSystem.GetRaycastResult (overload)
+        ///// </summary>
+        //[HarmonyPatch(typeof(ToolBaseSystem))]
+        //[HarmonyPatch("GetRaycastResult")]
+        //[HarmonyPatch(new Type[] { typeof(Entity), typeof(RaycastHit), typeof(bool) }, new ArgumentType[] { ArgumentType.Ref, ArgumentType.Ref, ArgumentType.Ref })]
+        //private class ToolBaseSystem_GetRaycastResult2 {
+        //    private static void Postfix(
+        //        ToolBaseSystem __instance,
+        //        ref bool __result,
+        //        ref Entity entity,
+        //        ref RaycastHit hit,
+        //        ref bool forceUpdate) {
+        //        if (__instance is not DefaultToolSystem) {
+        //            return;
+        //        }
+        //        FilterMarkerRaycastResult(__instance, ref __result, ref entity, m_DefaultToolAddedMarkersFlag);
+        //    }
+        //}
 
-        #endregion
+        //#endregion
 
         /// <summary>
         /// Common filtering logic for raycast results.
@@ -171,6 +173,7 @@ namespace Platter.Patches {
             ref bool result,
             ref ControlPoint controlPoint,
             bool weAddedMarkersFlag) {
+            // Exit early if raycast missed or we didn't add the Markers flag, no filtering needed
             if (!result || !weAddedMarkersFlag) {
                 return;
             }
@@ -191,30 +194,30 @@ namespace Platter.Patches {
             }
         }
 
-        /// <summary>
-        /// Common filtering logic for raycast results.
-        /// Blocks non-parcel markers when we added the Markers flag.
-        /// </summary>
-        private static void FilterMarkerRaycastResult(
-            ToolBaseSystem instance,
-            ref bool result,
-            ref Entity entity,
-            bool weAddedMarkersFlag) {
-            if (!result || !weAddedMarkersFlag) {
-                return;
-            }
+        ///// <summary>
+        ///// Common filtering logic for raycast results.
+        ///// Blocks non-parcel markers when we added the Markers flag.
+        ///// </summary>
+        //private static void FilterMarkerRaycastResult(
+        //    ToolBaseSystem instance,
+        //    ref bool result,
+        //    ref Entity entity,
+        //    bool weAddedMarkersFlag) {
+        //    if (!result || !weAddedMarkersFlag) {
+        //        return;
+        //    }
 
-            var entityManager = instance.EntityManager;
+        //    var entityManager = instance.EntityManager;
 
-            if (entityManager.HasComponent<Parcel>(entity)) {
-                return;
-            }
+        //    if (entityManager.HasComponent<Parcel>(entity)) {
+        //        return;
+        //    }
 
-            if (IsMarkerEntity(entityManager, entity)) {
-                result = false;
-                entity = Entity.Null;
-            }
-        }
+        //    if (IsMarkerEntity(entityManager, entity)) {
+        //        result = false;
+        //        entity = Entity.Null;
+        //    }
+        //}
 
         /// <summary>
         /// Returns true if the entity is a marker, either via <see cref="ObjectGeometryData"/> flags or a <see cref="Game.Net.Marker"/> component.
