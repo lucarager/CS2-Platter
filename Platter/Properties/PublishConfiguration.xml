@@ -79,15 +79,14 @@ Donations are incredibly kind and appreciated.
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
   <!--Version of the mod-->
-  <ModVersion Value="1.5.5" />
+  <ModVersion Value="1.5.6" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Version 1.5.5
-Fix compatibility with Better Bulldozer - Invisible Networks can now be bulldozed again.
-This was caused by a comflicting harmony patch. Made the Platter patch run last to ensure compatibility with other mods.</ChangeLog>
+  <ChangeLog># Version 1.5.6
+Update translation files. Thank you volunteer translators!</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
   <ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
