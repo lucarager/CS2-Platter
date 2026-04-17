@@ -47,6 +47,7 @@ export const PlatterToolOptionsPanel: ModuleRegistryExtend = (Component: any) =>
 
 const ToolPanel = function ToolPanel() {
     useRenderTracker("ToolPanel/ToolPanel");
+    const availableSizes = useValueWrap(GAME_BINDINGS.AVAILABLE_LOT_SIZES.binding, "AvailableSizes") || [];
     const stylesheet = useRef(document.createElement("style"));
     stylesheet.current.type = "text/css";
     stylesheet.current.innerHTML = `
@@ -73,6 +74,53 @@ const ToolPanel = function ToolPanel() {
             }
         };
     }, []);
+
+    useEffect(() => {
+        let animationFrameId: number;
+
+        const applyStyles = () => {
+            const parcelImgs = document.querySelectorAll('img[src^="coui://platter/Parcel_"]');
+            const isAllValid = availableSizes.includes("ALL");
+
+            parcelImgs.forEach(img => {
+                const src = img.getAttribute("src");
+                const match = src?.match(/Parcel_(\d+x\d+)\.svg/);
+
+                if (match) {
+                    const size = match[1];
+                    const button = img.closest(`.${VT.itemGrid.item.split(" ")[0]}`) || img.parentElement;
+
+                    if (button) {
+                        const htmlBtn = button as HTMLElement;
+                        if (isAllValid || availableSizes.includes(size)) {
+                            htmlBtn.style.opacity = "1";
+                            htmlBtn.style.filter = "none";
+                        } else {
+                            htmlBtn.style.opacity = "0.25";
+                            htmlBtn.style.filter = "grayscale(100%)";
+                        }
+                    }
+                }
+            });
+        };
+
+        applyStyles();
+
+        const observer = new MutationObserver(() => {
+            // Debounce the call using requestAnimationFrame.
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(() => {
+                applyStyles();
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [availableSizes]);
 
     return (
         <FocusDisabled>

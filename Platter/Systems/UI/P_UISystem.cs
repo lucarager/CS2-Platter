@@ -10,6 +10,7 @@ namespace Platter.Systems {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Colossal.Entities;
     using Colossal.Serialization.Entities;
     using Extensions;
     using Game;
@@ -19,6 +20,8 @@ namespace Platter.Systems {
     using Game.UI.InGame;
     using Game.Zones;
     using Settings;
+    using Unity.Collections;
+    using Unity.Entities;
     using Unity.Mathematics;
     using Utils;
     using static P_SnapSystem;
@@ -53,12 +56,15 @@ namespace Platter.Systems {
         private ProxyAction                      m_SetbackAction;
         private ProxyAction                      m_ToggleRender;
         private ProxyAction                      m_ToggleSpawn;
-        private ProxyAction m_BlockDepthIncreaseAction;
-        private ProxyAction m_BlockDepthDecreaseAction;
-        private ProxyAction m_BlockWidthIncreaseAction;
-        private ProxyAction m_BlockWidthDecreaseAction;
+        private ProxyAction                      m_BlockDepthIncreaseAction;
+        private ProxyAction                      m_BlockDepthDecreaseAction;
+        private ProxyAction                      m_BlockWidthIncreaseAction;
+        private ProxyAction                      m_BlockWidthDecreaseAction;
         private ToolbarUISystem                  m_ToolbarUISystem;
         private ToolSystem                       m_ToolSystem;
+        private EntityQuery                      m_SpawnableBuildingsQuery;
+        private ValueBindingHelper<string[]>     m_AvailableLotSizesBinding;
+        private Dictionary<ushort, string[]>     m_AvailableSizesCache;
         private ValueBindingHelper<bool>         m_AllowSpawningBinding;
         private ValueBindingHelper<bool>         m_EnableCreateFromZoneBinding;
         private ValueBindingHelper<bool>         m_EnableSnappingOptionsBinding;
@@ -108,6 +114,13 @@ namespace Platter.Systems {
             m_AllowSpawnSystem     = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
             m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
+
+            // Setup cache and query for dynamic parcel sizing/dimming
+            m_SpawnableBuildingsQuery = GetEntityQuery(new EntityQueryDesc() {
+                All = new[] { ComponentType.ReadOnly<SpawnableBuildingData>() }
+            });
+            m_AvailableLotSizesBinding = CreateBinding("AVAILABLE_LOT_SIZES", new string[0]);
+            m_AvailableSizesCache = new Dictionary<ushort, string[]>();
 
             // Bindings
             m_EnableToolButtonsBinding     = CreateBinding("ENABLE_TOOL_BUTTONS", false);
@@ -302,10 +315,44 @@ namespace Platter.Systems {
             m_ToggleRender.shouldBeEnabled = mode.IsGameOrEditor();
             m_ToggleSpawn.shouldBeEnabled  = mode.IsGameOrEditor();
             
+            // Clear out the cached array of available buildings since maps/custom assets can change between loads
+            m_AvailableSizesCache.Clear();
+
             // Update PreZoneType to the cached UnzonedZoneType now that zones are loaded
             if (PreZoneType.Equals(ZoneType.None)) {
                 PreZoneType = P_ZoneCacheSystem.UnzonedZoneType;
             }
+        }
+
+        /// <summary>
+        /// Populates the valid lot sizes array by checking active zone against available buildings, utilizing a cache for performance.
+        /// </summary>
+        private void UpdateAvailableLotSizes() {
+            var zoneIndex = PreZoneType.m_Index;
+
+            if (m_AvailableSizesCache.TryGetValue(zoneIndex, out var cachedSizes)) {
+                m_AvailableLotSizesBinding.Value = cachedSizes;
+                return;
+            }
+
+            var sizes = new HashSet<string>();
+            
+            if (m_ZoneCacheSystem.ZonePrefabs.TryGetValue(zoneIndex, out var preZoneEntity)) {
+                var buildings = m_SpawnableBuildingsQuery.ToEntityArray(Allocator.Temp);
+                
+                foreach (var entity in buildings) {
+                    if (EntityManager.TryGetComponent<SpawnableBuildingData>(entity, out var sbd) && sbd.m_ZonePrefab == preZoneEntity) {
+                        if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase) && prefabBase is BuildingPrefab buildingPrefab) {
+                            sizes.Add($"{buildingPrefab.m_LotWidth}x{buildingPrefab.m_LotDepth}");
+                        }
+                    }
+                }
+                buildings.Dispose();
+            }
+            
+            var sizesArray = sizes.ToArray();
+            m_AvailableSizesCache[zoneIndex] = sizesArray;
+            m_AvailableLotSizesBinding.Value = sizesArray;
         }
 
         /// <summary>
@@ -577,6 +624,9 @@ namespace Platter.Systems {
         ///  Called from the UI.
         /// </summary>
         private void UpdateSelectedPrefab() {
+            // Update the allowed lot sizes dynamically when selection changes
+            UpdateAvailableLotSizes();
+            
             var id = ParcelUtils.GetPrefabID(m_SelectedParcelSize, true);
             m_Log.Debug($"UpdateSelectedPrefab() -- ${id}");
 
