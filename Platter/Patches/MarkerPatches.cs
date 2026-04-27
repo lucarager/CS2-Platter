@@ -18,6 +18,7 @@ namespace Platter.Patches {
     using Unity.Entities;
     using Utils;
     using Game.Common;
+    using Platter.Patches.Accessors;
 
     #endregion
 

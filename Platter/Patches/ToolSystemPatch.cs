@@ -16,6 +16,7 @@ namespace Platter.Patches {
     using Game.Zones;
     using HarmonyLib;
     using Platter.Components;
+    using Platter.Patches.Accessors;
     using Platter.Systems;
     using Unity.Entities;
     using Unity.Jobs;
@@ -25,7 +26,7 @@ namespace Platter.Patches {
 
     internal class ToolSystemPatch {
         /// <summary>
-        ///     Patch to modify the snap behavior when using platter.
+        ///     Patch to toggle the contour lines when using platter.
         /// </summary>
         [HarmonyPatch(typeof(ToolBaseSystem))]
         [HarmonyPatch(nameof(ToolBaseSystem.GetActualSnap))]
@@ -165,8 +166,14 @@ namespace Platter.Patches {
                 zoneSearchSystem.AddSearchTreeReader(customSnapJobHandle);
                 waterSystem.AddSurfaceReader(customSnapJobHandle);
 
+                // Immediately run this job
+                customSnapJobHandle.Complete();
+
+                // Return the jobhandle
                 __result = customSnapJobHandle;
-                return false; // Skip original method completely
+
+                // Skip original method completely
+                return false; 
             }
         }
 
