@@ -7,28 +7,15 @@ namespace Platter.Systems {
     #region Using Statements
 
     using System;
-    using Colossal.Entities;
-    using Colossal.Mathematics;
-    using Components;
-    using Extensions;
-    using Game;
-    using Game.Common;
-    using Game.Net;
     using Game.Prefabs;
-    using Game.Simulation;
     using Game.Tools;
+    using Platter.Extensions;
     using Unity.Collections;
-    using Unity.Entities;
-    using Unity.Jobs;
-    using Utils;
-    using Block = Game.Zones.Block;
-    using SearchSystem = Game.Net.SearchSystem;
-    using Transform = Game.Objects.Transform;
 
     #endregion
 
     /// <summary>
-    /// Ovverides object placement to snap parcels to road sides 
+    ///     Ovverides object placement to snap parcels to road sides
     /// </summary>
     public partial class P_SnapSystem : PlatterGameSystemBase {
         [Flags]
@@ -40,20 +27,11 @@ namespace Platter.Systems {
             ParcelFrontAlign = 8,
         }
 
-        private static class SnapLevel {
-            public const float None             = 0f;
-            public const float ParcelEdge       = 1f;
-            public const float RoadSide         = 2f;
-            public const float ParcelFrontAlign = 3f;
-            public const float ZoneSide         = 3f;
-        }
-
-        private EntityQuery m_Query;
-        private float       m_SnapSetback;
-        public  NativeReference<bool>   IsSnapped;
-        private ObjectToolSystem        m_ObjectToolSystem;
-        private SnapMode                m_SnapMode;
-
+        public  NativeReference<bool> IsSnapped;
+        private ObjectToolSystem      m_ObjectToolSystem;
+        private ToolSystem            m_ToolSystem;
+        private SnapMode              m_SnapMode;
+        private float m_SnapSetback;
         public float CurrentSnapSetback {
             get => m_SnapSetback;
             set {
@@ -72,27 +50,19 @@ namespace Platter.Systems {
             set => m_SnapMode = value;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate() {
             base.OnCreate();
 
             // Systems
-            m_ObjectToolSystem   = World.GetOrCreateSystemManaged<ObjectToolSystem>();
-
-            // Query
-            m_Query = SystemAPI.QueryBuilder()
-                               .WithAllRW<ObjectDefinition>()
-                               .WithAll<CreationDefinition, Updated>()
-                               .WithNone<Deleted, Overridden>()
-                               .Build();
+            m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
 
             // Data
-            m_SnapSetback   = DefaultSnapDistance;
+            m_SnapSetback = DefaultSnapDistance;
             m_SnapMode      = SnapMode.RoadSide | SnapMode.ParcelFrontAlign;
             IsSnapped       = new NativeReference<bool>(Allocator.Persistent);
             IsSnapped.Value = false;
-
-            RequireForUpdate(m_Query);
         }
 
         protected override void OnDestroy() {
@@ -100,17 +70,33 @@ namespace Platter.Systems {
             base.OnDestroy();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate() {
+            var isObjectToolActive = m_ToolSystem.activeTool is ObjectToolSystem;
+            var isUsingPlatter     = m_ObjectToolSystem.prefab is ParcelPlaceholderPrefab;
+            var isPlacingSingle    = m_ObjectToolSystem.actualMode is not ObjectToolSystem.Mode.Create;
+
             // Handle vanilla line tool when not in individual plop mode
-            if (m_ObjectToolSystem.actualMode is ObjectToolSystem.Mode.Create ||
-                m_ObjectToolSystem.prefab is not ParcelPlaceholderPrefab parcelPrefab) {
-                return;
+            if (!isPlacingSingle && isUsingPlatter) {
+                var parcelPrefab = (ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab;
+                var width = (parcelPrefab.m_LotWidth * 8f);
+                // We manually patch the distance scale for the line tool to allow parcels to be edge to edge
+                m_ObjectToolSystem.SetMemberValue("distanceScale", width);
             }
 
-            // Override distance scale
-            var width = (parcelPrefab.m_LotWidth * 8f);
-            m_ObjectToolSystem.SetMemberValue("distanceScale", width);
+            // Reset isSnapped when not using platter
+            if (!isObjectToolActive || !isUsingPlatter) {
+                IsSnapped.Value = false;
+            }
+
+        }
+
+        private static class SnapLevel {
+            public const float None             = 0f;
+            public const float ParcelEdge       = 1f;
+            public const float RoadSide         = 2f;
+            public const float ParcelFrontAlign = 3f;
+            public const float ZoneSide         = 3f;
         }
     }
 }
