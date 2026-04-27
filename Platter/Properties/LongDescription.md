@@ -1,23 +1,26 @@
-# Platter: Custom Zoning Overhaul
+# Platter: Placeable Zoning Cells and Parcels
 
-Platter completely reworks zoning in Cities: Skylines 2. 
+Platter reworks the zoning grid in Cities: Skylines 2. It adds manually placeable "Parcels" that contain zone cells, allowing you to place zones anywhere and at any angle.
+
 It sits right between vanilla zoning and manual building plopping, giving you the control to create realistic neighborhoods, 
 fill awkward gaps, and zone perfectly on curved roads without fighting the grid.
 
 ### Key Features
 * **Ploppable Zoning:** Place "Parcels" containing zone cells exactly where you want them.
-* **Precision Snapping:** Includes fully custom snapping options to align parcels perfectly.
-* **Custom Setbacks:** Place zones back from the road to create front yards or widen roads later without demolition.
 * **Vanilla Simulation:** Parcels use the game's native logic for zoning. Buildings spawn based on actual demand, land value, and desirability.
+* **More predictable construction:** Buildings always spawn facing the parcel orientation, even on corners.
+* **Snapping:** Includes fully custom snapping options to align parcels perfectly.
+* **Setbacks:** Place zones back from the road to create front yards or widen roads later without demolition.
+* **Rich Zoning Tools:** Pre-zone parcels and leverage the building count information for better control over building placement and growth.
 
 ### How to Use
 1. Open the **Platter** tab from the zoning toolbar (or press `Ctrl+P`).
-2. Select a parcel size and, optionally, your desired zone type.
-3. Click to place the parcel manually — anywhere, at any angle.
+2. Select a parcel size and any optional settings (snapping, setbacks, etc.)
+3. Click to place the parcel 
 
 ### Experimental Warning
-This mod is experimental. While it is considered stable for testing, unexpected issues may occur.
-* **Backup your save** before using this mod.
+This mod is experimental. While it is generally considered stable for use, unexpected issues may occur.
+* It is recommended to **backup your save** before using this mod.
 * Platter can be safely removed from a save by using the "Uninstall" button in the Mod Settings page.
 
 ### Support and Troubleshooting
