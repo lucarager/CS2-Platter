@@ -79,13 +79,13 @@ Donations are incredibly kind and appreciated.
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
   <!--Version of the mod-->
-  <ModVersion Value="1.5.6" />
+  <ModVersion Value="1.5.7" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Version 1.5.6
+  <ChangeLog># Version 1.5.7
 Update translation files. Thank you volunteer translators!</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
