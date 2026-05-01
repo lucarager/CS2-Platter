@@ -26,7 +26,7 @@
   "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]": "Zmień głębokość Parceli",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Zmień szerokość Parceli",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterWidthScrollAction/binding]": "Zmień szerokość Parceli",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Skrót klawiszowy do zwiększenia/zmniejszenia szerokości Parceli.",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut to increase/decrease a Parcel's width",
   "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]": "Zmień szerokość Parceli",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterSetbackScrollAction]": "Zmień odstęp od drogi",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterSetbackScrollAction/binding]": "Zmień odstęp od drogi",
