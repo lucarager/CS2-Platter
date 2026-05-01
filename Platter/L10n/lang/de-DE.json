@@ -26,7 +26,7 @@
   "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]": "Parzellentiefe erhöhen/verringern",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Parzellenbreite erhöhen/verringern",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterWidthScrollAction/binding]": "Parzellenbreite erhöhen/verringern",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut zu erhöhen/verringern der Parzellen-Tiefe",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut to increase/decrease a Parcel's width",
   "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]": "Parzellenbreite erhöhen/verringern",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterSetbackScrollAction]": "Erhöhung/Verringerung des Straßenabstands",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterSetbackScrollAction/binding]": "Erhöhung/Verringerung des Straßenabstands",
