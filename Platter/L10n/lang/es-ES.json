@@ -26,7 +26,7 @@
   "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]": "Incrementar/Reducir profundidad del paquete",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Aumentar/reducir el ancho de la parcela",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterWidthScrollAction/binding]": "Aumentar/reducir el ancho de la parcela",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Atajo para aumentar/reducir el ancho de una parcela",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut to increase/decrease a Parcel's width",
   "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]": "Aumentar/Reducir ancho del paquete",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterSetbackScrollAction]": "Aumentar/reducir retroceso desde la carretera",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterSetbackScrollAction/binding]": "Aumentar/reducir retroceso desde la carretera",
