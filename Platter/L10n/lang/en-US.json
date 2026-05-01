@@ -26,7 +26,7 @@
   "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]": "Increase/Decrease Parcel depth",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Increase/Decrease Parcel width",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterWidthScrollAction/binding]": "Increase/Decrease Parcel width",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut to increase/decrease a Parcel's depth",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut to increase/decrease a Parcel's width",
   "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]": "Increase/Decrease Parcel width",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterSetbackScrollAction]": "Increase/Decrease road setback",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterSetbackScrollAction/binding]": "Increase/Decrease road setback",

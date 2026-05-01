@@ -71,7 +71,7 @@ namespace Platter.L10n {
                 // Block Depth Scrollers
                 { m_Setting.GetOptionLabelLocaleID(PS.WidthScrollName), "Increase/Decrease Parcel width" },
                 { m_Setting.GetBindingKeyLocaleID(PS.WidthScrollName), "Increase/Decrease Parcel width" },
-                { m_Setting.GetOptionDescLocaleID(PS.WidthScrollName), "Shortcut to increase/decrease a Parcel's depth" },
+                { m_Setting.GetOptionDescLocaleID(PS.WidthScrollName), "Shortcut to increase/decrease a Parcel's width" },
                 { "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]", "Increase/Decrease Parcel width" },
 
                 // Setback scroller
