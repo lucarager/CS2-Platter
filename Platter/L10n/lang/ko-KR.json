@@ -26,7 +26,7 @@
   "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]": "부지 깊이 확장/축소",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "부지 너비 확장/축소",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterWidthScrollAction/binding]": "부지 너비 확장/축소",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "부지 깊이를 확장/축소시키는 단축키입니다",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "부지 너비를 확장/축소시키는 단축키입니다",
   "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]": "부지 너비 확장/축소",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterSetbackScrollAction]": "도로에서 이격 거리 증가/감소",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterSetbackScrollAction/binding]": "도로에서 이격 거리 증가/감소",
