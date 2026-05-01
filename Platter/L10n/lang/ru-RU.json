@@ -26,7 +26,7 @@
   "Common.ACTION[Platter.Platter.PlatterMod/BlockDepthAction]": "Изменить глубину участка",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Изменить ширину участка",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterWidthScrollAction/binding]": "Изменить ширину участка",
-  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Ярлык для изменения ширины участка",
+  "Options.OPTION_DESCRIPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterWidthScrollAction]": "Shortcut to increase/decrease a Parcel's width",
   "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]": "Изменить ширину участка",
   "Options.OPTION[Platter.Platter.PlatterMod.PlatterModSettings.PlatterSetbackScrollAction]": "Изменить отступ от дороги",
   "Options.OPTION[Platter.Platter.PlatterMod/PlatterSetbackScrollAction/binding]": "Изменить отступ от дороги",
