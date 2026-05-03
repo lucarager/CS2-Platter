@@ -183,7 +183,6 @@
             &__label {
                 font-size:  var(--fontSizeM) ;
                 font-weight: bold;
-                white-space: normal;
                 color: rgba(217, 217, 217, .5);
                 margin-bottom: 4rem;
             }
@@ -252,6 +251,20 @@
     }
 }
 
+.zoneItemCount {
+    margin-left: 4rem;
+    padding: 0 4rem;
+    min-width: 14rem;
+    text-align: right;
+    color: rgba(217, 217, 217, 0.6);
+    font-size: var(--fontSizeS);
+    font-weight: 600;
+
+    &__zero {
+        color: rgba(217, 217, 217, 0.25);
+    }
+}
+
 .dropdownIcon {
     --size: 26rem;
     width: var(--size);
@@ -259,38 +272,52 @@
 }
 
 .parcelSelection {
-    --gap: 2rem;
+    --gap: 1rem;
+    --buttonSize: 24rem;
+    --roadMarkingColor: rgba(255, 255, 255, 0.4);
+    --roadMarkingSize: 4rem;
 
     display: flex;
     flex-direction: row;
     width: 100%;
+    align-self: stretch;
+    justify-content: flex-end;
 
     &__roadViz {
-        --roadColor: rgba(255, 255, 255, 0.5);
-
         width: 20rem;
         height: 100%;
-        border-right: 5rem solid;
-        border-right-color: var(--roadColor);
+        border-right-width: var(--roadMarkingSize);
+        border-right-style: solid;
+        border-right-color: var(--roadMarkingColor);
         display: flex;
         flex-shrink: 0;
         margin-right: 10rem;
+        align-self: stretch;
 
         &__median {
-            width: 5rem;
-            height: 100%;
-            background-image: linear-gradient(to bottom, var(--roadColor) 50%, transparent 50%);
+            width: var(--roadMarkingSize);
+            background-image: linear-gradient(to bottom, var(--roadMarkingColor) 50%, transparent 50%);
             background-size: 100% 24rem;
             background-repeat: repeat-y;
         }
     }
 
     &__sizeGrid {
+        position: relative;
         display: flex;
         flex-direction: column;
         margin-top: 1.2rem;
-        flex: 2;
         align-items: flex-end;
+    }
+
+    &__selectionOverlay {
+        position: absolute;
+        top: 0;
+        border: 2rem solid rgba(255, 99, 183, 1);
+        border-radius: 3rem;
+        pointer-events: none;
+        box-sizing: border-box;
+        transition: width 120ms ease, height 120ms ease, right 120ms ease;
     }
 
     &__sizeGridRow {
@@ -306,21 +333,20 @@
     }
 
     &__sizeButton {
-        flex: 0 0 26rem;
-        width: 26rem;
-        height: 26rem;
+        flex: 0 0 var(--buttonSize);
+        width: var(--buttonSize);
+        height: var(--buttonSize);
         display: flex;
         align-items: center;
         justify-content: center;
         color: rgba(217, 217, 217, 0.9);
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.1);
         border: 1rem solid transparent;
         border-radius: 3rem;
-        opacity: 0.35;
         transition: opacity 120ms ease, border-color 120ms ease, background-color 120ms ease;
         box-sizing: border-box;
         cursor: pointer;
-        font-size: var(--fontSizeM);
+        font-size: var(--fontSizeS);
         font-weight: 700;
         margin-right: var(--gap);
     }
@@ -330,14 +356,13 @@
     }
 
     &__sizeButtonHovered {
-        opacity: 1;
         background-color: rgba(255, 255, 255, 0.25);
     }
 
     &__sizeButtonSelected {
-        border-color: rgba(255, 99, 183, 1);
-        border-width: 2rem;
-        opacity: 1;
+        // Prefer selection box for now
+        // border-color: rgba(255, 99, 183, 1);
+        // border-width: 2rem;
     }
 }
 

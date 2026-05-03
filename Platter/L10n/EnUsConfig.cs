@@ -132,6 +132,8 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.SectionTitle.Search", "Search" },
                 { "PlatterMod.UI.SectionTitle.Category", "Category" },
                 { "PlatterMod.UI.SectionTitle.AssetPacks", "Asset Packs" },
+                { "PlatterMod.UI.SectionTitle.ParcelSize", "Parcel Size" },
+                { "PlatterMod.UI.SectionTitle.ShowBuildingCounts", "Show building count for" },
                 { "PlatterMod.UI.SectionTitle.Changelog", "View Changelog" },
                 { "PlatterMod.UI.SectionTitle.Discord", "Cities Modding Discord (For support & feedback)" },
                 { "PlatterMod.UI.Tooltip.Discord", "Join the Discord server to connect with me and share feedback or issues." },
@@ -162,6 +164,7 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.Tooltip.ToggleRenderParcels", "Toggle Parcels Overlay" },
                 { "PlatterMod.UI.Tooltip.ToggleAllowSpawn", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
+                { "PlatterMod.UI.Tooltip.ShowBuildingCounts", "Show how many buildings exist for each zone at the current parcel size." },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
 
                 // Building/Zone Tooltips

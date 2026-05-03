@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { VC, VT } from "components/vanilla/Components";
 import { GAME_BINDINGS } from "gameBindings";
 import styles from "./toolOptionsPanel.module.scss";
-import { Icon, DropdownToggle, Dropdown, DropdownItem$1 } from "cs2/ui";
+import { Icon, DropdownToggle, Dropdown } from "cs2/ui";
 import { c } from "utils/classes";
 import { VF } from "../vanilla/Components";
 import { useLocalization } from "cs2/l10n";
@@ -25,7 +25,15 @@ export const PrezoningSection = function PrezoningSection() {
     const zoneDataBinding = useValueWrap(GAME_BINDINGS.ZONE_DATA.binding, "ZoneData");
     const assetPackBinding = useValueWrap(GAME_BINDINGS.ASSET_PACK_DATA.binding, "AssetPackData");
     const zoneGroupBinding = useValueWrap(GAME_BINDINGS.ZONE_GROUP_DATA.binding, "ZoneGroupData");
+    const buildingCountsByZone = useValueWrap(
+        GAME_BINDINGS.BUILDING_COUNTS_BY_ZONE.binding,
+        "BuildingCountsByZone",
+    );
+    const blockWidth = useValueWrap(GAME_BINDINGS.BLOCK_WIDTH.binding, "BlockWidth");
+    const blockDepth = useValueWrap(GAME_BINDINGS.BLOCK_DEPTH.binding, "BlockDepth");
     const { translate } = useLocalization();
+
+    const [showBuildingCounts, setShowBuildingCounts] = useState(true);
 
     // Filters & binding data for filtering
     const [searchFilter, setSearchFilter] = useState<string>();
@@ -235,7 +243,25 @@ export const PrezoningSection = function PrezoningSection() {
                                 ))}
                             </div>
                         </div>
-                        {/* ...existing code... */}
+                        {/* Building Count Toggle */}
+                        <div className={styles.dropdownContent__sidebar__row}>
+                            <div className={styles.dropdownContent__sidebar__row__label}>
+                                {`${translate(
+                                    "PlatterMod.UI.SectionTitle.ShowBuildingCounts",
+                                    "Show building count for",
+                                )} ${blockWidth}x${blockDepth}`}
+                            </div>
+                            <VC.Checkbox
+                                onChange={() => setShowBuildingCounts((prev) => !prev)}
+                                focusKey={VF.FOCUS_DISABLED}
+                                tooltip={translate(
+                                    "PlatterMod.UI.Tooltip.ShowBuildingCounts",
+                                    "Show how many buildings exist for each zone at the current parcel size.",
+                                )}
+                                checked={showBuildingCounts}
+                                className={c(VT.checkbox.label)}
+                            />
+                        </div>
                     </div>
                 </VC.Scrollable>
             </div>
@@ -283,6 +309,21 @@ export const PrezoningSection = function PrezoningSection() {
                                                             zoneData.name,
                                                         )}
                                                     </div>
+                                                    {showBuildingCounts &&
+                                                        zoneData.name !== "PlatterUnzoned" && (
+                                                            <div
+                                                                className={c(
+                                                                    styles.zoneItemCount,
+                                                                    (buildingCountsByZone[
+                                                                        zoneData.index
+                                                                    ] ?? 0) === 0 &&
+                                                                        styles.zoneItemCount__zero,
+                                                                )}>
+                                                                {buildingCountsByZone[
+                                                                    zoneData.index
+                                                                ] ?? 0}
+                                                            </div>
+                                                        )}
                                                 </div>
                                             </VC.DropdownItem>
                                         ))}

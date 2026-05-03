@@ -14,9 +14,12 @@ export const ParcelSelection = function ParcelSelection() {
     const blockDepth = useValueWrap(GAME_BINDINGS.BLOCK_DEPTH.binding, "BlockDepth");
     const blockDepthMin = useValueWrap(GAME_BINDINGS.BLOCK_DEPTH_MIN.binding, "BlockDepthMin");
     const blockDepthMax = useValueWrap(GAME_BINDINGS.BLOCK_DEPTH_MAX.binding, "BlockDepthMax");
+    const buildingCounts = useValueWrap(GAME_BINDINGS.BUILDING_COUNTS.binding, "BuildingCounts");
     const { translate } = useLocalization();
 
     const [hoveredSize, setHoveredSize] = useState<{ width: number; depth: number } | null>(null);
+
+    console.log(buildingCounts);
 
     // Min/max sizes are constant after binding - compute grid options once
     // Generate grid from 1 to max to show all possible sizes
@@ -35,19 +38,34 @@ export const ParcelSelection = function ParcelSelection() {
         return width <= hoveredSize.width && depth <= hoveredSize.depth;
     };
 
+    const getBuildingCount = (width: number, depth: number) => {
+        // Show empty string instead of 0 for better UX
+        return buildingCounts[(width - 1) * blockDepthMax + (depth - 1)] || "";
+    };
+
     return (
         <VC.Section
             focusKey={VF.FOCUS_DISABLED}
             title={translate("PlatterMod.UI.SectionTitle.ParcelSize", "Parcel Size")}>
             <div className={styles.parcelSelection}>
                 {/* Road Visualization */}
-                {/* <div className={styles.parcelSelection__roadViz}>
+                <div className={styles.parcelSelection__roadViz}>
                     <div className={styles.parcelSelection__roadViz__median}></div>
-                </div> */}
+                </div>
                 {/* Parcel size grid */}
                 <div
                     className={styles.parcelSelection__sizeGrid}
                     onMouseLeave={() => setHoveredSize(null)}>
+                    {blockWidth >= blockWidthMin && blockDepth >= blockDepthMin && (
+                        <div
+                            className={styles.parcelSelection__selectionOverlay}
+                            style={{
+                                right: `${(blockDepthMax - blockDepth) * 25}rem`,
+                                width: `${blockDepth * 25 - 1}rem`,
+                                height: `${blockWidth * 25 - 1}rem`,
+                            }}
+                        />
+                    )}
                     {widthOptions.map((width) => (
                         <div key={width} className={styles.parcelSelection__sizeGridRow}>
                             {depthOptions.map((depth) => {
@@ -78,7 +96,7 @@ export const ParcelSelection = function ParcelSelection() {
                                                 GAME_BINDINGS.BLOCK_DEPTH.set(depth);
                                             }
                                         }}>
-                                        {/* 12 */}
+                                        {!isBelowMinimum && getBuildingCount(width, depth)}
                                     </Button>
                                 );
                             })}
