@@ -114,10 +114,10 @@ namespace Platter.Systems {
             m_EnableSnappingOptionsBinding = CreateBinding("ENABLE_SNAPPING_OPTIONS", false);
             m_EnableCreateFromZoneBinding  = CreateBinding("ENABLE_CREATE_FROM_ZONE", false);
             m_ZoneBinding                  = CreateBinding("ZONE", 0, SetPreZone);
-            m_BlockWidthBinding            = CreateBinding("BLOCK_WIDTH", 2);
+            m_BlockWidthBinding            = CreateBinding("BLOCK_WIDTH", 2, SetBlockWidth);
             m_BlockWidthMinBinding         = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.AvailableParcelLotSizes.x);
             m_BlockWidthMaxBinding         = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.AvailableParcelLotSizes.z);
-            m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2);
+            m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2, SetBlockDepth);
             m_BlockDepthMinBinding         = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.AvailableParcelLotSizes.y);
             m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.AvailableParcelLotSizes.w);
             m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIDataModel[] { });
@@ -522,6 +522,36 @@ namespace Platter.Systems {
             var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[(ushort)zoneIndex];
             var zoneData   = EntityManager.GetComponentData<ZoneData>(zonePrefab);
             PreZoneType = zoneData.m_ZoneType;
+            UpdateSelectedPrefab();
+        }
+
+        /// <summary>
+        ///  Called from the UI.
+        /// </summary>
+        private void SetBlockWidth(int width) {
+            // Guard
+            if (width < P_PrefabsCreateSystem.AvailableParcelLotSizes.x ||
+                width > P_PrefabsCreateSystem.AvailableParcelLotSizes.z) {
+                return;
+            }
+
+            m_Log.Debug($"SetBlockWidth({width})");
+            m_SelectedParcelSize.x = width;
+            UpdateSelectedPrefab();
+        }
+
+        /// <summary>
+        ///  Called from the UI.
+        /// </summary>
+        private void SetBlockDepth(int depth) {
+            // Guard
+            if (depth < P_PrefabsCreateSystem.AvailableParcelLotSizes.y ||
+                depth > P_PrefabsCreateSystem.AvailableParcelLotSizes.w) {
+                return;
+            }
+
+            m_Log.Debug($"SetBlockDepth({depth})");
+            m_SelectedParcelSize.y = depth;
             UpdateSelectedPrefab();
         }
 

@@ -4,15 +4,13 @@ import { VT } from "components/vanilla/Components";
 import { GAME_BINDINGS } from "gameBindings";
 import styles from "./toolOptionsPanel.module.scss";
 import { c } from "utils/classes";
-import { SnapMode } from "types";
 import { useRenderTracker, useValueWrap } from "../../debug";
 import { FocusDisabled } from "cs2/input";
 import { PrezoningSection } from "./prezoningSection";
 import { SnapRoadsideSection } from "./snapRoadsideSection";
-import { ParcelWidthSection } from "./parcelWidthSection";
-import { ParcelDepthSection } from "./parcelDepthSection";
 import { SnapModeSection } from "./snapModeSection";
 import { ToolViewmodeSection } from "./toolViewmodeSection";
+import { ParcelSelection } from "./parcelSelection";
 
 export type BlockControlProps = Record<string, never>;
 
@@ -80,8 +78,9 @@ const ToolPanel = function ToolPanel() {
                 <div className={c(VT.toolOptionsPanel.toolOptionsPanel, styles.moddedSection)}>
                     <PrezoningSection />
                     <SnapRoadsideSection />
-                    <ParcelWidthSection />
-                    <ParcelDepthSection />
+                    <ParcelSelection />
+                    {/* <ParcelWidthSection /> */}
+                    {/* <ParcelDepthSection /> */}
                     <SnapModeSection />
                     <ToolViewmodeSection />
                 </div>

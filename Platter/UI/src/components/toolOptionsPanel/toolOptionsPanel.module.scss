@@ -258,6 +258,89 @@
     height: var(--size);
 }
 
+.parcelSelection {
+    --gap: 2rem;
+
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    &__roadViz {
+        --roadColor: rgba(255, 255, 255, 0.5);
+
+        width: 20rem;
+        height: 100%;
+        border-right: 5rem solid;
+        border-right-color: var(--roadColor);
+        display: flex;
+        flex-shrink: 0;
+        margin-right: 10rem;
+
+        &__median {
+            width: 5rem;
+            height: 100%;
+            background-image: linear-gradient(to bottom, var(--roadColor) 50%, transparent 50%);
+            background-size: 100% 24rem;
+            background-repeat: repeat-y;
+        }
+    }
+
+    &__sizeGrid {
+        display: flex;
+        flex-direction: column;
+        margin-top: 1.2rem;
+        flex: 2;
+        align-items: flex-end;
+    }
+
+    &__sizeGridRow {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        margin-bottom: var(--gap);
+    }
+
+    &__sizeGridRow:last-child {
+        margin-bottom: 0;
+    }
+
+    &__sizeButton {
+        flex: 0 0 26rem;
+        width: 26rem;
+        height: 26rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(217, 217, 217, 0.9);
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1rem solid transparent;
+        border-radius: 3rem;
+        opacity: 0.35;
+        transition: opacity 120ms ease, border-color 120ms ease, background-color 120ms ease;
+        box-sizing: border-box;
+        cursor: pointer;
+        font-size: var(--fontSizeM);
+        font-weight: 700;
+        margin-right: var(--gap);
+    }
+
+    &__sizeButton:last-child {
+        margin-right: 0;
+    }
+
+    &__sizeButtonHovered {
+        opacity: 1;
+        background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    &__sizeButtonSelected {
+        border-color: rgba(255, 99, 183, 1);
+        border-width: 2rem;
+        opacity: 1;
+    }
+}
+
 .dropdownZoneIcon {
     margin-right: 4rem;
 }
