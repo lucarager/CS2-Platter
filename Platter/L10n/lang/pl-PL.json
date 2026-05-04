@@ -107,7 +107,7 @@
   "PlatterMod.UI.Tooltip.ToggleRenderParcels": "Przełącz widoczność Parcel",
   "PlatterMod.UI.Tooltip.ToggleAllowSpawn": "Przełącz możliwość pojawiania się budynków na Parcelach",
   "PlatterMod.UI.Tooltip.ShowZones": "Pokaż siatkę stref",
-  "PlatterMod.UI.Tooltip.ShowBuildingCounts": "Show how many buildings exist for each zone at the current parcel size.",
+  "PlatterMod.UI.Tooltip.ShowBuildingCounts": "Pokaż, ile istnieje budynków dla stref w wybranym rozmiarze parceli.",
   "PlatterMod.UI.Tooltip.ShowContourLines": "Pokaż linie topograficzne",
   "PlatterMod.UI.Tooltip.ZoneBuildingCount.Front": "{COUNT} przednich dostępnych budynków {X}×{Y} w wybranej strefie.",
   "PlatterMod.UI.Tooltip.ZoneBuildingCount.FrontCorner": "{COUNT1} przednich i {COUNT2} narożnych dostępnych budynków {X}×{Y} w wybranej strefie.",
