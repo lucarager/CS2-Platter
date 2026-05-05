@@ -96,6 +96,13 @@ namespace Platter.Systems {
         public bool     ShowZones        { get; set; }
         public ZoneType PreZoneType      { get; set; } = ZoneType.None;
 
+        /// <summary>
+        /// Currently selected parcel lot size (x = width, y = depth).
+        /// Read by Harmony patches that route the toolbar's selector prefab to the
+        /// matching sized placeholder.
+        /// </summary>
+        public int2 SelectedParcelSize => m_SelectedParcelSize;
+
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -182,8 +189,10 @@ namespace Platter.Systems {
             // Handle Shortcuts
             HandleProxyActions();
 
-            // Make sure we refresh the lot sizes if the Object Tool is active
-            if (CurrentlyUsingParcelsInObjectTool) {
+            // Make sure we refresh the lot sizes if the Object Tool is active.
+            // Skip the selector — it's swapped out by Harmony and its m_LotWidth/m_LotDepth
+            // are placeholder defaults, not the user's selection.
+            if (CurrentlyUsingParcelsInObjectTool && m_ObjectToolSystem.prefab is not ParcelSelectorPrefab) {
                 m_SelectedParcelSize.x = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotWidth;
                 m_SelectedParcelSize.y = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
             }

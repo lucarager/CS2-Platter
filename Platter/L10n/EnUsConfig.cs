@@ -212,14 +212,16 @@ namespace Platter.L10n {
                 { "SubServices.NAME[PlatterCat]", "Platter - Parcels" },
                 { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "Ploppable parcels with zone blocks." },
                 { "Assets.NAME[PlatterUnzoned]", "Unzoned" },
+
+                // Parcel selector prefab (single toolbar entry)
+                { "Assets.NAME[Parcel]", "Parcel" },
+                { "Assets.DESCRIPTION[Parcel]", "A resizable parcel with zone blocks. Adjust width and depth from the Platter panel or with the scrollwheel shortcuts." },
             };
 
             var lotSizes = Platter.Systems.P_PrefabsCreateSystem.AvailableParcelLotSizes;
             for (var width = lotSizes.x; width <= lotSizes.z; width++) {
                 for (var depth = lotSizes.y; depth <= lotSizes.w; depth++) {
-                    m_Localization[$"Assets.NAME[ParcelPlaceholder {width}x{depth}]"] = $"Parcel ({width}x{depth})";
                     m_Localization[$"Assets.NAME[Parcel {width}x{depth}]"] = $"Parcel ({width}x{depth})";
-                    m_Localization[$"Assets.DESCRIPTION[ParcelPlaceholder {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
                 }
             }
         }
