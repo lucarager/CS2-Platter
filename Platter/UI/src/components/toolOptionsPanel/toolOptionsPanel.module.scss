@@ -274,31 +274,35 @@
 .parcelSelection {
     --gap: 1rem;
     --buttonSize: 24rem;
-    --roadMarkingColor: rgba(255, 255, 255, 0.4);
-    --roadMarkingSize: 4rem;
+    --roadMarkingColor: rgba(255, 255, 255, 0.45);
+    --roadMarkingSize: 2rem;
+    --roadGap: 6rem;
+    --roadSize: 16rem;
+    --medianLineSize: 24rem;
+    --frontDotSize: 8rem;
 
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     width: 100%;
     align-self: stretch;
-    justify-content: flex-end;
+    align-items: flex-end;
 
     &__roadViz {
-        width: 20rem;
-        height: 100%;
-        border-right-width: var(--roadMarkingSize);
-        border-right-style: solid;
-        border-right-color: var(--roadMarkingColor);
+        height: var(--roadSize);
+        border-top-width: var(--roadMarkingSize);
+        border-top-style: solid;
+        border-top-color: var(--roadMarkingColor);
         display: flex;
+        align-items: center;
         flex-shrink: 0;
-        margin-right: 10rem;
-        align-self: stretch;
+        margin-top: var(--roadGap);
 
         &__median {
-            width: var(--roadMarkingSize);
-            background-image: linear-gradient(to bottom, var(--roadMarkingColor) 50%, transparent 50%);
-            background-size: 100% 24rem;
-            background-repeat: repeat-y;
+            height: var(--roadMarkingSize);
+            width: 100%;
+            background-image: linear-gradient(to right, var(--roadMarkingColor) 50%, transparent 50%);
+            background-size: var(--medianLineSize) 100%;
+            background-repeat: repeat-x;
         }
     }
 
@@ -306,18 +310,28 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        margin-top: 1.2rem;
-        align-items: flex-end;
+        align-items: flex-start;
     }
 
     &__selectionOverlay {
         position: absolute;
-        top: 0;
         border: 2rem solid rgba(255, 99, 183, 1);
         border-radius: 3rem;
         pointer-events: none;
         box-sizing: border-box;
-        transition: width 120ms ease, height 120ms ease, right 120ms ease;
+        transition: width 120ms ease, height 120ms ease, bottom 120ms ease, left 120ms ease;
+    }
+
+    // Front-side marker: centered dot on the edge facing the road (bottom).
+    &__selectionOverlayFrontDot {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: var(--frontDotSize);
+        height: var(--frontDotSize);
+        transform: translate(-50%, 50%);
+        border-radius: 50%;
+        background-color: rgba(255, 99, 183, 1);
     }
 
     &__sizeGridRow {
@@ -340,7 +354,7 @@
         align-items: center;
         justify-content: center;
         color: rgba(217, 217, 217, 0.9);
-        background-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.1);
         border: 1rem solid transparent;
         border-radius: 3rem;
         transition: opacity 120ms ease, border-color 120ms ease, background-color 120ms ease;
@@ -356,7 +370,7 @@
     }
 
     &__sizeButtonHovered {
-        background-color: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.25);
     }
 
     &__sizeButtonSelected {
