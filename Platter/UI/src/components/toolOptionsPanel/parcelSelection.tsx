@@ -43,15 +43,18 @@ export const ParcelSelection = function ParcelSelection() {
         return buildingCounts[(width - 1) * blockDepthMax + (depth - 1)] || "";
     };
 
+    // Rows iterate depth top→bottom (max → 1) so the bottom row sits next to the road.
+    // Columns iterate width left→right (1 → max).
+    const depthRowOptions = useMemo(
+        () => Array.from({ length: blockDepthMax }, (_, index) => blockDepthMax - index),
+        [blockDepthMax],
+    );
+
     return (
         <VC.Section
             focusKey={VF.FOCUS_DISABLED}
             title={translate("PlatterMod.UI.SectionTitle.ParcelSize", "Parcel Size")}>
             <div className={styles.parcelSelection}>
-                {/* Road Visualization */}
-                <div className={styles.parcelSelection__roadViz}>
-                    <div className={styles.parcelSelection__roadViz__median}></div>
-                </div>
                 {/* Parcel size grid */}
                 <div
                     className={styles.parcelSelection__sizeGrid}
@@ -60,15 +63,17 @@ export const ParcelSelection = function ParcelSelection() {
                         <div
                             className={styles.parcelSelection__selectionOverlay}
                             style={{
-                                right: `${(blockDepthMax - blockDepth) * 25}rem`,
-                                width: `${blockDepth * 25 - 1}rem`,
-                                height: `${blockWidth * 25 - 1}rem`,
-                            }}
-                        />
+                                bottom: 0,
+                                left: 0,
+                                width: `${blockWidth * 25 - 1}rem`,
+                                height: `${blockDepth * 25 - 1}rem`,
+                            }}>
+                            <div className={styles.parcelSelection__selectionOverlayFrontDot} />
+                        </div>
                     )}
-                    {widthOptions.map((width) => (
-                        <div key={width} className={styles.parcelSelection__sizeGridRow}>
-                            {depthOptions.map((depth) => {
+                    {depthRowOptions.map((depth) => (
+                        <div key={depth} className={styles.parcelSelection__sizeGridRow}>
+                            {widthOptions.map((width) => {
                                 const isBelowMinimum =
                                     width < blockWidthMin || depth < blockDepthMin;
                                 const isSelected = width <= blockWidth && depth <= blockDepth;
@@ -102,6 +107,12 @@ export const ParcelSelection = function ParcelSelection() {
                             })}
                         </div>
                     ))}
+                </div>
+                {/* Road Visualization */}
+                <div
+                    className={styles.parcelSelection__roadViz}
+                    style={{ width: `${blockWidthMax * 25 - 1}rem` }}>
+                    <div className={styles.parcelSelection__roadViz__median}></div>
                 </div>
             </div>
         </VC.Section>
