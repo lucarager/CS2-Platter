@@ -200,21 +200,46 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        ///     Patch to replace the ParcelPrefab with the Placeholder prefab when object tool TrySetPrefab is called.
-        ///     This currently only happens with FindIt! - vanilla game code does not call TrySetPrefab with ParcelPrefab.
+        ///     Routes the toolbar's selector prefab to the sized ParcelPlaceholderPrefab matching
+        ///     the user's currently chosen width/depth on ObjectToolSystem.TrySetPrefab.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch(nameof(ObjectToolSystem.TrySetPrefab))]
         [HarmonyPatch(new[] { typeof(PrefabBase) })]
-        private class ObjectToolSystem_TrySetPrefab {
-            public static bool Prefix(ObjectToolSystem __instance, ref PrefabBase prefab) {
+        private class ObjectToolSystem_TrySetPrefab_Selector {
+            public static bool Prefix(ref PrefabBase prefab) {
+                if (prefab is not ParcelSelectorPrefab) {
+                    return true;
+                }
+
+                var world                  = World.DefaultGameObjectInjectionWorld;
+                var m_PPrefabsCreateSystem = world.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+                var m_PUISystem            = world.GetOrCreateSystemManaged<P_UISystem>();
+
+                if (m_PPrefabsCreateSystem.TryGetSizedPlaceholderPrefab(m_PUISystem.SelectedParcelSize, out var sizedPlaceholder)) {
+                    prefab = sizedPlaceholder;
+                }
+
+                return true; // Run original method with modified prefab
+            }
+        }
+
+        /// <summary>
+        ///     Replaces ParcelPrefab with its paired ParcelPlaceholderPrefab on
+        ///     ObjectToolSystem.TrySetPrefab. This currently only happens via FindIt! —
+        ///     vanilla game code does not call TrySetPrefab with a ParcelPrefab.
+        /// </summary>
+        [HarmonyPatch(typeof(ObjectToolSystem))]
+        [HarmonyPatch(nameof(ObjectToolSystem.TrySetPrefab))]
+        [HarmonyPatch(new[] { typeof(PrefabBase) })]
+        private class ObjectToolSystem_TrySetPrefab_ParcelPair {
+            public static bool Prefix(ref PrefabBase prefab) {
                 if (prefab is not ParcelPrefab) {
                     return true;
                 }
 
                 var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
 
-                // Use the new cache to get the placeholder prefab directly
                 if (m_PPrefabsCreateSystem.TryGetParcelPairPrefabBase<ParcelPlaceholderPrefab>(prefab, out var placeholderPrefab)) {
                     prefab = placeholderPrefab;
                 }
@@ -224,17 +249,41 @@ namespace Platter.Patches {
         }
 
         /// <summary>
-        ///     Patch to replace the ParcelPrefab with the Placeholder prefab when object tool GetObjectPrefab is called.
+        ///     Routes the selector prefab to the sized ParcelPlaceholderPrefab on
+        ///     ObjectToolSystem.GetObjectPrefab so callers see the resolved sized prefab.
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("GetObjectPrefab")]
-        private class ObjectToolSystem_GetObjectPrefab {
-            public static void Postfix(ObjectToolSystem __instance, ref ObjectPrefab __result) {
+        private class ObjectToolSystem_GetObjectPrefab_Selector {
+            public static void Postfix(ref ObjectPrefab __result) {
+                if (__result is not ParcelSelectorPrefab) {
+                    return;
+                }
+
+                var world                  = World.DefaultGameObjectInjectionWorld;
+                var m_PPrefabsCreateSystem = world.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+                var m_PUISystem            = world.GetOrCreateSystemManaged<P_UISystem>();
+
+                if (m_PPrefabsCreateSystem.TryGetSizedPlaceholderPrefab(m_PUISystem.SelectedParcelSize, out var sizedPlaceholder)) {
+                    __result = sizedPlaceholder;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Replaces ParcelPrefab with its paired ParcelPlaceholderPrefab on
+        ///     ObjectToolSystem.GetObjectPrefab.
+        /// </summary>
+        [HarmonyPatch(typeof(ObjectToolSystem))]
+        [HarmonyPatch("GetObjectPrefab")]
+        private class ObjectToolSystem_GetObjectPrefab_ParcelPair {
+            public static void Postfix(ref ObjectPrefab __result) {
                 if (__result is not ParcelPrefab) {
                     return;
                 }
 
                 var m_PPrefabsCreateSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+
                 if (m_PPrefabsCreateSystem.TryGetParcelPairPrefabBase<ParcelPlaceholderPrefab>(__result, out var placeholderPrefab)) {
                     __result = placeholderPrefab;
                 }

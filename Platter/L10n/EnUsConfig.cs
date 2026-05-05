@@ -71,7 +71,7 @@ namespace Platter.L10n {
                 // Block Depth Scrollers
                 { m_Setting.GetOptionLabelLocaleID(PS.WidthScrollName), "Increase/Decrease Parcel width" },
                 { m_Setting.GetBindingKeyLocaleID(PS.WidthScrollName), "Increase/Decrease Parcel width" },
-                { m_Setting.GetOptionDescLocaleID(PS.WidthScrollName), "Shortcut to increase/decrease a Parcel's depth" },
+                { m_Setting.GetOptionDescLocaleID(PS.WidthScrollName), "Shortcut to increase/decrease a Parcel's width" },
                 { "Common.ACTION[Platter.Platter.PlatterMod/BlockWidthAction]", "Increase/Decrease Parcel width" },
 
                 // Setback scroller
@@ -132,6 +132,8 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.SectionTitle.Search", "Search" },
                 { "PlatterMod.UI.SectionTitle.Category", "Category" },
                 { "PlatterMod.UI.SectionTitle.AssetPacks", "Asset Packs" },
+                { "PlatterMod.UI.SectionTitle.ParcelSize", "Parcel Size" },
+                { "PlatterMod.UI.SectionTitle.ShowBuildingCounts", "Show building count for" },
                 { "PlatterMod.UI.SectionTitle.Changelog", "View Changelog" },
                 { "PlatterMod.UI.SectionTitle.Discord", "Cities Modding Discord (For support & feedback)" },
                 { "PlatterMod.UI.Tooltip.Discord", "Join the Discord server to connect with me and share feedback or issues." },
@@ -162,6 +164,7 @@ namespace Platter.L10n {
                 { "PlatterMod.UI.Tooltip.ToggleRenderParcels", "Toggle Parcels Overlay" },
                 { "PlatterMod.UI.Tooltip.ToggleAllowSpawn", "Toggle allowing buildings to spawn on Parcels" },
                 { "PlatterMod.UI.Tooltip.ShowZones", "Show vanilla grid" },
+                { "PlatterMod.UI.Tooltip.ShowBuildingCounts", "Show how many buildings exist for each zone at the current parcel size." },
                 { "PlatterMod.UI.Tooltip.ShowContourLines", "Show countour lines" },
 
                 // Building/Zone Tooltips
@@ -209,14 +212,16 @@ namespace Platter.L10n {
                 { "SubServices.NAME[PlatterCat]", "Platter - Parcels" },
                 { "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]", "Ploppable parcels with zone blocks." },
                 { "Assets.NAME[PlatterUnzoned]", "Unzoned" },
+
+                // Parcel selector prefab (single toolbar entry)
+                { "Assets.NAME[Parcel]", "Parcel" },
+                { "Assets.DESCRIPTION[Parcel]", "A resizable parcel with zone blocks. Adjust width and depth from the Platter panel or with the scrollwheel shortcuts." },
             };
 
             var lotSizes = Platter.Systems.P_PrefabsCreateSystem.AvailableParcelLotSizes;
             for (var width = lotSizes.x; width <= lotSizes.z; width++) {
                 for (var depth = lotSizes.y; depth <= lotSizes.w; depth++) {
-                    m_Localization[$"Assets.NAME[ParcelPlaceholder {width}x{depth}]"] = $"Parcel ({width}x{depth})";
                     m_Localization[$"Assets.NAME[Parcel {width}x{depth}]"] = $"Parcel ({width}x{depth})";
-                    m_Localization[$"Assets.DESCRIPTION[ParcelPlaceholder {width}x{depth}]"] = $"A Parcel with zone blocks. {width} cells wide, {depth} cells deep";
                 }
             }
         }

@@ -183,7 +183,6 @@
             &__label {
                 font-size:  var(--fontSizeM) ;
                 font-weight: bold;
-                white-space: normal;
                 color: rgba(217, 217, 217, .5);
                 margin-bottom: 4rem;
             }
@@ -252,10 +251,133 @@
     }
 }
 
+.zoneItemCount {
+    margin-left: 4rem;
+    padding: 0 4rem;
+    min-width: 14rem;
+    text-align: right;
+    color: rgba(217, 217, 217, 0.6);
+    font-size: var(--fontSizeS);
+    font-weight: 600;
+
+    &__zero {
+        color: rgba(217, 217, 217, 0.25);
+    }
+}
+
 .dropdownIcon {
     --size: 26rem;
     width: var(--size);
     height: var(--size);
+}
+
+.parcelSelection {
+    --gap: 1rem;
+    --buttonSize: 24rem;
+    --roadMarkingColor: rgba(255, 255, 255, 0.45);
+    --roadMarkingSize: 2rem;
+    --roadGap: 6rem;
+    --roadSize: 16rem;
+    --medianLineSize: 24rem;
+    --frontDotSize: 8rem;
+
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-self: stretch;
+    align-items: flex-end;
+
+    &__roadViz {
+        height: var(--roadSize);
+        border-top-width: var(--roadMarkingSize);
+        border-top-style: solid;
+        border-top-color: var(--roadMarkingColor);
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        margin-top: var(--roadGap);
+
+        &__median {
+            height: var(--roadMarkingSize);
+            width: 100%;
+            background-image: linear-gradient(to right, var(--roadMarkingColor) 50%, transparent 50%);
+            background-size: var(--medianLineSize) 100%;
+            background-repeat: repeat-x;
+        }
+    }
+
+    &__sizeGrid {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    &__selectionOverlay {
+        position: absolute;
+        border: 2rem solid rgba(255, 99, 183, 1);
+        border-radius: 3rem;
+        pointer-events: none;
+        box-sizing: border-box;
+        transition: width 120ms ease, height 120ms ease, bottom 120ms ease, left 120ms ease;
+    }
+
+    // Front-side marker: centered dot on the edge facing the road (bottom).
+    &__selectionOverlayFrontDot {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: var(--frontDotSize);
+        height: var(--frontDotSize);
+        transform: translate(-50%, 50%);
+        border-radius: 50%;
+        background-color: rgba(255, 99, 183, 1);
+    }
+
+    &__sizeGridRow {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        margin-bottom: var(--gap);
+    }
+
+    &__sizeGridRow:last-child {
+        margin-bottom: 0;
+    }
+
+    &__sizeButton {
+        flex: 0 0 var(--buttonSize);
+        width: var(--buttonSize);
+        height: var(--buttonSize);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(217, 217, 217, 0.9);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1rem solid transparent;
+        border-radius: 3rem;
+        transition: opacity 120ms ease, border-color 120ms ease, background-color 120ms ease;
+        box-sizing: border-box;
+        cursor: pointer;
+        font-size: var(--fontSizeS);
+        font-weight: 700;
+        margin-right: var(--gap);
+    }
+
+    &__sizeButton:last-child {
+        margin-right: 0;
+    }
+
+    &__sizeButtonHovered {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    &__sizeButtonSelected {
+        // Prefer selection box for now
+        // border-color: rgba(255, 99, 183, 1);
+        // border-width: 2rem;
+    }
 }
 
 .dropdownZoneIcon {

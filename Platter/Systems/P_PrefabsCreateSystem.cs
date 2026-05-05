@@ -154,19 +154,22 @@ namespace Platter.Systems {
             m_Log.Debug($"{logMethodPrefix} Creating Unzoned Prefab...");
             CreateUnzonedPrefab((ZonePrefab)prefabBaseDict["unzonedZone"], out var unzonedPrefab);
 
+            m_Log.Debug($"{logMethodPrefix} Creating Selector Prefab...");
+            CreateSelectorPrefab((RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab);
+
             m_Log.Debug($"{logMethodPrefix} Creating Parcel Prefabs...");
             for (var i = AvailableParcelLotSizes.x; i <= AvailableParcelLotSizes.z; i++)
             for (var j = AvailableParcelLotSizes.y; j <= AvailableParcelLotSizes.w; j++) {
                 Entity parcelEntity = Entity.Null;
                 Entity placeholderEntity = Entity.Null;
 
-                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, false, out parcelEntity)) {
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], false, out parcelEntity)) {
                     m_Log.Debug($"Created Parcel Prefab {i}x{j}");
                 } else {
                     m_Log.Error($"{logMethodPrefix} Failed adding Parcel Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
                 }
 
-                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], uiCategoryPrefab, true, out placeholderEntity)) {
+                if (CreateParcelPrefab(i, j, (RoadPrefab)prefabBaseDict["road"], true, out placeholderEntity)) {
                     m_Log.Debug($"Created ParcelPlaceholder Prefab {i}x{j}");
                 } else {
                     m_Log.Error($"{logMethodPrefix} Failed adding ParcelPlaceholder Prefab {i}x{j} to PrefabSystem, exiting prematurely.");
@@ -200,16 +203,12 @@ namespace Platter.Systems {
         /// <param name="lotWidth">The width of the parcel lot.</param>
         /// <param name="lotDepth">The depth of the parcel lot.</param>
         /// <param name="roadPrefab">The road prefab to use for zone block configuration.</param>
-        /// <param name="uiCategoryPrefab">The UI category prefab to group this parcel under.</param>
-        /// <param name="areaPrefabBase">The area prefab base for enclosed area configuration.</param>
         /// <param name="placeholder">If true, creates a placeholder prefab; otherwise creates a regular parcel prefab.</param>
         /// <param name="entity">When this method returns, contains the created entity if successful; otherwise, Entity.Null.</param>
         /// <returns>True if the prefab was successfully created and added to the prefab system; otherwise, false.</returns>
-        private bool CreateParcelPrefab(int  lotWidth, int lotDepth, RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab, 
-                                        bool placeholder, out Entity entity) {
-            var prefix    = placeholder ? "ParcelPlaceholder" : "Parcel";
-            var name      = $"{prefix} {lotWidth}x{lotDepth}";
-            var icon      = $"coui://platter/Parcel_{lotWidth}x{lotDepth}.svg";
+        private bool CreateParcelPrefab(int lotWidth, int lotDepth, RoadPrefab roadPrefab, bool placeholder, out Entity entity) {
+            var prefix = placeholder ? "ParcelPlaceholder" : "Parcel";
+            var name   = $"{prefix} {lotWidth}x{lotDepth}";
 
             PrefabBase prefabBase;
             if (placeholder) {
@@ -232,16 +231,6 @@ namespace Platter.Systems {
             placeableObject.m_ConstructionCost = 0;
             placeableObject.m_XPReward         = 0;
             prefabBase.AddComponentFrom(placeableObject);
-
-            if (placeholder) {
-                var placeableLotPrefabUIObject = ScriptableObject.CreateInstance<UIObject>();
-                placeableLotPrefabUIObject.m_Icon          = icon;
-                placeableLotPrefabUIObject.m_IsDebugObject = false;
-                placeableLotPrefabUIObject.m_Priority      = (lotWidth - 2) * AvailableParcelLotSizes.z + lotDepth - 1;
-                placeableLotPrefabUIObject.m_Group         = uiCategoryPrefab;
-                placeableLotPrefabUIObject.active          = true;
-                prefabBase.AddComponentFrom(placeableLotPrefabUIObject);
-            }
 
             if (m_PrefabSystem.AddPrefab(prefabBase)) {
                 entity = RegisterPrefabInCache(prefabBase);
@@ -307,7 +296,67 @@ namespace Platter.Systems {
             unzonedPrefab = null;
             return false;
         }
-        
+
+        /// <summary>
+        /// Creates the single "Parcel" selector prefab shown in the vanilla toolbar.
+        /// At runtime, Harmony patches replace this with the correctly sized
+        /// <see cref="ParcelPlaceholderPrefab"/> based on the user's selected width/depth.
+        /// </summary>
+        /// <param name="roadPrefab">The road prefab to source the zone block from.</param>
+        /// <param name="uiCategoryPrefab">The UI category prefab to group this selector under.</param>
+        /// <returns>True if the selector prefab was successfully created and added; otherwise, false.</returns>
+        private bool CreateSelectorPrefab(RoadPrefab roadPrefab, UIAssetCategoryPrefab uiCategoryPrefab) {
+            const string name = "Parcel";
+            const string icon = "coui://platter/ParcelThumbnail.svg";
+
+            var selectorPrefab = ScriptableObject.CreateInstance<ParcelSelectorPrefab>();
+            selectorPrefab.name        = name;
+            selectorPrefab.m_LotWidth  = 2;
+            selectorPrefab.m_LotDepth  = 2;
+            selectorPrefab.m_ZoneBlock = roadPrefab.m_ZoneBlock;
+
+            var placeableObject = ScriptableObject.CreateInstance<PlaceableObject>();
+            placeableObject.m_ConstructionCost = 0;
+            placeableObject.m_XPReward         = 0;
+            selectorPrefab.AddComponentFrom(placeableObject);
+
+            var uiObject = ScriptableObject.CreateInstance<UIObject>();
+            uiObject.m_Icon          = icon;
+            uiObject.m_IsDebugObject = false;
+            uiObject.m_Priority      = 0;
+            uiObject.m_Group         = uiCategoryPrefab;
+            uiObject.active          = true;
+            selectorPrefab.AddComponentFrom(uiObject);
+
+            if (m_PrefabSystem.AddPrefab(selectorPrefab)) {
+                RegisterPrefabInCache(selectorPrefab);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Looks up the sized <see cref="ParcelPlaceholderPrefab"/> for the given lot size.
+        /// </summary>
+        /// <param name="size">Lot size (x = width, y = depth).</param>
+        /// <param name="prefab">Resolved placeholder prefab if found; otherwise null.</param>
+        /// <returns>True if a placeholder of that size exists; otherwise false.</returns>
+        public bool TryGetSizedPlaceholderPrefab(int2 size, out ParcelPlaceholderPrefab prefab) {
+            prefab = null;
+            var hash = ParcelUtils.GetHashCode(size, true);
+            if (!m_PrefabCache.TryGetValue(hash, out var entity)) {
+                return false;
+            }
+
+            if (!m_PrefabBaseCache.TryGetValue(entity, out var prefabBase)) {
+                return false;
+            }
+
+            prefab = prefabBase as ParcelPlaceholderPrefab;
+            return prefab != null;
+        }
+
         /// <summary>
         /// Get a cached prefab entity by PrefabID hash.
         /// </summary>

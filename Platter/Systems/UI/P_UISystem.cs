@@ -39,8 +39,11 @@ namespace Platter.Systems {
 
         private int2                             m_SelectedParcelSize = new(2, 2);
         private int                              m_LastZoneCacheVersion = -1;
+        private int                              m_LastBuildingCountsZoneIndex = -1;
+        private int2                             m_LastBuildingCountsBySize = new(-1, -1);
         private ObjectToolSystem                 m_ObjectToolSystem;
         private P_AllowSpawnSystem               m_AllowSpawnSystem;
+        private P_BuildingCacheSystem            m_BuildingCacheSystem;
         private P_OverlaySystem                  m_PlatterOverlaySystem;
         private P_SnapSystem                     m_SnapSystem;
         private P_ZoneCacheSystem                m_ZoneCacheSystem;
@@ -75,6 +78,8 @@ namespace Platter.Systems {
         private ValueBindingHelper<int>          m_BlockWidthBinding;
         private ValueBindingHelper<int>          m_BlockWidthMaxBinding;
         private ValueBindingHelper<int>          m_BlockWidthMinBinding;
+        private ValueBindingHelper<int[]>        m_BuildingCountsBinding;
+        private ValueBindingHelper<int[]>        m_BuildingCountsByZoneBinding;
         private ValueBindingHelper<int[]>        m_SnapModesBinding;
         private ValueBindingHelper<int>          m_ToolModeBinding;
         private ValueBindingHelper<int>          m_ZoneBinding;
@@ -90,6 +95,13 @@ namespace Platter.Systems {
         public bool     ShowContourLines { get; set; }
         public bool     ShowZones        { get; set; }
         public ZoneType PreZoneType      { get; set; } = ZoneType.None;
+
+        /// <summary>
+        /// Currently selected parcel lot size (x = width, y = depth).
+        /// Read by Harmony patches that route the toolbar's selector prefab to the
+        /// matching sized placeholder.
+        /// </summary>
+        public int2 SelectedParcelSize => m_SelectedParcelSize;
 
         /// <inheritdoc/>
         protected override void OnCreate() {
@@ -108,18 +120,21 @@ namespace Platter.Systems {
             m_AllowSpawnSystem     = World.GetOrCreateSystemManaged<P_AllowSpawnSystem>();
             m_SnapSystem           = World.GetOrCreateSystemManaged<P_SnapSystem>();
             m_ZoneCacheSystem      = World.GetOrCreateSystemManaged<P_ZoneCacheSystem>();
+            m_BuildingCacheSystem  = World.GetOrCreateSystemManaged<P_BuildingCacheSystem>();
 
             // Bindings
             m_EnableToolButtonsBinding     = CreateBinding("ENABLE_TOOL_BUTTONS", false);
             m_EnableSnappingOptionsBinding = CreateBinding("ENABLE_SNAPPING_OPTIONS", false);
             m_EnableCreateFromZoneBinding  = CreateBinding("ENABLE_CREATE_FROM_ZONE", false);
             m_ZoneBinding                  = CreateBinding("ZONE", 0, SetPreZone);
-            m_BlockWidthBinding            = CreateBinding("BLOCK_WIDTH", 2);
+            m_BlockWidthBinding            = CreateBinding("BLOCK_WIDTH", 2, SetBlockWidth);
             m_BlockWidthMinBinding         = CreateBinding("BLOCK_WIDTH_MIN", P_PrefabsCreateSystem.AvailableParcelLotSizes.x);
             m_BlockWidthMaxBinding         = CreateBinding("BLOCK_WIDTH_MAX", P_PrefabsCreateSystem.AvailableParcelLotSizes.z);
-            m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2);
+            m_BlockDepthBinding            = CreateBinding("BLOCK_DEPTH", 2, SetBlockDepth);
             m_BlockDepthMinBinding         = CreateBinding("BLOCK_DEPTH_MIN", P_PrefabsCreateSystem.AvailableParcelLotSizes.y);
             m_BlockDepthMaxBinding         = CreateBinding("BLOCK_DEPTH_MAX", P_PrefabsCreateSystem.AvailableParcelLotSizes.w);
+            m_BuildingCountsBinding        = CreateBinding("BUILDING_COUNTS", new int[0]);
+            m_BuildingCountsByZoneBinding  = CreateBinding("BUILDING_COUNTS_BY_ZONE", new int[0]);
             m_ZoneDataBinding              = CreateBinding("ZONE_DATA", new ZoneUIDataModel[] { });
             m_AssetPackDataBinding         = CreateBinding("ASSET_PACK_DATA", new AssetPackUIDataModel[] { });
             m_ZoneGroupDataBinding         = CreateBinding("ZONE_GROUP_DATA", new ZoneGroupUIDataModel[] { });
@@ -174,8 +189,10 @@ namespace Platter.Systems {
             // Handle Shortcuts
             HandleProxyActions();
 
-            // Make sure we refresh the lot sizes if the Object Tool is active
-            if (CurrentlyUsingParcelsInObjectTool) {
+            // Make sure we refresh the lot sizes if the Object Tool is active.
+            // Skip the selector — it's swapped out by Harmony and its m_LotWidth/m_LotDepth
+            // are placeholder defaults, not the user's selection.
+            if (CurrentlyUsingParcelsInObjectTool && m_ObjectToolSystem.prefab is not ParcelSelectorPrefab) {
                 m_SelectedParcelSize.x = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotWidth;
                 m_SelectedParcelSize.y = ((ParcelPlaceholderPrefab)m_ObjectToolSystem.prefab).m_LotDepth;
             }
@@ -208,7 +225,7 @@ namespace Platter.Systems {
             var currentCacheVersion = m_ZoneCacheSystem.CacheVersion;
             if (m_LastZoneCacheVersion != currentCacheVersion) {
                 m_LastZoneCacheVersion = currentCacheVersion;
-                
+
                 var zoneData = m_ZoneCacheSystem.ZoneUIData.Values.ToArray();
                 Array.Sort(zoneData, (x, y) => x.Index.CompareTo(y.Index));
                 m_ZoneDataBinding.Value = zoneData;
@@ -217,7 +234,63 @@ namespace Platter.Systems {
                 var zoneGroupArray = m_ZoneCacheSystem.ZoneGroupUIData.Values.ToArray();
                 Array.Sort(zoneGroupArray, (a, b) => a.Priority.CompareTo(b.Priority));
                 m_ZoneGroupDataBinding.Value = zoneGroupArray;
+
+                // Force building counts refresh when zone cache changes
+                m_LastBuildingCountsZoneIndex = -1;
+                m_LastBuildingCountsBySize    = new int2(-1, -1);
             }
+
+            // Refresh building counts when the pre-zone selection changes
+            if (m_LastBuildingCountsZoneIndex != PreZoneType.m_Index) {
+                m_LastBuildingCountsZoneIndex = PreZoneType.m_Index;
+                m_BuildingCountsBinding.Value = GetBuildingCountsForZone(PreZoneType.m_Index);
+            }
+
+            // Refresh per-zone counts when the selected parcel size changes
+            if (!m_LastBuildingCountsBySize.Equals(m_SelectedParcelSize)) {
+                m_LastBuildingCountsBySize       = m_SelectedParcelSize;
+                m_BuildingCountsByZoneBinding.Value = GetBuildingCountsByZone(m_SelectedParcelSize.x, m_SelectedParcelSize.y);
+            }
+        }
+
+        /// <summary>
+        /// Build a flat array of building counts for the given size, indexed by zone index.
+        /// </summary>
+        private int[] GetBuildingCountsByZone(int lotWidth, int lotDepth) {
+            var zonePrefabs = m_ZoneCacheSystem.ZonePrefabs;
+            ushort maxIndex = 0;
+
+            foreach (var kvp in zonePrefabs) {
+                if (kvp.Key > maxIndex) {
+                    maxIndex = kvp.Key;
+                }
+            }
+
+            var counts = new int[maxIndex + 1];
+
+            foreach (var kvp in zonePrefabs) {
+                counts[kvp.Key] = m_BuildingCacheSystem.GetBuildingCount(kvp.Key, lotWidth, lotDepth);
+            }
+
+            return counts;
+        }
+
+        /// <summary>
+        /// Build a flat array of building counts for the given zone, indexed by
+        /// (width - 1) * maxDepth + (depth - 1). Width/depth are 1-based.
+        /// </summary>
+        private int[] GetBuildingCountsForZone(ushort zoneIndex) {
+            var maxW   = P_PrefabsCreateSystem.AvailableParcelLotSizes.z;
+            var maxD   = P_PrefabsCreateSystem.AvailableParcelLotSizes.w;
+            var counts = new int[maxW * maxD];
+
+            for (var w = 1; w <= maxW; w++) {
+                for (var d = 1; d <= maxD; d++) {
+                    counts[((w - 1) * maxD) + (d - 1)] = m_BuildingCacheSystem.GetBuildingCount(zoneIndex, w, d);
+                }
+            }
+
+            return counts;
         }
 
         private void HandleProxyActions() {
@@ -522,6 +595,36 @@ namespace Platter.Systems {
             var zonePrefab = m_ZoneCacheSystem.ZonePrefabs[(ushort)zoneIndex];
             var zoneData   = EntityManager.GetComponentData<ZoneData>(zonePrefab);
             PreZoneType = zoneData.m_ZoneType;
+            UpdateSelectedPrefab();
+        }
+
+        /// <summary>
+        ///  Called from the UI.
+        /// </summary>
+        private void SetBlockWidth(int width) {
+            // Guard
+            if (width < P_PrefabsCreateSystem.AvailableParcelLotSizes.x ||
+                width > P_PrefabsCreateSystem.AvailableParcelLotSizes.z) {
+                return;
+            }
+
+            m_Log.Debug($"SetBlockWidth({width})");
+            m_SelectedParcelSize.x = width;
+            UpdateSelectedPrefab();
+        }
+
+        /// <summary>
+        ///  Called from the UI.
+        /// </summary>
+        private void SetBlockDepth(int depth) {
+            // Guard
+            if (depth < P_PrefabsCreateSystem.AvailableParcelLotSizes.y ||
+                depth > P_PrefabsCreateSystem.AvailableParcelLotSizes.w) {
+                return;
+            }
+
+            m_Log.Debug($"SetBlockDepth({depth})");
+            m_SelectedParcelSize.y = depth;
             UpdateSelectedPrefab();
         }
 

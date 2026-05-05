@@ -12,6 +12,8 @@ export const GAME_BINDINGS = {
     BLOCK_DEPTH: new TwoWayBinding<number>("BLOCK_DEPTH", 2),
     BLOCK_DEPTH_MIN: new TwoWayBinding<number>("BLOCK_DEPTH_MIN", 2),
     BLOCK_DEPTH_MAX: new TwoWayBinding<number>("BLOCK_DEPTH_MAX", 6),
+    BUILDING_COUNTS: new TwoWayBinding<number[]>("BUILDING_COUNTS", []),
+    BUILDING_COUNTS_BY_ZONE: new TwoWayBinding<number[]>("BUILDING_COUNTS_BY_ZONE", []),
     PREFAB_DATA: new TwoWayBinding<PrefabData>("PREFAB_DATA", {
         name: undefined,
         thumbnail: undefined,
