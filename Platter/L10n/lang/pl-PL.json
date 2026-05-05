@@ -128,7 +128,7 @@
   "SubServices.NAME[PlatterCat]": "Platter — Parcele",
   "Assets.SUB_SERVICE_DESCRIPTION[PlatterCat]": "Parcele z siatką stref, na których można wyznaczyć strefy.",
   "Assets.NAME[PlatterUnzoned]": "Pusty obszar",
-  "Assets.NAME[Parcel]": "Parcel",
+  "Assets.NAME[Parcel]": "Parcela",
   "Assets.DESCRIPTION[Parcel]": "A resizable parcel with zone blocks. Adjust width and depth from the Platter panel or with the scrollwheel shortcuts.",
   "Assets.NAME[Parcel 1x2]": "Parcela (1×2)",
   "Assets.NAME[Parcel 1x3]": "Parcela (1×3)",
