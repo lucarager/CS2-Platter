@@ -82,15 +82,19 @@ Donations are incredibly kind and appreciated.
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/platter-a-custom-zoning-mod.1870699" />
   <!--Version of the mod-->
-  <ModVersion Value="1.5.8" />
+  <ModVersion Value="1.6.0" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Version 1.5.8
-- Updated metadata. Platter is now marked as Beta and the description text is more accurate.
-- Fixed some oddities with snapping and rotations. Should now work as expected.</ChangeLog>
+  <ChangeLog># Version 1.6.0
+- New parcel selection UI: 
+	- The toolbar now shows a single "parcel" entry instead of 30 size variants
+- Richer building per zone per lot information:
+	- Parcel size selection can now be made via a new grid UI in the side panel, or as before via shortcuts or scrollwheel
+	- Building counts are now surfaced in both directions: the sidepanel UI shows how many buildings are available for the selected pre-zone at each parcel size, and the Pre-Zone dropdownshows how many buildings are available for the currently selected parcel size in each zone.
+- Translations have been refreshed across all supported languages, thanks to the many community volunteers on Crowdin</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon, buymeacoffee, kofi, crowdin, gitlab-->
   <ExternalLink Type="kofi" Url="https://ko-fi.com/lucadevdesign" />
   <ExternalLink Type="discord" Url="https://discord.gg/C2XQUYHwuV" />
