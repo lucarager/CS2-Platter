@@ -55,6 +55,17 @@ export const ChangelogModal = () => {
                     <div className={styles.changelog}>
                         <div className={styles.changelog__left}></div>
                         <div className={styles.changelog__right}>
+                            {/* May 4th */}
+                            <ChangelogItem
+                                date="2026-05-04"
+                                title="Platter 1.6 - Streamlined size selection & community translations"
+                                image="coui://platter/changelog/5.jpg"
+                                text={`A focused quality-of-life release.
+
+- ___Size selection___ has been __completely reworked__. The toolbar now shows a single __"Parcel"__ entry instead of 30 size variants, and width/depth are picked from the new __grid UI__ in the tool options panel.
+- ___Building counts___ are now surfaced in both directions: the __grid UI__ shows how many buildings are available for the selected pre-zone at each parcel size, and the __Pre-Zone dropdown__ shows how many buildings are available for the currently selected parcel size in each zone.
+- ___Translations___ have been refreshed across all supported languages, thanks to the many community volunteers on Crowdin!`}
+                            />
                             {/* March 19th */}
                             <ChangelogItem
                                 date="2026-03-19"
