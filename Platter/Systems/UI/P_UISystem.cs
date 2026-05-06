@@ -683,12 +683,23 @@ namespace Platter.Systems {
             var id = ParcelUtils.GetPrefabID(m_SelectedParcelSize, true);
             m_Log.Debug($"UpdateSelectedPrefab() -- ${id}");
 
-            if (!m_PrefabSystem.TryGetPrefab(id, out var prefabBase)) {
+            if (!m_PrefabSystem.TryGetPrefab(id, out var sizedPlaceholder)) {
                 return;
             }
 
-            var assetEntity = m_PrefabSystem.GetEntity(prefabBase);
-            m_ToolSystem.ActivatePrefabTool(prefabBase);
+            // Activate the sized placeholder so the in-world tool preview is correct immediately.
+            m_ToolSystem.ActivatePrefabTool(sizedPlaceholder);
+
+            // Drive the toolbar UI off the selector — that's the entity actually shown in the
+            // Platter tab. SelectAsset opens the tab and highlights it; the Harmony patch on
+            // TrySetPrefab swaps the activated prefab back to the sized placeholder.
+            var prefabsCreateSystem = World.GetOrCreateSystemManaged<P_PrefabsCreateSystem>();
+            var selectorPrefab      = prefabsCreateSystem.SelectorPrefab;
+            if (selectorPrefab == null) {
+                return;
+            }
+
+            var selectorEntity = m_PrefabSystem.GetEntity(selectorPrefab);
 
             // Invoke the private SelectAsset method using reflection
             var method = m_ToolbarUISystem.GetType().GetMethod(
@@ -696,7 +707,7 @@ namespace Platter.Systems {
                 BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (method != null) {
-                method.Invoke(m_ToolbarUISystem, new object[] { assetEntity, true });
+                method.Invoke(m_ToolbarUISystem, new object[] { selectorEntity, true });
             }
         }
 
