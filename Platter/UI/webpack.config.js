@@ -81,6 +81,7 @@ module.exports = {
                         loader: "sass-loader",
                         options: {
                             sassOptions: {
+                                outputStyle: "expanded",
                                 quietDeps: true,
                                 silenceDeprecations: ["legacy-js-api"],
                             },
