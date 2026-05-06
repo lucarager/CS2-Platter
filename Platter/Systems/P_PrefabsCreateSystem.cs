@@ -72,6 +72,17 @@ namespace Platter.Systems {
         /// </summary>
         private NativeHashMap<Entity, Entity> m_ParcelPairCache;
 
+        /// <summary>
+        /// The single selector prefab shown in the vanilla toolbar. Selecting this in the UI
+        /// is what opens the Platter tab; Harmony swaps it to the sized placeholder when actually used.
+        /// </summary>
+        private ParcelSelectorPrefab m_SelectorPrefab;
+
+        /// <summary>
+        /// Public accessor for the toolbar selector prefab.
+        /// </summary>
+        public ParcelSelectorPrefab SelectorPrefab => m_SelectorPrefab;
+
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -330,6 +341,7 @@ namespace Platter.Systems {
 
             if (m_PrefabSystem.AddPrefab(selectorPrefab)) {
                 RegisterPrefabInCache(selectorPrefab);
+                m_SelectorPrefab = selectorPrefab;
                 return true;
             }
 
