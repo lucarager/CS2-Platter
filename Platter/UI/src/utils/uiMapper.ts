@@ -96,6 +96,4 @@ export const mapperFn = (moduleRegistry: ModuleRegistry) => {
                 break;
         }
     }
-
-    console.log("resultString", resultString);
 };

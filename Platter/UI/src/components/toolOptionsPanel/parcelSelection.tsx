@@ -19,18 +19,10 @@ export const ParcelSelection = function ParcelSelection() {
 
     const [hoveredSize, setHoveredSize] = useState<{ width: number; depth: number } | null>(null);
 
-    console.log(buildingCounts);
-
-    // Min/max sizes are constant after binding - compute grid options once
     // Generate grid from 1 to max to show all possible sizes
     const widthOptions = useMemo(
         () => Array.from({ length: blockWidthMax }, (_, index) => index + 1),
         [blockWidthMax],
-    );
-
-    const depthOptions = useMemo(
-        () => Array.from({ length: blockDepthMax }, (_, index) => index + 1),
-        [blockDepthMax],
     );
 
     const isHoveredOrSmaller = (width: number, depth: number) => {
@@ -102,7 +94,6 @@ export const ParcelSelection = function ParcelSelection() {
                                             }
                                             onSelect={() => {
                                                 if (!isBelowMinimum) {
-                                                    console.log("Selected size:", width, depth);
                                                     GAME_BINDINGS.BLOCK_WIDTH.set(width);
                                                     GAME_BINDINGS.BLOCK_DEPTH.set(depth);
                                                 }
