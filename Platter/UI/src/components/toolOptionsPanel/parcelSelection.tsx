@@ -51,70 +51,77 @@ export const ParcelSelection = function ParcelSelection() {
     );
 
     return (
-        <VC.Section
-            focusKey={VF.FOCUS_DISABLED}
-            title={translate("PlatterMod.UI.SectionTitle.ParcelSize", "Parcel Size")}>
-            <div className={styles.parcelSelection}>
-                {/* Parcel size grid */}
+        <div className={styles.parcelSelectionSection}>
+            <VC.Section
+                focusKey={VF.FOCUS_DISABLED}
+                title={translate("PlatterMod.UI.SectionTitle.ParcelSize", "Parcel Size")}>
                 <div
-                    className={styles.parcelSelection__sizeGrid}
-                    onMouseLeave={() => setHoveredSize(null)}>
-                    {blockWidth >= blockWidthMin && blockDepth >= blockDepthMin && (
-                        <div
-                            className={styles.parcelSelection__selectionOverlay}
-                            style={{
-                                bottom: 0,
-                                left: 0,
-                                width: `${blockWidth * 25 - 1}rem`,
-                                height: `${blockDepth * 25 - 1}rem`,
-                            }}>
-                            <div className={styles.parcelSelection__selectionOverlayFrontDot} />
-                        </div>
-                    )}
-                    {depthRowOptions.map((depth) => (
-                        <div key={depth} className={styles.parcelSelection__sizeGridRow}>
-                            {widthOptions.map((width) => {
-                                const isBelowMinimum =
-                                    width < blockWidthMin || depth < blockDepthMin;
-                                const isSelected = width <= blockWidth && depth <= blockDepth;
-                                const isHoverPreview = isHoveredOrSmaller(width, depth);
+                    className={styles.parcelSelection}
+                    style={{
+                        width: `${blockWidthMax * 25 - 1}rem`,
+                        flex: `0 0 ${blockWidthMax * 25 - 1}rem`,
+                    }}>
+                    {/* Parcel size grid */}
+                    <div
+                        className={styles.parcelSelection__sizeGrid}
+                        onMouseLeave={() => setHoveredSize(null)}>
+                        {blockWidth >= blockWidthMin && blockDepth >= blockDepthMin && (
+                            <div
+                                className={styles.parcelSelection__selectionOverlay}
+                                style={{
+                                    bottom: 0,
+                                    left: 0,
+                                    width: `${blockWidth * 25 - 1}rem`,
+                                    height: `${blockDepth * 25 - 1}rem`,
+                                }}>
+                                <div className={styles.parcelSelection__selectionOverlayFrontDot} />
+                            </div>
+                        )}
+                        {depthRowOptions.map((depth) => (
+                            <div key={depth} className={styles.parcelSelection__sizeGridRow}>
+                                {widthOptions.map((width) => {
+                                    const isBelowMinimum =
+                                        width < blockWidthMin || depth < blockDepthMin;
+                                    const isSelected = width <= blockWidth && depth <= blockDepth;
+                                    const isHoverPreview = isHoveredOrSmaller(width, depth);
 
-                                return (
-                                    <Button
-                                        key={`${width}x${depth}`}
-                                        focusKey={VF.FOCUS_DISABLED}
-                                        type="button"
-                                        className={c(
-                                            styles.parcelSelection__sizeButton,
-                                            isSelected &&
-                                                styles.parcelSelection__sizeButtonSelected,
-                                            isHoverPreview &&
-                                                styles.parcelSelection__sizeButtonHovered,
-                                        )}
-                                        onMouseEnter={() =>
-                                            !isBelowMinimum && setHoveredSize({ width, depth })
-                                        }
-                                        onSelect={() => {
-                                            if (!isBelowMinimum) {
-                                                console.log("Selected size:", width, depth);
-                                                GAME_BINDINGS.BLOCK_WIDTH.set(width);
-                                                GAME_BINDINGS.BLOCK_DEPTH.set(depth);
+                                    return (
+                                        <Button
+                                            key={`${width}x${depth}`}
+                                            focusKey={VF.FOCUS_DISABLED}
+                                            type="button"
+                                            className={c(
+                                                styles.parcelSelection__sizeButton,
+                                                isSelected &&
+                                                    styles.parcelSelection__sizeButtonSelected,
+                                                isHoverPreview &&
+                                                    styles.parcelSelection__sizeButtonHovered,
+                                            )}
+                                            onMouseEnter={() =>
+                                                !isBelowMinimum && setHoveredSize({ width, depth })
                                             }
-                                        }}>
-                                        {!isBelowMinimum && getBuildingCount(width, depth)}
-                                    </Button>
-                                );
-                            })}
-                        </div>
-                    ))}
+                                            onSelect={() => {
+                                                if (!isBelowMinimum) {
+                                                    console.log("Selected size:", width, depth);
+                                                    GAME_BINDINGS.BLOCK_WIDTH.set(width);
+                                                    GAME_BINDINGS.BLOCK_DEPTH.set(depth);
+                                                }
+                                            }}>
+                                            {!isBelowMinimum && getBuildingCount(width, depth)}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+                        ))}
+                    </div>
+                    {/* Road Visualization */}
+                    <div
+                        className={styles.parcelSelection__roadViz}
+                        style={{ width: `${blockWidthMax * 25 - 1}rem` }}>
+                        <div className={styles.parcelSelection__roadViz__median}></div>
+                    </div>
                 </div>
-                {/* Road Visualization */}
-                <div
-                    className={styles.parcelSelection__roadViz}
-                    style={{ width: `${blockWidthMax * 25 - 1}rem` }}>
-                    <div className={styles.parcelSelection__roadViz__median}></div>
-                </div>
-            </div>
-        </VC.Section>
+            </VC.Section>
+        </div>
     );
 };

@@ -271,6 +271,13 @@
     height: var(--size);
 }
 
+.parcelSelectionSection {
+    // Prevent our grid from shrinking with longer labels
+    div[class*="content"] {
+        flex-shrink: 0;
+    }
+}
+
 .parcelSelection {
     --gap: 1rem;
     --buttonSize: 24rem;
@@ -283,9 +290,9 @@
 
     display: flex;
     flex-direction: column;
-    width: 100%;
     align-self: stretch;
     align-items: flex-end;
+    flex-shrink: 0;
 
     &__roadViz {
         height: var(--roadSize);
