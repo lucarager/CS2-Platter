@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { memo } from "react";
 import { Button, Panel, PanelSection, Tooltip } from "cs2/ui";
 import styles from "./toolButton.module.scss";
 import { VF, VC, VT } from "../vanilla/Components";
@@ -19,32 +19,11 @@ export const ToolButton = memo(function ToolButton() {
     const [enabled, setIsEnabled] = React.useState(false);
     const { translate } = useLocalization();
 
-    const currentChangelogVersion = useValueWrap(
-        GAME_BINDINGS.CURRENT_CHANGELOG_VERSION.binding,
-        "CurrentChangelogVersion",
-    );
-    const lastViewedChangelogVersion = useValueWrap(
-        GAME_BINDINGS.LAST_VIEWED_CHANGELOG_VERSION.binding,
-        "LastViewedChangelogVersion",
-    );
-
-    const showUpdateBadge = currentChangelogVersion > lastViewedChangelogVersion;
-
-    // Mark changelog as viewed when panel is opened
-    useEffect(() => {
-        if (enabled && currentChangelogVersion > lastViewedChangelogVersion) {
-            GAME_BINDINGS.LAST_VIEWED_CHANGELOG_VERSION.set(currentChangelogVersion);
-        }
-    }, [enabled, currentChangelogVersion, lastViewedChangelogVersion]);
-
-    let tooltip = translate("Options.SECTION[Platter.Platter.PlatterMod]") || "";
-    tooltip += showUpdateBadge
-        ? ` ${translate("PlatterMod.UI.Label.NewUpdatesAvailable", "(New updates)")}`
-        : "";
+    const tooltip = translate("Options.SECTION[Platter.Platter.PlatterMod]") || "";
 
     return (
         <>
-            {enabled && <ToolPanel initialShowUpdateBadge={showUpdateBadge} />}
+            {enabled && <ToolPanel />}
             <Tooltip tooltip={tooltip} delayTime={0}>
                 <Button
                     variant="floating"
@@ -53,15 +32,13 @@ export const ToolButton = memo(function ToolButton() {
                     src={iconSrc}
                     focusKey={VF.FOCUS_DISABLED}
                     tooltipLabel={translate("Options.SECTION[Platter.Platter.PlatterMod]")}>
-                    {showUpdateBadge && <div className={styles.updateBadge}></div>}
                 </Button>
             </Tooltip>
         </>
     );
 });
 
-export const ToolPanel = memo(function ToolPanel(props: { initialShowUpdateBadge?: boolean }) {
-    const [showUpdateBadge, setShowUpdateBadge] = useState(props.initialShowUpdateBadge);
+export const ToolPanel = memo(function ToolPanel() {
     useRenderTracker("ToolPanel");
     const renderParcelBinding = useValueWrap(GAME_BINDINGS.RENDER_PARCELS.binding, "RenderParcels");
     const allowSpawningBinding = useValueWrap(
@@ -102,11 +79,9 @@ export const ToolPanel = memo(function ToolPanel(props: { initialShowUpdateBadge
                 <VC.Section
                     title={translate("PlatterMod.UI.SectionTitle.Changelog", "View Changelog")}>
                     <div className={styles.changelogButtonWrap}>
-                        {showUpdateBadge && <div className={styles.updateBadge}></div>}
                         <VC.ToolButton
                             src={"coui://platter/changelog.svg"}
                             onSelect={() => {
-                                setShowUpdateBadge(false);
                                 GAME_BINDINGS.MODAL__CHANGELOG.set(true);
                             }}
                             focusKey={VF.FOCUS_DISABLED}
