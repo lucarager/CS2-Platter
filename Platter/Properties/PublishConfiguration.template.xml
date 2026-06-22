@@ -23,7 +23,7 @@
 <!--Version of the mod-->
 <ModVersion Value="0.1.1" />
 <!--Recommended version of the base game to use the mod-->
-<GameVersion Value="1.5.*" />
+<GameVersion Value="1.6.*" />
 <!--Dependency for the mod, can be set multiple-->
 <!--<Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.*" />-->
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->	
