@@ -1,5 +1,5 @@
 import { TwoWayBinding } from "utils/bidirectionalBinding";
-import { AssetPackData, ParcelUIData, PrefabData, SnapMode, ZoneData, ZoneGroupData } from "types";
+import { AssetPackData, ParcelUIData, PrefabData, ZoneData, ZoneGroupData } from "types";
 import { Entity } from "cs2/bindings";
 import TriggerBuilder from "utils/trigger";
 

@@ -99,6 +99,7 @@ namespace Platter.Patches {
         /// </summary>
         [HarmonyPatch(typeof(ObjectToolSystem))]
         [HarmonyPatch("SnapControlPoint")]
+        [HarmonyPatch(new[] { typeof(JobHandle) })]
         private class ObjectToolSystem_SnapControlPoint {
             private static bool Prefix(ObjectToolSystem __instance, JobHandle inputDeps, ref JobHandle __result) {
                 var pSnapSystem        = __instance.World.GetOrCreateSystemManaged<P_SnapSystem>();
