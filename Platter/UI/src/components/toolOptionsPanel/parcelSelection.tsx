@@ -50,8 +50,8 @@ export const ParcelSelection = function ParcelSelection() {
                 <div
                     className={styles.parcelSelection}
                     style={{
-                        width: `${blockWidthMax * 25 - 1}rem`,
-                        flex: `0 0 ${blockWidthMax * 25 - 1}rem`,
+                        width: `${blockWidthMax * 25}rem`,
+                        flex: `0 0 ${blockWidthMax * 25}rem`,
                     }}>
                     {/* Parcel size grid */}
                     <div
